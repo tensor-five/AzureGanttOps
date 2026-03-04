@@ -55,7 +55,7 @@ async function route(
   res: ServerResponse,
   controller: QueryIntakeController
 ): Promise<void> {
-  if (req.method === "POST" && req.url === "/phase1/query-intake") {
+  if (req.method === "POST" && req.url === "/phase2/query-intake") {
     const body = await readBody(req);
     const payload = parsePayload(body);
 

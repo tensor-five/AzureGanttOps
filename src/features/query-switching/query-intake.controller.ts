@@ -6,7 +6,7 @@ import {
   renderQueryIntakeView,
   type QueryIntakeViewModel
 } from "./query-intake.view.js";
-
+import type { QueryReloadSource } from "../../application/use-cases/run-query-intake.use-case.js";
 export type QueryIntakeRequest = {
   queryInput: string;
 };
@@ -22,6 +22,10 @@ export type QueryIntakeResponse = {
     | "CLI_NOT_FOUND"
     | "UNKNOWN_ERROR";
   selectedQueryId: string | null;
+  activeQueryId: string | null;
+  lastRefreshAt: string | null;
+  reloadSource: QueryReloadSource | null;
+  trustState: "ready" | "needs_attention" | "partial_failure";
   savedQueries: {
     id: string;
     name: string;
@@ -60,9 +64,15 @@ export class QueryIntakeController {
       context = parseQueryInput(request.queryInput, defaults ?? undefined);
     } catch (error: unknown) {
       const guidance = toUserMessage(error, "Paste a valid Azure DevOps query URL or query ID.");
+      const trustState = "needs_attention" as const;
       const model = this.toViewModel({
         success: false,
         guidance,
+        flatQuerySupportNote: FLAT_ONLY_NOTE,
+        activeQueryId: null,
+        lastRefreshAt: null,
+        reloadSource: null,
+        trustState,
         savedQueries: [],
         selectedQueryId: null,
         workItemIds: [],
@@ -74,6 +84,10 @@ export class QueryIntakeController {
         guidance,
         preflightStatus: "UNKNOWN_ERROR",
         selectedQueryId: null,
+        activeQueryId: null,
+        lastRefreshAt: null,
+        reloadSource: null,
+        trustState,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -89,13 +103,20 @@ export class QueryIntakeController {
 
     try {
       const result = await this.runQueryIntake.execute({ context });
-      const guidance = guidanceForPreflight(result.preflight.status);
+      const runtimeGuidance = result.snapshot ? null : guidanceForRuntimeState(result.reload.source);
+      const guidance = guidanceForPreflight(result.preflight.status) ?? runtimeGuidance ?? guidanceForSnapshot(result.snapshot);
       const success = result.preflight.status === "READY" && result.snapshot !== null;
       const workItemIds = result.snapshot?.workItemIds ?? [];
       const relations = result.snapshot?.relations ?? [];
+      const trustState = determineTrustState(success, result.snapshot);
       const model = this.toViewModel({
         success,
         guidance,
+        flatQuerySupportNote: FLAT_ONLY_NOTE,
+        activeQueryId: result.reload.activeQueryId,
+        lastRefreshAt: result.reload.lastRefreshAt,
+        reloadSource: result.reload.source,
+        trustState,
         savedQueries: result.savedQueries,
         selectedQueryId: result.selectedQueryId,
         workItemIds,
@@ -107,6 +128,10 @@ export class QueryIntakeController {
         guidance,
         preflightStatus: result.preflight.status,
         selectedQueryId: result.selectedQueryId,
+        activeQueryId: result.reload.activeQueryId,
+        lastRefreshAt: result.reload.lastRefreshAt,
+        reloadSource: result.reload.source,
+        trustState,
         savedQueries: result.savedQueries,
         workItemIds,
         relations,
@@ -115,9 +140,15 @@ export class QueryIntakeController {
       };
     } catch (error: unknown) {
       const guidance = guidanceForRuntimeError(error);
+      const trustState = "needs_attention" as const;
       const model = this.toViewModel({
         success: false,
         guidance,
+        flatQuerySupportNote: FLAT_ONLY_NOTE,
+        activeQueryId: context.queryId.value,
+        lastRefreshAt: null,
+        reloadSource: "full_reload",
+        trustState,
         savedQueries: [],
         selectedQueryId: context.queryId.value,
         workItemIds: [],
@@ -129,6 +160,10 @@ export class QueryIntakeController {
         guidance,
         preflightStatus: "READY",
         selectedQueryId: context.queryId.value,
+        activeQueryId: context.queryId.value,
+        lastRefreshAt: null,
+        reloadSource: "full_reload",
+        trustState,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -169,6 +204,10 @@ function guidanceForRuntimeError(error: unknown): string {
       return "Query not found. Confirm query ID and try again.";
     case "QUERY_EXECUTION_FAILED":
       return "Query failed to run. Retry or verify query permissions.";
+    case "QRY_SHAPE_UNSUPPORTED":
+      return "Only flat queries are supported in this phase. Use a flat query and retry.";
+    case "HYDRATION_TRANSIENT_RETRY_EXHAUSTED":
+      return "Hydration retries were exhausted. Retry shortly.";
     case "CONTEXT_REQUIRED":
       return "Add organization and project in settings.";
     case "MALFORMED_PAYLOAD":
@@ -177,6 +216,43 @@ function guidanceForRuntimeError(error: unknown): string {
       return "Unable to load query results. Retry in a moment.";
   }
 }
+
+function guidanceForSnapshot(snapshot: { hydration: { statusCode: string } } | null): string | null {
+  if (!snapshot) {
+    return null;
+  }
+
+  if (snapshot.hydration.statusCode === "HYDRATION_PARTIAL_FAILURE") {
+    return "Some work items could not be hydrated. Retry to improve completeness.";
+  }
+
+  return null;
+}
+
+function guidanceForRuntimeState(source: QueryReloadSource): string | null {
+  if (source === "stale_discarded") {
+    return "Stale reload was discarded after query switch."
+  }
+
+  return null;
+}
+
+function determineTrustState(
+  success: boolean,
+  snapshot: { hydration: { statusCode: string } } | null
+): "ready" | "needs_attention" | "partial_failure" {
+  if (!success) {
+    return "needs_attention";
+  }
+
+  if (snapshot?.hydration.statusCode === "HYDRATION_PARTIAL_FAILURE") {
+    return "partial_failure";
+  }
+
+  return "ready";
+}
+
+const FLAT_ONLY_NOTE = "Phase 2 note: only flat queries are supported.";
 
 function toErrorCode(error: unknown): string {
   if (error instanceof Error) {
