@@ -1,3 +1,4 @@
+import type { IngestionRelationType } from "../../../application/dto/ingestion-snapshot.js";
 import type { AdoContext } from "../../../application/ports/context-settings.port.js";
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
 
@@ -12,7 +13,7 @@ export type SavedQuery = {
 };
 
 export type RuntimeRelation = {
-  type: string;
+  type: IngestionRelationType;
   sourceId: number;
   targetId: number;
 };

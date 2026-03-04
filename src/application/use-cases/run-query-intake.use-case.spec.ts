@@ -17,7 +17,7 @@ describe("RunQueryIntakeUseCase", () => {
     const authPreflight: AuthPreflightPort = {
       check: vi.fn(async () => {
         order.push("preflight");
-        return { status: "READY" };
+        return { status: "READY" as const };
       })
     };
 
@@ -44,7 +44,7 @@ describe("RunQueryIntakeUseCase", () => {
 
   it("blocks list and execution when preflight is not READY", async () => {
     const authPreflight: AuthPreflightPort = {
-      check: vi.fn(async () => ({ status: "SESSION_EXPIRED" }))
+      check: vi.fn(async () => ({ status: "SESSION_EXPIRED" as const }))
     };
 
     const queryRuntime: QueryRuntimePort = {
