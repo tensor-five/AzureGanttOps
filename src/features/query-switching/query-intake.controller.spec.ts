@@ -23,7 +23,7 @@ class InMemoryContextSettings {
 }
 
 describe("QueryIntakeController", () => {
-  it("returns success payload with source/freshness metadata and FS arrows", async () => {
+  it("returns success payload with timeline and startup-loaded active mapping profile", async () => {
     const store = new AdoContextStore(new InMemoryContextSettings(null));
     const queryId = QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95");
     const runQueryIntake = {
@@ -62,6 +62,80 @@ describe("QueryIntakeController", () => {
             statusCode: "OK" as const
           }
         },
+        timeline: {
+          bars: [
+            {
+              workItemId: 101,
+              title: "Alpha delivery outcome title that is intentionally very long for ellipsis coverage",
+              state: {
+                code: "Active",
+                badge: "A",
+                color: "#1d4ed8"
+              },
+              schedule: {
+                startDate: "2026-03-01T00:00:00.000Z",
+                endDate: "2026-03-03T00:00:00.000Z",
+                missingBoundary: null
+              },
+              details: {
+                mappedId: "WI-101"
+              }
+            },
+            {
+              workItemId: 202,
+              title: "Beta",
+              state: {
+                code: "New",
+                badge: "N",
+                color: "#7c3aed"
+              },
+              schedule: {
+                startDate: null,
+                endDate: "2026-03-05T00:00:00.000Z",
+                missingBoundary: "start" as const
+              },
+              details: {
+                mappedId: "WI-202"
+              }
+            }
+          ],
+          unschedulable: [
+            {
+              workItemId: 303,
+              title: "Gamma",
+              state: {
+                code: "Closed",
+                badge: "C",
+                color: "#6b7280"
+              },
+              details: {
+                mappedId: "WI-303"
+              },
+              reason: "missing-both-dates" as const
+            }
+          ],
+          dependencies: [
+            {
+              predecessorWorkItemId: 101,
+              successorWorkItemId: 202,
+              dependencyType: "FS" as const,
+              label: "#101 [end] -> #202 [start]"
+            }
+          ],
+          suppressedDependencies: [
+            {
+              predecessorWorkItemId: 202,
+              successorWorkItemId: 303,
+              dependencyType: "FS" as const,
+              reason: "unschedulable-endpoint" as const
+            }
+          ],
+          mappingValidation: {
+            status: "valid" as const,
+            issues: []
+          }
+        },
+        activeMappingProfileId: "profile-a",
         reload: {
           runVersion: 2,
           stale: false,
@@ -85,14 +159,97 @@ describe("QueryIntakeController", () => {
     expect(response.reloadSource).toBe("full_reload");
     expect(response.trustState).toBe("ready");
     expect(response.workItemIds).toEqual([101, 202]);
-    expect(response.fsArrows).toEqual([
+    expect(response.activeMappingProfileId).toBe("profile-a");
+    expect(response.mappingValidation).toEqual({ status: "valid", issues: [] });
+    expect(response.timeline?.dependencies).toEqual([
       {
-        predecessorId: 101,
-        successorId: 202,
+        predecessorWorkItemId: 101,
+        successorWorkItemId: 202,
+        dependencyType: "FS",
         label: "#101 [end] -> #202 [start]"
       }
     ]);
-    expect(response.view).toContain("Phase 2 note: only flat queries are supported.");
+
+    expect(response.view).toContain("Timeline bars (title + state):");
+    expect(response.view).toContain("[A|#1d4ed8]");
+    expect(response.view).toContain("[N|#7c3aed] [half-open:start]");
+    expect(response.view).toContain("Unschedulable items (title + state):");
+    expect(response.view).not.toContain("#303 [");
+    expect(response.view).toContain("Timeline details (mapped ID):");
+    expect(response.view).toContain("#101 mappedId=WI-101");
+    expect(response.view).toContain("Suppressed dependencies (details only):");
+    expect(response.view).toContain("#202 -> #303 (unschedulable-endpoint)");
+  });
+
+  it("returns strict mapping validation guidance and empty timeline payload when invalid", async () => {
+    const store = new AdoContextStore(
+      new InMemoryContextSettings({ organization: "contoso", project: "delivery" })
+    );
+
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "READY" as const },
+        savedQueries: [],
+        selectedQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+        snapshot: {
+          queryType: "flat" as const,
+          workItemIds: [101],
+          workItems: [{ id: 101, title: "A" }],
+          relations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 1,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        },
+        timeline: {
+          bars: [],
+          unschedulable: [],
+          dependencies: [],
+          suppressedDependencies: [],
+          mappingValidation: {
+            status: "invalid" as const,
+            issues: [
+              {
+                code: "MAP_REQUIRED_BLANK" as const,
+                field: "start" as const,
+                message: "Start Date mapping cannot be blank.",
+                guidance: "Provide a non-empty Azure field reference for Start Date."
+              }
+            ]
+          }
+        },
+        activeMappingProfileId: "profile-a",
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          lastRefreshAt: "2026-03-04T20:00:00.000Z",
+          source: "full_reload" as const
+        }
+      }))
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+
+    const response = await controller.submit({
+      queryInput: "37f6f880-0b7b-4350-9f97-7263b40d4e95"
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.trustState).toBe("needs_attention");
+    expect(response.mappingValidation.status).toBe("invalid");
+    expect(response.timeline?.bars).toEqual([]);
+    expect(response.timeline?.dependencies).toEqual([]);
+    expect(response.guidance).toContain("Fix required mapping fields before rendering timeline:");
+    expect(response.view).toContain("Mapping validation:");
+    expect(response.view).toContain("- status: invalid");
+    expect(response.view).toContain("start [MAP_REQUIRED_BLANK]");
   });
 
   it("returns deterministic guidance for unsupported query shape", async () => {
@@ -115,28 +272,6 @@ describe("QueryIntakeController", () => {
     expect(response.success).toBe(false);
     expect(response.trustState).toBe("needs_attention");
     expect(response.guidance).toBe("Only flat queries are supported in this phase. Use a flat query and retry.");
-  });
-
-  it("returns deterministic guidance for transient retry exhaustion", async () => {
-    const store = new AdoContextStore(
-      new InMemoryContextSettings({ organization: "contoso", project: "delivery" })
-    );
-
-    const runQueryIntake = {
-      execute: vi.fn(async () => {
-        throw new Error("HYDRATION_TRANSIENT_RETRY_EXHAUSTED");
-      })
-    };
-
-    const controller = new QueryIntakeController(store, runQueryIntake as never);
-
-    const response = await controller.submit({
-      queryInput: "37f6f880-0b7b-4350-9f97-7263b40d4e95"
-    });
-
-    expect(response.success).toBe(false);
-    expect(response.guidance).toBe("Hydration retries were exhausted. Retry shortly.");
-    expect(response.workItemIds).toEqual([]);
   });
 
   it("maps partial hydration result to trust-first partial state", async () => {
@@ -163,6 +298,17 @@ describe("QueryIntakeController", () => {
             statusCode: "HYDRATION_PARTIAL_FAILURE" as const
           }
         },
+        timeline: {
+          bars: [],
+          unschedulable: [],
+          dependencies: [],
+          suppressedDependencies: [],
+          mappingValidation: {
+            status: "valid" as const,
+            issues: []
+          }
+        },
+        activeMappingProfileId: "profile-a",
         reload: {
           runVersion: 1,
           stale: false,

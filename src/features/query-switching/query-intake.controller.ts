@@ -1,12 +1,14 @@
 import type { AdoContextStore } from "../../app/config/ado-context.store.js";
+import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { RunQueryIntakeUseCase } from "../../application/use-cases/run-query-intake.use-case.js";
+import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import { parseQueryInput } from "../../domain/query-runtime/services/query-input-parser.js";
 import {
-  buildFsArrows,
   renderQueryIntakeView,
   type QueryIntakeViewModel
 } from "./query-intake.view.js";
 import type { QueryReloadSource } from "../../application/use-cases/run-query-intake.use-case.js";
+
 export type QueryIntakeRequest = {
   queryInput: string;
 };
@@ -41,11 +43,12 @@ export type QueryIntakeResponse = {
     sourceId: number;
     targetId: number;
   }[];
-  fsArrows: {
-    predecessorId: number;
-    successorId: number;
-    label: string;
-  }[];
+  timeline: TimelineReadModel | null;
+  mappingValidation: {
+    status: "valid" | "invalid";
+    issues: MappingValidationIssue[];
+  };
+  activeMappingProfileId: string | null;
   view: string;
 };
 
@@ -75,8 +78,12 @@ export class QueryIntakeController {
         trustState,
         savedQueries: [],
         selectedQueryId: null,
-        workItemIds: [],
-        relations: []
+        timeline: null,
+        mappingValidation: {
+          status: "invalid",
+          issues: []
+        },
+        showDependencies: true
       });
 
       return {
@@ -91,7 +98,12 @@ export class QueryIntakeController {
         savedQueries: [],
         workItemIds: [],
         relations: [],
-        fsArrows: [],
+        timeline: null,
+        mappingValidation: {
+          status: "invalid",
+          issues: []
+        },
+        activeMappingProfileId: null,
         view: renderQueryIntakeView(model)
       };
     }
@@ -104,11 +116,19 @@ export class QueryIntakeController {
     try {
       const result = await this.runQueryIntake.execute({ context });
       const runtimeGuidance = result.snapshot ? null : guidanceForRuntimeState(result.reload.source);
-      const guidance = guidanceForPreflight(result.preflight.status) ?? runtimeGuidance ?? guidanceForSnapshot(result.snapshot);
-      const success = result.preflight.status === "READY" && result.snapshot !== null;
+      const timelineGuidance = result.timeline && result.timeline.mappingValidation.status === "invalid"
+        ? guidanceForMappingIssues(result.timeline.mappingValidation.issues)
+        : null;
+
+      const guidance = guidanceForPreflight(result.preflight.status) ?? runtimeGuidance ?? timelineGuidance ?? guidanceForSnapshot(result.snapshot);
+      const success = result.preflight.status === "READY" && result.snapshot !== null && result.timeline !== null && result.timeline.mappingValidation.status === "valid";
       const workItemIds = result.snapshot?.workItemIds ?? [];
       const relations = result.snapshot?.relations ?? [];
       const trustState = determineTrustState(success, result.snapshot);
+      const mappingValidation = result.timeline?.mappingValidation ?? {
+        status: "invalid" as const,
+        issues: []
+      };
       const model = this.toViewModel({
         success,
         guidance,
@@ -119,8 +139,9 @@ export class QueryIntakeController {
         trustState,
         savedQueries: result.savedQueries,
         selectedQueryId: result.selectedQueryId,
-        workItemIds,
-        relations
+        timeline: result.timeline,
+        mappingValidation,
+        showDependencies: true
       });
 
       return {
@@ -135,7 +156,9 @@ export class QueryIntakeController {
         savedQueries: result.savedQueries,
         workItemIds,
         relations,
-        fsArrows: buildFsArrows(relations),
+        timeline: result.timeline,
+        mappingValidation,
+        activeMappingProfileId: result.activeMappingProfileId,
         view: renderQueryIntakeView(model)
       };
     } catch (error: unknown) {
@@ -151,8 +174,12 @@ export class QueryIntakeController {
         trustState,
         savedQueries: [],
         selectedQueryId: context.queryId.value,
-        workItemIds: [],
-        relations: []
+        timeline: null,
+        mappingValidation: {
+          status: "invalid",
+          issues: []
+        },
+        showDependencies: true
       });
 
       return {
@@ -167,7 +194,12 @@ export class QueryIntakeController {
         savedQueries: [],
         workItemIds: [],
         relations: [],
-        fsArrows: [],
+        timeline: null,
+        mappingValidation: {
+          status: "invalid",
+          issues: []
+        },
+        activeMappingProfileId: null,
         view: renderQueryIntakeView(model)
       };
     }
@@ -231,10 +263,19 @@ function guidanceForSnapshot(snapshot: { hydration: { statusCode: string } } | n
 
 function guidanceForRuntimeState(source: QueryReloadSource): string | null {
   if (source === "stale_discarded") {
-    return "Stale reload was discarded after query switch."
+    return "Stale reload was discarded after query switch.";
   }
 
   return null;
+}
+
+function guidanceForMappingIssues(issues: MappingValidationIssue[]): string {
+  if (issues.length === 0) {
+    return "Mapping profile is invalid. Fix required mappings and retry.";
+  }
+
+  const guidanceSteps = issues.map((issue) => `${issue.field}: ${issue.guidance}`);
+  return `Fix required mapping fields before rendering timeline: ${guidanceSteps.join(" | ")}`;
 }
 
 function determineTrustState(
