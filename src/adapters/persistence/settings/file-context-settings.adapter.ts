@@ -71,5 +71,5 @@ function isPersistedContext(value: unknown): value is PersistedContext {
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
-  return Boolean(error) && typeof error === "object" && "code" in error;
+  return error !== null && typeof error === "object" && "code" in error;
 }
