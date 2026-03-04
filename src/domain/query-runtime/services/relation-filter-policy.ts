@@ -2,6 +2,10 @@ import type { IngestionRelation } from "../../../application/dto/ingestion-snaps
 
 const DEP_FORWARD = "System.LinkTypes.Dependency-Forward";
 const DEP_REVERSE = "System.LinkTypes.Dependency-Reverse";
+const HIERARCHY_FORWARD = "System.LinkTypes.Hierarchy-Forward";
+const HIERARCHY_REVERSE = "System.LinkTypes.Hierarchy-Reverse";
+
+const SUPPORTED_RELATIONS = new Set([DEP_FORWARD, DEP_REVERSE, HIERARCHY_FORWARD, HIERARCHY_REVERSE]);
 
 type RawRelation = {
   rel?: unknown;
@@ -9,13 +13,13 @@ type RawRelation = {
   target?: unknown;
 };
 
-export function filterDependencyRelations(relations: RawRelation[]): IngestionRelation[] {
+export function filterRuntimeRelations(relations: RawRelation[]): IngestionRelation[] {
   const normalized: IngestionRelation[] = [];
 
   for (const relation of relations) {
     const type = typeof relation.rel === "string" ? relation.rel : "";
 
-    if (type !== DEP_FORWARD && type !== DEP_REVERSE) {
+    if (!SUPPORTED_RELATIONS.has(type)) {
       continue;
     }
 
