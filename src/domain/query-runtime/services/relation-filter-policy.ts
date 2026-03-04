@@ -1,4 +1,4 @@
-import type { IngestionRelation } from "../../../application/dto/ingestion-snapshot.js";
+import type { IngestionRelation, IngestionRelationType } from "../../../application/dto/ingestion-snapshot.js";
 
 const DEP_FORWARD = "System.LinkTypes.Dependency-Forward";
 const DEP_REVERSE = "System.LinkTypes.Dependency-Reverse";
@@ -13,25 +13,32 @@ type RawRelation = {
   target?: unknown;
 };
 
-export function filterRuntimeRelations(relations: RawRelation[]): IngestionRelation[] {
+export function filterRuntimeRelations(relations: unknown[]): IngestionRelation[] {
   const normalized: IngestionRelation[] = [];
 
   for (const relation of relations) {
-    const type = typeof relation.rel === "string" ? relation.rel : "";
+    if (!relation || typeof relation !== "object") {
+      continue;
+    }
+
+    const record = relation as RawRelation;
+    const type = typeof record.rel === "string" ? record.rel : "";
 
     if (!SUPPORTED_RELATIONS.has(type)) {
       continue;
     }
 
-    const sourceId = extractId(relation.source);
-    const targetId = extractId(relation.target);
+    const relationType = type as IngestionRelationType;
+
+    const sourceId = extractId(record.source);
+    const targetId = extractId(record.target);
 
     if (sourceId === null || targetId === null) {
       continue;
     }
 
     normalized.push({
-      type,
+      type: relationType,
       sourceId,
       targetId
     });

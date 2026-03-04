@@ -2,12 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { type AdoContext } from "../../../application/ports/context-settings.port.js";
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
-import {
-  AzureQueryRuntimeAdapter,
-  type HttpClient,
-  type RuntimeSnapshot
-} from "./azure-query-runtime.adapter.js";
-
+import { AzureQueryRuntimeAdapter, type HttpClient } from "./azure-query-runtime.adapter.js";
 class InMemoryContextSettings {
   public context: AdoContext | null;
 

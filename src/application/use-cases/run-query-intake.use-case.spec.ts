@@ -28,7 +28,22 @@ describe("RunQueryIntakeUseCase", () => {
       }),
       executeByQueryId: vi.fn(async () => {
         order.push("execute");
-        return { workItemIds: [101], relations: [] };
+        return {
+          queryType: "flat" as const,
+          workItemIds: [101],
+          workItems: [{ id: 101, title: "Work item 101" }],
+          relations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 1,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        };
       })
     };
 
@@ -49,7 +64,22 @@ describe("RunQueryIntakeUseCase", () => {
 
     const queryRuntime: QueryRuntimePort = {
       listSavedQueries: vi.fn(async () => []),
-      executeByQueryId: vi.fn(async () => ({ workItemIds: [], relations: [] }))
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [],
+        workItems: [],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 0,
+          attemptedBatches: 0,
+          succeededBatches: 0,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
     };
 
     const useCase = new RunQueryIntakeUseCase(authPreflight, queryRuntime);

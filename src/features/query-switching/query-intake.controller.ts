@@ -29,7 +29,11 @@ export type QueryIntakeResponse = {
   }[];
   workItemIds: number[];
   relations: {
-    type: "System.LinkTypes.Dependency-Forward" | "System.LinkTypes.Dependency-Reverse";
+    type:
+      | "System.LinkTypes.Dependency-Forward"
+      | "System.LinkTypes.Dependency-Reverse"
+      | "System.LinkTypes.Hierarchy-Forward"
+      | "System.LinkTypes.Hierarchy-Reverse";
     sourceId: number;
     targetId: number;
   }[];
