@@ -20,6 +20,7 @@ function createProfile(id: string, name: string): FieldMappingProfile {
 }
 
 describe("FileMappingSettingsAdapter", () => {
+  // MAP-03: persisted mapping profiles survive restart and load deterministically.
   it("persists and reloads mapping profiles across restarts", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mapping-settings-"));
     const filePath = path.join(root, "settings", "mapping-settings.json");
@@ -45,6 +46,7 @@ describe("FileMappingSettingsAdapter", () => {
     await expect(adapter.getLastActiveProfileId()).resolves.toBeNull();
   });
 
+  // MAP-03: last-active profile resolution falls back cleanly when profile no longer exists.
   it("clears last active profile when saved profiles no longer contain it", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mapping-settings-fallback-"));
     const filePath = path.join(root, "settings", "mapping-settings.json");

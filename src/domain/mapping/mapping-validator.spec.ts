@@ -19,6 +19,7 @@ function createValidProfile(overrides?: Partial<FieldMappingProfile["fields"]>):
 }
 
 describe("validateRequiredMappings", () => {
+  // MAP-01: supports required semantic fields id/title/start/endOrTarget.
   it("accepts a valid required mapping profile and trims values", () => {
     const profile = createValidProfile({
       id: "  System.Id  ",
@@ -33,6 +34,7 @@ describe("validateRequiredMappings", () => {
     });
   });
 
+  // MAP-02: blocks timeline readiness when required fields are missing.
   it("rejects missing required mapping with deterministic field guidance", () => {
     const profile = createValidProfile();
     (profile.fields as unknown as Record<string, unknown>).start = undefined;
@@ -56,6 +58,7 @@ describe("validateRequiredMappings", () => {
     }
   });
 
+  // MAP-02: rejects blank required field assignments with fix guidance.
   it("rejects blank required mapping with deterministic guidance", () => {
     const profile = createValidProfile({ endOrTarget: "   " });
 
@@ -78,6 +81,7 @@ describe("validateRequiredMappings", () => {
     }
   });
 
+  // MAP-02: rejects duplicate semantic mapping assignments to prevent ambiguity.
   it("rejects duplicate required mappings case-insensitively", () => {
     const profile = createValidProfile({
       start: "Custom.Date",
