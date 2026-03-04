@@ -1,6 +1,8 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
+import type { AuthPreflightPort } from "../../../application/ports/auth-preflight.port.js";
+
 const execAsync = promisify(exec);
 
 export type PreflightStatus =
@@ -29,7 +31,7 @@ export interface CliCommandRunner {
   }>;
 }
 
-export class AzureCliPreflightAdapter {
+export class AzureCliPreflightAdapter implements AuthPreflightPort {
   public constructor(
     private readonly runner: CliCommandRunner = new NodeCliCommandRunner()
   ) {}

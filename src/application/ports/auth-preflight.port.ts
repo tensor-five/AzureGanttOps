@@ -2,7 +2,9 @@ export type AuthPreflightStatus =
   | "READY"
   | "SESSION_EXPIRED"
   | "MISSING_EXTENSION"
-  | "CONTEXT_MISMATCH";
+  | "CONTEXT_MISMATCH"
+  | "CLI_NOT_FOUND"
+  | "UNKNOWN_ERROR";
 
 export type AuthPreflightResult = {
   status: AuthPreflightStatus;
