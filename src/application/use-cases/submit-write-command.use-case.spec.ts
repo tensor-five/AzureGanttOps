@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { WriteCommandPort } from "../ports/write-command.port.js";
+import { createPhase1QueryFlow } from "../../app/composition/phase1-query-flow.js";
+import { QueryId } from "../../domain/query-runtime/value-objects/query-id.js";
 import { SubmitWriteCommandUseCase } from "./submit-write-command.use-case.js";
 
 describe("SubmitWriteCommandUseCase", () => {
@@ -102,5 +104,64 @@ describe("SubmitWriteCommandUseCase", () => {
     });
     expect(port.submit).toHaveBeenCalledTimes(1);
     expect(port.submit).toHaveBeenCalledWith(command);
+  });
+});
+
+describe("phase1 composition write capability wiring", () => {
+  const flowParams = {
+    httpClient: {
+      get: vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({})
+      }))
+    },
+    contextFilePath: "/tmp/ado-context.json",
+    mappingFilePath: "/tmp/mapping-settings.json"
+  };
+
+  it("defaults write capability to disabled when flag is missing", () => {
+    const flow = createPhase1QueryFlow(flowParams);
+
+    expect(flow.capabilities.writeEnabled).toBe(false);
+    expect(typeof flow.runQueryIntake.execute).toBe("function");
+  });
+
+  it("keeps disabled write capability when explicitly false", () => {
+    const flow = createPhase1QueryFlow({ ...flowParams, capabilities: { writeEnabled: false } });
+
+    expect(flow.capabilities.writeEnabled).toBe(false);
+    expect(typeof flow.runQueryIntake.execute).toBe("function");
+  });
+
+  it("keeps read/write boundaries isolated in composition contract", async () => {
+    const flow = createPhase1QueryFlow(flowParams);
+
+    expect(typeof flow.runQueryIntake.execute).toBe("function");
+    expect(typeof flow.submitWriteCommand.execute).toBe("function");
+
+    const command = {
+      kind: "WORK_ITEM_PATCH" as const,
+      workItemId: 7,
+      operations: [{ op: "replace" as const, path: "/fields/System.Title", value: "t" }]
+    };
+
+    const writeResult = await flow.submitWriteCommand.execute({
+      command,
+      writeEnabled: flow.capabilities.writeEnabled
+    });
+
+    expect(writeResult.mode).toBe("NO_OP");
+
+    await expect(
+      flow.runQueryIntake.execute({
+        context: {
+          organization: "contoso",
+          project: "delivery",
+          queryId: QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95")
+        }
+      })
+    ).resolves.toBeDefined();
   });
 });

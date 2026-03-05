@@ -5,17 +5,23 @@ import { AzureQueryRuntimeAdapter, type HttpClient } from "../../adapters/azure-
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
 import { AdoContextStore } from "../config/ado-context.store.js";
+import { resolveCapabilityFlags, type CapabilityFlags } from "../config/capability-flags.js";
 import { RunQueryIntakeUseCase } from "../../application/use-cases/run-query-intake.use-case.js";
 import { BuildTimelineViewUseCase } from "../../application/use-cases/build-timeline-view.use-case.js";
+import { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
+import { WriteCommandNoopAdapter } from "../../adapters/azure-devops/work-items/write-command.noop.adapter.js";
 
 export type Phase1QueryFlow = {
   runQueryIntake: RunQueryIntakeUseCase;
+  submitWriteCommand: SubmitWriteCommandUseCase;
+  capabilities: CapabilityFlags;
 };
 
 export function createPhase1QueryFlow(params: {
   httpClient: HttpClient;
   contextFilePath: string;
   mappingFilePath?: string;
+  capabilities?: Partial<CapabilityFlags>;
 }): Phase1QueryFlow {
   const settingsAdapter = new FileContextSettingsAdapter(params.contextFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
@@ -33,7 +39,13 @@ export function createPhase1QueryFlow(params: {
     mappingSettings
   );
 
+  const capabilities = resolveCapabilityFlags(params.capabilities);
+  const writeCommandPort = new WriteCommandNoopAdapter();
+  const submitWriteCommand = new SubmitWriteCommandUseCase(writeCommandPort);
+
   return {
-    runQueryIntake
+    runQueryIntake,
+    submitWriteCommand,
+    capabilities
   };
 }
