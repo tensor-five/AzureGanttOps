@@ -9,6 +9,11 @@ import {
 } from "./query-intake.view.js";
 import type { QueryReloadSource } from "../../application/use-cases/run-query-intake.use-case.js";
 import { deriveTimelineUiState, type TimelineUiState } from "./timeline-trust-state.js";
+import type {
+  DiagnosticsErrorCode,
+  DiagnosticsStatusCode
+} from "../../application/dto/diagnostics/diagnostics-event.dto.js";
+import type { PublishDiagnosticsUseCase } from "../../application/use-cases/publish-diagnostics.use-case.js";
 
 export type QueryIntakeRequest = {
   queryInput: string;
@@ -88,8 +93,50 @@ export type QueryIntakeResponse = {
 export class QueryIntakeController {
   public constructor(
     private readonly contextStore: AdoContextStore,
-    private readonly runQueryIntake: RunQueryIntakeUseCase
+    private readonly runQueryIntake: RunQueryIntakeUseCase,
+    private readonly publishDiagnostics: PublishDiagnosticsUseCase | null = null
   ) {}
+
+  private async emitDiagnostics(input: {
+    statusCode: DiagnosticsStatusCode;
+    errorCode: DiagnosticsErrorCode | null;
+    guidance: string;
+    preflightStatus: QueryIntakeResponse["preflightStatus"];
+    uiState: TimelineUiState;
+    trustState: QueryIntakeResponse["trustState"];
+    activeQueryId: string | null;
+    selectedQueryId: string | null;
+    reloadSource: QueryReloadSource | null;
+    lastRefreshAt: string | null;
+    lastSuccessfulRefreshAt: string | null;
+    metadata?: Readonly<Record<string, string | number | boolean | null>>;
+  }): Promise<void> {
+    if (!this.publishDiagnostics) {
+      return;
+    }
+
+    await this.publishDiagnostics.execute({
+      eventName: "query-intake.outcome",
+      timestamp: new Date().toISOString(),
+      statusCode: input.statusCode,
+      errorCode: input.errorCode,
+      guidance: input.guidance,
+      source: {
+        component: "query-intake",
+        preflightStatus: input.preflightStatus,
+        uiState: input.uiState,
+        trustState: input.trustState,
+        activeQueryId: input.activeQueryId,
+        selectedQueryId: input.selectedQueryId,
+        reloadSource: input.reloadSource
+      },
+      freshness: {
+        lastRefreshAt: input.lastRefreshAt,
+        lastSuccessfulRefreshAt: input.lastSuccessfulRefreshAt
+      },
+      metadata: input.metadata
+    });
+  }
 
   public async submit(request: QueryIntakeRequest): Promise<QueryIntakeResponse> {
     const defaults = await this.contextStore.getActiveContext();
@@ -127,7 +174,7 @@ export class QueryIntakeController {
         },
         showDependencies
       });
-      return {
+      const response: QueryIntakeResponse = {
         success: false,
         guidance,
         preflightStatus: "UNKNOWN_ERROR",
@@ -151,6 +198,25 @@ export class QueryIntakeController {
         activeMappingProfileId: null,
         view: renderQueryIntakeView(model)
       };
+
+      await this.emitDiagnostics({
+        statusCode: "UNKNOWN_ERROR",
+        errorCode: "UNKNOWN_ERROR",
+        guidance,
+        preflightStatus: response.preflightStatus,
+        uiState: response.uiState,
+        trustState: response.trustState,
+        activeQueryId: response.activeQueryId,
+        selectedQueryId: response.selectedQueryId,
+        reloadSource: response.reloadSource,
+        lastRefreshAt: response.lastRefreshAt,
+        lastSuccessfulRefreshAt: response.strictFail.lastSuccessfulRefreshAt,
+        metadata: {
+          strictFailActive: response.strictFail.active
+        }
+      });
+
+      return response;
     }
 
     await this.contextStore.setActiveContext({
@@ -264,7 +330,7 @@ export class QueryIntakeController {
         showDependencies
       });
 
-      return {
+      const response: QueryIntakeResponse = {
         success: effectiveSuccess,
         guidance,
         preflightStatus: result.preflight.status,
@@ -285,6 +351,26 @@ export class QueryIntakeController {
         activeMappingProfileId,
         view: renderQueryIntakeView(model)
       };
+
+      await this.emitDiagnostics({
+        statusCode: deriveDiagnosticsStatusCode(response, result.failureCode),
+        errorCode: toDiagnosticsErrorCode(result.failureCode),
+        guidance: response.guidance ?? "Action: none",
+        preflightStatus: response.preflightStatus,
+        uiState: response.uiState,
+        trustState: response.trustState,
+        activeQueryId: response.activeQueryId,
+        selectedQueryId: response.selectedQueryId,
+        reloadSource: response.reloadSource,
+        lastRefreshAt: response.lastRefreshAt,
+        lastSuccessfulRefreshAt: response.strictFail.lastSuccessfulRefreshAt,
+        metadata: {
+          strictFailActive: response.strictFail.active,
+          runVersion: result.reload.runVersion
+        }
+      });
+
+      return response;
     } catch (error: unknown) {
       const guidance = guidanceForRuntimeError(error);
       const preflightStatus = "READY" as const;
@@ -321,7 +407,7 @@ export class QueryIntakeController {
         showDependencies
       });
 
-      return {
+      const response: QueryIntakeResponse = {
         success: false,
         guidance,
         preflightStatus,
@@ -345,6 +431,25 @@ export class QueryIntakeController {
         activeMappingProfileId: null,
         view: renderQueryIntakeView(model)
       };
+
+      await this.emitDiagnostics({
+        statusCode: toDiagnosticsStatusCode(toErrorCode(error)),
+        errorCode: toDiagnosticsErrorCode(toErrorCode(error)),
+        guidance,
+        preflightStatus: response.preflightStatus,
+        uiState: response.uiState,
+        trustState: response.trustState,
+        activeQueryId: response.activeQueryId,
+        selectedQueryId: response.selectedQueryId,
+        reloadSource: response.reloadSource,
+        lastRefreshAt: response.lastRefreshAt,
+        lastSuccessfulRefreshAt: response.strictFail.lastSuccessfulRefreshAt,
+        metadata: {
+          strictFailActive: response.strictFail.active
+        }
+      });
+
+      return response;
     }
   }
 
@@ -496,4 +601,66 @@ function toUserMessage(error: unknown, fallback: string): string {
   }
 
   return fallback;
+}
+
+function deriveDiagnosticsStatusCode(
+  response: QueryIntakeResponse,
+  failureCode: string | null
+): DiagnosticsStatusCode {
+  if (response.preflightStatus !== "READY") {
+    return response.preflightStatus;
+  }
+
+  if (response.strictFail.active) {
+    return "STRICT_FAIL_FALLBACK";
+  }
+
+  if (response.reloadSource === "stale_discarded") {
+    return "STALE_DISCARDED";
+  }
+
+  if (failureCode) {
+    return toDiagnosticsStatusCode(failureCode);
+  }
+
+  if (response.uiState === "partial_failure") {
+    return "HYDRATION_PARTIAL_FAILURE";
+  }
+
+  return "OK";
+}
+
+function toDiagnosticsErrorCode(code: string | null): DiagnosticsErrorCode | null {
+  if (!code) {
+    return null;
+  }
+
+  const statusCode = toDiagnosticsStatusCode(code);
+  return statusCode === "OK" ? null : statusCode;
+}
+
+function toDiagnosticsStatusCode(code: string): DiagnosticsStatusCode {
+  const deterministicCodes: ReadonlySet<DiagnosticsStatusCode> = new Set<DiagnosticsStatusCode>([
+    "OK",
+    "SESSION_EXPIRED",
+    "MISSING_EXTENSION",
+    "CONTEXT_MISMATCH",
+    "CLI_NOT_FOUND",
+    "UNKNOWN_ERROR",
+    "QUERY_NOT_FOUND",
+    "QUERY_EXECUTION_FAILED",
+    "QRY_SHAPE_UNSUPPORTED",
+    "HYDRATION_TRANSIENT_RETRY_EXHAUSTED",
+    "HYDRATION_PARTIAL_FAILURE",
+    "MAP_PROFILE_NOT_FOUND",
+    "MAP_VALIDATION_FAILED",
+    "CONTEXT_REQUIRED",
+    "MALFORMED_PAYLOAD",
+    "STALE_DISCARDED",
+    "STRICT_FAIL_FALLBACK"
+  ]);
+
+  return deterministicCodes.has(code as DiagnosticsStatusCode)
+    ? (code as DiagnosticsStatusCode)
+    : "UNKNOWN_ERROR";
 }

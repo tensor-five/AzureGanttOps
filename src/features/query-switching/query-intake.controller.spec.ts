@@ -4,6 +4,8 @@ import type { AdoContext } from "../../application/ports/context-settings.port.j
 import { AdoContextStore } from "../../app/config/ado-context.store.js";
 import { QueryId } from "../../domain/query-runtime/value-objects/query-id.js";
 import { QueryIntakeController } from "./query-intake.controller.js";
+import type { DiagnosticsPort } from "../../application/ports/diagnostics.port.js";
+import { PublishDiagnosticsUseCase } from "../../application/use-cases/publish-diagnostics.use-case.js";
 
 class InMemoryContextSettings {
   public context: AdoContext | null;
@@ -585,5 +587,136 @@ describe("QueryIntakeController", () => {
     expect(response.strictFail.active).toBe(true);
     expect(response.view).toContain("[WARN] Strict-fail fallback active");
     expect(response.view).toContain("UI state: ready_with_lkg_warning");
+  });
+
+  it("publishes diagnostics event for successful intake outcome", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const queryId = QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "READY" as const },
+        savedQueries: [],
+        selectedQueryId: queryId.value,
+        snapshot: {
+          queryType: "flat" as const,
+          workItemIds: [101],
+          workItems: [{ id: 101, title: "A" }],
+          relations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 1,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        },
+        timeline: {
+          bars: [],
+          unschedulable: [],
+          dependencies: [],
+          suppressedDependencies: [],
+          mappingValidation: {
+            status: "valid" as const,
+            issues: []
+          }
+        },
+        activeMappingProfileId: "profile-a",
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: queryId.value,
+          lastRefreshAt: "2026-03-04T20:00:00.000Z",
+          source: "full_reload" as const
+        },
+        failureCode: null,
+        lastSuccessfulReload: {
+          activeQueryId: queryId.value,
+          lastRefreshAt: "2026-03-04T20:00:00.000Z",
+          source: "full_reload" as const
+        },
+        lastKnownGood: null
+      }))
+    };
+
+    const diagnosticsPort: DiagnosticsPort = {
+      publish: vi.fn(async () => undefined)
+    };
+    const publishDiagnostics = new PublishDiagnosticsUseCase(diagnosticsPort);
+
+    const controller = new QueryIntakeController(
+      store,
+      runQueryIntake as never,
+      publishDiagnostics
+    );
+
+    await controller.submit({
+      queryInput: `https://dev.azure.com/contoso/delivery/_queries/query?qid=${queryId.value}`
+    });
+
+    expect(diagnosticsPort.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: "OK",
+        errorCode: null,
+        source: expect.objectContaining({
+          component: "query-intake",
+          activeQueryId: queryId.value,
+          selectedQueryId: queryId.value,
+          reloadSource: "full_reload"
+        })
+      })
+    );
+  });
+
+  it("publishes diagnostics event for auth failure path", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "SESSION_EXPIRED" as const },
+        savedQueries: [],
+        selectedQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+        snapshot: null,
+        timeline: null,
+        activeMappingProfileId: null,
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          lastRefreshAt: null,
+          source: "preflight_blocked" as const
+        },
+        failureCode: null,
+        lastSuccessfulReload: null,
+        lastKnownGood: null
+      }))
+    };
+
+    const diagnosticsPort: DiagnosticsPort = {
+      publish: vi.fn(async () => undefined)
+    };
+    const publishDiagnostics = new PublishDiagnosticsUseCase(diagnosticsPort);
+
+    const controller = new QueryIntakeController(
+      store,
+      runQueryIntake as never,
+      publishDiagnostics
+    );
+
+    await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95"
+    });
+
+    expect(diagnosticsPort.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: "SESSION_EXPIRED",
+        errorCode: null,
+        source: expect.objectContaining({
+          preflightStatus: "SESSION_EXPIRED",
+          uiState: "auth_failure"
+        })
+      })
+    );
   });
 });
