@@ -36,6 +36,8 @@ export type QueryIntakeRequest = {
 export type QueryIntakeResponse = {
   success: boolean;
   guidance: string | null;
+  statusCode: DiagnosticsStatusCode;
+  errorCode: DiagnosticsErrorCode | null;
   preflightStatus:
     | "READY"
     | "SESSION_EXPIRED"
@@ -177,6 +179,8 @@ export class QueryIntakeController {
       const response: QueryIntakeResponse = {
         success: false,
         guidance,
+        statusCode: "UNKNOWN_ERROR",
+        errorCode: "UNKNOWN_ERROR",
         preflightStatus: "UNKNOWN_ERROR",
         selectedQueryId: null,
         activeQueryId: null,
@@ -330,9 +334,19 @@ export class QueryIntakeController {
         showDependencies
       });
 
+      const statusCode = deriveDiagnosticsStatusCodeFromResult({
+        preflightStatus: result.preflight.status,
+        strictFailActive: strictFail.active,
+        reloadSource: result.reload.source,
+        failureCode: result.failureCode,
+        uiState
+      });
+      const errorCode = toDiagnosticsErrorCode(result.failureCode);
       const response: QueryIntakeResponse = {
         success: effectiveSuccess,
         guidance,
+        statusCode,
+        errorCode,
         preflightStatus: result.preflight.status,
         selectedQueryId: result.selectedQueryId,
         activeQueryId,
@@ -353,8 +367,8 @@ export class QueryIntakeController {
       };
 
       await this.emitDiagnostics({
-        statusCode: deriveDiagnosticsStatusCode(response, result.failureCode),
-        errorCode: toDiagnosticsErrorCode(result.failureCode),
+        statusCode: response.statusCode,
+        errorCode: response.errorCode,
         guidance: response.guidance ?? "Action: none",
         preflightStatus: response.preflightStatus,
         uiState: response.uiState,
@@ -407,9 +421,13 @@ export class QueryIntakeController {
         showDependencies
       });
 
+      const statusCode = toDiagnosticsStatusCode(toErrorCode(error));
+      const errorCode = toDiagnosticsErrorCode(toErrorCode(error));
       const response: QueryIntakeResponse = {
         success: false,
         guidance,
+        statusCode,
+        errorCode,
         preflightStatus,
         selectedQueryId: context.queryId.value,
         activeQueryId: context.queryId.value,
@@ -433,8 +451,8 @@ export class QueryIntakeController {
       };
 
       await this.emitDiagnostics({
-        statusCode: toDiagnosticsStatusCode(toErrorCode(error)),
-        errorCode: toDiagnosticsErrorCode(toErrorCode(error)),
+        statusCode: response.statusCode,
+        errorCode: response.errorCode,
         guidance,
         preflightStatus: response.preflightStatus,
         uiState: response.uiState,
@@ -603,27 +621,30 @@ function toUserMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-function deriveDiagnosticsStatusCode(
-  response: QueryIntakeResponse,
-  failureCode: string | null
-): DiagnosticsStatusCode {
-  if (response.preflightStatus !== "READY") {
-    return response.preflightStatus;
+function deriveDiagnosticsStatusCodeFromResult(input: {
+  preflightStatus: QueryIntakeResponse["preflightStatus"];
+  strictFailActive: boolean;
+  reloadSource: QueryReloadSource;
+  failureCode: string | null;
+  uiState: TimelineUiState;
+}): DiagnosticsStatusCode {
+  if (input.preflightStatus !== "READY") {
+    return input.preflightStatus;
   }
 
-  if (response.strictFail.active) {
+  if (input.strictFailActive) {
     return "STRICT_FAIL_FALLBACK";
   }
 
-  if (response.reloadSource === "stale_discarded") {
+  if (input.reloadSource === "stale_discarded") {
     return "STALE_DISCARDED";
   }
 
-  if (failureCode) {
-    return toDiagnosticsStatusCode(failureCode);
+  if (input.failureCode) {
+    return toDiagnosticsStatusCode(input.failureCode);
   }
 
-  if (response.uiState === "partial_failure") {
+  if (input.uiState === "partial_failure") {
     return "HYDRATION_PARTIAL_FAILURE";
   }
 

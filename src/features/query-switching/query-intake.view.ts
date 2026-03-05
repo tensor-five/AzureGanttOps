@@ -1,3 +1,7 @@
+import type {
+  DiagnosticsErrorCode,
+  DiagnosticsStatusCode
+} from "../../application/dto/diagnostics/diagnostics-event.dto.js";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { SavedQuery } from "../../application/ports/query-runtime.port.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
@@ -6,6 +10,8 @@ import type { TimelineUiState } from "./timeline-trust-state.js";
 export type QueryIntakeViewModel = {
   success: boolean;
   guidance: string | null;
+  statusCode: DiagnosticsStatusCode;
+  errorCode: DiagnosticsErrorCode | null;
   flatQuerySupportNote: string;
   activeQueryId: string | null;
   lastRefreshAt: string | null;
@@ -46,6 +52,17 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
   const uiStateLine = `UI state: ${model.uiState}`;
   const trustLine = `Trust state: ${model.trustState}`;
   const guidanceLine = model.guidance ? `Action: ${model.guidance}` : "Action: none";
+  const diagnosticsLines = [
+    "Diagnostics:",
+    `- status code: ${model.statusCode}`,
+    `- error code: ${model.errorCode ?? "none"}`,
+    `- guidance: ${model.guidance ?? "none"}`,
+    `- source health: ${toSourceHealthLabel(model)}`,
+    `- handoff code: ${model.errorCode ?? model.statusCode}`,
+    `- active query source: ${model.activeQueryId ?? "none"}`,
+    `- last successful refresh: ${model.lastRefreshAt ?? "none"}`,
+    `- reload source: ${model.reloadSource ?? "none"}`
+  ];
   const selectedLine = model.selectedQueryId ? `Selected query: ${model.selectedQueryId}` : "Selected query: none";
   const activeSourceLine = model.activeQueryId ? `Active query source: ${model.activeQueryId}` : "Active query source: none";
   const refreshLine = model.lastRefreshAt ? `Last refresh: ${model.lastRefreshAt}` : "Last refresh: none";
@@ -73,6 +90,7 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     trustLine,
     model.flatQuerySupportNote,
     guidanceLine,
+    ...diagnosticsLines,
     selectedLine,
     activeSourceLine,
     refreshLine,
@@ -220,4 +238,38 @@ function truncateTitle(title: string): string {
   }
 
   return `${title.slice(0, MAX_PRIMARY_TITLE_LENGTH - 1)}…`;
+}
+
+function toSourceHealthLabel(model: QueryIntakeViewModel):
+  | "HEALTHY"
+  | "AUTH_EXPIRED_REAUTH_TRIGGERED"
+  | "AUTH_WARNING"
+  | "REFRESH_FAILED_LKG_ACTIVE"
+  | "REFRESH_FAILED_NO_LKG" {
+  if (model.statusCode === "SESSION_EXPIRED") {
+    return "AUTH_EXPIRED_REAUTH_TRIGGERED";
+  }
+
+  if (
+    model.statusCode === "MISSING_EXTENSION" ||
+    model.statusCode === "CONTEXT_MISMATCH" ||
+    model.statusCode === "CLI_NOT_FOUND"
+  ) {
+    return "AUTH_WARNING";
+  }
+
+  if (model.statusCode === "STRICT_FAIL_FALLBACK") {
+    return "REFRESH_FAILED_LKG_ACTIVE";
+  }
+
+  if (
+    model.errorCode === "QUERY_EXECUTION_FAILED" ||
+    model.errorCode === "HYDRATION_TRANSIENT_RETRY_EXHAUSTED" ||
+    model.errorCode === "MALFORMED_PAYLOAD" ||
+    model.errorCode === "UNKNOWN_ERROR"
+  ) {
+    return model.lastRefreshAt ? "REFRESH_FAILED_LKG_ACTIVE" : "REFRESH_FAILED_NO_LKG";
+  }
+
+  return "HEALTHY";
 }

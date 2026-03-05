@@ -7,6 +7,8 @@ describe("query-intake view", () => {
     const view = renderQueryIntakeView({
       success: true,
       guidance: null,
+      statusCode: "OK",
+      errorCode: null,
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
       activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
@@ -121,6 +123,15 @@ describe("query-intake view", () => {
     expect(view).toContain("[OK] Ready");
     expect(view).toContain("UI state: ready");
     expect(view).toContain("Trust state: ready");
+    expect(view).toContain("Diagnostics:");
+    expect(view).toContain("- status code: OK");
+    expect(view).toContain("- source health: HEALTHY");
+    expect(view).toContain("- handoff code: OK");
+    expect(view).toContain("- error code: none");
+    expect(view).toContain("- guidance: none");
+    expect(view).toContain("- active query source: 37f6f880-0b7b-4350-9f97-7263b40d4e95");
+    expect(view).toContain("- last successful refresh: 2026-03-04T20:00:00.000Z");
+    expect(view).toContain("- reload source: full_reload");
     expect(view).toContain("Capabilities:");
     expect(view).toContain("- canRefresh: enabled");
     expect(view).toContain("Density mode: comfortable");
@@ -153,6 +164,8 @@ describe("query-intake view", () => {
     const view = renderQueryIntakeView({
       success: true,
       guidance: null,
+      statusCode: "OK",
+      errorCode: null,
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
       activeQueryId: "x",
       lastRefreshAt: null,
@@ -212,6 +225,8 @@ describe("query-intake view", () => {
     const view = renderQueryIntakeView({
       success: true,
       guidance: "Refresh failed (QUERY_EXECUTION_FAILED). Showing last successful timeline from 2026-03-04T20:00:00.000Z. Retry now.",
+      statusCode: "STRICT_FAIL_FALLBACK",
+      errorCode: "QUERY_EXECUTION_FAILED",
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
       activeQueryId: "x",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
@@ -255,6 +270,12 @@ describe("query-intake view", () => {
     });
 
     expect(view).toContain("UI state: ready_with_lkg_warning");
+    expect(view).toContain("Diagnostics:");
+    expect(view).toContain("- status code: STRICT_FAIL_FALLBACK");
+    expect(view).toContain("- error code: QUERY_EXECUTION_FAILED");
+    expect(view).toContain("- source health: REFRESH_FAILED_LKG_ACTIVE");
+    expect(view).toContain("- handoff code: QUERY_EXECUTION_FAILED");
+    expect(view).toContain("- guidance: Refresh failed (QUERY_EXECUTION_FAILED). Showing last successful timeline from 2026-03-04T20:00:00.000Z. Retry now.");
     expect(view).toContain("[WARN] Strict-fail fallback active");
     expect(view).toContain("- Last successful refresh: 2026-03-04T20:00:00.000Z");
     expect(view).toContain("- Action: Retry now");
@@ -265,6 +286,8 @@ describe("query-intake view", () => {
     const view = renderQueryIntakeView({
       success: false,
       guidance: "Session expired. Sign in to Azure and retry.",
+      statusCode: "SESSION_EXPIRED",
+      errorCode: "SESSION_EXPIRED",
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
       activeQueryId: "x",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
@@ -308,6 +331,14 @@ describe("query-intake view", () => {
     });
 
     expect(view).toContain("UI state: auth_failure");
+    expect(view).toContain("Diagnostics:");
+    expect(view).toContain("- status code: SESSION_EXPIRED");
+    expect(view).toContain("- error code: SESSION_EXPIRED");
+    expect(view).toContain("- source health: AUTH_EXPIRED_REAUTH_TRIGGERED");
+    expect(view).toContain("- handoff code: SESSION_EXPIRED");
+    expect(view).toContain("- guidance: Session expired. Sign in to Azure and retry.");
+    expect(view).toContain("- active query source: x");
+    expect(view).toContain("- reload source: preflight_blocked");
     expect(view).toContain("[NOTICE] No active session: timeline remains read-only");
     expect(view).toContain("- canRefresh: disabled");
     expect(view).toContain("- canSwitchQuery: disabled");
