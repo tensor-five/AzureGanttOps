@@ -465,4 +465,125 @@ describe("QueryIntakeController", () => {
       })
     );
   });
+
+  it("emits auth_failure ui state and disables session-gated controls", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "SESSION_EXPIRED" as const },
+        savedQueries: [],
+        selectedQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+        snapshot: null,
+        timeline: null,
+        activeMappingProfileId: null,
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          lastRefreshAt: null,
+          source: "preflight_blocked" as const
+        },
+        failureCode: null,
+        lastSuccessfulReload: null,
+        lastKnownGood: null
+      }))
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+    const response = await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95"
+    });
+
+    expect(response.uiState).toBe("auth_failure");
+    expect(response.capabilities.canRefresh).toBe(false);
+    expect(response.capabilities.canSwitchQuery).toBe(false);
+    expect(response.capabilities.canOpenDetails).toBe(true);
+    expect(response.view).toContain("[NOTICE] No active session: timeline remains read-only");
+  });
+
+  it("maps strict-fail fallback to ready_with_lkg_warning ui state", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const queryId = QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "READY" as const },
+        savedQueries: [],
+        selectedQueryId: queryId.value,
+        snapshot: null,
+        timeline: null,
+        activeMappingProfileId: "profile-a",
+        reload: {
+          runVersion: 2,
+          stale: false,
+          activeQueryId: queryId.value,
+          lastRefreshAt: null,
+          source: "full_reload" as const
+        },
+        failureCode: "QUERY_EXECUTION_FAILED",
+        lastSuccessfulReload: {
+          activeQueryId: queryId.value,
+          lastRefreshAt: "2026-03-04T20:00:00.000Z",
+          source: "full_reload" as const
+        },
+        lastKnownGood: {
+          selectedQueryId: queryId.value,
+          snapshot: {
+            queryType: "flat" as const,
+            workItemIds: [101],
+            workItems: [{ id: 101, title: "A" }],
+            relations: [],
+            hydration: {
+              maxIdsPerBatch: 200,
+              requestedIds: 1,
+              attemptedBatches: 1,
+              succeededBatches: 1,
+              retriedRequests: 0,
+              missingIds: [],
+              partial: false,
+              statusCode: "OK" as const
+            }
+          },
+          timeline: {
+            bars: [
+              {
+                workItemId: 101,
+                title: "A",
+                state: {
+                  code: "Active",
+                  badge: "A",
+                  color: "#1d4ed8"
+                },
+                schedule: {
+                  startDate: "2026-03-01T00:00:00.000Z",
+                  endDate: "2026-03-02T00:00:00.000Z",
+                  missingBoundary: null
+                },
+                details: {
+                  mappedId: "WI-101"
+                }
+              }
+            ],
+            unschedulable: [],
+            dependencies: [],
+            suppressedDependencies: [],
+            mappingValidation: {
+              status: "valid" as const,
+              issues: []
+            }
+          },
+          activeMappingProfileId: "profile-a"
+        }
+      }))
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+    const response = await controller.submit({
+      queryInput: `https://dev.azure.com/contoso/delivery/_queries/query?qid=${queryId.value}`
+    });
+
+    expect(response.uiState).toBe("ready_with_lkg_warning");
+    expect(response.strictFail.active).toBe(true);
+    expect(response.view).toContain("[WARN] Strict-fail fallback active");
+    expect(response.view).toContain("UI state: ready_with_lkg_warning");
+  });
 });

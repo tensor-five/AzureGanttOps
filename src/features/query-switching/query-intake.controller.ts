@@ -8,11 +8,13 @@ import {
   type QueryIntakeViewModel
 } from "./query-intake.view.js";
 import type { QueryReloadSource } from "../../application/use-cases/run-query-intake.use-case.js";
+import { deriveTimelineUiState, type TimelineUiState } from "./timeline-trust-state.js";
 
 export type QueryIntakeRequest = {
   queryInput: string;
   showDependencies?: boolean;
   dismissStrictFailWarning?: boolean;
+  density?: "comfortable" | "compact";
   mappingProfileId?: string | null;
   mappingProfileUpsert?: {
     id: string;
@@ -40,6 +42,7 @@ export type QueryIntakeResponse = {
   activeQueryId: string | null;
   lastRefreshAt: string | null;
   reloadSource: QueryReloadSource | null;
+  uiState: TimelineUiState;
   trustState: "ready" | "needs_attention" | "partial_failure";
   strictFail: {
     active: boolean;
@@ -50,6 +53,14 @@ export type QueryIntakeResponse = {
     lastSuccessfulRefreshAt: string | null;
     lastSuccessfulSource: QueryReloadSource | null;
   };
+  capabilities: {
+    canRefresh: boolean;
+    canSwitchQuery: boolean;
+    canChangeDensity: boolean;
+    canOpenDetails: boolean;
+    readOnlyTimeline: boolean;
+  };
+  density: "comfortable" | "compact";
   savedQueries: {
     id: string;
     name: string;
@@ -83,6 +94,7 @@ export class QueryIntakeController {
   public async submit(request: QueryIntakeRequest): Promise<QueryIntakeResponse> {
     const defaults = await this.contextStore.getActiveContext();
     const showDependencies = request.showDependencies ?? true;
+    const density = request.density ?? "comfortable";
 
     let context;
 
@@ -90,8 +102,10 @@ export class QueryIntakeController {
       context = parseQueryInput(request.queryInput, defaults ?? undefined);
     } catch (error: unknown) {
       const guidance = toUserMessage(error, "Paste a valid Azure DevOps query URL or query ID.");
+      const uiState = "query_failure" as const;
       const trustState = "needs_attention" as const;
       const strictFail = noStrictFailState(request.dismissStrictFailWarning);
+      const capabilities = buildCapabilities("UNKNOWN_ERROR");
       const model = this.toViewModel({
         success: false,
         guidance,
@@ -99,8 +113,11 @@ export class QueryIntakeController {
         activeQueryId: null,
         lastRefreshAt: null,
         reloadSource: null,
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: [],
         selectedQueryId: null,
         timeline: null,
@@ -118,8 +135,11 @@ export class QueryIntakeController {
         activeQueryId: null,
         lastRefreshAt: null,
         reloadSource: null,
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -184,10 +204,6 @@ export class QueryIntakeController {
           effectiveTimeline !== null &&
           effectiveMappingValidation.status === "valid");
 
-      const trustState = canUseStrictFailFallback
-        ? "needs_attention"
-        : determineTrustState(effectiveSuccess, effectiveSnapshot);
-
       const strictFail = canUseStrictFailFallback
         ? {
             active: true,
@@ -216,6 +232,19 @@ export class QueryIntakeController {
         ? result.lastKnownGood?.activeMappingProfileId ?? result.activeMappingProfileId
         : result.activeMappingProfileId;
 
+      const hasAnyItems = hasRenderableItems(effectiveTimeline);
+      const uiState = deriveTimelineUiState({
+        preflightStatus: result.preflight.status,
+        hasTimeline: effectiveTimeline !== null,
+        hasAnyItems,
+        hydrationStatusCode: effectiveSnapshot?.hydration.statusCode ?? null,
+        hasStrictFailFallback: strictFail.active,
+        hasQueryFailure: !effectiveSuccess && result.failureCode !== null
+      });
+
+      const trustState = toTrustState(uiState);
+      const capabilities = buildCapabilities(result.preflight.status);
+
       const model = this.toViewModel({
         success: effectiveSuccess,
         guidance,
@@ -223,8 +252,11 @@ export class QueryIntakeController {
         activeQueryId,
         lastRefreshAt,
         reloadSource: result.reload.source,
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: result.savedQueries,
         selectedQueryId: result.selectedQueryId,
         timeline: effectiveTimeline,
@@ -240,8 +272,11 @@ export class QueryIntakeController {
         activeQueryId,
         lastRefreshAt,
         reloadSource: result.reload.source,
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: result.savedQueries,
         workItemIds: effectiveSnapshot?.workItemIds ?? [],
         relations: effectiveSnapshot?.relations ?? [],
@@ -252,8 +287,18 @@ export class QueryIntakeController {
       };
     } catch (error: unknown) {
       const guidance = guidanceForRuntimeError(error);
-      const trustState = "needs_attention" as const;
+      const preflightStatus = "READY" as const;
+      const uiState = deriveTimelineUiState({
+        preflightStatus,
+        hasTimeline: false,
+        hasAnyItems: false,
+        hydrationStatusCode: null,
+        hasStrictFailFallback: false,
+        hasQueryFailure: true
+      });
+      const trustState = toTrustState(uiState);
       const strictFail = noStrictFailState(request.dismissStrictFailWarning);
+      const capabilities = buildCapabilities(preflightStatus);
       const model = this.toViewModel({
         success: false,
         guidance,
@@ -261,8 +306,11 @@ export class QueryIntakeController {
         activeQueryId: context.queryId.value,
         lastRefreshAt: null,
         reloadSource: "full_reload",
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: [],
         selectedQueryId: context.queryId.value,
         timeline: null,
@@ -276,13 +324,16 @@ export class QueryIntakeController {
       return {
         success: false,
         guidance,
-        preflightStatus: "READY",
+        preflightStatus,
         selectedQueryId: context.queryId.value,
         activeQueryId: context.queryId.value,
         lastRefreshAt: null,
         reloadSource: "full_reload",
+        uiState,
         trustState,
         strictFail,
+        capabilities,
+        density,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -374,19 +425,38 @@ function guidanceForMappingIssues(issues: MappingValidationIssue[]): string {
   return `Fix required mapping fields before rendering timeline: ${guidanceSteps.join(" | ")}`;
 }
 
-function determineTrustState(
-  success: boolean,
-  snapshot: { hydration: { statusCode: string } } | null
-): "ready" | "needs_attention" | "partial_failure" {
-  if (!success) {
-    return "needs_attention";
+function toTrustState(uiState: TimelineUiState): "ready" | "needs_attention" | "partial_failure" {
+  if (uiState === "ready") {
+    return "ready";
   }
 
-  if (snapshot?.hydration.statusCode === "HYDRATION_PARTIAL_FAILURE") {
+  if (uiState === "partial_failure") {
     return "partial_failure";
   }
 
-  return "ready";
+  return "needs_attention";
+}
+
+function hasRenderableItems(timeline: TimelineReadModel | null): boolean {
+  if (!timeline) {
+    return false;
+  }
+
+  return timeline.bars.length > 0 || timeline.unschedulable.length > 0;
+}
+
+function buildCapabilities(
+  preflightStatus: QueryIntakeResponse["preflightStatus"]
+): QueryIntakeResponse["capabilities"] {
+  const hasActiveSession = preflightStatus === "READY";
+
+  return {
+    canRefresh: hasActiveSession,
+    canSwitchQuery: hasActiveSession,
+    canChangeDensity: true,
+    canOpenDetails: true,
+    readOnlyTimeline: true
+  };
 }
 
 function noStrictFailState(dismissed: boolean | undefined): QueryIntakeResponse["strictFail"] {
