@@ -1,6 +1,7 @@
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { SavedQuery } from "../../application/ports/query-runtime.port.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
+import type { TimelineUiState } from "./timeline-trust-state.js";
 
 export type QueryIntakeViewModel = {
   success: boolean;
@@ -9,6 +10,7 @@ export type QueryIntakeViewModel = {
   activeQueryId: string | null;
   lastRefreshAt: string | null;
   reloadSource: "full_reload" | "preflight_blocked" | "stale_discarded" | null;
+  uiState: TimelineUiState;
   trustState: "ready" | "needs_attention" | "partial_failure";
   strictFail: {
     active: boolean;
@@ -19,6 +21,14 @@ export type QueryIntakeViewModel = {
     lastSuccessfulRefreshAt: string | null;
     lastSuccessfulSource: "full_reload" | "preflight_blocked" | "stale_discarded" | null;
   };
+  capabilities: {
+    canRefresh: boolean;
+    canSwitchQuery: boolean;
+    canChangeDensity: boolean;
+    canOpenDetails: boolean;
+    readOnlyTimeline: boolean;
+  };
+  density: "comfortable" | "compact";
   savedQueries: SavedQuery[];
   selectedQueryId: string | null;
   timeline: TimelineReadModel | null;
@@ -33,6 +43,7 @@ const MAX_PRIMARY_TITLE_LENGTH = 42;
 
 export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
   const statusLine = model.success ? "[OK] Ready" : "[ ] Needs attention";
+  const uiStateLine = `UI state: ${model.uiState}`;
   const trustLine = `Trust state: ${model.trustState}`;
   const guidanceLine = model.guidance ? `Action: ${model.guidance}` : "Action: none";
   const selectedLine = model.selectedQueryId ? `Selected query: ${model.selectedQueryId}` : "Selected query: none";
@@ -44,11 +55,21 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     : "- none";
 
   const strictFailLines = renderStrictFailBanner(model.strictFail);
+  const capabilityLines = renderCapabilityMatrix(model.capabilities);
+  const sessionNoticeLines = renderSessionNotice(model.capabilities);
+  const densityLines = [`Density mode: ${model.density}`];
+  const navigationLines = [
+    "Navigation container:",
+    "- overflow-x: auto",
+    "- overflow-y: auto",
+    "- bi-directional: enabled"
+  ];
   const mappingLines = renderMappingValidation(model.mappingValidation);
   const timelineLines = renderTimeline(model.timeline, model.showDependencies);
 
   return [
     statusLine,
+    uiStateLine,
     trustLine,
     model.flatQuerySupportNote,
     guidanceLine,
@@ -57,6 +78,11 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     refreshLine,
     reloadLine,
     ...strictFailLines,
+    ...sessionNoticeLines,
+    "Capabilities:",
+    ...capabilityLines,
+    ...densityLines,
+    ...navigationLines,
     "Saved queries:",
     queryLines,
     "Mapping validation:",
@@ -89,6 +115,27 @@ function renderStrictFailBanner(strictFail: QueryIntakeViewModel["strictFail"]):
   }
 
   return lines;
+}
+
+function renderSessionNotice(capabilities: QueryIntakeViewModel["capabilities"]): string[] {
+  if (capabilities.canRefresh && capabilities.canSwitchQuery) {
+    return [];
+  }
+
+  return [
+    "[NOTICE] No active session: timeline remains read-only",
+    "- Reload and query switching are disabled until session is restored"
+  ];
+}
+
+function renderCapabilityMatrix(capabilities: QueryIntakeViewModel["capabilities"]): string[] {
+  return [
+    `- canRefresh: ${capabilities.canRefresh ? "enabled" : "disabled"}`,
+    `- canSwitchQuery: ${capabilities.canSwitchQuery ? "enabled" : "disabled"}`,
+    `- canChangeDensity: ${capabilities.canChangeDensity ? "enabled" : "disabled"}`,
+    `- canOpenDetails: ${capabilities.canOpenDetails ? "enabled" : "disabled"}`,
+    `- readOnlyTimeline: ${capabilities.readOnlyTimeline ? "true" : "false"}`
+  ];
 }
 
 function renderMappingValidation(validation: QueryIntakeViewModel["mappingValidation"]): string[] {

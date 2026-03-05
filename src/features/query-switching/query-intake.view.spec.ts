@@ -11,6 +11,7 @@ describe("query-intake view", () => {
       activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
       reloadSource: "full_reload",
+      uiState: "ready",
       trustState: "ready",
       strictFail: {
         active: false,
@@ -21,6 +22,14 @@ describe("query-intake view", () => {
         lastSuccessfulRefreshAt: null,
         lastSuccessfulSource: null
       },
+      capabilities: {
+        canRefresh: true,
+        canSwitchQuery: true,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      },
+      density: "comfortable",
       selectedQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
       savedQueries: [
         {
@@ -110,7 +119,14 @@ describe("query-intake view", () => {
     });
 
     expect(view).toContain("[OK] Ready");
+    expect(view).toContain("UI state: ready");
     expect(view).toContain("Trust state: ready");
+    expect(view).toContain("Capabilities:");
+    expect(view).toContain("- canRefresh: enabled");
+    expect(view).toContain("Density mode: comfortable");
+    expect(view).toContain("- overflow-x: auto");
+    expect(view).toContain("- overflow-y: auto");
+    expect(view).toContain("- bi-directional: enabled");
     expect(view).toContain("Phase 2 note: only flat queries are supported.");
     expect(view).toContain("Active query source: 37f6f880-0b7b-4350-9f97-7263b40d4e95");
     expect(view).toContain("Last refresh: 2026-03-04T20:00:00.000Z");
@@ -141,6 +157,7 @@ describe("query-intake view", () => {
       activeQueryId: "x",
       lastRefreshAt: null,
       reloadSource: "full_reload",
+      uiState: "ready",
       trustState: "ready",
       strictFail: {
         active: false,
@@ -151,6 +168,14 @@ describe("query-intake view", () => {
         lastSuccessfulRefreshAt: null,
         lastSuccessfulSource: null
       },
+      capabilities: {
+        canRefresh: true,
+        canSwitchQuery: true,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      },
+      density: "compact",
       selectedQueryId: "x",
       savedQueries: [],
       mappingValidation: {
@@ -179,6 +204,7 @@ describe("query-intake view", () => {
 
     expect(view).toContain("Dependency arrows: hidden");
     expect(view).toContain("- hidden by toggle");
+    expect(view).toContain("Density mode: compact");
     expect(view).not.toContain("popover");
   });
 
@@ -190,6 +216,7 @@ describe("query-intake view", () => {
       activeQueryId: "x",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
       reloadSource: "full_reload",
+      uiState: "ready_with_lkg_warning",
       trustState: "needs_attention",
       strictFail: {
         active: true,
@@ -200,6 +227,14 @@ describe("query-intake view", () => {
         lastSuccessfulRefreshAt: "2026-03-04T20:00:00.000Z",
         lastSuccessfulSource: "full_reload"
       },
+      capabilities: {
+        canRefresh: true,
+        canSwitchQuery: true,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      },
+      density: "comfortable",
       selectedQueryId: "x",
       savedQueries: [],
       mappingValidation: {
@@ -219,30 +254,40 @@ describe("query-intake view", () => {
       showDependencies: true
     });
 
+    expect(view).toContain("UI state: ready_with_lkg_warning");
     expect(view).toContain("[WARN] Strict-fail fallback active");
     expect(view).toContain("- Last successful refresh: 2026-03-04T20:00:00.000Z");
     expect(view).toContain("- Action: Retry now");
     expect(view).toContain("- Dismiss: available for current state");
   });
 
-  it("does not render strict-fail warning banner after dismiss for current state", () => {
+  it("shows no-session notice and disabled controls while keeping read-only details", () => {
     const view = renderQueryIntakeView({
-      success: true,
-      guidance: "Refresh failed (QUERY_EXECUTION_FAILED). Showing last successful timeline from 2026-03-04T20:00:00.000Z. Retry now.",
+      success: false,
+      guidance: "Session expired. Sign in to Azure and retry.",
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
       activeQueryId: "x",
       lastRefreshAt: "2026-03-04T20:00:00.000Z",
-      reloadSource: "full_reload",
+      reloadSource: "preflight_blocked",
+      uiState: "auth_failure",
       trustState: "needs_attention",
       strictFail: {
-        active: true,
-        message: "Refresh failed (QUERY_EXECUTION_FAILED). Showing last successful timeline from 2026-03-04T20:00:00.000Z. Retry now.",
-        retryActionLabel: "Retry now",
+        active: false,
+        message: null,
+        retryActionLabel: null,
         dismissible: true,
-        dismissed: true,
-        lastSuccessfulRefreshAt: "2026-03-04T20:00:00.000Z",
-        lastSuccessfulSource: "full_reload"
+        dismissed: false,
+        lastSuccessfulRefreshAt: null,
+        lastSuccessfulSource: null
       },
+      capabilities: {
+        canRefresh: false,
+        canSwitchQuery: false,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      },
+      density: "comfortable",
       selectedQueryId: "x",
       savedQueries: [],
       mappingValidation: {
@@ -262,7 +307,11 @@ describe("query-intake view", () => {
       showDependencies: true
     });
 
-    expect(view).not.toContain("[WARN] Strict-fail fallback active");
-    expect(view).not.toContain("- Action: Retry now");
+    expect(view).toContain("UI state: auth_failure");
+    expect(view).toContain("[NOTICE] No active session: timeline remains read-only");
+    expect(view).toContain("- canRefresh: disabled");
+    expect(view).toContain("- canSwitchQuery: disabled");
+    expect(view).toContain("- canOpenDetails: enabled");
+    expect(view).toContain("- readOnlyTimeline: true");
   });
 });
