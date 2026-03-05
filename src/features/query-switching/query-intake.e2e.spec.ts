@@ -397,7 +397,103 @@ describe("query-intake boundary e2e", () => {
     expect(result.view).toContain("Dependency arrows: shown");
     expect(result.view).toContain("#1 [end] -> #2 [start]");
 
+    const hidden = await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      showDependencies: false
+    });
+
+    expect(hidden.view).toContain("Dependency arrows: hidden");
+    expect(hidden.view).not.toContain("#1 [end] -> #2 [start]");
+
     expect(result.view).not.toContain("popover");
+  });
+
+  it("MAP-01 + MAP-03: mapping upsert/select flows through controller and is reapplied by restart", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const runQueryIntake = {
+      execute: vi
+        .fn()
+        .mockResolvedValueOnce({
+          preflight: { status: "READY" as const },
+          savedQueries: [],
+          selectedQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          snapshot: null,
+          timeline: null,
+          activeMappingProfileId: "profile-b",
+          reload: {
+            runVersion: 1,
+            stale: false,
+            activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            lastRefreshAt: null,
+            source: "full_reload" as const
+          }
+        })
+        .mockResolvedValueOnce({
+          preflight: { status: "READY" as const },
+          savedQueries: [],
+          selectedQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          snapshot: null,
+          timeline: null,
+          activeMappingProfileId: "profile-b",
+          reload: {
+            runVersion: 2,
+            stale: false,
+            activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            lastRefreshAt: null,
+            source: "full_reload" as const
+          }
+        })
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+
+    await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=ffffffff-ffff-4fff-8fff-ffffffffffff",
+      mappingProfileUpsert: {
+        id: "profile-b",
+        name: "Secondary",
+        fields: {
+          id: "Custom.ExternalId2",
+          title: "System.Title",
+          start: "Custom.StartDate2",
+          endOrTarget: "Custom.TargetDate2"
+        }
+      }
+    });
+
+    await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=ffffffff-ffff-4fff-8fff-ffffffffffff",
+      mappingProfileId: "profile-b"
+    });
+
+    expect(runQueryIntake.execute).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        mappingMutation: {
+          selectProfileId: undefined,
+          upsertProfile: {
+            id: "profile-b",
+            name: "Secondary",
+            fields: {
+              id: "Custom.ExternalId2",
+              title: "System.Title",
+              start: "Custom.StartDate2",
+              endOrTarget: "Custom.TargetDate2"
+            }
+          }
+        }
+      })
+    );
+
+    expect(runQueryIntake.execute).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        mappingMutation: {
+          selectProfileId: "profile-b",
+          upsertProfile: undefined
+        }
+      })
+    );
   });
 
   it("REL + MAP: runtime transient and mapping-valid partial states keep deterministic trust guidance", async () => {
