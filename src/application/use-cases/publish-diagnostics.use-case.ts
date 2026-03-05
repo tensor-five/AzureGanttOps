@@ -4,7 +4,7 @@ import type {
 } from "../dto/diagnostics/diagnostics-event.dto.js";
 import type { DiagnosticsPort } from "../ports/diagnostics.port.js";
 
-const FORBIDDEN_METADATA_KEYS = new Set(["accesstoken", "authorization", "token", "refreshToken", "idToken"]);
+const FORBIDDEN_METADATA_KEYS = new Set(["accesstoken", "authorization", "token", "refreshtoken", "idtoken"]);
 const TOKEN_LIKE_VALUE = /(bearer\s+[a-z0-9._-]+|eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.?[a-zA-Z0-9_-]*|ghp_[a-zA-Z0-9]+)/i;
 
 export class PublishDiagnosticsUseCase {
