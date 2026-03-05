@@ -135,33 +135,116 @@ describe("phase1 composition write capability wiring", () => {
     expect(typeof flow.runQueryIntake.execute).toBe("function");
   });
 
-  it("keeps read/write boundaries isolated in composition contract", async () => {
-    const flow = createPhase1QueryFlow(flowParams);
+  it(
+    "keeps read/write boundaries isolated in composition contract",
+    async () => {
+      const flow = createPhase1QueryFlow(flowParams);
 
-    expect(typeof flow.runQueryIntake.execute).toBe("function");
-    expect(typeof flow.submitWriteCommand.execute).toBe("function");
+      expect(typeof flow.runQueryIntake.execute).toBe("function");
+      expect(typeof flow.submitWriteCommand.execute).toBe("function");
 
-    const command = {
-      kind: "WORK_ITEM_PATCH" as const,
-      workItemId: 7,
-      operations: [{ op: "replace" as const, path: "/fields/System.Title", value: "t" }]
-    };
+      const command = {
+        kind: "WORK_ITEM_PATCH" as const,
+        workItemId: 7,
+        operations: [{ op: "replace" as const, path: "/fields/System.Title", value: "t" }]
+      };
 
-    const writeResult = await flow.submitWriteCommand.execute({
-      command,
-      writeEnabled: flow.capabilities.writeEnabled
-    });
+      const writeResult = await flow.submitWriteCommand.execute({
+        command,
+        writeEnabled: flow.capabilities.writeEnabled
+      });
 
-    expect(writeResult.mode).toBe("NO_OP");
+      expect(writeResult.mode).toBe("NO_OP");
 
-    await expect(
-      flow.runQueryIntake.execute({
+      await expect(
+        flow.runQueryIntake.execute({
+          context: {
+            organization: "contoso",
+            project: "delivery",
+            queryId: QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95")
+          }
+        })
+      ).resolves.toBeDefined();
+    },
+    15000
+  );
+
+  it(
+    "keeps read intake callable before and after disabled write submissions",
+    async () => {
+      const flow = createPhase1QueryFlow(flowParams);
+
+      await expect(
+        flow.runQueryIntake.execute({
+          context: {
+            organization: "contoso",
+            project: "delivery",
+            queryId: QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95")
+          }
+        })
+      ).resolves.toBeDefined();
+
+      await flow.submitWriteCommand.execute({
+        command: {
+          kind: "WORK_ITEM_PATCH",
+          workItemId: 100,
+          operations: [{ op: "replace", path: "/fields/System.Title", value: "noop" }]
+        },
+        writeEnabled: flow.capabilities.writeEnabled
+      });
+
+      await expect(
+        flow.runQueryIntake.execute({
+          context: {
+            organization: "contoso",
+            project: "delivery",
+            queryId: QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95")
+          }
+        })
+      ).resolves.toBeDefined();
+    },
+    15000
+  );
+
+  it(
+    "keeps deterministic NO_OP shape independent of prior read activity",
+    async () => {
+      const flow = createPhase1QueryFlow(flowParams);
+
+      await flow.runQueryIntake.execute({
         context: {
           organization: "contoso",
           project: "delivery",
           queryId: QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95")
         }
-      })
-    ).resolves.toBeDefined();
+      });
+
+      const result = await flow.submitWriteCommand.execute({
+        command: {
+          kind: "DEPENDENCY_LINK",
+          sourceId: 11,
+          targetId: 12,
+          relation: "System.LinkTypes.Dependency-Forward",
+          action: "add"
+        },
+        writeEnabled: flow.capabilities.writeEnabled
+      });
+
+      expect(result).toEqual({
+        accepted: false,
+        mode: "NO_OP",
+        commandKind: "DEPENDENCY_LINK",
+        operationCount: 1,
+        reasonCode: "WRITE_DISABLED"
+      });
+    },
+    15000
+  );
+
+  it("guards against write adapter internals leaking into composition surface", () => {
+    const flow = createPhase1QueryFlow(flowParams) as unknown as Record<string, unknown>;
+
+    expect(flow).not.toHaveProperty("writeCommandPort");
+    expect(Object.keys(flow).sort()).toEqual(["capabilities", "runQueryIntake", "submitWriteCommand"].sort());
   });
 });
