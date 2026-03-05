@@ -10,6 +10,15 @@ export type QueryIntakeViewModel = {
   lastRefreshAt: string | null;
   reloadSource: "full_reload" | "preflight_blocked" | "stale_discarded" | null;
   trustState: "ready" | "needs_attention" | "partial_failure";
+  strictFail: {
+    active: boolean;
+    message: string | null;
+    retryActionLabel: string | null;
+    dismissible: boolean;
+    dismissed: boolean;
+    lastSuccessfulRefreshAt: string | null;
+    lastSuccessfulSource: "full_reload" | "preflight_blocked" | "stale_discarded" | null;
+  };
   savedQueries: SavedQuery[];
   selectedQueryId: string | null;
   timeline: TimelineReadModel | null;
@@ -34,6 +43,7 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     ? model.savedQueries.map((query) => `- ${query.name} (${query.id})`).join("\n")
     : "- none";
 
+  const strictFailLines = renderStrictFailBanner(model.strictFail);
   const mappingLines = renderMappingValidation(model.mappingValidation);
   const timelineLines = renderTimeline(model.timeline, model.showDependencies);
 
@@ -46,12 +56,39 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     activeSourceLine,
     refreshLine,
     reloadLine,
+    ...strictFailLines,
     "Saved queries:",
     queryLines,
     "Mapping validation:",
     ...mappingLines,
     ...timelineLines
   ].join("\n");
+}
+
+function renderStrictFailBanner(strictFail: QueryIntakeViewModel["strictFail"]): string[] {
+  if (!strictFail.active || strictFail.dismissed) {
+    return [];
+  }
+
+  const lines = ["[WARN] Strict-fail fallback active"];
+
+  if (strictFail.message) {
+    lines.push(`- ${strictFail.message}`);
+  }
+
+  if (strictFail.lastSuccessfulRefreshAt) {
+    lines.push(`- Last successful refresh: ${strictFail.lastSuccessfulRefreshAt}`);
+  }
+
+  if (strictFail.retryActionLabel) {
+    lines.push(`- Action: ${strictFail.retryActionLabel}`);
+  }
+
+  if (strictFail.dismissible) {
+    lines.push("- Dismiss: available for current state");
+  }
+
+  return lines;
 }
 
 function renderMappingValidation(validation: QueryIntakeViewModel["mappingValidation"]): string[] {
@@ -80,7 +117,7 @@ function renderTimeline(timeline: TimelineReadModel | null, showDependencies: bo
         const title = truncateTitle(bar.title);
         const halfOpenMarker = bar.schedule.missingBoundary ? ` [half-open:${bar.schedule.missingBoundary}]` : "";
 
-        return `- ${title} [${bar.state.badge}|${bar.state.color}]${halfOpenMarker}`;
+        return `- #${bar.details.mappedId} ${title} [${bar.state.badge}|${bar.state.color}]${halfOpenMarker}`;
       })
     : ["- none"];
 
