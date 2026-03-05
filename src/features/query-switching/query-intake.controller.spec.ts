@@ -171,8 +171,18 @@ describe("QueryIntakeController", () => {
     ]);
 
     expect(response.view).toContain("Timeline bars (title + state):");
+    expect(response.view).toContain("#WI-101");
     expect(response.view).toContain("[A|#1d4ed8]");
     expect(response.view).toContain("[N|#7c3aed] [half-open:start]");
+
+    expect(runQueryIntake.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mappingMutation: {
+          selectProfileId: undefined,
+          upsertProfile: undefined
+        }
+      })
+    );
     expect(response.view).toContain("Unschedulable items (title + state):");
     expect(response.view).not.toContain("#303 [");
     expect(response.view).toContain("Timeline details (mapped ID):");
@@ -328,5 +338,131 @@ describe("QueryIntakeController", () => {
     expect(response.success).toBe(true);
     expect(response.trustState).toBe("partial_failure");
     expect(response.guidance).toBe("Some work items could not be hydrated. Retry to improve completeness.");
+  });
+
+  it("wires dependency toggle from request into rendered view", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const queryId = QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "READY" as const },
+        savedQueries: [],
+        selectedQueryId: queryId.value,
+        snapshot: {
+          queryType: "flat" as const,
+          workItemIds: [101, 202],
+          workItems: [{ id: 101, title: "A" }, { id: 202, title: "B" }],
+          relations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 2,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        },
+        timeline: {
+          bars: [],
+          unschedulable: [],
+          dependencies: [
+            {
+              predecessorWorkItemId: 101,
+              successorWorkItemId: 202,
+              dependencyType: "FS" as const,
+              label: "#101 [end] -> #202 [start]"
+            }
+          ],
+          suppressedDependencies: [],
+          mappingValidation: {
+            status: "valid" as const,
+            issues: []
+          }
+        },
+        activeMappingProfileId: "profile-a",
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: queryId.value,
+          lastRefreshAt: "2026-03-04T20:00:00.000Z",
+          source: "full_reload" as const
+        }
+      }))
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+
+    const hidden = await controller.submit({
+      queryInput: `https://dev.azure.com/contoso/delivery/_queries/query?qid=${queryId.value}`,
+      showDependencies: false
+    });
+
+    expect(hidden.view).toContain("Dependency arrows: hidden");
+    expect(hidden.view).not.toContain("#101 [end] -> #202 [start]");
+
+    const shown = await controller.submit({
+      queryInput: `https://dev.azure.com/contoso/delivery/_queries/query?qid=${queryId.value}`
+    });
+
+    expect(shown.view).toContain("Dependency arrows: shown");
+    expect(shown.view).toContain("#101 [end] -> #202 [start]");
+  });
+
+  it("passes mapping profile select/upsert through to use case", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const runQueryIntake = {
+      execute: vi.fn(async () => ({
+        preflight: { status: "READY" as const },
+        savedQueries: [],
+        selectedQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+        snapshot: null,
+        timeline: null,
+        activeMappingProfileId: "profile-b",
+        reload: {
+          runVersion: 1,
+          stale: false,
+          activeQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          lastRefreshAt: null,
+          source: "full_reload" as const
+        }
+      }))
+    };
+
+    const controller = new QueryIntakeController(store, runQueryIntake as never);
+
+    await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95",
+      mappingProfileId: "profile-b",
+      mappingProfileUpsert: {
+        id: "profile-b",
+        name: "Secondary",
+        fields: {
+          id: "Custom.ExternalId2",
+          title: "System.Title",
+          start: "Custom.StartDate2",
+          endOrTarget: "Custom.TargetDate2"
+        }
+      }
+    });
+
+    expect(runQueryIntake.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mappingMutation: {
+          selectProfileId: "profile-b",
+          upsertProfile: {
+            id: "profile-b",
+            name: "Secondary",
+            fields: {
+              id: "Custom.ExternalId2",
+              title: "System.Title",
+              start: "Custom.StartDate2",
+              endOrTarget: "Custom.TargetDate2"
+            }
+          }
+        }
+      })
+    );
   });
 });

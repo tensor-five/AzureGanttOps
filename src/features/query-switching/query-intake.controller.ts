@@ -11,6 +11,19 @@ import type { QueryReloadSource } from "../../application/use-cases/run-query-in
 
 export type QueryIntakeRequest = {
   queryInput: string;
+  showDependencies?: boolean;
+  dismissStrictFailWarning?: boolean;
+  mappingProfileId?: string | null;
+  mappingProfileUpsert?: {
+    id: string;
+    name: string;
+    fields: {
+      id: string;
+      title: string;
+      start: string;
+      endOrTarget: string;
+    };
+  };
 };
 
 export type QueryIntakeResponse = {
@@ -28,6 +41,15 @@ export type QueryIntakeResponse = {
   lastRefreshAt: string | null;
   reloadSource: QueryReloadSource | null;
   trustState: "ready" | "needs_attention" | "partial_failure";
+  strictFail: {
+    active: boolean;
+    message: string | null;
+    retryActionLabel: string | null;
+    dismissible: boolean;
+    dismissed: boolean;
+    lastSuccessfulRefreshAt: string | null;
+    lastSuccessfulSource: QueryReloadSource | null;
+  };
   savedQueries: {
     id: string;
     name: string;
@@ -60,6 +82,7 @@ export class QueryIntakeController {
 
   public async submit(request: QueryIntakeRequest): Promise<QueryIntakeResponse> {
     const defaults = await this.contextStore.getActiveContext();
+    const showDependencies = request.showDependencies ?? true;
 
     let context;
 
@@ -68,6 +91,7 @@ export class QueryIntakeController {
     } catch (error: unknown) {
       const guidance = toUserMessage(error, "Paste a valid Azure DevOps query URL or query ID.");
       const trustState = "needs_attention" as const;
+      const strictFail = noStrictFailState(request.dismissStrictFailWarning);
       const model = this.toViewModel({
         success: false,
         guidance,
@@ -76,6 +100,7 @@ export class QueryIntakeController {
         lastRefreshAt: null,
         reloadSource: null,
         trustState,
+        strictFail,
         savedQueries: [],
         selectedQueryId: null,
         timeline: null,
@@ -83,9 +108,8 @@ export class QueryIntakeController {
           status: "invalid",
           issues: []
         },
-        showDependencies: true
+        showDependencies
       });
-
       return {
         success: false,
         guidance,
@@ -95,6 +119,7 @@ export class QueryIntakeController {
         lastRefreshAt: null,
         reloadSource: null,
         trustState,
+        strictFail,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -114,56 +139,121 @@ export class QueryIntakeController {
     });
 
     try {
-      const result = await this.runQueryIntake.execute({ context });
+      const result = await this.runQueryIntake.execute({
+        context,
+        mappingMutation: {
+          selectProfileId: request.mappingProfileId,
+          upsertProfile: request.mappingProfileUpsert
+        }
+      });
+
       const runtimeGuidance = result.snapshot ? null : guidanceForRuntimeState(result.reload.source);
       const timelineGuidance = result.timeline && result.timeline.mappingValidation.status === "invalid"
         ? guidanceForMappingIssues(result.timeline.mappingValidation.issues)
         : null;
 
-      const guidance = guidanceForPreflight(result.preflight.status) ?? runtimeGuidance ?? timelineGuidance ?? guidanceForSnapshot(result.snapshot);
-      const success = result.preflight.status === "READY" && result.snapshot !== null && result.timeline !== null && result.timeline.mappingValidation.status === "valid";
-      const workItemIds = result.snapshot?.workItemIds ?? [];
-      const relations = result.snapshot?.relations ?? [];
-      const trustState = determineTrustState(success, result.snapshot);
-      const mappingValidation = result.timeline?.mappingValidation ?? {
-        status: "invalid" as const,
-        issues: []
-      };
+      const initialGuidance =
+        guidanceForPreflight(result.preflight.status) ??
+        runtimeGuidance ??
+        timelineGuidance ??
+        guidanceForSnapshot(result.snapshot);
+
+      const initialSuccess =
+        result.preflight.status === "READY" &&
+        result.snapshot !== null &&
+        result.timeline !== null &&
+        result.timeline.mappingValidation.status === "valid";
+
+      const canUseStrictFailFallback =
+        !initialSuccess &&
+        result.lastKnownGood != null &&
+        result.lastSuccessfulReload != null;
+
+      const effectiveSnapshot = canUseStrictFailFallback ? result.lastKnownGood.snapshot : result.snapshot;
+      const effectiveTimeline = canUseStrictFailFallback ? result.lastKnownGood.timeline : result.timeline;
+      const effectiveMappingValidation =
+        effectiveTimeline?.mappingValidation ?? {
+          status: "invalid" as const,
+          issues: []
+        };
+
+      const effectiveSuccess =
+        canUseStrictFailFallback ||
+        (result.preflight.status === "READY" &&
+          effectiveSnapshot !== null &&
+          effectiveTimeline !== null &&
+          effectiveMappingValidation.status === "valid");
+
+      const trustState = canUseStrictFailFallback
+        ? "needs_attention"
+        : determineTrustState(effectiveSuccess, effectiveSnapshot);
+
+      const strictFail = canUseStrictFailFallback
+        ? {
+            active: true,
+            message: strictFailMessage(result.failureCode, result.lastSuccessfulReload?.lastRefreshAt ?? null),
+            retryActionLabel: "Retry now",
+            dismissible: true,
+            dismissed: request.dismissStrictFailWarning ?? false,
+            lastSuccessfulRefreshAt: result.lastSuccessfulReload?.lastRefreshAt ?? null,
+            lastSuccessfulSource: result.lastSuccessfulReload?.source ?? null
+          }
+        : noStrictFailState(request.dismissStrictFailWarning);
+
+      const guidance = canUseStrictFailFallback
+        ? strictFail.message
+        : initialGuidance;
+
+      const activeQueryId = canUseStrictFailFallback
+        ? result.lastSuccessfulReload?.activeQueryId ?? result.reload.activeQueryId
+        : result.reload.activeQueryId;
+
+      const lastRefreshAt = canUseStrictFailFallback
+        ? result.lastSuccessfulReload?.lastRefreshAt ?? null
+        : result.reload.lastRefreshAt;
+
+      const activeMappingProfileId = canUseStrictFailFallback
+        ? result.lastKnownGood?.activeMappingProfileId ?? result.activeMappingProfileId
+        : result.activeMappingProfileId;
+
       const model = this.toViewModel({
-        success,
+        success: effectiveSuccess,
         guidance,
         flatQuerySupportNote: FLAT_ONLY_NOTE,
-        activeQueryId: result.reload.activeQueryId,
-        lastRefreshAt: result.reload.lastRefreshAt,
+        activeQueryId,
+        lastRefreshAt,
         reloadSource: result.reload.source,
         trustState,
+        strictFail,
         savedQueries: result.savedQueries,
         selectedQueryId: result.selectedQueryId,
-        timeline: result.timeline,
-        mappingValidation,
-        showDependencies: true
+        timeline: effectiveTimeline,
+        mappingValidation: effectiveMappingValidation,
+        showDependencies
       });
 
       return {
-        success,
+        success: effectiveSuccess,
         guidance,
         preflightStatus: result.preflight.status,
         selectedQueryId: result.selectedQueryId,
-        activeQueryId: result.reload.activeQueryId,
-        lastRefreshAt: result.reload.lastRefreshAt,
+        activeQueryId,
+        lastRefreshAt,
         reloadSource: result.reload.source,
         trustState,
+        strictFail,
         savedQueries: result.savedQueries,
-        workItemIds,
-        relations,
-        timeline: result.timeline,
-        mappingValidation,
-        activeMappingProfileId: result.activeMappingProfileId,
+        workItemIds: effectiveSnapshot?.workItemIds ?? [],
+        relations: effectiveSnapshot?.relations ?? [],
+        timeline: effectiveTimeline,
+        mappingValidation: effectiveMappingValidation,
+        activeMappingProfileId,
         view: renderQueryIntakeView(model)
       };
     } catch (error: unknown) {
       const guidance = guidanceForRuntimeError(error);
       const trustState = "needs_attention" as const;
+      const strictFail = noStrictFailState(request.dismissStrictFailWarning);
       const model = this.toViewModel({
         success: false,
         guidance,
@@ -172,6 +262,7 @@ export class QueryIntakeController {
         lastRefreshAt: null,
         reloadSource: "full_reload",
         trustState,
+        strictFail,
         savedQueries: [],
         selectedQueryId: context.queryId.value,
         timeline: null,
@@ -179,7 +270,7 @@ export class QueryIntakeController {
           status: "invalid",
           issues: []
         },
-        showDependencies: true
+        showDependencies
       });
 
       return {
@@ -191,6 +282,7 @@ export class QueryIntakeController {
         lastRefreshAt: null,
         reloadSource: "full_reload",
         trustState,
+        strictFail,
         savedQueries: [],
         workItemIds: [],
         relations: [],
@@ -240,6 +332,10 @@ function guidanceForRuntimeError(error: unknown): string {
       return "Only flat queries are supported in this phase. Use a flat query and retry.";
     case "HYDRATION_TRANSIENT_RETRY_EXHAUSTED":
       return "Hydration retries were exhausted. Retry shortly.";
+    case "MAP_PROFILE_NOT_FOUND":
+      return "Mapping profile not found. Select an existing profile and retry.";
+    case "MAP_VALIDATION_FAILED":
+      return "Mapping profile is invalid. Fix required mappings and retry.";
     case "CONTEXT_REQUIRED":
       return "Add organization and project in settings.";
     case "MALFORMED_PAYLOAD":
@@ -291,6 +387,27 @@ function determineTrustState(
   }
 
   return "ready";
+}
+
+function noStrictFailState(dismissed: boolean | undefined): QueryIntakeResponse["strictFail"] {
+  return {
+    active: false,
+    message: null,
+    retryActionLabel: null,
+    dismissible: true,
+    dismissed: dismissed ?? false,
+    lastSuccessfulRefreshAt: null,
+    lastSuccessfulSource: null
+  };
+}
+
+function strictFailMessage(failureCode: string | null, lastSuccessfulRefreshAt: string | null): string {
+  const failureContext = failureCode ? `Refresh failed (${failureCode}).` : "Refresh failed.";
+  const freshnessContext = lastSuccessfulRefreshAt
+    ? `Showing last successful timeline from ${lastSuccessfulRefreshAt}.`
+    : "Showing last successful timeline.";
+
+  return `${failureContext} ${freshnessContext} Retry now.`;
 }
 
 const FLAT_ONLY_NOTE = "Phase 2 note: only flat queries are supported.";

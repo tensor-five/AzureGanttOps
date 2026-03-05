@@ -36,6 +36,17 @@ describe("RunQueryIntakeUseCase", () => {
     }
   };
 
+  const secondaryProfile: FieldMappingProfile = {
+    id: "profile-b",
+    name: "Secondary",
+    fields: {
+      id: "Custom.ExternalId2",
+      title: "System.Title",
+      start: "Custom.StartDate2",
+      endOrTarget: "Custom.TargetDate2"
+    }
+  };
+
   function createTimeline(): TimelineReadModel {
     return {
       bars: [
@@ -231,6 +242,241 @@ describe("RunQueryIntakeUseCase", () => {
       "MAP_REQUIRED_MISSING",
       "MAP_REQUIRED_MISSING"
     ]);
+  });
+
+  it("upserts mapping profile, validates it, persists profiles, and activates it", async () => {
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [{ id: 101, title: "Work item 101" }],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const buildTimelineView: BuildTimelineViewUseCase = {
+      execute: vi.fn(() => createTimeline())
+    } as never;
+
+    const mappingSettings = createMappingSettingsStub([activeProfile], "profile-a");
+    const useCase = new RunQueryIntakeUseCase(authPreflight, queryRuntime, buildTimelineView, mappingSettings);
+
+    const result = await useCase.execute({
+      context: contextA,
+      mappingMutation: {
+        upsertProfile: secondaryProfile
+      }
+    });
+
+    expect(mappingSettings.saveProfiles).toHaveBeenCalledTimes(1);
+    expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith("profile-b");
+    expect(result.activeMappingProfileId).toBe("profile-b");
+    expect(result.timeline?.mappingValidation.status).toBe("valid");
+  });
+
+  it("selects and persists existing mapping profile as active", async () => {
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [{ id: 101, title: "Work item 101" }],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const buildTimelineView: BuildTimelineViewUseCase = {
+      execute: vi.fn(() => createTimeline())
+    } as never;
+
+    const mappingSettings = createMappingSettingsStub([activeProfile, secondaryProfile], "profile-a");
+    const useCase = new RunQueryIntakeUseCase(authPreflight, queryRuntime, buildTimelineView, mappingSettings);
+
+    const result = await useCase.execute({
+      context: contextA,
+      mappingMutation: {
+        selectProfileId: "profile-b"
+      }
+    });
+
+    expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith("profile-b");
+    expect(result.activeMappingProfileId).toBe("profile-b");
+    expect(result.timeline?.mappingValidation.status).toBe("valid");
+  });
+
+  it("throws when selecting unknown mapping profile", async () => {
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [{ id: 101, title: "Work item 101" }],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const useCase = new RunQueryIntakeUseCase(
+      authPreflight,
+      queryRuntime,
+      { execute: vi.fn(() => createTimeline()) } as never,
+      createMappingSettingsStub([activeProfile], "profile-a")
+    );
+
+    await expect(
+      useCase.execute({
+        context: contextA,
+        mappingMutation: {
+          selectProfileId: "missing-profile"
+        }
+      })
+    ).rejects.toThrowError("MAP_PROFILE_NOT_FOUND");
+  });
+
+  it("throws validation error when upserting invalid mapping profile", async () => {
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [{ id: 101, title: "Work item 101" }],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const useCase = new RunQueryIntakeUseCase(
+      authPreflight,
+      queryRuntime,
+      { execute: vi.fn(() => createTimeline()) } as never,
+      createMappingSettingsStub([activeProfile], "profile-a")
+    );
+
+    await expect(
+      useCase.execute({
+        context: contextA,
+        mappingMutation: {
+          upsertProfile: {
+            id: "profile-c",
+            name: "Invalid",
+            fields: {
+              id: "",
+              title: "System.Title",
+              start: "Custom.StartDate",
+              endOrTarget: "Custom.TargetDate"
+            }
+          }
+        }
+      })
+    ).rejects.toThrowError("MAP_VALIDATION_FAILED");
+  });
+
+  it("re-applies persisted active profile after restart flow", async () => {
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [{ id: 101, title: "Work item 101" }],
+        relations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const buildTimelineView: BuildTimelineViewUseCase = {
+      execute: vi.fn(() => createTimeline())
+    } as never;
+
+    const mappingSettings = createMappingSettingsStub([activeProfile, secondaryProfile], "profile-a");
+    const useCase = new RunQueryIntakeUseCase(authPreflight, queryRuntime, buildTimelineView, mappingSettings);
+
+    await useCase.execute({
+      context: contextA,
+      mappingMutation: {
+        selectProfileId: "profile-b"
+      }
+    });
+
+    const restartedMappingSettings = createMappingSettingsStub([activeProfile, secondaryProfile], "profile-b");
+    const restartedUseCase = new RunQueryIntakeUseCase(
+      authPreflight,
+      queryRuntime,
+      buildTimelineView,
+      restartedMappingSettings
+    );
+
+    const restartedResult = await restartedUseCase.execute({ context: contextA });
+
+    expect(restartedResult.activeMappingProfileId).toBe("profile-b");
+    expect(restartedResult.timeline?.mappingValidation.status).toBe("valid");
   });
 
   it("blocks list and execution when preflight is not READY with strict fail state", async () => {
