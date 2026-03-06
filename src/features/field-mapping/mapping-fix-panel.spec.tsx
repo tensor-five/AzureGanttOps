@@ -1,7 +1,7 @@
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import type { RouteObject } from "react-router";
 
 import { MappingFixPanel } from "./mapping-fix-panel.js";
@@ -77,16 +77,10 @@ describe("mapping-fix-panel routed workflows", () => {
         element: React.createElement(MappingFixPanel, {
           requiredIssues: [
             {
-              code: "MAP_DUPLICATE_REQUIRED_FIELD",
+              code: "MAP_REQUIRED_DUPLICATE",
               field: "title",
               message: "Title field is duplicated.",
               guidance: "Pick one unique field for title."
-            },
-            {
-              code: "MAP_REQUIRED_BLANK",
-              field: "none",
-              message: "Optional field unsupported.",
-              guidance: "Optional mapping can be left empty."
             }
           ],
           onApply
