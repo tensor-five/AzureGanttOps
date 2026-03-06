@@ -52,25 +52,30 @@ function buildTasks(snapshot: IngestionSnapshot, mappings: RequiredFieldMappings
 }
 
 function buildDependencies(snapshot: IngestionSnapshot): CanonicalDependency[] {
-  return snapshot.relations
-    .filter(
-      (relation) =>
-        relation.type === "System.LinkTypes.Dependency-Forward" ||
-        relation.type === "System.LinkTypes.Dependency-Reverse"
-    )
-    .map((relation) => {
-      const predecessorWorkItemId =
-        relation.type === "System.LinkTypes.Dependency-Forward" ? relation.sourceId : relation.targetId;
-      const successorWorkItemId =
-        relation.type === "System.LinkTypes.Dependency-Forward" ? relation.targetId : relation.sourceId;
+  const dependencies: CanonicalDependency[] = [];
 
-      return {
-        predecessorWorkItemId,
-        successorWorkItemId,
-        relationType: relation.type,
+  snapshot.relations.forEach((relation) => {
+    if (relation.type === "System.LinkTypes.Dependency-Forward") {
+      dependencies.push({
+        predecessorWorkItemId: relation.sourceId,
+        successorWorkItemId: relation.targetId,
+        relationType: "System.LinkTypes.Dependency-Forward",
         dependencyType: "FS"
-      } as const;
-    });
+      });
+      return;
+    }
+
+    if (relation.type === "System.LinkTypes.Dependency-Reverse") {
+      dependencies.push({
+        predecessorWorkItemId: relation.targetId,
+        successorWorkItemId: relation.sourceId,
+        relationType: "System.LinkTypes.Dependency-Reverse",
+        dependencyType: "FS"
+      });
+    }
+  });
+
+  return dependencies;
 }
 
 function readValue(record: Record<string, unknown>, key: string): string | null {

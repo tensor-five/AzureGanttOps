@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { IngestionSnapshot } from "../dto/ingestion-snapshot.js";
 import type { TimelineReadModel } from "../dto/timeline-read-model.js";
 import type { AuthPreflightPort } from "../ports/auth-preflight.port.js";
 import type { MappingSettingsPort } from "../ports/mapping-settings.port.js";
@@ -539,7 +540,7 @@ describe("RunQueryIntakeUseCase", () => {
         { id: queryA.value, name: "A", path: "Shared Queries/A" },
         { id: queryB.value, name: "B", path: "Shared Queries/B" }
       ]),
-      executeByQueryId: vi.fn(async (queryId: string) => {
+      executeByQueryId: vi.fn(async (queryId: string): Promise<IngestionSnapshot> => {
         if (queryId === queryA.value) {
           return await new Promise((resolve) => {
             resolveFirstRun = resolve;

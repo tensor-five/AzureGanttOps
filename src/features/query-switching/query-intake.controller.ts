@@ -158,6 +158,8 @@ export class QueryIntakeController {
       const model = this.toViewModel({
         success: false,
         guidance,
+        statusCode: "UNKNOWN_ERROR",
+        errorCode: "UNKNOWN_ERROR",
         flatQuerySupportNote: FLAT_ONLY_NOTE,
         activeQueryId: null,
         lastRefreshAt: null,
@@ -259,8 +261,9 @@ export class QueryIntakeController {
         result.lastKnownGood != null &&
         result.lastSuccessfulReload != null;
 
-      const effectiveSnapshot = canUseStrictFailFallback ? result.lastKnownGood.snapshot : result.snapshot;
-      const effectiveTimeline = canUseStrictFailFallback ? result.lastKnownGood.timeline : result.timeline;
+      const fallbackPayload = canUseStrictFailFallback ? result.lastKnownGood : null;
+      const effectiveSnapshot = fallbackPayload ? fallbackPayload.snapshot : result.snapshot;
+      const effectiveTimeline = fallbackPayload ? fallbackPayload.timeline : result.timeline;
       const effectiveMappingValidation =
         effectiveTimeline?.mappingValidation ?? {
           status: "invalid" as const,
@@ -315,9 +318,19 @@ export class QueryIntakeController {
       const trustState = toTrustState(uiState);
       const capabilities = buildCapabilities(result.preflight.status);
 
+      const statusCode = deriveDiagnosticsStatusCodeFromResult({
+        preflightStatus: result.preflight.status,
+        strictFailActive: strictFail.active,
+        reloadSource: result.reload.source,
+        failureCode: result.failureCode,
+        uiState
+      });
+      const errorCode = toDiagnosticsErrorCode(result.failureCode);
       const model = this.toViewModel({
         success: effectiveSuccess,
         guidance,
+        statusCode,
+        errorCode,
         flatQuerySupportNote: FLAT_ONLY_NOTE,
         activeQueryId,
         lastRefreshAt,
@@ -334,14 +347,6 @@ export class QueryIntakeController {
         showDependencies
       });
 
-      const statusCode = deriveDiagnosticsStatusCodeFromResult({
-        preflightStatus: result.preflight.status,
-        strictFailActive: strictFail.active,
-        reloadSource: result.reload.source,
-        failureCode: result.failureCode,
-        uiState
-      });
-      const errorCode = toDiagnosticsErrorCode(result.failureCode);
       const response: QueryIntakeResponse = {
         success: effectiveSuccess,
         guidance,
@@ -399,9 +404,13 @@ export class QueryIntakeController {
       const trustState = toTrustState(uiState);
       const strictFail = noStrictFailState(request.dismissStrictFailWarning);
       const capabilities = buildCapabilities(preflightStatus);
+      const statusCode = toDiagnosticsStatusCode(toErrorCode(error));
+      const errorCode = toDiagnosticsErrorCode(toErrorCode(error));
       const model = this.toViewModel({
         success: false,
         guidance,
+        statusCode,
+        errorCode,
         flatQuerySupportNote: FLAT_ONLY_NOTE,
         activeQueryId: context.queryId.value,
         lastRefreshAt: null,
@@ -421,8 +430,6 @@ export class QueryIntakeController {
         showDependencies
       });
 
-      const statusCode = toDiagnosticsStatusCode(toErrorCode(error));
-      const errorCode = toDiagnosticsErrorCode(toErrorCode(error));
       const response: QueryIntakeResponse = {
         success: false,
         guidance,

@@ -10,10 +10,10 @@ describe("SubmitWriteCommandUseCase", () => {
     const port: WriteCommandPort = {
       submit: vi.fn(async () => ({
         accepted: true,
-        mode: "EXECUTED",
-        commandKind: "WORK_ITEM_PATCH",
+        mode: "EXECUTED" as const,
+        commandKind: "WORK_ITEM_PATCH" as const,
         operationCount: 1,
-        reasonCode: "WRITE_ENABLED"
+        reasonCode: "WRITE_ENABLED" as const
       }))
     };
 
@@ -42,10 +42,10 @@ describe("SubmitWriteCommandUseCase", () => {
     const port: WriteCommandPort = {
       submit: vi.fn(async () => ({
         accepted: true,
-        mode: "EXECUTED",
-        commandKind: "DEPENDENCY_LINK",
+        mode: "EXECUTED" as const,
+        commandKind: "DEPENDENCY_LINK" as const,
         operationCount: 1,
-        reasonCode: "WRITE_ENABLED"
+        reasonCode: "WRITE_ENABLED" as const
       }))
     };
 
@@ -75,10 +75,10 @@ describe("SubmitWriteCommandUseCase", () => {
     const port: WriteCommandPort = {
       submit: vi.fn(async () => ({
         accepted: true,
-        mode: "EXECUTED",
-        commandKind: "WORK_ITEM_PATCH",
+        mode: "EXECUTED" as const,
+        commandKind: "WORK_ITEM_PATCH" as const,
         operationCount: 2,
-        reasonCode: "WRITE_ENABLED"
+        reasonCode: "WRITE_ENABLED" as const
       }))
     };
 

@@ -108,9 +108,15 @@ export class RunQueryIntakeUseCase {
         reload.lastRefreshAt !== null;
 
       if (isSuccessfulCommit) {
+        const successfulRefreshAt = reload.lastRefreshAt;
+
+        if (!successfulRefreshAt) {
+          throw new Error("UNKNOWN_ERROR");
+        }
+
         this.lastSuccessfulReload = {
           activeQueryId: selectedQueryId,
-          lastRefreshAt: reload.lastRefreshAt,
+          lastRefreshAt: successfulRefreshAt,
           source: reload.source
         };
         this.lastKnownGood = {

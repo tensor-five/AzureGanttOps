@@ -934,7 +934,7 @@ describe("query-intake boundary e2e", () => {
       schedule: {
         startDate: "2026-03-01T00:00:00.000Z",
         endDate: "2026-03-02T00:00:00.000Z",
-        missingBoundary: null as const
+        missingBoundary: null
       },
       details: { mappedId: `WI-${index + 1}` }
     }));

@@ -94,7 +94,7 @@ describe("WriteCommandNoopAdapter", () => {
   });
 
   it("does not expose adapter internals", () => {
-    const adapter = new WriteCommandNoopAdapter() as Record<string, unknown>;
+    const adapter = new WriteCommandNoopAdapter() as unknown as Record<string, unknown>;
 
     expect(Object.getOwnPropertyNames(adapter)).toEqual([]);
     expect(typeof adapter.submit).toBe("function");
