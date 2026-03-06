@@ -517,14 +517,14 @@ describe("query-intake boundary e2e", () => {
     expect(result.view).not.toContain("popover");
   });
 
-  it("MAP-01 + MAP-03: mapping upsert/select flows through controller and is reapplied by restart", async () => {
+  it("MAP-01 + MAP-03 + REL-03: mapping upsert/select with blocked-but-clickable flow cues and density persistence", async () => {
     const store = new AdoContextStore(new InMemoryContextSettings(null));
     const runQueryIntake = {
       execute: vi
         .fn()
         .mockResolvedValueOnce({
           preflight: { status: "READY" as const },
-          savedQueries: [],
+          savedQueries: [{ id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Primary", path: "Shared Queries/Primary" }],
           selectedQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
           snapshot: null,
           timeline: null,
@@ -542,20 +542,203 @@ describe("query-intake boundary e2e", () => {
         })
         .mockResolvedValueOnce({
           preflight: { status: "READY" as const },
-          savedQueries: [],
+          savedQueries: [{ id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Primary", path: "Shared Queries/Primary" }],
           selectedQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
-          snapshot: null,
-          timeline: null,
+          snapshot: {
+            queryType: "flat" as const,
+            workItemIds: [801, 802],
+            workItems: [
+              { id: 801, title: "Timeline parent" },
+              { id: 802, title: "Timeline child" }
+            ],
+            relations: [
+              {
+                type: "System.LinkTypes.Dependency-Forward" as const,
+                sourceId: 801,
+                targetId: 802
+              }
+            ],
+            hydration: {
+              maxIdsPerBatch: 200,
+              requestedIds: 2,
+              attemptedBatches: 1,
+              succeededBatches: 1,
+              retriedRequests: 0,
+              missingIds: [],
+              partial: false,
+              statusCode: "OK" as const
+            }
+          },
+          timeline: {
+            bars: [
+              {
+                workItemId: 801,
+                title: "Timeline parent",
+                state: { code: "Active", badge: "A", color: "#1d4ed8" },
+                schedule: {
+                  startDate: "2026-03-01T00:00:00.000Z",
+                  endDate: "2026-03-02T00:00:00.000Z",
+                  missingBoundary: null
+                },
+                details: { mappedId: "WI-801" }
+              },
+              {
+                workItemId: 802,
+                title: "Timeline child",
+                state: { code: "New", badge: "N", color: "#7c3aed" },
+                schedule: {
+                  startDate: "2026-03-03T00:00:00.000Z",
+                  endDate: "2026-03-04T00:00:00.000Z",
+                  missingBoundary: null
+                },
+                details: { mappedId: "WI-802" }
+              }
+            ],
+            unschedulable: [],
+            dependencies: [
+              {
+                predecessorWorkItemId: 801,
+                successorWorkItemId: 802,
+                dependencyType: "FS" as const,
+                label: "#801 [end] -> #802 [start]"
+              }
+            ],
+            suppressedDependencies: [],
+            mappingValidation: {
+              status: "valid" as const,
+              issues: []
+            }
+          },
           activeMappingProfileId: "profile-b",
           reload: {
             runVersion: 2,
             stale: false,
             activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
-            lastRefreshAt: null,
+            lastRefreshAt: "2026-03-05T10:00:00.000Z",
             source: "full_reload" as const
           },
           failureCode: null,
-          lastSuccessfulReload: null,
+          lastSuccessfulReload: {
+            activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            lastRefreshAt: "2026-03-05T10:00:00.000Z",
+            source: "full_reload" as const
+          },
+          lastKnownGood: null
+        })
+        .mockResolvedValueOnce({
+          preflight: { status: "READY" as const },
+          savedQueries: [{ id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Primary", path: "Shared Queries/Primary" }],
+          selectedQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+          snapshot: {
+            queryType: "flat" as const,
+            workItemIds: [801],
+            workItems: [{ id: 801, title: "Timeline parent" }],
+            relations: [],
+            hydration: {
+              maxIdsPerBatch: 200,
+              requestedIds: 1,
+              attemptedBatches: 1,
+              succeededBatches: 1,
+              retriedRequests: 0,
+              missingIds: [],
+              partial: false,
+              statusCode: "OK" as const
+            }
+          },
+          timeline: {
+            bars: [
+              {
+                workItemId: 801,
+                title: "Timeline parent",
+                state: { code: "Active", badge: "A", color: "#1d4ed8" },
+                schedule: {
+                  startDate: "2026-03-01T00:00:00.000Z",
+                  endDate: "2026-03-02T00:00:00.000Z",
+                  missingBoundary: null
+                },
+                details: { mappedId: "WI-801" }
+              }
+            ],
+            unschedulable: [],
+            dependencies: [],
+            suppressedDependencies: [],
+            mappingValidation: {
+              status: "valid" as const,
+              issues: []
+            }
+          },
+          activeMappingProfileId: "profile-b",
+          reload: {
+            runVersion: 3,
+            stale: false,
+            activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            lastRefreshAt: "2026-03-05T10:01:00.000Z",
+            source: "full_reload" as const
+          },
+          failureCode: null,
+          lastSuccessfulReload: {
+            activeQueryId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+            lastRefreshAt: "2026-03-05T10:01:00.000Z",
+            source: "full_reload" as const
+          },
+          lastKnownGood: null
+        })
+        .mockResolvedValueOnce({
+          preflight: { status: "READY" as const },
+          savedQueries: [{ id: "abababab-abab-4bab-8bab-abababababab", name: "Secondary", path: "Shared Queries/Secondary" }],
+          selectedQueryId: "abababab-abab-4bab-8bab-abababababab",
+          snapshot: {
+            queryType: "flat" as const,
+            workItemIds: [991],
+            workItems: [{ id: 991, title: "Diagnostics item" }],
+            relations: [],
+            hydration: {
+              maxIdsPerBatch: 200,
+              requestedIds: 1,
+              attemptedBatches: 1,
+              succeededBatches: 1,
+              retriedRequests: 0,
+              missingIds: [],
+              partial: false,
+              statusCode: "OK" as const
+            }
+          },
+          timeline: {
+            bars: [
+              {
+                workItemId: 991,
+                title: "Diagnostics item",
+                state: { code: "Closed", badge: "C", color: "#6b7280" },
+                schedule: {
+                  startDate: "2026-03-06T00:00:00.000Z",
+                  endDate: "2026-03-07T00:00:00.000Z",
+                  missingBoundary: null
+                },
+                details: { mappedId: "WI-991" }
+              }
+            ],
+            unschedulable: [],
+            dependencies: [],
+            suppressedDependencies: [],
+            mappingValidation: {
+              status: "valid" as const,
+              issues: []
+            }
+          },
+          activeMappingProfileId: "profile-b",
+          reload: {
+            runVersion: 4,
+            stale: false,
+            activeQueryId: "abababab-abab-4bab-8bab-abababababab",
+            lastRefreshAt: "2026-03-05T10:02:00.000Z",
+            source: "full_reload" as const
+          },
+          failureCode: null,
+          lastSuccessfulReload: {
+            activeQueryId: "abababab-abab-4bab-8bab-abababababab",
+            lastRefreshAt: "2026-03-05T10:02:00.000Z",
+            source: "full_reload" as const
+          },
           lastKnownGood: null
         })
     };
@@ -576,9 +759,23 @@ describe("query-intake boundary e2e", () => {
       }
     });
 
-    await controller.submit({
+    const mappedTimeline = await controller.submit({
       queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=ffffffff-ffff-4fff-8fff-ffffffffffff",
-      mappingProfileId: "profile-b"
+      mappingProfileId: "profile-b",
+      density: "compact"
+    });
+
+    const restoredByReload = await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=ffffffff-ffff-4fff-8fff-ffffffffffff",
+      mappingProfileId: "profile-b",
+      density: "compact",
+      showDependencies: false
+    });
+
+    const switchedQuery = await controller.submit({
+      queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=abababab-abab-4bab-8bab-abababababab",
+      mappingProfileId: "profile-b",
+      density: "compact"
     });
 
     expect(runQueryIntake.execute).toHaveBeenNthCalledWith(
@@ -609,6 +806,27 @@ describe("query-intake boundary e2e", () => {
         }
       })
     );
+
+    expect(mappedTimeline.success).toBe(true);
+    expect(mappedTimeline.uiState).toBe("ready");
+    expect(mappedTimeline.view).toContain("Density mode: compact");
+    expect(mappedTimeline.view).toContain("Timeline details (mapped ID):");
+    expect(mappedTimeline.view).toContain("#801 mappedId=WI-801");
+    expect(mappedTimeline.view).toContain("Dependency arrows: shown");
+    expect(mappedTimeline.view).toContain("#801 [end] -> #802 [start]");
+
+    expect(restoredByReload.success).toBe(true);
+    expect(restoredByReload.view).toContain("Density mode: compact");
+    expect(restoredByReload.view).toContain("Dependency arrows: hidden");
+    expect(restoredByReload.view).not.toContain("#801 [end] -> #802 [start]");
+
+    expect(switchedQuery.success).toBe(true);
+    expect(switchedQuery.activeQueryId).toBe("abababab-abab-4bab-8bab-abababababab");
+    expect(switchedQuery.uiState).toBe("ready");
+    expect(switchedQuery.view).toContain("Density mode: compact");
+    expect(switchedQuery.view).toContain("Diagnostics:");
+    expect(switchedQuery.view).toContain("- status code: OK");
+    expect(switchedQuery.view).toContain("- handoff code: OK");
   });
 
   it("REL + MAP: runtime transient and mapping-valid partial states keep deterministic trust guidance", async () => {
