@@ -123,6 +123,9 @@ describe("query-intake view", () => {
     expect(view).toContain("[OK] Ready");
     expect(view).toContain("UI state: ready");
     expect(view).toContain("Trust state: ready");
+    expect(view).toContain("Trust badge: [OK] Ready | last-updated=2026-03-04T20:00:00.000Z | read-only=true");
+    expect(view).toContain("Persistent details panel:");
+    expect(view).toContain("- selected work item: #101");
     expect(view).toContain("Diagnostics:");
     expect(view).toContain("- status code: OK");
     expect(view).toContain("- source health: HEALTHY");
@@ -277,6 +280,8 @@ describe("query-intake view", () => {
     expect(view).toContain("- handoff code: QUERY_EXECUTION_FAILED");
     expect(view).toContain("- guidance: Refresh failed (QUERY_EXECUTION_FAILED). Showing last successful timeline from 2026-03-04T20:00:00.000Z. Retry now.");
     expect(view).toContain("[WARN] Strict-fail fallback active");
+    expect(view).toContain("[WARN] Strict-fail fallback active");
+    expect(view).toContain("- Action: Retry now");
     expect(view).toContain("- Last successful refresh: 2026-03-04T20:00:00.000Z");
     expect(view).toContain("- Action: Retry now");
     expect(view).toContain("- Dismiss: available for current state");

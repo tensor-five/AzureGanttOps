@@ -6,6 +6,12 @@ import type { TimelineReadModel } from "../../application/dto/timeline-read-mode
 import type { SavedQuery } from "../../application/ports/query-runtime.port.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import type { TimelineUiState } from "./timeline-trust-state.js";
+import { buildTimelinePaneLines } from "../gantt-view/timeline-pane.js";
+import { createTimelineSelectionStore } from "../gantt-view/selection-store.js";
+import { renderTrustBadgeLine } from "../diagnostics/trust-badge.js";
+import { buildDiagnosticsTabLines } from "../diagnostics/diagnostics-tab.js";
+import { buildWarningBannerLines } from "../diagnostics/warning-banner.js";
+import { saveLastDensity } from "../gantt-view/timeline-density-preference.js";
 
 export type QueryIntakeViewModel = {
   success: boolean;
@@ -45,24 +51,44 @@ export type QueryIntakeViewModel = {
   showDependencies: boolean;
 };
 
-const MAX_PRIMARY_TITLE_LENGTH = 42;
-
 export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
+  const density = model.density;
+  saveLastDensity(density);
+
+  const selectionStore = createTimelineSelectionStore();
+  if (model.timeline?.bars[0]) {
+    selectionStore.select(model.timeline.bars[0].workItemId);
+  }
+
   const statusLine = model.success ? "[OK] Ready" : "[ ] Needs attention";
   const uiStateLine = `UI state: ${model.uiState}`;
   const trustLine = `Trust state: ${model.trustState}`;
   const guidanceLine = model.guidance ? `Action: ${model.guidance}` : "Action: none";
-  const diagnosticsLines = [
-    "Diagnostics:",
-    `- status code: ${model.statusCode}`,
-    `- error code: ${model.errorCode ?? "none"}`,
-    `- guidance: ${model.guidance ?? "none"}`,
-    `- source health: ${toSourceHealthLabel(model)}`,
-    `- handoff code: ${model.errorCode ?? model.statusCode}`,
-    `- active query source: ${model.activeQueryId ?? "none"}`,
-    `- last successful refresh: ${model.lastRefreshAt ?? "none"}`,
-    `- reload source: ${model.reloadSource ?? "none"}`
-  ];
+
+  const trustBadgeLine = renderTrustBadgeLine({
+    statusCode: model.statusCode,
+    trustState: model.trustState,
+    lastRefreshAt: model.lastRefreshAt,
+    readOnlyTimeline: model.capabilities.readOnlyTimeline
+  });
+
+  const diagnosticsLines = buildDiagnosticsTabLines({
+    statusCode: model.statusCode,
+    errorCode: model.errorCode,
+    guidance: model.guidance,
+    sourceHealth: toSourceHealthLabel(model),
+    activeQueryId: model.activeQueryId,
+    lastRefreshAt: model.lastRefreshAt,
+    reloadSource: model.reloadSource
+  });
+
+  const warningLines = buildWarningBannerLines({
+    uiState: model.uiState,
+    guidance: model.strictFail.message ?? model.guidance,
+    retryActionLabel: model.strictFail.retryActionLabel,
+    hasStrictFailFallback: model.strictFail.active
+  });
+
   const selectedLine = model.selectedQueryId ? `Selected query: ${model.selectedQueryId}` : "Selected query: none";
   const activeSourceLine = model.activeQueryId ? `Active query source: ${model.activeQueryId}` : "Active query source: none";
   const refreshLine = model.lastRefreshAt ? `Last refresh: ${model.lastRefreshAt}` : "Last refresh: none";
@@ -74,7 +100,7 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
   const strictFailLines = renderStrictFailBanner(model.strictFail);
   const capabilityLines = renderCapabilityMatrix(model.capabilities);
   const sessionNoticeLines = renderSessionNotice(model.capabilities);
-  const densityLines = [`Density mode: ${model.density}`];
+  const densityLines = [`Density mode: ${density}`];
   const navigationLines = [
     "Navigation container:",
     "- overflow-x: auto",
@@ -82,12 +108,17 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     "- bi-directional: enabled"
   ];
   const mappingLines = renderMappingValidation(model.mappingValidation);
-  const timelineLines = renderTimeline(model.timeline, model.showDependencies);
+  const timelineLines = buildTimelinePaneLines({
+    timeline: model.timeline,
+    showDependencies: model.showDependencies,
+    selectionStore
+  });
 
   return [
     statusLine,
     uiStateLine,
     trustLine,
+    `Trust badge: ${trustBadgeLine}`,
     model.flatQuerySupportNote,
     guidanceLine,
     ...diagnosticsLines,
@@ -96,6 +127,7 @@ export function renderQueryIntakeView(model: QueryIntakeViewModel): string {
     refreshLine,
     reloadLine,
     ...strictFailLines,
+    ...warningLines,
     ...sessionNoticeLines,
     "Capabilities:",
     ...capabilityLines,
@@ -167,77 +199,6 @@ function renderMappingValidation(validation: QueryIntakeViewModel["mappingValida
       (issue) => `- ${issue.field} [${issue.code}] ${issue.message} | ${issue.guidance}`
     )
   ];
-}
-
-function renderTimeline(timeline: TimelineReadModel | null, showDependencies: boolean): string[] {
-  if (!timeline) {
-    return [
-      "Timeline:",
-      "- unavailable"
-    ];
-  }
-
-  const bars = timeline.bars.length
-    ? timeline.bars.map((bar) => {
-        const title = truncateTitle(bar.title);
-        const halfOpenMarker = bar.schedule.missingBoundary ? ` [half-open:${bar.schedule.missingBoundary}]` : "";
-
-        return `- #${bar.details.mappedId} ${title} [${bar.state.badge}|${bar.state.color}]${halfOpenMarker}`;
-      })
-    : ["- none"];
-
-  const barDetails = timeline.bars.length
-    ? timeline.bars.map((bar) => `- #${bar.workItemId} mappedId=${bar.details.mappedId}`)
-    : ["- none"];
-
-  const unschedulable = timeline.unschedulable.length
-    ? timeline.unschedulable.map((item) => {
-        const title = truncateTitle(item.title);
-        return `- ${title} [${item.state.badge}|${item.state.color}]`;
-      })
-    : ["- none"];
-
-  const unschedulableDetails = timeline.unschedulable.length
-    ? timeline.unschedulable.map((item) => `- #${item.workItemId} mappedId=${item.details.mappedId}`)
-    : ["- none"];
-
-  const dependencyToggle = `Dependency arrows: ${showDependencies ? "shown" : "hidden"}`;
-  const dependencyLines = showDependencies
-    ? timeline.dependencies.length
-      ? timeline.dependencies.map((arrow) => `- ${arrow.label}`)
-      : ["- none"]
-    : ["- hidden by toggle"];
-
-  const suppressedDependencies = timeline.suppressedDependencies.length
-    ? timeline.suppressedDependencies.map(
-        (dependency) =>
-          `- #${dependency.predecessorWorkItemId} -> #${dependency.successorWorkItemId} (${dependency.reason})`
-      )
-    : ["- none"];
-
-  return [
-    "Timeline bars (title + state):",
-    ...bars,
-    "Timeline details (mapped ID):",
-    ...barDetails,
-    "Unschedulable items (title + state):",
-    ...unschedulable,
-    "Unschedulable details (mapped ID):",
-    ...unschedulableDetails,
-    dependencyToggle,
-    "Dependencies (FS arrows: predecessor end -> successor start):",
-    ...dependencyLines,
-    "Suppressed dependencies (details only):",
-    ...suppressedDependencies
-  ];
-}
-
-function truncateTitle(title: string): string {
-  if (title.length <= MAX_PRIMARY_TITLE_LENGTH) {
-    return title;
-  }
-
-  return `${title.slice(0, MAX_PRIMARY_TITLE_LENGTH - 1)}…`;
 }
 
 function toSourceHealthLabel(model: QueryIntakeViewModel):
