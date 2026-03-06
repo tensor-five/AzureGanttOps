@@ -74,14 +74,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         };
       };
     }): Promise<QueryIntakeResponse> => {
-      const submitted = await props.composition.controller.submit({
-        queryInput: request.queryId,
+      const result = await props.composition.runQuerySelectionFlow({
+        queryId: request.queryId,
         mappingProfileId: request.mappingProfileId,
         mappingProfileUpsert: request.mappingProfileUpsert
       });
+      const submitted = result.response;
       setResponse(submitted);
-      const mapped = mapQueryIntakeResponseToUiModel(submitted);
-      setUiModel(mapped);
+      setUiModel(result.uiModel);
       setBlockerMessage(null);
 
       if (submitted.mappingValidation.status === "invalid") {
@@ -93,7 +93,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       return submitted;
     },
-    [props.composition.controller]
+    [props.composition]
   );
 
   const handleNeedsFix = React.useCallback((needsFixResponse: QueryIntakeResponse) => {

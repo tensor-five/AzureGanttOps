@@ -28,6 +28,16 @@ export type UiShellComposition = {
   runQuerySelectionFlow: (params: {
     queryId: string;
     mappingProfileId?: string;
+    mappingProfileUpsert?: {
+      id: string;
+      name: string;
+      fields: {
+        id: string;
+        title: string;
+        start: string;
+        endOrTarget: string;
+      };
+    };
   }) => Promise<{
     response: QueryIntakeResponse;
     uiModel: QueryIntakeUiModel;
@@ -49,10 +59,11 @@ export function createUiShellComposition(params: {
   return {
     queryClient,
     controller: params.controller,
-    runQuerySelectionFlow: async ({ queryId, mappingProfileId }) => {
+    runQuerySelectionFlow: async ({ queryId, mappingProfileId, mappingProfileUpsert }) => {
       const response = await params.controller.submit({
         queryInput: queryId,
-        mappingProfileId
+        mappingProfileId,
+        mappingProfileUpsert
       });
 
       return {
