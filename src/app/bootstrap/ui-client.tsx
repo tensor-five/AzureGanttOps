@@ -113,8 +113,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         return;
       }
 
-      const next = await props.composition.controller.submit({
-        queryInput: nextQueryId,
+      const next = await runQuery({
+        queryId: nextQueryId,
         mappingProfileUpsert: {
           id: "auto-required-defaults",
           name: "Required defaults",
@@ -122,8 +122,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         }
       });
 
-      setResponse(next);
-      setUiModel(mapQueryIntakeResponseToUiModel(next));
       if (next.mappingValidation.status === "valid") {
         setMappingFixResponse(null);
         setActiveTab("timeline");
@@ -131,7 +129,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         setMappingFixResponse(next);
       }
     },
-    [mappingFixResponse?.activeQueryId, props.composition.controller, response?.activeQueryId]
+    [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]
   );
 
   const mainPanel = renderActivePanel({

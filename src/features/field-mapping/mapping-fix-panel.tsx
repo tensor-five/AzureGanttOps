@@ -9,6 +9,8 @@ const REQUIRED_LABELS: Record<"id" | "title" | "start" | "endOrTarget", string> 
   endOrTarget: "End/Target Date"
 };
 
+const REQUIRED_ORDER: Array<keyof typeof REQUIRED_LABELS> = ["id", "title", "start", "endOrTarget"];
+
 export type MappingFixPanelProps = {
   requiredIssues: MappingValidationIssue[];
   onApply: (selection: {
@@ -20,17 +22,21 @@ export type MappingFixPanelProps = {
 };
 
 export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement {
-  const required = props.requiredIssues
-    .filter((issue): issue is MappingValidationIssue & { field: keyof typeof REQUIRED_LABELS } =>
-      issue.field in REQUIRED_LABELS
-    )
-    .map((issue) =>
-      React.createElement(
-        "li",
-        { key: `${issue.field}-${issue.code}` },
-        `${REQUIRED_LABELS[issue.field]} required: ${issue.guidance}`
-      )
+  const issueByField = new Map<keyof typeof REQUIRED_LABELS, MappingValidationIssue>();
+  for (const issue of props.requiredIssues) {
+    if (issue.field in REQUIRED_LABELS) {
+      issueByField.set(issue.field as keyof typeof REQUIRED_LABELS, issue);
+    }
+  }
+
+  const required = REQUIRED_ORDER.map((field) => {
+    const issue = issueByField.get(field);
+    return React.createElement(
+      "li",
+      { key: field },
+      `${REQUIRED_LABELS[field]} required: ${issue?.guidance ?? "Apply required defaults to continue."}`
     );
+  });
 
   return React.createElement(
     "section",
