@@ -13,6 +13,7 @@ export type DiagnosticsTabModel = {
   activeQueryId: string | null;
   lastRefreshAt: string | null;
   reloadSource: "full_reload" | "preflight_blocked" | "stale_discarded" | null;
+  onRetryRefresh?: () => void;
 };
 
 export function DiagnosticsTab(props: DiagnosticsTabModel): React.ReactElement {
@@ -23,7 +24,17 @@ export function DiagnosticsTab(props: DiagnosticsTabModel): React.ReactElement {
     {
       "aria-label": "diagnostics-tab"
     },
-    React.createElement("pre", null, lines.join("\n"))
+    React.createElement("pre", null, lines.join("\n")),
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          props.onRetryRefresh?.();
+        }
+      },
+      "Retry refresh"
+    )
   );
 }
 

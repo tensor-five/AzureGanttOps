@@ -31,32 +31,46 @@ export type QuerySelectorProps = {
 };
 
 export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
+  const [manualQueryId, setManualQueryId] = React.useState("");
+
+  const runQuery = React.useCallback(
+    async (queryId: string) => {
+      const normalizedQueryId = queryId.trim();
+      if (normalizedQueryId.length === 0) {
+        return;
+      }
+
+      const persisted = readPersistedQueryMappingSelection(normalizedQueryId);
+      const proposal = proposeDefaultMappingForQuery({
+        queryId: normalizedQueryId,
+        availableFieldRefs: props.availableFieldRefs
+      });
+
+      const response = await props.onRun({
+        queryId: normalizedQueryId,
+        mappingProfileId: persisted,
+        mappingProfileUpsert: proposal.status === "valid" ? proposal.profile : undefined
+      });
+
+      if (response.activeMappingProfileId) {
+        persistQueryMappingSelection(normalizedQueryId, response.activeMappingProfileId);
+      }
+
+      if (response.mappingValidation.status === "invalid" || proposal.status === "invalid") {
+        props.onNeedsFix(response);
+      }
+    },
+    [props]
+  );
+
   const buttons = props.savedQueries.map((query) =>
     React.createElement(
       "button",
       {
         key: query.id,
         type: "button",
-        onClick: async () => {
-          const persisted = readPersistedQueryMappingSelection(query.id);
-          const proposal = proposeDefaultMappingForQuery({
-            queryId: query.id,
-            availableFieldRefs: props.availableFieldRefs
-          });
-
-          const response = await props.onRun({
-            queryId: query.id,
-            mappingProfileId: persisted,
-            mappingProfileUpsert: proposal.status === "valid" ? proposal.profile : undefined
-          });
-
-          if (response.activeMappingProfileId) {
-            persistQueryMappingSelection(query.id, response.activeMappingProfileId);
-          }
-
-          if (response.mappingValidation.status === "invalid" || proposal.status === "invalid") {
-            props.onNeedsFix(response);
-          }
+        onClick: () => {
+          void runQuery(query.id);
         }
       },
       `${query.name} (${query.id})`
@@ -69,6 +83,28 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
       "aria-label": "query-selector"
     },
     React.createElement("h3", null, "Select saved query"),
+    React.createElement(
+      "label",
+      null,
+      "Query ID",
+      React.createElement("input", {
+        "aria-label": "Query ID",
+        value: manualQueryId,
+        onChange: (event) => {
+          setManualQueryId((event.target as HTMLInputElement).value);
+        }
+      })
+    ),
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          void runQuery(manualQueryId);
+        }
+      },
+      "Run query by ID"
+    ),
     ...buttons
   );
 }

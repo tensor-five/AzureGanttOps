@@ -51,6 +51,20 @@ export function createDefaultUiShellComposition(params: Parameters<typeof create
 function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
   const [activeTab, setActiveTab] = React.useState<TabId>("query");
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(null);
+  const [lastRunRequest, setLastRunRequest] = React.useState<{
+    queryInput: string;
+    mappingProfileId?: string;
+    mappingProfileUpsert?: {
+      id: string;
+      name: string;
+      fields: {
+        id: string;
+        title: string;
+        start: string;
+        endOrTarget: string;
+      };
+    };
+  } | null>(null);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(createInitialUiModel());
   const [blockerMessage, setBlockerMessage] = React.useState<{
     tab: TabId;
@@ -82,6 +96,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       const submitted = result.response;
       setResponse(submitted);
       setUiModel(result.uiModel);
+      setLastRunRequest({
+        queryInput: request.queryId,
+        mappingProfileId: request.mappingProfileId,
+        mappingProfileUpsert: request.mappingProfileUpsert
+      });
       setBlockerMessage(null);
 
       if (submitted.mappingValidation.status === "invalid") {
@@ -132,6 +151,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]
   );
 
+  const retryRefresh = React.useCallback(async () => {
+    if (!lastRunRequest) {
+      return;
+    }
+
+    const refreshed = await props.composition.controller.submit(lastRunRequest);
+    setResponse(refreshed);
+    setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
+
+    if (refreshed.mappingValidation.status === "invalid") {
+      setMappingFixResponse(refreshed);
+      setActiveTab("mapping");
+    }
+  }, [lastRunRequest, props.composition.controller]);
+
   const mainPanel = renderActivePanel({
     activeTab,
     uiModel,
@@ -139,7 +173,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     mappingFixResponse,
     onRun: runQuery,
     onNeedsFix: handleNeedsFix,
-    onApplyMappingDefaults: applyMappingDefaults
+    onApplyMappingDefaults: applyMappingDefaults,
+    onRetryRefresh: retryRefresh
   });
 
   const diagnostics = buildDiagnosticsModel(uiModel);
@@ -218,6 +253,7 @@ function renderActivePanel(params: {
     start: string;
     endOrTarget: string;
   }) => Promise<void>;
+  onRetryRefresh: () => Promise<void>;
 }): React.ReactElement {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
@@ -259,7 +295,10 @@ function renderActivePanel(params: {
       { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" },
       React.createElement(TimelinePane, {
         timeline: params.uiModel.timeline,
-        showDependencies: true
+        showDependencies: true,
+        onRetryRefresh: () => {
+          void params.onRetryRefresh();
+        }
       })
     );
   }
@@ -268,7 +307,12 @@ function renderActivePanel(params: {
   return React.createElement(
     "section",
     { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" },
-    React.createElement(DiagnosticsTab, diagnostics)
+    React.createElement(DiagnosticsTab, {
+      ...diagnostics,
+      onRetryRefresh: () => {
+        void params.onRetryRefresh();
+      }
+    })
   );
 }
 

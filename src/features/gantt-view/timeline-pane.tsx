@@ -17,6 +17,7 @@ export type TimelinePaneProps = {
   density?: TimelineDensity;
   selectionStore?: TimelineSelectionStore;
   onDensityChange?: (density: TimelineDensity) => void;
+  onRetryRefresh?: () => void;
 };
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
@@ -37,6 +38,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     selectedWorkItemId
   };
 
+  const selectedTitle = resolveSelectedTitle(props.timeline, selectedWorkItemId);
+
   return React.createElement(
     "section",
     {
@@ -44,6 +47,36 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     },
     React.createElement("h3", null, "Timeline"),
     React.createElement("div", null, `Density mode: ${density}`),
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          props.onRetryRefresh?.();
+        }
+      },
+      "Retry refresh"
+    ),
+    React.createElement(
+      "div",
+      {
+        "aria-label": "selected-timeline-item"
+      },
+      `Selected timeline item: ${selectedTitle ?? "none"}`
+    ),
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          const nextSelection = firstSelectableWorkItemId(props.timeline);
+          if (nextSelection !== null) {
+            selectionStore.select(nextSelection);
+          }
+        }
+      },
+      "Select first item"
+    ),
     React.createElement(
       "div",
       null,
@@ -187,4 +220,32 @@ function truncateTitle(title: string): string {
   }
 
   return `${title.slice(0, MAX_PRIMARY_TITLE_LENGTH - 1)}…`;
+}
+
+function firstSelectableWorkItemId(timeline: TimelineReadModel | null): number | null {
+  if (!timeline) {
+    return null;
+  }
+
+  const firstBar = timeline.bars[0];
+  if (firstBar) {
+    return firstBar.workItemId;
+  }
+
+  const firstUnschedulable = timeline.unschedulable[0];
+  return firstUnschedulable ? firstUnschedulable.workItemId : null;
+}
+
+function resolveSelectedTitle(timeline: TimelineReadModel | null, selectedWorkItemId: number | null): string | null {
+  if (!timeline || selectedWorkItemId === null) {
+    return null;
+  }
+
+  const bar = timeline.bars.find((entry) => entry.workItemId === selectedWorkItemId);
+  if (bar) {
+    return bar.title;
+  }
+
+  const unschedulable = timeline.unschedulable.find((entry) => entry.workItemId === selectedWorkItemId);
+  return unschedulable ? unschedulable.title : null;
 }
