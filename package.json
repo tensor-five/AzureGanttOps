@@ -13,6 +13,7 @@
     "lint": "tsc --noEmit",
     "check:cycles": "tsc --noEmit",
     "quality:ui": "npm run lint && npm run typecheck && npm test && npm run test:e2e",
+    "quality:gate:phase6": "npm run lint && npm run typecheck && npm test && npm run test:e2e",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
