@@ -89,17 +89,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
   const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
   const [detailsCollapsed, setDetailsCollapsed] = React.useState(false);
-  const [chartViewport, setChartViewport] = React.useState<{
-    scrollLeft: number;
-    scrollTop: number;
-    clientWidth: number;
-    clientHeight: number;
-  }>({
-    scrollLeft: 0,
-    scrollTop: 0,
-    clientWidth: 0,
-    clientHeight: 0
-  });
 
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
@@ -114,31 +103,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, [props.timeline]);
-
-  React.useEffect(() => {
-    const scrollElement = chartScrollRef.current;
-    if (!scrollElement) {
-      return;
-    }
-
-    const syncViewport = () => {
-      setChartViewport({
-        scrollLeft: scrollElement.scrollLeft,
-        scrollTop: scrollElement.scrollTop,
-        clientWidth: scrollElement.clientWidth,
-        clientHeight: scrollElement.clientHeight
-      });
-    };
-
-    syncViewport();
-    scrollElement.addEventListener("scroll", syncViewport, { passive: true });
-    window.addEventListener("resize", syncViewport);
-
-    return () => {
-      scrollElement.removeEventListener("scroll", syncViewport);
-      window.removeEventListener("resize", syncViewport);
-    };
-  }, [effectiveTimeline]);
 
   React.useEffect(() => {
     const selectableItems = [
@@ -185,20 +149,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
   const chartModel = React.useMemo(() => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel), [effectiveTimeline, dayWidthPx, zoomLevel]);
-  const stickyTodayMarker = React.useMemo(() => {
-    if (chartModel.todayX === null || chartViewport.clientWidth <= 0) {
-      return null;
-    }
-
-    const absoluteTodayX = CHART_LEFT_GUTTER + chartModel.todayX;
-    const viewportTodayX = absoluteTodayX - chartViewport.scrollLeft;
-    const labelPaddingPx = TODAY_LABEL_EDGE_PADDING_PX;
-    const clampedLabelX = Math.max(labelPaddingPx, Math.min(chartViewport.clientWidth - labelPaddingPx, viewportTodayX));
-    return {
-      labelX: clampedLabelX,
-      isPinnedToEdge: viewportTodayX < labelPaddingPx || viewportTodayX > chartViewport.clientWidth - labelPaddingPx
-    };
-  }, [chartModel.todayX, chartViewport.clientWidth, chartViewport.scrollLeft]);
 
   React.useEffect(() => {
     const anchor = zoomAnchorRef.current;
@@ -670,13 +620,26 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   )
                 ),
                 chartModel.todayX !== null
-                  ? React.createElement("line", {
-                      x1: CHART_LEFT_GUTTER + chartModel.todayX,
-                      y1: CHART_GRID_START_Y,
-                      x2: CHART_LEFT_GUTTER + chartModel.todayX,
-                      y2: chartModel.height - CHART_BOTTOM_PADDING,
-                      className: "timeline-today-line"
-                    })
+                  ? React.createElement(
+                      "g",
+                      null,
+                      React.createElement("line", {
+                        x1: CHART_LEFT_GUTTER + chartModel.todayX,
+                        y1: CHART_GRID_START_Y,
+                        x2: CHART_LEFT_GUTTER + chartModel.todayX,
+                        y2: chartModel.height - CHART_BOTTOM_PADDING,
+                        className: "timeline-today-line"
+                      }),
+                      React.createElement(
+                        "text",
+                        {
+                          x: CHART_LEFT_GUTTER + chartModel.todayX + 6,
+                          y: CHART_AXIS_TODAY_LABEL_Y,
+                          className: "timeline-today-label"
+                        },
+                        "Today"
+                      )
+                    )
                   : null,
                 props.showDependencies
                   ? effectiveTimeline?.dependencies.map((dependency, index) => {
@@ -796,34 +759,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       )
                     )
                   : null
-              ),
-              stickyTodayMarker && chartViewport.clientHeight > 0
-                ? React.createElement(
-                    "svg",
-                    {
-                      className: stickyTodayMarker.isPinnedToEdge
-                        ? "timeline-today-sticky-overlay timeline-today-sticky-overlay-pinned"
-                        : "timeline-today-sticky-overlay",
-                      viewBox: `0 0 ${Math.max(1, chartViewport.clientWidth)} ${Math.max(1, chartViewport.clientHeight)}`,
-                      preserveAspectRatio: "none",
-                      style: {
-                        width: `${chartViewport.clientWidth}px`,
-                        height: `${chartViewport.clientHeight}px`,
-                        transform: `translate(${chartViewport.scrollLeft}px, ${chartViewport.scrollTop}px)`
-                      },
-                      "aria-hidden": "true"
-                    },
-                    React.createElement(
-                      "text",
-                      {
-                        x: stickyTodayMarker.labelX,
-                        y: CHART_AXIS_TODAY_LABEL_Y,
-                        className: "timeline-today-label"
-                      },
-                      "Today"
-                    )
-                  )
-                : null
+              )
             ),
         React.createElement(
           "div",
@@ -920,7 +856,6 @@ const CHART_TOP_PADDING = 56;
 const CHART_BOTTOM_PADDING = 18;
 const CHART_LEFT_GUTTER = 24;
 const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
-const TODAY_LABEL_EDGE_PADDING_PX = 22;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
 const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;

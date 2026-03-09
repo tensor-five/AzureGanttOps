@@ -1075,25 +1075,13 @@ button {
   fill: var(--color-timeline-today-label);
   font-size: 12px;
   font-weight: var(--font-bold);
-  text-anchor: middle;
+  text-anchor: start;
 }
 
 .timeline-axis-label {
   fill: var(--color-timeline-axis-label);
   font-size: 13px;
   font-weight: var(--font-medium);
-}
-
-.timeline-today-sticky-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.timeline-today-sticky-overlay-pinned .timeline-today-label {
-  font-weight: var(--font-black);
 }
 
 .timeline-row-label {
