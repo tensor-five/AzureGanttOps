@@ -18,6 +18,9 @@ export type TimelineBar = {
   details: {
     mappedId: string;
     descriptionHtml?: string | null;
+    workItemType?: string | null;
+    assignedTo?: string | null;
+    parentWorkItemId?: number | null;
   };
 };
 
@@ -33,6 +36,9 @@ export type TimelineUnschedulableItem = {
   details: {
     mappedId: string;
     descriptionHtml?: string | null;
+    workItemType?: string | null;
+    assignedTo?: string | null;
+    parentWorkItemId?: number | null;
   };
   reason: "missing-both-dates";
 };

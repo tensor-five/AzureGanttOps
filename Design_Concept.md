@@ -705,6 +705,32 @@ if (window.innerWidth > 768) {
 }
 ```
 
+### Timeline Detail Input (verbindlich)
+
+Für editierbare Timeline-Detailfelder ist die Klasse `timeline-details-input` verpflichtend zu verwenden.
+
+```css
+.timeline-details-input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.timeline-details-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(132, 44, 195, 0.12);
+}
+```
+
 ### Trust Badge Large
 
 ```css

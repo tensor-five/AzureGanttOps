@@ -14,7 +14,7 @@ export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
       ? "Partial failure"
       : "Needs attention";
   const isHealthy = props.trustState === "ready";
-  const pillLabel = isHealthy ? "Trust OK" : "Trust Attention";
+  const pillLabel = isHealthy ? "OK" : "Trust Attention";
   const pillIcon = isHealthy ? "✓" : "!";
   const statusLine = `[${props.statusCode}] ${label}`;
 
@@ -34,15 +34,12 @@ export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
     React.createElement(
       "div",
       { className: "trust-badge-panel" },
-      React.createElement("p", { className: "trust-badge-label" }, "Trust state"),
       React.createElement("p", { className: "trust-badge-status" }, statusLine),
       React.createElement(
         "dl",
         { className: "trust-badge-meta" },
         React.createElement("dt", null, "last-updated"),
-        React.createElement("dd", null, props.lastRefreshAt ?? "none"),
-        React.createElement("dt", null, "read-only"),
-        React.createElement("dd", null, props.readOnlyTimeline ? "true" : "false")
+        React.createElement("dd", null, props.lastRefreshAt ?? "none")
       )
     )
   );
@@ -55,5 +52,5 @@ export function renderTrustBadgeLine(model: TrustBadgeModel): string {
       ? "Partial failure"
       : "Needs attention";
 
-  return `[${model.statusCode}] ${label} | last-updated=${model.lastRefreshAt ?? "none"} | read-only=${model.readOnlyTimeline ? "true" : "false"}`;
+  return `[${model.statusCode}] ${label} | last-updated=${model.lastRefreshAt ?? "none"}`;
 }

@@ -20,12 +20,13 @@ describe("trust-badge", () => {
     );
 
     const badge = screen.getByLabelText("global-trust-badge");
-    expect(badge.querySelector("summary")?.textContent).toContain("Trust OK");
+    expect(badge.querySelector("summary")?.textContent).toContain("OK");
 
-    fireEvent.click(screen.getByText("Trust OK"));
+    fireEvent.click(screen.getByText("OK"));
     expect(badge.textContent).toContain("[OK] Ready");
     expect(badge.textContent).toContain("last-updated");
-    expect(badge.textContent).toContain("read-only");
+    expect(badge.textContent).not.toContain("Trust state");
+    expect(badge.textContent).not.toContain("read-only");
   });
 
   it("keeps plain status-line export stable for textual diagnostics", () => {
@@ -36,6 +37,6 @@ describe("trust-badge", () => {
         lastRefreshAt: null,
         readOnlyTimeline: false
       })
-    ).toBe("[QUERY_FAILED] Partial failure | last-updated=none | read-only=false");
+    ).toBe("[QUERY_FAILED] Partial failure | last-updated=none");
   });
 });

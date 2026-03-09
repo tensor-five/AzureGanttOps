@@ -9,6 +9,9 @@ export type CanonicalTask = {
   mappedId: string;
   title: string;
   descriptionHtml: string | null;
+  workItemType: string | null;
+  assignedTo: string | null;
+  parentWorkItemId: number | null;
   startDate: string | null;
   endDate: string | null;
   state: CanonicalTaskState;

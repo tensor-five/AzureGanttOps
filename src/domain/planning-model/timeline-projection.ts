@@ -29,7 +29,10 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
         state: task.state,
         details: {
           mappedId: task.mappedId,
-          descriptionHtml: task.descriptionHtml
+          descriptionHtml: task.descriptionHtml,
+          workItemType: task.workItemType,
+          assignedTo: task.assignedTo,
+          parentWorkItemId: task.parentWorkItemId
         },
         reason: "missing-both-dates"
       });
@@ -54,7 +57,10 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
       },
       details: {
         mappedId: task.mappedId,
-        descriptionHtml: task.descriptionHtml
+        descriptionHtml: task.descriptionHtml,
+        workItemType: task.workItemType,
+        assignedTo: task.assignedTo,
+        parentWorkItemId: task.parentWorkItemId
       }
     });
 

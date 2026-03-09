@@ -376,6 +376,20 @@ function normalizeHydratedItems(payload: unknown): IngestionWorkItem[] {
             return;
           }
 
+          if (fieldRef === "System.AssignedTo" && value && typeof value === "object") {
+            const assignedTo = value as Record<string, unknown>;
+            const displayName = assignedTo.displayName;
+            const uniqueName = assignedTo.uniqueName;
+            if (typeof displayName === "string" && displayName.trim().length > 0) {
+              flattenedFields[fieldRef] = displayName.trim();
+              return;
+            }
+            if (typeof uniqueName === "string" && uniqueName.trim().length > 0) {
+              flattenedFields[fieldRef] = uniqueName.trim();
+              return;
+            }
+          }
+
           if (value === null || typeof value === "undefined") {
             flattenedFields[fieldRef] = value;
           }

@@ -28049,14 +28049,14 @@ var import_react7 = __toESM(require_react(), 1);
 function TrustBadge(props) {
   const label = props.trustState === "ready" ? "Ready" : props.trustState === "partial_failure" ? "Partial failure" : "Needs attention";
   const isHealthy = props.trustState === "ready";
-  const pillLabel = isHealthy ? "Trust OK" : "Trust Attention";
+  const pillLabel = isHealthy ? "OK" : "Trust Attention";
   const pillIcon = isHealthy ? "\u2713" : "!";
   const statusLine = `[${props.statusCode}] ${label}`;
   return import_react7.default.createElement("details", {
     "aria-label": "global-trust-badge",
     className: "trust-badge-details",
     "data-trust-state": isHealthy ? "healthy" : "unhealthy"
-  }, import_react7.default.createElement("summary", { className: "trust-badge-trigger" }, import_react7.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react7.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react7.default.createElement("div", { className: "trust-badge-panel" }, import_react7.default.createElement("p", { className: "trust-badge-label" }, "Trust state"), import_react7.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react7.default.createElement("dl", { className: "trust-badge-meta" }, import_react7.default.createElement("dt", null, "last-updated"), import_react7.default.createElement("dd", null, props.lastRefreshAt ?? "none"), import_react7.default.createElement("dt", null, "read-only"), import_react7.default.createElement("dd", null, props.readOnlyTimeline ? "true" : "false"))));
+  }, import_react7.default.createElement("summary", { className: "trust-badge-trigger" }, import_react7.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react7.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react7.default.createElement("div", { className: "trust-badge-panel" }, import_react7.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react7.default.createElement("dl", { className: "trust-badge-meta" }, import_react7.default.createElement("dt", null, "last-updated"), import_react7.default.createElement("dd", null, props.lastRefreshAt ?? "none"))));
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js

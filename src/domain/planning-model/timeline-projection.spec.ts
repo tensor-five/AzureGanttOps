@@ -12,6 +12,9 @@ describe("projectTimeline", () => {
           mappedId: "WI-1",
           title: "Alpha",
           descriptionHtml: "<p>Alpha</p>",
+          workItemType: "Task",
+          assignedTo: "Ada",
+          parentWorkItemId: null,
           startDate: "2026-03-02T00:00:00.000Z",
           endDate: "2026-03-03T00:00:00.000Z",
           state: { code: "Active", badge: "A", color: "#1d4ed8" }
@@ -21,6 +24,9 @@ describe("projectTimeline", () => {
           mappedId: "WI-2",
           title: "Beta",
           descriptionHtml: null,
+          workItemType: "Bug",
+          assignedTo: null,
+          parentWorkItemId: 1,
           startDate: null,
           endDate: "2026-03-04T00:00:00.000Z",
           state: { code: "New", badge: "N", color: "#7c3aed" }
@@ -30,6 +36,9 @@ describe("projectTimeline", () => {
           mappedId: "WI-3",
           title: "Gamma",
           descriptionHtml: null,
+          workItemType: "Task",
+          assignedTo: null,
+          parentWorkItemId: null,
           startDate: null,
           endDate: null,
           state: { code: "Closed", badge: "C", color: "#6b7280" }
@@ -86,7 +95,10 @@ describe("projectTimeline", () => {
         state: { code: "Closed", badge: "C", color: "#6b7280" },
         details: {
           mappedId: "WI-3",
-          descriptionHtml: null
+          descriptionHtml: null,
+          workItemType: "Task",
+          assignedTo: null,
+          parentWorkItemId: null
         },
         reason: "missing-both-dates"
       }
@@ -119,6 +131,9 @@ describe("projectTimeline", () => {
           mappedId: "WI-4",
           title: "Delta",
           descriptionHtml: null,
+          workItemType: "Task",
+          assignedTo: null,
+          parentWorkItemId: null,
           startDate: "2026-03-05T00:00:00.000Z",
           endDate: null,
           state: { code: "Resolved", badge: "R", color: "#15803d" }

@@ -33,13 +33,13 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const [isSaving, setIsSaving] = React.useState(false);
   const descriptionFieldRef = React.useRef<HTMLDivElement | null>(null);
   const descriptionRef = React.useRef<HTMLDivElement | null>(null);
+  const hasFetchedInitialStateOptionsRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!selected) {
       setTitleDraft("");
       setDescriptionDraft("");
       setStateDraft("");
-      setServerStateOptions([]);
       setIsDescriptionEditing(false);
       setSaveError(null);
       if (descriptionRef.current) {
@@ -51,7 +51,6 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     setTitleDraft(selected.title);
     setDescriptionDraft(selected.descriptionHtml);
     setStateDraft(selected.state);
-    setServerStateOptions([]);
     setIsDescriptionEditing(false);
     setSaveError(null);
     if (descriptionRef.current) {
@@ -60,11 +59,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [selected?.workItemId]);
 
   React.useEffect(() => {
-    if (!selected || !props.onFetchWorkItemStateOptions) {
+    if (hasFetchedInitialStateOptionsRef.current || !selected || !props.onFetchWorkItemStateOptions) {
       return;
     }
 
     let cancelled = false;
+    hasFetchedInitialStateOptionsRef.current = true;
     void props
       .onFetchWorkItemStateOptions({ targetWorkItemId: selected.workItemId })
       .then((states) => {
@@ -159,6 +159,22 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     }
   };
 
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "s" || (!event.ctrlKey && !event.metaKey)) {
+        return;
+      }
+
+      event.preventDefault();
+      void saveDetails();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [saveDetails]);
+
   return React.createElement(
     "aside",
     {
@@ -195,22 +211,42 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               ? React.createElement(
                   React.Fragment,
                   null,
-                  React.createElement("path", { d: "M2 6V2h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "M14 10v4h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "M6 2 2 6", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m10 14 4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+                  React.createElement("path", { d: "M6 8H2", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m4 5-2 3 2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M10 8h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m12 5 2 3-2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
                 )
               : React.createElement(
                   React.Fragment,
                   null,
-                  React.createElement("path", { d: "M6 2H2v4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "M10 14h4v-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m2 2 4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m14 14-4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+                  React.createElement("path", { d: "M2 8h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m4 5 2 3-2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M14 8h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m12 5-2 3 2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
                 )
           )
         ),
-        collapsed ? null : React.createElement("h4", null, "Work item details")
+        collapsed || !selected
+          ? null
+          : React.createElement(
+              "button",
+                {
+                  type: "button",
+                  className: isDirty
+                    ? "timeline-action-button timeline-details-save-button timeline-details-save-button-dirty"
+                    : "timeline-action-button timeline-details-save-button",
+                  onClick: () => {
+                    void saveDetails();
+                  },
+                disabled:
+                  isSaving ||
+                  !isDirty ||
+                  titleDraft.trim().length === 0 ||
+                  stateDraft.trim().length === 0 ||
+                  !props.onUpdateSelectedWorkItemDetails
+              },
+              isSaving ? "Saving..." : "Save"
+            )
       ),
       collapsed
         ? null
@@ -229,24 +265,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                     },
                     `#${selected.workItemId}`
                   )
-                : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`),
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-action-button timeline-action-button-primary",
-                  onClick: () => {
-                    void saveDetails();
-                  },
-                  disabled:
-                    isSaving ||
-                    !isDirty ||
-                    titleDraft.trim().length === 0 ||
-                    stateDraft.trim().length === 0 ||
-                    !props.onUpdateSelectedWorkItemDetails
-                },
-                isSaving ? "Saving..." : "Save"
-              )
+                : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)
             )
           : null
     ),
@@ -417,7 +436,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
 
 export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): string[] {
   if (!input.timeline || input.selectedWorkItemId === null) {
-    return ["- selected: none"];
+    return [];
   }
 
   const selectedBar = input.timeline.bars.find((bar) => bar.workItemId === input.selectedWorkItemId);
@@ -454,7 +473,7 @@ export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): str
     ];
   }
 
-  return ["- selected: none"];
+  return [];
 }
 
 function resolveSelectedWorkItem(

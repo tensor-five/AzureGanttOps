@@ -3,6 +3,11 @@ import React from "react";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
+  loadLastTimelineColorCoding,
+  saveLastTimelineColorCoding,
+  type TimelineColorCoding
+} from "./timeline-color-coding-preference.js";
+import {
   buildTimelineDetailsLines,
   TimelineDetailsPanel,
   type TimelineDetailsPanelProps
@@ -14,6 +19,9 @@ const MAX_PRIMARY_TITLE_LENGTH = 42;
 export type TimelinePaneProps = {
   timeline: TimelineReadModel | null;
   showDependencies: boolean;
+  isRefreshing?: boolean;
+  workItemSyncState?: "up_to_date" | "syncing" | "error";
+  workItemSyncError?: string | null;
   organization?: string;
   project?: string;
   density?: TimelineDensity;
@@ -90,6 +98,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
   const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
   const [detailsCollapsed, setDetailsCollapsed] = React.useState(false);
+  const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
+  const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
 
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
@@ -151,7 +161,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   );
 
   const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
-  const chartModel = React.useMemo(() => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel), [effectiveTimeline, dayWidthPx, zoomLevel]);
+  const colorByWorkItemId = React.useMemo(
+    () => buildColorByWorkItemId(effectiveTimeline, colorCoding),
+    [effectiveTimeline, colorCoding]
+  );
+  const chartModel = React.useMemo(
+    () => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx),
+    [effectiveTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx]
+  );
 
   React.useEffect(() => {
     const scrollElement = chartScrollRef.current;
@@ -190,6 +207,35 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [chartModel.bars.length, chartModel.todayX, chartModel.width]);
 
   React.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement || chartModel.bars.length === 0) {
+      setChartViewportWidthPx(0);
+      return;
+    }
+
+    const updateViewportWidth = (): void => {
+      setChartViewportWidthPx(scrollElement.clientWidth);
+    };
+
+    updateViewportWidth();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(() => {
+        updateViewportWidth();
+      });
+      resizeObserver.observe(scrollElement);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+
+    window.addEventListener("resize", updateViewportWidth);
+    return () => {
+      window.removeEventListener("resize", updateViewportWidth);
+    };
+  }, [chartModel.bars.length]);
+
+  React.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
@@ -201,6 +247,29 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     scrollElement.scrollLeft = Math.max(0, desiredScrollLeft);
     zoomAnchorRef.current = null;
   }, [chartModel.dayWidthPx]);
+
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "r" || event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (props.isRefreshing === true) {
+        return;
+      }
+
+      props.onRetryRefresh?.();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [props.isRefreshing, props.onRetryRefresh]);
 
   const handleChartWheel = React.useCallback(
     (event: WheelEvent) => {
@@ -502,11 +571,23 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           {
             type: "button",
             className: "timeline-action-button timeline-action-button-primary",
+            disabled: props.isRefreshing === true,
+            "aria-busy": props.isRefreshing === true ? "true" : undefined,
             onClick: () => {
               props.onRetryRefresh?.();
             }
           },
-          "Refresh"
+          props.isRefreshing
+            ? React.createElement(
+                "span",
+                { className: "timeline-action-button-content" },
+                React.createElement("span", {
+                  className: "timeline-action-button-spinner",
+                  "aria-hidden": "true"
+                }),
+                React.createElement("span", null, "Updating...")
+              )
+            : "Refresh"
         ),
         React.createElement(
           "div",
@@ -542,6 +623,53 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             "Month"
           )
         ),
+        React.createElement(
+          "label",
+          { className: "timeline-color-coding-control" },
+          React.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"),
+          React.createElement(
+            "select",
+            {
+              className: "timeline-color-coding-select",
+              "aria-label": "Color coding",
+              value: colorCoding,
+              onChange: (event) => {
+                const nextMode = (event.target as HTMLSelectElement).value as TimelineColorCoding;
+                setColorCoding(nextMode);
+                saveLastTimelineColorCoding(nextMode);
+              }
+            },
+            React.createElement("option", { value: "none" }, "None"),
+            React.createElement("option", { value: "person" }, "Person"),
+            React.createElement("option", { value: "status" }, "Status"),
+            React.createElement("option", { value: "parent" }, "Parent"),
+            React.createElement("option", { value: "overdue" }, "Overdue")
+          )
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "timeline-pane-actions-status" },
+        React.createElement(
+          "div",
+          {
+            className: "gantt-sync-status",
+            "data-state": props.workItemSyncState ?? "up_to_date",
+            role: "status",
+            "aria-live": "polite",
+            title: props.workItemSyncState === "error" ? props.workItemSyncError ?? undefined : undefined
+          },
+          React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
+          React.createElement(
+            "span",
+            null,
+            props.workItemSyncState === "syncing"
+              ? "Updating work items..."
+              : props.workItemSyncState === "error"
+                ? "Work item update failed"
+                : "Work items up to date"
+          )
+        )
       ),
     ),
     adoptScheduleError
@@ -672,7 +800,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       React.createElement(
                         "text",
                         {
-                          x: CHART_LEFT_GUTTER + chartModel.todayX + 6,
+                          x: CHART_LEFT_GUTTER + chartModel.todayX,
                           y: CHART_AXIS_TODAY_LABEL_Y,
                           className: "timeline-today-label"
                         },
@@ -774,9 +902,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     React.createElement("circle", {
                       cx: CHART_LEFT_GUTTER + bar.x + 10,
                       cy: y + BAR_HEIGHT / 2,
-                      r: 3.5,
+                      r: 4.5,
                       className: "timeline-bar-state-dot",
-                      style: { fill: bar.color }
+                      style: { fill: bar.stateColor }
                     })
                   );
                 }),
@@ -813,8 +941,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           React.createElement(
             "div",
             { className: "timeline-unschedulable-header" },
-            React.createElement("h4", null, "Unscheduled"),
-            React.createElement("p", null, "Select one item and assign a schedule from chart or selected bar.")
+            React.createElement("h4", null, "Unscheduled")
           ),
           effectiveTimeline?.unschedulable.length
             ? React.createElement(
@@ -824,70 +951,57 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   React.createElement(
                     "li",
                     { key: item.workItemId },
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-unschedulable-button",
-                        "aria-label": `#${item.details.mappedId} ${item.title} (${item.reason})`,
-                        "aria-pressed": selectedWorkItemId === item.workItemId,
-                        draggable: true,
-                        onDragStart: (event) => {
-                          startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
-                        },
-                        onDragEnd: () => {
-                          clearUnscheduledDrag();
-                        },
-                        onClick: () => {
-                          setAdoptScheduleError(null);
-                          if (selectedWorkItemId !== null) {
-                            void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
-                              const message = error instanceof Error ? error.message : "Unknown error";
-                              setAdoptScheduleError(message);
-                            });
+                    (() => {
+                      const label = `#${item.details.mappedId} ${item.title}`;
+                      const minWidthPx = Math.round(dayWidthPx * 14);
+                      const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
+                      const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
+
+                      return React.createElement(
+                        "button",
+                        {
+                          type: "button",
+                          className: "timeline-unschedulable-button",
+                          style: {
+                            backgroundColor: colorByWorkItemId.get(item.workItemId) ?? item.state.color,
+                            width: `${buttonWidthPx}px`,
+                            maxWidth: "100%"
+                          },
+                          "aria-label": label,
+                          "aria-pressed": selectedWorkItemId === item.workItemId,
+                          draggable: true,
+                          onDragStart: (event) => {
+                            startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
+                          },
+                          onDragEnd: () => {
+                            clearUnscheduledDrag();
+                          },
+                          onClick: () => {
+                            setAdoptScheduleError(null);
+                            if (selectedWorkItemId !== null) {
+                              void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
+                                const message = error instanceof Error ? error.message : "Unknown error";
+                                setAdoptScheduleError(message);
+                              });
+                            }
+                            selectWorkItem(item.workItemId);
                           }
-                          selectWorkItem(item.workItemId);
-                        }
-                      },
-                      React.createElement(
-                        "span",
-                        { className: "timeline-unschedulable-button-main" },
+                        },
                         React.createElement(
                           "span",
-                          { className: "timeline-unschedulable-item-title" },
-                          `#${item.details.mappedId} ${truncateTitleToBarWidth(item.title, 220)}`
-                        ),
-                        React.createElement(
-                          "span",
-                          { className: "timeline-unschedulable-item-reason" },
-                          item.reason
+                          { className: "timeline-unschedulable-button-main" },
+                          React.createElement(
+                            "span",
+                            { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" },
+                            label
+                          )
                         )
-                      ),
-                      React.createElement(
-                        "span",
-                        { className: "timeline-unschedulable-button-state" },
-                        React.createElement("span", {
-                          className: "timeline-unschedulable-state-dot",
-                          style: { backgroundColor: item.state.color }
-                        }),
-                        React.createElement(
-                          "span",
-                          { className: "timeline-unschedulable-button-badge" },
-                          item.state.badge
-                        )
-                      )
-                    )
+                      );
+                    })()
                   )
                 )
               )
             : React.createElement("div", null, "None")
-        ),
-        React.createElement(
-          "p",
-          { className: "timeline-unschedulable-fyi" },
-          `${barCount} bars`,
-          " · ",
-          `${unscheduledCount} unscheduled`
         )
       ),
       React.createElement(TimelineDetailsPanel, detailProps)
@@ -901,7 +1015,7 @@ const CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
 const CHART_TOP_PADDING = 56;
 const CHART_BOTTOM_PADDING = 18;
 const CHART_LEFT_GUTTER = 24;
-const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
+const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 46;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
 const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
@@ -914,12 +1028,30 @@ const HANDLE_WIDTH = 8;
 const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 const BAR_LABEL_HORIZONTAL_PADDING = 8;
 const APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
+const DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
+const OVERDUE_TIMELINE_COLOR = "#b91c1c";
+const OVERDUE_OK_TIMELINE_COLOR = "#475569";
+const TIMELINE_CATEGORY_COLORS = [
+  "#1d4ed8",
+  "#0f766e",
+  "#7c3aed",
+  "#be123c",
+  "#b45309",
+  "#0369a1",
+  "#166534",
+  "#7e22ce",
+  "#c2410c",
+  "#365314",
+  "#334155",
+  "#0f766e"
+];
 
 type VisualTimelineBar = {
   workItemId: number;
   mappedId: string;
   title: string;
   color: string;
+  stateColor: string;
   stateBadge: string;
   x: number;
   width: number;
@@ -944,7 +1076,9 @@ type VisualChartModel = {
 function buildVisualChartModel(
   timeline: TimelineReadModel | null,
   dayWidthPx: number,
-  zoomLevel: TimelineZoomLevel
+  zoomLevel: TimelineZoomLevel,
+  colorByWorkItemId: ReadonlyMap<number, string>,
+  viewportWidthPx: number
 ): VisualChartModel {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc = new Date();
@@ -1011,7 +1145,9 @@ function buildVisualChartModel(
   const maxEnd = new Date(Math.max(...normalizedBars.map((bar) => bar.end.getTime())));
   const domainStart = addDays(minStart, -1);
   const domainEnd = addDays(maxEnd, 1);
-  const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd));
+  const timelineCanvasMinWidthPx = Math.max(0, viewportWidthPx - CHART_LEFT_GUTTER - 80);
+  const minDaysForViewport = Math.ceil(timelineCanvasMinWidthPx / dayWidthPx);
+  const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd), minDaysForViewport);
   const todayUtc = new Date();
   const normalizedTodayUtc = new Date(
     Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate())
@@ -1041,7 +1177,8 @@ function buildVisualChartModel(
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
       title: bar.source.title,
-      color: bar.source.state.color,
+      color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
+      stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
       start: bar.start,
       end: bar.end,
@@ -1069,6 +1206,110 @@ function buildVisualChartModel(
     currentPeriod,
     todayX
   };
+}
+
+function buildColorByWorkItemId(
+  timeline: TimelineReadModel | null,
+  mode: TimelineColorCoding
+): Map<number, string> {
+  const map = new Map<number, string>();
+  if (!timeline) {
+    return map;
+  }
+
+  const items = [
+    ...timeline.bars.map((bar) => ({
+      workItemId: bar.workItemId,
+      stateCode: bar.state.code,
+      endDate: bar.schedule.endDate,
+      assignedTo: bar.details.assignedTo ?? null,
+      parentWorkItemId: bar.details.parentWorkItemId ?? null,
+      fallbackColor: bar.state.color
+    })),
+    ...timeline.unschedulable.map((item) => ({
+      workItemId: item.workItemId,
+      stateCode: item.state.code,
+      endDate: item.schedule?.endDate ?? null,
+      assignedTo: item.details.assignedTo ?? null,
+      parentWorkItemId: item.details.parentWorkItemId ?? null,
+      fallbackColor: item.state.color
+    }))
+  ];
+
+  if (mode === "none") {
+    items.forEach((item) => {
+      map.set(item.workItemId, DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    });
+    return map;
+  }
+
+  if (mode === "overdue") {
+    items.forEach((item) => {
+      map.set(item.workItemId, isOverdueTimelineItem(item.endDate, item.stateCode) ? OVERDUE_TIMELINE_COLOR : OVERDUE_OK_TIMELINE_COLOR);
+    });
+    return map;
+  }
+
+  if (mode === "status") {
+    items.forEach((item) => {
+      map.set(item.workItemId, item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    });
+    return map;
+  }
+
+  const categoryByWorkItemId = new Map<number, string>();
+  items.forEach((item) => {
+    let category = "Unknown";
+
+    if (mode === "person") {
+      category = item.assignedTo?.trim() || "Unassigned";
+    } else if (mode === "parent") {
+      category = item.parentWorkItemId === null ? "No parent" : `Parent #${item.parentWorkItemId}`;
+    }
+
+    categoryByWorkItemId.set(item.workItemId, category);
+  });
+
+  const categoryColorMap = buildCategoricalColorMap([...categoryByWorkItemId.values()]);
+
+  items.forEach((item) => {
+    const category = categoryByWorkItemId.get(item.workItemId);
+    const categoryColor = category ? categoryColorMap.get(category) : null;
+    map.set(item.workItemId, categoryColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+  });
+
+  return map;
+}
+
+function buildCategoricalColorMap(categories: string[]): Map<string, string> {
+  const unique = Array.from(new Set(categories.map((entry) => entry.trim()).filter((entry) => entry.length > 0))).sort((a, b) =>
+    a.localeCompare(b)
+  );
+  const map = new Map<string, string>();
+  unique.forEach((category, index) => {
+    map.set(category, TIMELINE_CATEGORY_COLORS[index % TIMELINE_CATEGORY_COLORS.length]);
+  });
+  return map;
+}
+
+function isOverdueTimelineItem(endDateIso: string | null, stateCode: string): boolean {
+  if (!endDateIso) {
+    return false;
+  }
+
+  const endDate = parseIso(endDateIso);
+  if (!endDate) {
+    return false;
+  }
+
+  const todayUtc = new Date();
+  const todayStartUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
+  if (endDate.getTime() >= todayStartUtc.getTime()) {
+    return false;
+  }
+
+  const normalizedState = stateCode.trim().toLowerCase();
+  return !["closed", "done", "resolved", "removed", "completed"].includes(normalizedState);
 }
 
 function parseIso(value: string | null): Date | null {
@@ -1254,6 +1495,23 @@ function toIsoDateUtc(value: Date): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tagName = target.tagName.toLowerCase();
+  if (tagName === "input" || tagName === "textarea" || tagName === "select") {
+    return true;
+  }
+
+  if (target.isContentEditable) {
+    return true;
+  }
+
+  return target.closest("[contenteditable='true']") !== null;
 }
 
 function calculateDraggedSchedule(

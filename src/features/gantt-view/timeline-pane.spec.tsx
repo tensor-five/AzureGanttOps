@@ -5,9 +5,14 @@ import { userEvent } from "@testing-library/user-event";
 
 import { TimelinePane, applyAdoptedSchedules } from "./timeline-pane.js";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import {
+  clearTimelineColorCodingPreferenceForTests,
+  saveLastTimelineColorCoding
+} from "./timeline-color-coding-preference.js";
 
 afterEach(() => {
   cleanup();
+  clearTimelineColorCodingPreferenceForTests();
 });
 
 function makeTimeline(): TimelineReadModel {
@@ -93,10 +98,10 @@ describe("timeline-pane unschedulable date adoption", () => {
     );
 
     await user.click(screen.getByLabelText("timeline-bar-11"));
-    await user.click(screen.getByRole("button", { name: "#22 Target Item (missing-both-dates)" }));
+    await user.click(screen.getByRole("button", { name: /#22 Target Item/ }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "#22 Target Item (missing-both-dates)" })).toBeNull();
+      expect(screen.queryByRole("button", { name: /#22 Target Item/ })).toBeNull();
     });
     const detailsText = screen.getByLabelText("timeline-details-panel").textContent ?? "";
     expect(detailsText).toContain("- selected work item: #22");
@@ -173,7 +178,7 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    const unscheduledButton = screen.getByRole("button", { name: "#22 Target Item (missing-both-dates)" });
+    const unscheduledButton = screen.getByRole("button", { name: /#22 Target Item/ });
     const chart = screen.getByLabelText("gantt-chart");
 
     fireEvent.dragStart(unscheduledButton, { dataTransfer });
@@ -244,6 +249,29 @@ describe("timeline-pane unschedulable date adoption", () => {
     expect(secondBarY - firstBarY).toBe(26);
   });
 
+  it("extends chart width to match visible viewport beyond work item range", async () => {
+    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1600);
+
+    try {
+      render(
+        React.createElement(TimelinePane, {
+          timeline: makeTimeline(),
+          showDependencies: true
+        })
+      );
+
+      await waitFor(() => {
+        const chart = screen.getByLabelText("gantt-chart");
+        const viewBox = chart.getAttribute("viewBox");
+        expect(viewBox).not.toBeNull();
+        const width = Number((viewBox as string).split(" ")[2]);
+        expect(width).toBe(1600);
+      });
+    } finally {
+      clientWidthSpy.mockRestore();
+    }
+  });
+
   it("draws the today line through the full chart height", () => {
     const todayUtc = new Date();
     const normalizedTodayUtc = new Date(
@@ -305,7 +333,7 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    const unscheduledButton = screen.getByRole("button", { name: "#22 Target Item (missing-both-dates)" });
+    const unscheduledButton = screen.getByRole("button", { name: /#22 Target Item/ });
     const chart = screen.getByLabelText("gantt-chart");
 
     fireEvent.dragStart(unscheduledButton, { dataTransfer });
@@ -324,5 +352,116 @@ describe("timeline-pane unschedulable date adoption", () => {
     expect(call.targetWorkItemId).toBe(22);
     expect(call.endDate).toBe("2026-03-10T00:00:00.000Z");
     expect(new Date(call.startDate).getTime()).toBeLessThanOrEqual(new Date(call.endDate).getTime());
+  });
+
+  it("uses dark neutral bars when no color coding is selected", () => {
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const colorCodingSelect = screen.getByLabelText("Color coding") as HTMLSelectElement;
+    expect(colorCodingSelect.value).toBe("none");
+
+    const bar = container.querySelector("rect.timeline-bar");
+    expect(bar).not.toBeNull();
+    expect((bar as SVGRectElement).style.fill).toBe("rgb(55, 65, 81)");
+
+    const stateDot = container.querySelector("circle.timeline-bar-state-dot");
+    expect(stateDot).not.toBeNull();
+    expect((stateDot as SVGCircleElement).style.fill).toBe("rgb(47, 133, 90)");
+  });
+
+  it("switches to status color coding from dropdown", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: {
+          ...makeTimeline(),
+          bars: [
+            makeTimeline().bars[0],
+            {
+              ...makeTimeline().bars[0],
+              workItemId: 12,
+              title: "Second",
+              state: { code: "New", badge: "N", color: "#2b6cb0" },
+              details: { mappedId: "12" }
+            }
+          ]
+        },
+        showDependencies: true
+      })
+    );
+
+    await user.selectOptions(screen.getByLabelText("Color coding"), "status");
+
+    const bars = container.querySelectorAll("rect.timeline-bar");
+    expect(bars).toHaveLength(2);
+    expect((bars[0] as SVGRectElement).style.fill).not.toBe((bars[1] as SVGRectElement).style.fill);
+  });
+
+  it("loads persisted timeline color coding", () => {
+    saveLastTimelineColorCoding("overdue");
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const colorCodingSelect = screen.getByLabelText("Color coding") as HTMLSelectElement;
+    expect(colorCodingSelect.value).toBe("overdue");
+  });
+
+  it("shows loading state in refresh button while refresh is in progress", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        isRefreshing: true
+      })
+    );
+
+    const button = screen.getByRole("button", { name: "Updating..." });
+    expect(button.getAttribute("disabled")).not.toBeNull();
+    expect(button.querySelector(".timeline-action-button-spinner")).not.toBeNull();
+  });
+
+  it("triggers refresh when pressing r outside editable fields", () => {
+    const onRetryRefresh = vi.fn();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        onRetryRefresh
+      })
+    );
+
+    fireEvent.keyDown(window, { key: "r" });
+    expect(onRetryRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not trigger refresh when pressing r inside an input field", async () => {
+    const onRetryRefresh = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        onRetryRefresh
+      })
+    );
+
+    await user.click(screen.getByLabelText("timeline-bar-11"));
+    const titleInput = screen.getByLabelText("Title");
+    titleInput.focus();
+    fireEvent.keyDown(titleInput, { key: "r" });
+
+    expect(onRetryRefresh).not.toHaveBeenCalled();
   });
 });

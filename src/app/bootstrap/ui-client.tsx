@@ -20,7 +20,7 @@ import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 
-const ADO_COMM_LOG_POLL_INTERVAL_MS = 1000;
+const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
 const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
@@ -129,6 +129,115 @@ function colorForStateCode(code: string): string {
     default:
       return "#334155";
   }
+}
+
+function resolveStatePaletteSourceWorkItemId(timeline: QueryIntakeResponse["timeline"]): number | null {
+  if (!timeline) {
+    return null;
+  }
+
+  const firstBarId = timeline.bars[0]?.workItemId ?? null;
+  if (typeof firstBarId === "number") {
+    return firstBarId;
+  }
+
+  const firstUnscheduledId = timeline.unschedulable[0]?.workItemId ?? null;
+  return typeof firstUnscheduledId === "number" ? firstUnscheduledId : null;
+}
+
+function normalizeWorkItemType(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function collectStatePaletteSourceWorkItemsByType(timeline: QueryIntakeResponse["timeline"]): Map<string, number> {
+  const result = new Map<string, number>();
+  if (!timeline) {
+    return result;
+  }
+
+  const register = (workItemId: number, workItemType: string | null | undefined): void => {
+    const typeKey = normalizeWorkItemType(workItemType);
+    if (!typeKey || result.has(typeKey)) {
+      return;
+    }
+
+    result.set(typeKey, workItemId);
+  };
+
+  timeline.bars.forEach((bar) => {
+    register(bar.workItemId, bar.details.workItemType);
+  });
+  timeline.unschedulable.forEach((item) => {
+    register(item.workItemId, item.details.workItemType);
+  });
+
+  return result;
+}
+
+function normalizeAdoStateColor(color: string | null): string | null {
+  if (!color) {
+    return null;
+  }
+
+  const normalized = color.trim().replace(/^#/, "");
+  return /^[0-9a-f]{6}$/i.test(normalized) ? `#${normalized}` : null;
+}
+
+function buildStateColorLookup(states: Array<{ name: string; color: string | null }>): Map<string, string> {
+  const colorByStateCode = new Map<string, string>();
+  states.forEach((state) => {
+    const name = state.name.trim().toLowerCase();
+    const color = normalizeAdoStateColor(state.color);
+    if (name.length > 0 && color) {
+      colorByStateCode.set(name, color);
+    }
+  });
+
+  return colorByStateCode;
+}
+
+function applyRuntimeStateColorsByType(
+  timeline: QueryIntakeResponse["timeline"],
+  stateColorsByType: ReadonlyMap<string, ReadonlyMap<string, string>>,
+  fallbackStateColors: ReadonlyMap<string, string>
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  const resolveColor = (input: { stateCode: string; workItemType: string | null | undefined }): string | null => {
+    const stateKey = input.stateCode.trim().toLowerCase();
+    if (stateKey.length === 0) {
+      return null;
+    }
+
+    const typeKey = normalizeWorkItemType(input.workItemType);
+    const typeScoped = typeKey ? stateColorsByType.get(typeKey)?.get(stateKey) : null;
+    return typeScoped ?? fallbackStateColors.get(stateKey) ?? null;
+  };
+
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) => {
+      const nextColor = resolveColor({
+        stateCode: bar.state.code,
+        workItemType: bar.details.workItemType
+      });
+      return nextColor ? { ...bar, state: { ...bar.state, color: nextColor } } : bar;
+    }),
+    unschedulable: timeline.unschedulable.map((item) => {
+      const nextColor = resolveColor({
+        stateCode: item.state.code,
+        workItemType: item.details.workItemType
+      });
+      return nextColor ? { ...item, state: { ...item.state, color: nextColor } } : item;
+    })
+  };
 }
 
 type RunRequest = {
@@ -246,11 +355,72 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => readPersistedThemeMode());
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const adoCommPollInFlightRef = React.useRef(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
+  const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
   const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+
+  const fetchWorkItemStateOptionsCached = React.useCallback(
+    async ({ targetWorkItemId }: { targetWorkItemId: number }) => {
+      const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
+      if (cached) {
+        return cached;
+      }
+
+      const response = await props.composition.controller.fetchWorkItemStateOptions({ targetWorkItemId });
+      workItemStateOptionsCacheRef.current.set(targetWorkItemId, response.states);
+      return response.states;
+    },
+    [props.composition.controller]
+  );
+
+  const enrichResponseWithRuntimeStateColors = React.useCallback(
+    async (incoming: QueryIntakeResponse): Promise<QueryIntakeResponse> => {
+      try {
+        const sourceByType = collectStatePaletteSourceWorkItemsByType(incoming.timeline);
+        const stateColorsByType = new Map<string, Map<string, string>>();
+        const fallbackStateColors = new Map<string, string>();
+
+        if (sourceByType.size > 0) {
+          await Promise.all(
+            [...sourceByType.entries()].map(async ([typeKey, workItemId]) => {
+              const stateOptions = await fetchWorkItemStateOptionsCached({ targetWorkItemId: workItemId });
+              const stateColors = buildStateColorLookup(stateOptions);
+              if (stateColors.size === 0) {
+                return;
+              }
+
+              stateColorsByType.set(typeKey, stateColors);
+              stateColors.forEach((color, state) => {
+                if (!fallbackStateColors.has(state)) {
+                  fallbackStateColors.set(state, color);
+                }
+              });
+            })
+          );
+        } else {
+          const fallbackSourceWorkItemId = resolveStatePaletteSourceWorkItemId(incoming.timeline);
+          if (fallbackSourceWorkItemId !== null) {
+            const stateOptions = await fetchWorkItemStateOptionsCached({ targetWorkItemId: fallbackSourceWorkItemId });
+            buildStateColorLookup(stateOptions).forEach((color, state) => {
+              fallbackStateColors.set(state, color);
+            });
+          }
+        }
+
+        return {
+          ...incoming,
+          timeline: applyRuntimeStateColorsByType(incoming.timeline, stateColorsByType, fallbackStateColors)
+        };
+      } catch {
+        return incoming;
+      }
+    },
+    [fetchWorkItemStateOptionsCached]
+  );
 
   React.useEffect(() => {
     let active = true;
@@ -329,9 +499,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         mappingProfileId: request.mappingProfileId,
         mappingProfileUpsert: request.mappingProfileUpsert
       });
-      const submitted = result.response;
+      const submitted = await enrichResponseWithRuntimeStateColors(result.response);
       setResponse(submitted);
-      setUiModel(result.uiModel);
+      setUiModel(mapQueryIntakeResponseToUiModel(submitted));
       setLastRunRequest({
         queryInput: request.queryId,
         mappingProfileId: request.mappingProfileId,
@@ -353,7 +523,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       return submitted;
     },
-    [props.composition]
+    [enrichResponseWithRuntimeStateColors, props.composition]
   );
 
   const handleNeedsFix = React.useCallback((needsFixResponse: QueryIntakeResponse) => {
@@ -393,42 +563,53 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   );
 
   const retryRefresh = React.useCallback(async () => {
-    if (lastRunRequest) {
-      const refreshed = await props.composition.controller.submit(lastRunRequest);
-      setResponse(refreshed);
-      setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
+    if (isRefreshing) {
+      return;
+    }
 
-      if (
-        refreshed.preflightStatus === "READY" &&
-        refreshed.statusCode === "OK" &&
-        refreshed.mappingValidation.status === "invalid"
-      ) {
-        setMappingFixResponse(refreshed);
-        setActiveTab("mapping");
-        setControlsOpen(true);
+    setIsRefreshing(true);
+
+    try {
+      if (lastRunRequest) {
+        const refreshedRaw = await props.composition.controller.submit(lastRunRequest);
+        const refreshed = await enrichResponseWithRuntimeStateColors(refreshedRaw);
+        setResponse(refreshed);
+        setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
+
+        if (
+          refreshed.preflightStatus === "READY" &&
+          refreshed.statusCode === "OK" &&
+          refreshed.mappingValidation.status === "invalid"
+        ) {
+          setMappingFixResponse(refreshed);
+          setActiveTab("mapping");
+          setControlsOpen(true);
+          return;
+        }
+
+        setActiveTab("timeline");
         return;
       }
 
-      setActiveTab("timeline");
-      return;
-    }
+      const persistedQueryInput = resolvePersistedRefreshQueryInput();
+      if (!persistedQueryInput) {
+        setActiveTab("query");
+        setControlsOpen(true);
+        setBlockerMessage({
+          tab: "query",
+          reason: "No query available to refresh.",
+          nextAction: "Open controls, enter Query ID, then run query."
+        });
+        return;
+      }
 
-    const persistedQueryInput = resolvePersistedRefreshQueryInput();
-    if (!persistedQueryInput) {
-      setActiveTab("query");
-      setControlsOpen(true);
-      setBlockerMessage({
-        tab: "query",
-        reason: "No query available to refresh.",
-        nextAction: "Open controls, enter Query ID, then run query."
+      await runQuery({
+        queryId: persistedQueryInput
       });
-      return;
+    } finally {
+      setIsRefreshing(false);
     }
-
-    await runQuery({
-      queryId: persistedQueryInput
-    });
-  }, [lastRunRequest, props.composition.controller, runQuery]);
+  }, [enrichResponseWithRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller, runQuery]);
 
   const runTrackedWorkItemUpdate = React.useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
@@ -452,6 +633,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     },
     []
   );
+
+  const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
 
   React.useEffect(() => {
     persistUiShellState({
@@ -557,31 +740,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       React.createElement(
         "section",
         { className: "gantt-primary-card" },
-        React.createElement(
-          "div",
-          { className: "gantt-primary-head" },
-          React.createElement("h2", null, "Gantt Chart"),
-          React.createElement(
-            "div",
-            {
-              className: "gantt-sync-status",
-              "data-state": workItemSyncState,
-              role: "status",
-              "aria-live": "polite",
-              title: workItemSyncState === "error" ? workItemSyncError ?? undefined : undefined
-            },
-            React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
-            React.createElement(
-              "span",
-              null,
-              workItemSyncState === "syncing"
-                ? "Updating work items..."
-                : workItemSyncState === "error"
-                  ? "Work item update failed"
-                  : "Work items up to date"
-            )
-          )
-        ),
         React.createElement(WarningBanner, {
         uiState: uiModel.uiState,
         guidance: uiModel.guidance,
@@ -594,6 +752,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         React.createElement(TimelinePane, {
           timeline: uiModel.timeline,
           showDependencies: true,
+          isRefreshing,
+          workItemSyncState,
+          workItemSyncError,
           organization,
           project,
           selectionStore: timelineSelectionStoreRef.current,
@@ -676,10 +837,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               );
             });
           },
-          onFetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
-            const response = await props.composition.controller.fetchWorkItemStateOptions({ targetWorkItemId });
-            return response.states;
-          },
+          onFetchWorkItemStateOptions: fetchWorkItemStateOptions,
           onRetryRefresh: () => {
             void retryRefresh();
           }

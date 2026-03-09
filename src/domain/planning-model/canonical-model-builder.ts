@@ -23,6 +23,7 @@ export function buildCanonicalModel(
 
 function buildTasks(snapshot: IngestionSnapshot, mappings: RequiredFieldMappings): CanonicalTask[] {
   const byId = new Map<number, IngestionSnapshot["workItems"][number]>();
+  const parentByChildWorkItemId = buildParentByChildMap(snapshot.relations);
 
   snapshot.workItems.forEach((item) => {
     byId.set(item.id, item);
@@ -44,6 +45,9 @@ function buildTasks(snapshot: IngestionSnapshot, mappings: RequiredFieldMappings
         mappedId,
         title,
         descriptionHtml: readValue(record, "System.Description"),
+        workItemType: readValue(record, "System.WorkItemType"),
+        assignedTo: readAssignedTo(record),
+        parentWorkItemId: parentByChildWorkItemId.get(item.id) ?? null,
         startDate: toIsoDate(readValue(record, mappings.start)),
         endDate: toIsoDate(readValue(record, mappings.endOrTarget)),
         state: toState(record)
@@ -105,6 +109,37 @@ function toIsoDate(value: string | null): string | null {
   }
 
   return parsed.toISOString();
+}
+
+function readAssignedTo(record: Record<string, unknown>): string | null {
+  const direct = readValue(record, "System.AssignedTo");
+  if (!direct) {
+    return null;
+  }
+
+  const formatted = direct.split("<")[0]?.trim() ?? direct.trim();
+  return formatted.length > 0 ? formatted : null;
+}
+
+function buildParentByChildMap(
+  relations: IngestionSnapshot["relations"]
+): Map<number, number> {
+  const map = new Map<number, number>();
+
+  relations.forEach((relation) => {
+    if (relation.type === "System.LinkTypes.Hierarchy-Forward") {
+      if (!map.has(relation.targetId)) {
+        map.set(relation.targetId, relation.sourceId);
+      }
+      return;
+    }
+
+    if (relation.type === "System.LinkTypes.Hierarchy-Reverse" && !map.has(relation.sourceId)) {
+      map.set(relation.sourceId, relation.targetId);
+    }
+  });
+
+  return map;
 }
 
 function toState(record: Record<string, unknown>): CanonicalTaskState {

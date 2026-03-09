@@ -306,6 +306,8 @@ Halte parallel zur Implementierung folgende Doku aktuell:
 5. **Design-Umsetzungs-Checkliste**
    - Verwende [`DESIGN_IMPLEMENTATION_CHECKLIST.md`](/Users/chris/Azure%20GanttOps/DESIGN_IMPLEMENTATION_CHECKLIST.md) als zentrales Tracking-Dokument.
    - Design-Änderungen gelten nur dann als abgeschlossen, wenn die entsprechenden `[MUST]`-Punkte und `Phase-DoD` dort abgehakt sind.
+6. **Design-System-Referenz**
+   - Verwende [`Design_Concept.md`](/Users/chris/Azure%20GanttOps/Design_Concept.md) als verbindliche Quelle für UI-Klassen und Styling-Konventionen (inkl. `timeline-details-input`).
 
 ---
 

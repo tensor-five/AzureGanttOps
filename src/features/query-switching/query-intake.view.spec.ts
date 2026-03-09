@@ -123,7 +123,7 @@ describe("query-intake view", () => {
     expect(view).toContain("[OK] Ready");
     expect(view).toContain("UI state: ready");
     expect(view).toContain("Trust state: ready");
-    expect(view).toContain("Trust badge: [OK] Ready | last-updated=2026-03-04T20:00:00.000Z | read-only=true");
+    expect(view).toContain("Trust badge: [OK] Ready | last-updated=2026-03-04T20:00:00.000Z");
     expect(view).toContain("Persistent details panel:");
     expect(view).toContain("- selected work item: #101");
     expect(view).toContain("Diagnostics:");
