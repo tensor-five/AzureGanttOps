@@ -167,7 +167,8 @@ function matchesContext(
   expected: PreflightContext
 ): boolean {
   if (!configuredOrganization) {
-    return false;
+    // Defaults are optional; context can be provided via app settings/query URL.
+    return true;
   }
 
   const normalizedConfiguredOrg = configuredOrganization

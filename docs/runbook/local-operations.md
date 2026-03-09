@@ -42,7 +42,8 @@ The app expects Azure DevOps organization and project context. Context is persis
 3. `SESSION_EXPIRED`
    - Run `az login` and retry.
 4. `CONTEXT_MISMATCH`
-   - Update org/project in app settings or Azure DevOps defaults.
+   - This only occurs when Azure DevOps defaults are explicitly set to a different org/project.
+   - Update org/project in app settings or align Azure DevOps defaults.
 5. `ADO_AUTH_REQUIRED`
    - Set PAT env var or refresh Azure CLI login.
 

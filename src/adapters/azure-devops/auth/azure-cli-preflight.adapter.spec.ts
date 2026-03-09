@@ -136,6 +136,32 @@ describe("AzureCliPreflightAdapter", () => {
     });
   });
 
+  it("returns READY when Azure DevOps defaults are not configured", async () => {
+    const adapter = new AzureCliPreflightAdapter(makeRunner((command) => {
+      if (command === "az --version") {
+        return ok("azure-cli 2.0");
+      }
+
+      if (command === "az extension show --name azure-devops -o json") {
+        return ok('{"name":"azure-devops"}');
+      }
+
+      if (command === "az account show -o json") {
+        return ok('{"tenantId":"abc"}');
+      }
+
+      if (command === "az devops configure --list") {
+        return ok("[defaults]\nUse git alias = No");
+      }
+
+      throw new Error(`unexpected command: ${command}`);
+    }));
+
+    await expect(adapter.check(context)).resolves.toEqual({
+      status: "READY"
+    });
+  });
+
   it("maps mismatch when project default exists and differs", async () => {
     const adapter = new AzureCliPreflightAdapter(makeRunner((command) => {
       if (command === "az --version") {
