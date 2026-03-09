@@ -165,7 +165,26 @@ const composition = createDefaultUiShellComposition({
         throw new Error(message);
       }
 
-      const states = Array.isArray(payload.states) ? payload.states.filter((entry): entry is string => typeof entry === "string") : [];
+      const states = Array.isArray(payload.states)
+        ? payload.states
+            .map((entry) => {
+              if (!entry || typeof entry !== "object") {
+                return null;
+              }
+
+              const name = (entry as { name?: unknown }).name;
+              const color = (entry as { color?: unknown }).color;
+              if (typeof name !== "string") {
+                return null;
+              }
+
+              return {
+                name,
+                color: typeof color === "string" ? color : null
+              };
+            })
+            .filter((entry): entry is { name: string; color: string | null } => entry !== null)
+        : [];
       return { states };
     },
     authenticateAzureCli: async () => {

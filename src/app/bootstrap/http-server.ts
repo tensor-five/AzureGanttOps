@@ -70,6 +70,10 @@ type AdoCommLogStore = {
   append: (entry: Omit<AdoCommLogEntry, "seq">) => void;
   read: (afterSeq: number, limit: number) => { entries: AdoCommLogEntry[]; nextSeq: number };
 };
+type WorkItemStateOption = {
+  name: string;
+  color: string | null;
+};
 
 const ADO_COMM_LOG_BUFFER_MAX = 1000;
 const ADO_COMM_LOG_LIMIT_DEFAULT = 50;
@@ -393,6 +397,8 @@ export function createHttpServer(params: {
   const settingsAdapter = new FileContextSettingsAdapter(contextFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
   const controller = new QueryIntakeController(contextStore, queryFlow.runQueryIntake);
+  const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
+  const workItemTypeCacheById = new Map<string, Promise<string | null>>();
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
@@ -409,6 +415,8 @@ export function createHttpServer(params: {
       adoCommLogStore,
       contextStore,
       instrumentedHttpClient,
+      stateOptionsCacheByType,
+      workItemTypeCacheById,
       azLoginRunner,
       azCliPathResolver
     );
@@ -441,6 +449,8 @@ async function route(
   adoCommLogStore: AdoCommLogStore,
   contextStore: AdoContextStore,
   httpClient: HttpClient,
+  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>,
+  workItemTypeCacheById: Map<string, Promise<string | null>>,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver
 ): Promise<void> {
@@ -586,7 +596,9 @@ async function route(
       const states = await fetchAllowedStateCodesForWorkItem({
         workItemId: targetWorkItemId,
         contextStore,
-        httpClient
+        httpClient,
+        stateOptionsCacheByType,
+        workItemTypeCacheById
       });
       writeJson(res, 200, { states });
       return;
@@ -702,34 +714,86 @@ async function fetchAllowedStateCodesForWorkItem(input: {
   workItemId: number;
   contextStore: AdoContextStore;
   httpClient: HttpClient;
-}): Promise<string[]> {
+  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
+  workItemTypeCacheById: Map<string, Promise<string | null>>;
+}): Promise<WorkItemStateOption[]> {
   const context = await input.contextStore.getActiveContext();
   if (!context) {
     throw new Error("ADO_CONTEXT_MISSING");
   }
 
-  const workItemUrl =
-    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
-    `/_apis/wit/workitems/${input.workItemId}?fields=System.WorkItemType&api-version=7.1`;
-  const workItemResponse = await input.httpClient.get(workItemUrl);
-  if (workItemResponse.status < 200 || workItemResponse.status >= 300) {
-    throw new Error("WORK_ITEM_FETCH_FAILED");
-  }
-
-  const workItemType = extractWorkItemType(workItemResponse.json);
+  const workItemType = await getCachedWorkItemType({
+    workItemId: input.workItemId,
+    context,
+    httpClient: input.httpClient,
+    cache: input.workItemTypeCacheById
+  });
   if (!workItemType) {
     return [];
   }
 
-  const statesUrl =
-    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
-    `/_apis/wit/workitemtypes/${encodeURIComponent(workItemType)}/states?api-version=7.1`;
-  const statesResponse = await input.httpClient.get(statesUrl);
-  if (statesResponse.status < 200 || statesResponse.status >= 300) {
-    throw new Error("WORK_ITEM_STATES_FETCH_FAILED");
+  return getCachedWorkItemTypeStates({
+    workItemType,
+    context,
+    httpClient: input.httpClient,
+    cache: input.stateOptionsCacheByType
+  });
+}
+
+async function getCachedWorkItemType(input: {
+  workItemId: number;
+  context: { organization: string; project: string };
+  httpClient: HttpClient;
+  cache: Map<string, Promise<string | null>>;
+}): Promise<string | null> {
+  const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemId}`;
+  const existing = input.cache.get(cacheKey);
+  if (existing) {
+    return existing;
   }
 
-  return extractStateCodes(statesResponse.json);
+  const promise = (async () => {
+    const workItemUrl =
+      `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
+      `/_apis/wit/workitems/${input.workItemId}?fields=System.WorkItemType&api-version=7.1`;
+    const workItemResponse = await input.httpClient.get(workItemUrl);
+    if (workItemResponse.status < 200 || workItemResponse.status >= 300) {
+      throw new Error("WORK_ITEM_FETCH_FAILED");
+    }
+
+    return extractWorkItemType(workItemResponse.json);
+  })();
+
+  input.cache.set(cacheKey, promise);
+  return promise;
+}
+
+async function getCachedWorkItemTypeStates(input: {
+  workItemType: string;
+  context: { organization: string; project: string };
+  httpClient: HttpClient;
+  cache: Map<string, Promise<WorkItemStateOption[]>>;
+}): Promise<WorkItemStateOption[]> {
+  const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemType.toLowerCase()}`;
+  const existing = input.cache.get(cacheKey);
+  if (existing) {
+    return existing;
+  }
+
+  const promise = (async () => {
+    const statesUrl =
+      `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
+      `/_apis/wit/workitemtypes/${encodeURIComponent(input.workItemType)}/states?api-version=7.1`;
+    const statesResponse = await input.httpClient.get(statesUrl);
+    if (statesResponse.status < 200 || statesResponse.status >= 300) {
+      throw new Error("WORK_ITEM_STATES_FETCH_FAILED");
+    }
+
+    return extractStateCodes(statesResponse.json);
+  })();
+
+  input.cache.set(cacheKey, promise);
+  return promise;
 }
 
 function extractWorkItemType(payload: unknown): string | null {
@@ -751,7 +815,7 @@ function extractWorkItemType(payload: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function extractStateCodes(payload: unknown): string[] {
+function extractStateCodes(payload: unknown): WorkItemStateOption[] {
   if (!payload || typeof payload !== "object") {
     return [];
   }
@@ -768,14 +832,15 @@ function extractStateCodes(payload: unknown): string[] {
       }
 
       const name = (entry as Record<string, unknown>).name;
+      const color = (entry as Record<string, unknown>).color;
       if (typeof name !== "string") {
         return null;
       }
 
       const trimmed = name.trim();
-      return trimmed.length > 0 ? trimmed : null;
+      return trimmed.length > 0 ? { name: trimmed, color: typeof color === "string" ? color : null } : null;
     })
-    .filter((entry): entry is string => entry !== null);
+    .filter((entry): entry is WorkItemStateOption => entry !== null);
 }
 
 function parseAdoptSchedulePayload(

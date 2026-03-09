@@ -1141,6 +1141,12 @@ button {
   pointer-events: none;
 }
 
+.timeline-bar-state-dot {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
 .timeline-bar-label-selected {
   font-weight: var(--font-bold);
 }
@@ -1337,15 +1343,31 @@ button {
 
 .timeline-details-panel-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
 }
 
+.timeline-details-panel-head-main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
 .timeline-details-panel-surface-collapsed .timeline-details-panel-head {
   margin-bottom: 0;
   justify-content: center;
+}
+
+.timeline-details-panel-surface-collapsed .timeline-details-panel-head-main {
+  justify-content: center;
+}
+
+.timeline-details-head-actions {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
 }
 
 .timeline-details-collapse-toggle {
@@ -1464,13 +1486,6 @@ button {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 22%, transparent);
-}
-
-.timeline-details-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 .timeline-details-muted {

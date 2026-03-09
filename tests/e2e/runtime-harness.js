@@ -28767,7 +28767,11 @@ window.__phase6Mount = () => {
         reasonCode: "WRITE_ENABLED"
       }),
       fetchWorkItemStateOptions: async () => ({
-        states: ["To Do", "Active", "Closed"]
+        states: [
+          { name: "To Do", color: "b2b2b2" },
+          { name: "Active", color: "007acc" },
+          { name: "Closed", color: "339933" }
+        ]
       }),
       authenticateAzureCli: async () => ({
         status: "OK",

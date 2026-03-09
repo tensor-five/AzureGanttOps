@@ -16,6 +16,11 @@ export type AdoCommLogEntry = {
   preview: string;
 };
 
+export type WorkItemStateOption = {
+  name: string;
+  color: string | null;
+};
+
 export type QueryIntakeTransport = {
   submit: (request: {
     queryInput: string;
@@ -59,7 +64,7 @@ export type QueryIntakeTransport = {
     reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
   }>;
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
-    states: string[];
+    states: WorkItemStateOption[];
   }>;
   authenticateAzureCli: () => Promise<{
     status: "OK";

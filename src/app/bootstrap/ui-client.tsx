@@ -64,13 +64,14 @@ function applyWorkItemMetadataUpdate(
   targetWorkItemId: number,
   title: string,
   descriptionHtml: string,
-  stateCode: string
+  stateCode: string,
+  stateColor: string | null
 ): QueryIntakeResponse["timeline"] {
   if (!timeline) {
     return timeline;
   }
 
-  const nextState = toTimelineStateBadge(stateCode);
+  const nextState = toTimelineStateBadge(stateCode, stateColor);
 
   return {
     ...timeline,
@@ -103,12 +104,12 @@ function applyWorkItemMetadataUpdate(
   };
 }
 
-function toTimelineStateBadge(code: string): { code: string; badge: string; color: string } {
+function toTimelineStateBadge(code: string, preferredColor: string | null): { code: string; badge: string; color: string } {
   const normalizedCode = code.trim().length > 0 ? code.trim() : "Unknown";
   return {
     code: normalizedCode,
     badge: normalizedCode.charAt(0).toUpperCase() || "?",
-    color: colorForStateCode(normalizedCode)
+    color: preferredColor && preferredColor.trim().length > 0 ? `#${preferredColor.replace(/^#/, "")}` : colorForStateCode(normalizedCode)
   };
 }
 
@@ -648,7 +649,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               );
             });
           },
-          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
+          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state, stateColor }) => {
             await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.updateWorkItemDetails({
                 targetWorkItemId,
@@ -663,13 +664,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
               setUiModel((current) => ({
                 ...current,
-                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state)
+                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
               }));
               setResponse((current) =>
                 current
                   ? {
                       ...current,
-                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state)
+                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
                     }
                   : current
               );

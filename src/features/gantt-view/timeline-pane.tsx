@@ -33,8 +33,9 @@ export type TimelinePaneProps = {
     title: string;
     descriptionHtml: string;
     state: string;
+    stateColor: string | null;
   }) => Promise<void>;
-  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<string[]>;
+  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
 };
@@ -93,6 +94,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
   const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
+  const initialViewportAppliedRef = React.useRef(false);
 
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule);
 
@@ -102,6 +104,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setActiveScheduleDrag(null);
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
+    initialViewportAppliedRef.current = false;
   }, [props.timeline]);
 
   React.useEffect(() => {
@@ -149,6 +152,42 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
   const chartModel = React.useMemo(() => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel), [effectiveTimeline, dayWidthPx, zoomLevel]);
+
+  React.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
+      return;
+    }
+
+    const alignInitialViewport = () => {
+      const clientWidth = scrollElement.clientWidth;
+      const clientHeight = scrollElement.clientHeight;
+      if (clientWidth <= 0 || clientHeight <= 0) {
+        return;
+      }
+
+      const todayTargetX = clientWidth * TODAY_INITIAL_VIEWPORT_RATIO;
+      const absoluteTodayX = chartModel.todayX === null ? 0 : CHART_LEFT_GUTTER + chartModel.todayX;
+      const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - clientWidth);
+      const maxScrollTop = Math.max(0, scrollElement.scrollHeight - clientHeight);
+      const nextScrollLeft = clamp(absoluteTodayX - todayTargetX, 0, maxScrollLeft);
+      const nextScrollTop = clamp(CHART_TOP_PADDING, 0, maxScrollTop);
+
+      if (typeof scrollElement.scrollTo === "function") {
+        scrollElement.scrollTo({ left: nextScrollLeft, top: nextScrollTop, behavior: "auto" });
+      } else {
+        scrollElement.scrollLeft = nextScrollLeft;
+        scrollElement.scrollTop = nextScrollTop;
+      }
+
+      initialViewportAppliedRef.current = true;
+    };
+
+    const frame = window.requestAnimationFrame(alignInitialViewport);
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [chartModel.bars.length, chartModel.todayX, chartModel.width]);
 
   React.useEffect(() => {
     const anchor = zoomAnchorRef.current;
@@ -726,12 +765,19 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     React.createElement(
                       "text",
                       {
-                        x: CHART_LEFT_GUTTER + bar.x + 8,
+                        x: CHART_LEFT_GUTTER + bar.x + 18,
                         y: y + 16,
                         className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
                       },
                       truncateTitleToBarWidth(bar.title, bar.width)
-                    )
+                    ),
+                    React.createElement("circle", {
+                      cx: CHART_LEFT_GUTTER + bar.x + 10,
+                      cy: y + BAR_HEIGHT / 2,
+                      r: 3.5,
+                      className: "timeline-bar-state-dot",
+                      style: { fill: bar.color }
+                    })
                   );
                 }),
                 activeUnschedulableDrag && unscheduledDropPreview
@@ -859,6 +905,7 @@ const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
 const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
+const TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
 const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;

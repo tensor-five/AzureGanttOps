@@ -14,8 +14,9 @@ export type TimelineDetailsPanelProps = {
     title: string;
     descriptionHtml: string;
     state: string;
+    stateColor: string | null;
   }) => Promise<void>;
-  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<string[]>;
+  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
 };
 
 const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
@@ -26,7 +27,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const [titleDraft, setTitleDraft] = React.useState("");
   const [descriptionDraft, setDescriptionDraft] = React.useState("");
   const [stateDraft, setStateDraft] = React.useState("");
-  const [serverStateOptions, setServerStateOptions] = React.useState<string[]>([]);
+  const [serverStateOptions, setServerStateOptions] = React.useState<Array<{ name: string; color: string | null }>>([]);
   const [isDescriptionEditing, setIsDescriptionEditing] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -70,7 +71,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
         if (cancelled) {
           return;
         }
-        setServerStateOptions(states.filter((state) => state.trim().length > 0));
+        setServerStateOptions(states.filter((state) => state.name.trim().length > 0));
       })
       .catch(() => {
         if (!cancelled) {
@@ -115,6 +116,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     () => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions),
     [props.timeline, selected?.state, serverStateOptions]
   );
+  const selectedStateColor =
+    stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
 
   const applyDescriptionCommand = (command: string, value?: string) => {
     if (!descriptionRef.current) {
@@ -145,7 +148,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
         targetWorkItemId: selected.workItemId,
         title: titleDraft.trim(),
         descriptionHtml: descriptionDraft,
-        state: stateDraft.trim()
+        state: stateDraft.trim(),
+        stateColor: selectedStateColor
       });
       setTitleDraft(titleDraft.trim());
     } catch (error) {
@@ -167,58 +171,83 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       "div",
       { className: "timeline-details-panel-head" },
       React.createElement(
-        "button",
-        {
-          type: "button",
-          className: "timeline-details-collapse-toggle",
-          "aria-label": collapsed ? "Expand details panel" : "Collapse details panel",
-          title: collapsed ? "Expand details panel" : "Collapse details panel",
-          onClick: () => {
-            props.onToggleCollapsed?.();
-          }
-        },
+        "div",
+        { className: "timeline-details-panel-head-main" },
         React.createElement(
-          "svg",
+          "button",
           {
-            viewBox: "0 0 16 16",
-            "aria-hidden": "true",
-            className: "timeline-details-collapse-icon"
+            type: "button",
+            className: "timeline-details-collapse-toggle",
+            "aria-label": collapsed ? "Expand details panel" : "Collapse details panel",
+            title: collapsed ? "Expand details panel" : "Collapse details panel",
+            onClick: () => {
+              props.onToggleCollapsed?.();
+            }
           },
-          collapsed
-            ? React.createElement(
-                React.Fragment,
-                null,
-                React.createElement("path", { d: "M2 6V2h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "M14 10v4h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "M6 2 2 6", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "m10 14 4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
-              )
-            : React.createElement(
-                React.Fragment,
-                null,
-                React.createElement("path", { d: "M6 2H2v4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "M10 14h4v-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "m2 2 4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                React.createElement("path", { d: "m14 14-4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
-              )
-        )
+          React.createElement(
+            "svg",
+            {
+              viewBox: "0 0 16 16",
+              "aria-hidden": "true",
+              className: "timeline-details-collapse-icon"
+            },
+            collapsed
+              ? React.createElement(
+                  React.Fragment,
+                  null,
+                  React.createElement("path", { d: "M2 6V2h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M14 10v4h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M6 2 2 6", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m10 14 4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+                )
+              : React.createElement(
+                  React.Fragment,
+                  null,
+                  React.createElement("path", { d: "M6 2H2v4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "M10 14h4v-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m2 2 4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                  React.createElement("path", { d: "m14 14-4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+                )
+          )
+        ),
+        collapsed ? null : React.createElement("h4", null, "Work item details")
       ),
-      collapsed ? null : React.createElement("h4", null, "Work item details"),
       collapsed
         ? null
         : selected
-          ? azureLink
-            ? React.createElement(
-                "a",
+          ? React.createElement(
+              "div",
+              { className: "timeline-details-head-actions" },
+              azureLink
+                ? React.createElement(
+                    "a",
+                    {
+                      className: "timeline-details-work-item-id timeline-details-work-item-link",
+                      href: azureLink,
+                      target: "_blank",
+                      rel: "noreferrer"
+                    },
+                    `#${selected.workItemId}`
+                  )
+                : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`),
+              React.createElement(
+                "button",
                 {
-                  className: "timeline-details-work-item-id timeline-details-work-item-link",
-                  href: azureLink,
-                  target: "_blank",
-                  rel: "noreferrer"
+                  type: "button",
+                  className: "timeline-action-button timeline-action-button-primary",
+                  onClick: () => {
+                    void saveDetails();
+                  },
+                  disabled:
+                    isSaving ||
+                    !isDirty ||
+                    titleDraft.trim().length === 0 ||
+                    stateDraft.trim().length === 0 ||
+                    !props.onUpdateSelectedWorkItemDetails
                 },
-                `#${selected.workItemId}`
+                isSaving ? "Saving..." : "Save"
               )
-            : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)
+            )
           : null
     ),
     collapsed
@@ -253,7 +282,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                     setStateDraft((event.target as HTMLSelectElement).value);
                   }
                 },
-                ...stateOptions.map((option) => React.createElement("option", { key: option, value: option }, option))
+                ...stateOptions.map((option) => React.createElement("option", { key: option.name, value: option.name }, option.name))
               )
             ),
             React.createElement(
@@ -368,27 +397,6 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                   });
                 }
               })
-            ),
-            React.createElement(
-              "div",
-              { className: "timeline-details-actions" },
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-action-button timeline-action-button-primary",
-                  onClick: () => {
-                    void saveDetails();
-                  },
-                  disabled:
-                    isSaving ||
-                    !isDirty ||
-                    titleDraft.trim().length === 0 ||
-                    stateDraft.trim().length === 0 ||
-                    !props.onUpdateSelectedWorkItemDetails
-                },
-                isSaving ? "Saving..." : "Save"
-              )
             ),
             saveError
               ? React.createElement(
@@ -534,11 +542,20 @@ function formatDateForDisplay(raw: string): string {
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
-function resolveStateOptions(timeline: TimelineReadModel | null, selectedState: string, serverStateOptions: string[]): string[] {
+function resolveStateOptions(
+  timeline: TimelineReadModel | null,
+  selectedState: string,
+  serverStateOptions: Array<{ name: string; color: string | null }>
+): Array<{ name: string; color: string | null }> {
   if (serverStateOptions.length > 0) {
-    const normalizedServerOptions = serverStateOptions.map((state) => state.trim()).filter((state) => state.length > 0);
-    if (selectedState.trim().length > 0 && !normalizedServerOptions.some((entry) => entry.toLowerCase() === selectedState.trim().toLowerCase())) {
-      normalizedServerOptions.unshift(selectedState.trim());
+    const normalizedServerOptions = serverStateOptions
+      .map((state) => ({ name: state.name.trim(), color: state.color }))
+      .filter((state) => state.name.length > 0);
+    if (
+      selectedState.trim().length > 0 &&
+      !normalizedServerOptions.some((entry) => entry.name.toLowerCase() === selectedState.trim().toLowerCase())
+    ) {
+      normalizedServerOptions.unshift({ name: selectedState.trim(), color: null });
     }
     return normalizedServerOptions;
   }
@@ -559,15 +576,15 @@ function resolveStateOptions(timeline: TimelineReadModel | null, selectedState: 
     discovered.add(selectedState.trim());
   }
 
-  const result: string[] = [];
+  const result: Array<{ name: string; color: string | null }> = [];
   KNOWN_STATE_ORDER.forEach((state) => {
-    result.push(state);
+    result.push({ name: state, color: null });
     discovered.delete(state);
   });
 
   [...discovered].sort((left, right) => left.localeCompare(right)).forEach((state) => {
-    result.push(state);
+    result.push({ name: state, color: null });
   });
 
-  return result.length > 0 ? result : [selectedState || "To Do"];
+  return result.length > 0 ? result : [{ name: selectedState || "To Do", color: null }];
 }
