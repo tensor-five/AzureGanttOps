@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { WriteCommandPort } from "../ports/write-command.port.js";
+import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { createPhase1QueryFlow } from "../../app/composition/phase1-query-flow.js";
 import { QueryId } from "../../domain/query-runtime/value-objects/query-id.js";
 import { SubmitWriteCommandUseCase } from "./submit-write-command.use-case.js";
@@ -118,7 +119,28 @@ describe("phase1 composition write capability wiring", () => {
       }))
     },
     contextFilePath: "/tmp/ado-context.json",
-    mappingFilePath: "/tmp/mapping-settings.json"
+    mappingFilePath: "/tmp/mapping-settings.json",
+    authPreflightRunner: {
+      run: vi.fn(async (command: string) => {
+        if (command.endsWith("--version")) {
+          return { stdout: "azure-cli 2.0", stderr: "", exitCode: 0 };
+        }
+        if (command.includes("extension show --name azure-devops")) {
+          return { stdout: '{"name":"azure-devops"}', stderr: "", exitCode: 0 };
+        }
+        if (command.includes("account show -o json")) {
+          return { stdout: '{"tenantId":"abc"}', stderr: "", exitCode: 0 };
+        }
+        if (command.includes("devops configure --list")) {
+          return {
+            stdout: "[defaults]\norganization = https://dev.azure.com/contoso\nproject = delivery",
+            stderr: "",
+            exitCode: 0
+          };
+        }
+        return { stdout: "", stderr: "unexpected command", exitCode: 1 };
+      })
+    } as CliCommandRunner
   };
 
   it("defaults write capability to disabled when flag is missing", () => {

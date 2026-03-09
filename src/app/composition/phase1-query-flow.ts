@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { AzureCliPreflightAdapter } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
+import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { AzureQueryRuntimeAdapter, type HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
@@ -29,10 +30,11 @@ export function createPhase1QueryFlow(params: {
   contextFilePath: string;
   mappingFilePath?: string;
   capabilities?: Partial<CapabilityFlags>;
+  authPreflightRunner?: CliCommandRunner;
 }): Phase1QueryFlow {
   const settingsAdapter = new FileContextSettingsAdapter(params.contextFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
-  const authPreflight = new AzureCliPreflightAdapter();
+  const authPreflight = new AzureCliPreflightAdapter(params.authPreflightRunner);
   const queryRuntime = new AzureQueryRuntimeAdapter(params.httpClient, contextStore);
   const buildTimelineView = new BuildTimelineViewUseCase();
   const mappingSettings = new FileMappingSettingsAdapter(
