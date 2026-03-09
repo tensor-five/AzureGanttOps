@@ -716,6 +716,7 @@ section[role="tabpanel"] {
 
 .query-selector-primary,
 .query-selector-button,
+.query-selector-secondary,
 .timeline-action-button,
 .timeline-density-button,
 .timeline-unschedulable-button,
@@ -725,6 +726,7 @@ button {
 
 .query-selector-primary,
 .query-selector-button,
+.query-selector-secondary,
 .timeline-action-button,
 .timeline-density-button,
 .timeline-unschedulable-button {
@@ -755,6 +757,17 @@ button {
 .timeline-density-button-active:hover {
   background: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
+}
+
+.query-selector-auth-action {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.query-selector-auth-message {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .query-selector-list {

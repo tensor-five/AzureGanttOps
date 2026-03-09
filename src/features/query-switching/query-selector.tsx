@@ -28,6 +28,15 @@ export type QuerySelectorProps = {
     };
   }) => Promise<QueryIntakeResponse>;
   onNeedsFix: (response: QueryIntakeResponse) => void;
+  authStatus: QueryIntakeResponse["preflightStatus"] | null;
+  onAuthenticateAzureCli: () => Promise<{
+    status: "OK";
+    message: string;
+  }>;
+  onSetAzureCliPath: (path: string) => Promise<{
+    status: "OK";
+    path: string;
+  }>;
 };
 
 type ParsedSelection = {
@@ -40,13 +49,19 @@ type ParsedSelection = {
 export const ORG_KEY = "azure-ganttops.organization";
 export const PROJECT_KEY = "azure-ganttops.project";
 export const QUERY_INPUT_KEY = "azure-ganttops.query-input";
+export const AZ_CLI_PATH_KEY = "azure-ganttops.az-cli-path";
 const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
   const [queryInput, setQueryInput] = React.useState(() => readLocalStorage(QUERY_INPUT_KEY));
   const [organization, setOrganization] = React.useState(() => readLocalStorage(ORG_KEY));
   const [project, setProject] = React.useState(() => readLocalStorage(PROJECT_KEY));
+  const [azCliPath, setAzCliPath] = React.useState(() => readLocalStorage(AZ_CLI_PATH_KEY));
   const [queryInputError, setQueryInputError] = React.useState<string | null>(null);
+  const [authInFlight, setAuthInFlight] = React.useState(false);
+  const [authMessage, setAuthMessage] = React.useState<string | null>(null);
+  const [pathInFlight, setPathInFlight] = React.useState(false);
+  const [pathMessage, setPathMessage] = React.useState<string | null>(null);
 
   const parsedSelection = React.useMemo(
     () => parseRuntimeQuerySelection(queryInput, organization, project),
@@ -138,6 +153,9 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
       `${query.name} (${query.id})`
     )
   );
+
+  const showAzureLoginAction = props.authStatus === "SESSION_EXPIRED";
+  const showAzPathAction = props.authStatus === "CLI_NOT_FOUND" || props.authStatus === "UNKNOWN_ERROR";
 
   return React.createElement(
     "section",
@@ -243,7 +261,135 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
           }
         },
         "Run query by ID"
-      )
+      ),
+      showAzureLoginAction
+        ? React.createElement(
+            "div",
+            { className: "query-selector-auth-action" },
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "query-selector-secondary",
+                disabled: authInFlight,
+                onClick: () => {
+                  setAuthMessage(null);
+                  setAuthInFlight(true);
+                  void props.onAuthenticateAzureCli()
+                    .then((result) => {
+                      setAuthMessage(result.message);
+                    })
+                    .catch((error: unknown) => {
+                      const message = error instanceof Error ? error.message : "Azure CLI login failed.";
+                      setAuthMessage(message);
+                    })
+                    .finally(() => {
+                      setAuthInFlight(false);
+                    });
+                }
+              },
+              authInFlight ? "Signing in..." : "Sign in with Azure CLI"
+            ),
+            React.createElement(
+              "div",
+              { className: "query-selector-hint" },
+              "Starts `az login --use-device-code`. Complete sign-in, then run query again."
+            ),
+            authMessage
+              ? React.createElement(
+                  "div",
+                  {
+                    role: "status",
+                    "aria-live": "polite",
+                    className: "query-selector-auth-message"
+                  },
+                  authMessage
+                )
+              : null
+          )
+        : null,
+      showAzPathAction
+        ? React.createElement(
+            "div",
+            { className: "query-selector-auth-action" },
+            React.createElement(
+              "label",
+              { className: "query-selector-field" },
+              "Azure CLI path (optional override)",
+              React.createElement("input", {
+                className: "query-selector-input",
+                "aria-label": "Azure CLI path",
+                placeholder: "Example: C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd",
+                value: azCliPath,
+                onChange: (event) => {
+                  setAzCliPath((event.target as HTMLInputElement).value);
+                }
+              })
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "query-selector-secondary",
+                disabled: pathInFlight,
+                onClick: () => {
+                  setPathMessage(null);
+                  setPathInFlight(true);
+                  void props.onSetAzureCliPath(azCliPath)
+                    .then((result) => {
+                      persistLocalStorage(AZ_CLI_PATH_KEY, azCliPath);
+                      setPathMessage(`Azure CLI path set to: ${result.path}`);
+                    })
+                    .catch((error: unknown) => {
+                      const message = error instanceof Error ? error.message : "Failed to set Azure CLI path.";
+                      setPathMessage(message);
+                    })
+                    .finally(() => {
+                      setPathInFlight(false);
+                    });
+                }
+              },
+              pathInFlight ? "Applying path..." : "Apply CLI path"
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "query-selector-secondary",
+                disabled: pathInFlight,
+                onClick: () => {
+                  setPathMessage(null);
+                  setPathInFlight(true);
+                  void props.onSetAzureCliPath("")
+                    .then((result) => {
+                      setAzCliPath(result.path === "az" ? "" : result.path);
+                      persistLocalStorage(AZ_CLI_PATH_KEY, result.path === "az" ? "" : result.path);
+                      setPathMessage(`Auto-detected Azure CLI path: ${result.path}`);
+                    })
+                    .catch((error: unknown) => {
+                      const message = error instanceof Error ? error.message : "Auto-detect failed.";
+                      setPathMessage(message);
+                    })
+                    .finally(() => {
+                      setPathInFlight(false);
+                    });
+                }
+              },
+              pathInFlight ? "Detecting..." : "Auto-detect with Get-Command"
+            ),
+            pathMessage
+              ? React.createElement(
+                  "div",
+                  {
+                    role: "status",
+                    "aria-live": "polite",
+                    className: "query-selector-auth-message"
+                  },
+                  pathMessage
+                )
+              : null
+          )
+        : null
     ),
     React.createElement(
       "section",

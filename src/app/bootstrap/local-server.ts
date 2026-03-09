@@ -1,6 +1,7 @@
 import { createHttpServer } from "./http-server.js";
-import { execFile } from "node:child_process";
+import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { buildAzCommand, resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
 
 type HeaderBag = Record<string, string | undefined>;
 
@@ -10,7 +11,7 @@ type FetchResponse = {
   headers: HeaderBag;
 };
 
-const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
 const ADO_RESOURCE_ID = "499b84ac-1321-427f-aa17-267ca6975798";
 const TOKEN_REFRESH_SKEW_MS = 120_000;
 const PORT = Number(process.env.PORT ?? "8080");
@@ -23,9 +24,15 @@ if (process.env.ADO_WRITE_ENABLED !== "1") {
 }
 
 async function main(): Promise<void> {
+  const detectedAzCliPath = await resolveAzCliExecutablePath();
+  if (!process.env.ADO_AZ_CLI_PATH && detectedAzCliPath !== "az") {
+    process.env.ADO_AZ_CLI_PATH = detectedAzCliPath;
+  }
+
   if (process.env.ADO_VERBOSE_LOGS === "1") {
     console.log("[ado-runtime] ADO_VERBOSE_LOGS=1");
     console.log(`[ado-runtime] ADO_WRITE_ENABLED=${process.env.ADO_WRITE_ENABLED === "1" ? "1" : "0"}`);
+    console.log(`[ado-runtime] ADO_AZ_CLI_PATH=${resolveAzCliExecutablePath()}`);
   }
 
   const authHeaderProvider = createAdoAuthHeaderProvider();
@@ -156,9 +163,18 @@ function logAuthMode(event: string, mode: string): void {
 
 async function resolveAzureCliAccessToken(): Promise<string> {
   try {
-    const output = await execFileAsync(
-      "az",
-      ["account", "get-access-token", "--resource", ADO_RESOURCE_ID, "--query", "accessToken", "-o", "tsv"],
+    const azExecutable = await resolveAzCliExecutablePath();
+    const output = await execAsync(
+      buildAzCommand(azExecutable, [
+        "account",
+        "get-access-token",
+        "--resource",
+        ADO_RESOURCE_ID,
+        "--query",
+        "accessToken",
+        "-o",
+        "tsv"
+      ]),
       {
         timeout: 15_000,
         windowsHide: true
@@ -172,8 +188,14 @@ async function resolveAzureCliAccessToken(): Promise<string> {
     }
 
     return token;
-  } catch {
-    throw new Error("ADO_AUTH_REQUIRED: Set ADO_PAT/AZURE_DEVOPS_EXT_PAT or run 'az login'.");
+  } catch (error: unknown) {
+    const nodeError = error as {
+      stderr?: string;
+      stdout?: string;
+    };
+    const detail = `${nodeError.stderr ?? ""} ${nodeError.stdout ?? ""}`.trim();
+    const hint = detail.length > 0 ? ` Details: ${detail.slice(0, 300)}` : "";
+    throw new Error(`ADO_AUTH_REQUIRED: Set ADO_PAT/AZURE_DEVOPS_EXT_PAT or run 'az login'.${hint}`);
   }
 }
 

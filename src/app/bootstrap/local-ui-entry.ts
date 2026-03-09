@@ -146,6 +146,54 @@ const composition = createDefaultUiShellComposition({
         operationCount: number;
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
       };
+    },
+    authenticateAzureCli: async () => {
+      const response = await fetch("/phase2/az-login", {
+        method: "POST",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as { status?: "OK"; message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && typeof payload.message === "string"
+            ? payload.message
+            : `Azure login failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return {
+        status: "OK" as const,
+        message: typeof payload.message === "string" ? payload.message : "Azure CLI login completed."
+      };
+    },
+    setAzureCliPath: async (path) => {
+      const response = await fetch("/phase2/az-cli-path", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({ path })
+      });
+
+      const payload = (await response.json()) as { status?: "OK"; path?: string; message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && typeof payload.message === "string"
+            ? payload.message
+            : `Azure CLI path update failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return {
+        status: "OK" as const,
+        path: typeof payload.path === "string" ? payload.path : "az"
+      };
     }
   }
 });

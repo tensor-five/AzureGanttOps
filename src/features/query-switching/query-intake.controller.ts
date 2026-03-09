@@ -494,7 +494,7 @@ function guidanceForPreflight(status: QueryIntakeResponse["preflightStatus"]): s
     case "CONTEXT_MISMATCH":
       return "Azure defaults do not match this query. Update settings and retry.";
     case "CLI_NOT_FOUND":
-      return "Azure CLI is not available. Install Azure CLI and retry.";
+      return "Azure CLI is not available. Install Azure CLI or set az.cmd path in Query tab, then retry.";
     case "UNKNOWN_ERROR":
     default:
       return "Could not validate Azure connection. Retry in a moment.";

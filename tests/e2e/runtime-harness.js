@@ -26837,12 +26837,132 @@ function writeToLocalStorage(density) {
 // dist/src/features/gantt-view/timeline-details-panel.js
 var import_react4 = __toESM(require_react(), 1);
 function TimelineDetailsPanel(props) {
+  const collapsed = props.collapsed ?? false;
+  const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
+  const [titleDraft, setTitleDraft] = import_react4.default.useState("");
+  const [descriptionDraft, setDescriptionDraft] = import_react4.default.useState("");
+  const [saveError, setSaveError] = import_react4.default.useState(null);
+  const [isSaving, setIsSaving] = import_react4.default.useState(false);
+  const descriptionRef = import_react4.default.useRef(null);
+  import_react4.default.useEffect(() => {
+    if (!selected) {
+      setTitleDraft("");
+      setDescriptionDraft("");
+      setSaveError(null);
+      if (descriptionRef.current) {
+        descriptionRef.current.innerHTML = "";
+      }
+      return;
+    }
+    setTitleDraft(selected.title);
+    setDescriptionDraft(selected.descriptionHtml);
+    setSaveError(null);
+    if (descriptionRef.current) {
+      descriptionRef.current.innerHTML = selected.descriptionHtml;
+    }
+  }, [selected?.workItemId]);
   const lines = buildTimelineDetailsLines(props);
-  const entries = lines.map((line, index) => import_react4.default.createElement("li", { key: `${index}-${line}`, className: "timeline-details-row" }, line));
+  const entries = lines.map((line, index) => {
+    const parsed = parseTimelineDetailLine(line);
+    if (!parsed) {
+      return import_react4.default.createElement("div", { key: `${index}-${line}`, className: "timeline-details-note" }, line.replace(/^- /, ""));
+    }
+    return import_react4.default.createElement("article", { key: `${index}-${line}`, className: "timeline-details-card" }, import_react4.default.createElement("p", { className: "timeline-details-card-label" }, parsed.label), import_react4.default.createElement("p", { className: "timeline-details-card-value" }, parsed.value));
+  });
+  const baselineTitle = selected?.title ?? "";
+  const baselineDescription = selected?.descriptionHtml ?? "";
+  const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription;
+  const azureLink = selected ? buildAzureWorkItemUrl({
+    organization: props.organization,
+    project: props.project,
+    workItemId: selected.workItemId
+  }) : null;
+  const applyDescriptionCommand = (command) => {
+    if (!descriptionRef.current) {
+      return;
+    }
+    descriptionRef.current.focus();
+    document.execCommand(command);
+  };
+  const saveDetails = async () => {
+    if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || !isDirty) {
+      return;
+    }
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      await props.onUpdateSelectedWorkItemDetails({
+        targetWorkItemId: selected.workItemId,
+        title: titleDraft.trim(),
+        descriptionHtml: descriptionDraft
+      });
+      setTitleDraft(titleDraft.trim());
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Saving details failed.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return import_react4.default.createElement("aside", {
     "aria-label": "timeline-details-panel",
-    className: "timeline-details-panel-surface"
-  }, import_react4.default.createElement("h4", null, "Details"), import_react4.default.createElement("ul", { className: "timeline-details-list" }, ...entries));
+    className: collapsed ? "timeline-details-panel-surface timeline-details-panel-surface-collapsed" : "timeline-details-panel-surface"
+  }, import_react4.default.createElement("div", { className: "timeline-details-panel-head" }, import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-details-collapse-toggle",
+    "aria-label": collapsed ? "Expand details panel" : "Collapse details panel",
+    title: collapsed ? "Expand details panel" : "Collapse details panel",
+    onClick: () => {
+      props.onToggleCollapsed?.();
+    }
+  }, collapsed ? "\u25C0" : "\u25B6"), collapsed ? null : import_react4.default.createElement("h4", null, "Work item details"), collapsed ? null : selected ? import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`) : null), collapsed ? null : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
+    type: "text",
+    className: "timeline-details-input",
+    value: titleDraft,
+    onChange: (event) => {
+      setTitleDraft(event.target.value);
+    }
+  })), import_react4.default.createElement("div", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Description"), import_react4.default.createElement("div", { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" }, import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => {
+      applyDescriptionCommand("bold");
+    }
+  }, "Bold"), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => {
+      applyDescriptionCommand("italic");
+    }
+  }, "Italic"), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => {
+      applyDescriptionCommand("insertUnorderedList");
+    }
+  }, "List")), import_react4.default.createElement("div", {
+    ref: descriptionRef,
+    className: "timeline-details-richtext",
+    contentEditable: true,
+    suppressContentEditableWarning: true,
+    onInput: (event) => {
+      setDescriptionDraft(event.target.innerHTML);
+    }
+  })), import_react4.default.createElement("div", { className: "timeline-details-actions" }, import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-action-button timeline-action-button-primary",
+    onClick: () => {
+      void saveDetails();
+    },
+    disabled: isSaving || !isDirty || titleDraft.trim().length === 0 || !props.onUpdateSelectedWorkItemDetails
+  }, isSaving ? "Saving..." : "Save"), azureLink ? import_react4.default.createElement("a", {
+    className: "timeline-details-azure-link",
+    href: azureLink,
+    target: "_blank",
+    rel: "noreferrer"
+  }, "Open in Azure DevOps") : import_react4.default.createElement("span", { className: "timeline-details-muted" }, "Azure link unavailable (missing organization/project).")), saveError ? import_react4.default.createElement("p", {
+    className: "timeline-update-error",
+    role: "status"
+  }, `Save failed: ${saveError}`) : null) : import_react4.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."), collapsed ? null : import_react4.default.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries), import_react4.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
 }
 function buildTimelineDetailsLines(input) {
   if (!input.timeline || input.selectedWorkItemId === null) {
@@ -26875,6 +26995,46 @@ function buildTimelineDetailsLines(input) {
     ];
   }
   return ["- selected: none"];
+}
+function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
+  if (!timeline || selectedWorkItemId === null) {
+    return null;
+  }
+  const selectedBar = timeline.bars.find((bar) => bar.workItemId === selectedWorkItemId);
+  if (selectedBar) {
+    return {
+      workItemId: selectedBar.workItemId,
+      title: selectedBar.title,
+      descriptionHtml: selectedBar.details.descriptionHtml ?? ""
+    };
+  }
+  const selectedUnschedulable = timeline.unschedulable.find((item) => item.workItemId === selectedWorkItemId);
+  if (selectedUnschedulable) {
+    return {
+      workItemId: selectedUnschedulable.workItemId,
+      title: selectedUnschedulable.title,
+      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? ""
+    };
+  }
+  return null;
+}
+function buildAzureWorkItemUrl(input) {
+  const organization = (input.organization ?? "").trim();
+  const project = (input.project ?? "").trim();
+  if (!organization || !project) {
+    return null;
+  }
+  return `https://dev.azure.com/${encodeURIComponent(organization)}/${encodeURIComponent(project)}/_workitems/edit/${input.workItemId}`;
+}
+function parseTimelineDetailLine(line) {
+  const match = /^- ([^:]+):\s?(.*)$/.exec(line);
+  if (!match) {
+    return null;
+  }
+  return {
+    label: match[1],
+    value: match[2]
+  };
 }
 
 // dist/src/features/gantt-view/selection-store.js
@@ -26917,11 +27077,19 @@ function TimelinePane(props) {
   const [selectedWorkItemId, setSelectedWorkItemId] = import_react5.default.useState(() => selectionStore.getSelectedWorkItemId());
   const [adoptScheduleError, setAdoptScheduleError] = import_react5.default.useState(null);
   const [density, setDensity] = import_react5.default.useState(() => props.density ?? loadLastDensity() ?? "comfortable");
+  const [dayWidthPx, setDayWidthPx] = import_react5.default.useState(DAY_WIDTH_WEEK_PX);
   const [activeScheduleDrag, setActiveScheduleDrag] = import_react5.default.useState(null);
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = import_react5.default.useState(null);
   const [unscheduledDropPreview, setUnscheduledDropPreview] = import_react5.default.useState(null);
+  const [detailsCollapsed, setDetailsCollapsed] = import_react5.default.useState(false);
+  const [chartViewport, setChartViewport] = import_react5.default.useState({
+    scrollLeft: 0,
+    clientWidth: 0,
+    clientHeight: 0
+  });
   const chartScrollRef = import_react5.default.useRef(null);
   const chartSvgRef = import_react5.default.useRef(null);
+  const zoomAnchorRef = import_react5.default.useRef(null);
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule);
   import_react5.default.useEffect(() => {
     if (props.density) {
@@ -26938,6 +27106,26 @@ function TimelinePane(props) {
   import_react5.default.useEffect(() => {
     saveLastDensity(density);
   }, [density]);
+  import_react5.default.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+    const syncViewport = () => {
+      setChartViewport({
+        scrollLeft: scrollElement.scrollLeft,
+        clientWidth: scrollElement.clientWidth,
+        clientHeight: scrollElement.clientHeight
+      });
+    };
+    syncViewport();
+    scrollElement.addEventListener("scroll", syncViewport, { passive: true });
+    window.addEventListener("resize", syncViewport);
+    return () => {
+      scrollElement.removeEventListener("scroll", syncViewport);
+      window.removeEventListener("resize", syncViewport);
+    };
+  }, [effectiveTimeline]);
   import_react5.default.useEffect(() => {
     const selectableItems = [
       ...effectiveTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
@@ -26970,7 +27158,70 @@ function TimelinePane(props) {
       }
     }));
   }, [effectiveTimeline, props]);
-  const chartModel = import_react5.default.useMemo(() => buildVisualChartModel(effectiveTimeline), [effectiveTimeline]);
+  const zoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
+  const chartModel = import_react5.default.useMemo(() => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel), [effectiveTimeline, dayWidthPx, zoomLevel]);
+  const stickyTodayMarker = import_react5.default.useMemo(() => {
+    if (chartModel.todayX === null || chartViewport.clientWidth <= 0) {
+      return null;
+    }
+    const absoluteTodayX = CHART_LEFT_GUTTER + chartModel.todayX;
+    const viewportTodayX = absoluteTodayX - chartViewport.scrollLeft;
+    const clampedViewportX = Math.max(0, Math.min(chartViewport.clientWidth, viewportTodayX));
+    return {
+      x: clampedViewportX,
+      isPinnedToEdge: viewportTodayX < 0 || viewportTodayX > chartViewport.clientWidth
+    };
+  }, [chartModel.todayX, chartViewport.clientWidth, chartViewport.scrollLeft]);
+  import_react5.default.useEffect(() => {
+    const anchor = zoomAnchorRef.current;
+    const scrollElement = chartScrollRef.current;
+    if (!anchor || !scrollElement) {
+      return;
+    }
+    const absoluteTargetX = CHART_LEFT_GUTTER + anchor.dayOffset * chartModel.dayWidthPx;
+    const desiredScrollLeft = absoluteTargetX - anchor.pointerOffsetX;
+    scrollElement.scrollLeft = Math.max(0, desiredScrollLeft);
+    zoomAnchorRef.current = null;
+  }, [chartModel.dayWidthPx]);
+  const handleChartWheel = import_react5.default.useCallback((event) => {
+    if (!event.ctrlKey && !event.metaKey) {
+      return;
+    }
+    const svg = chartSvgRef.current;
+    const scrollElement = chartScrollRef.current;
+    if (!svg || !scrollElement) {
+      return;
+    }
+    event.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    if (rect.width <= 0) {
+      return;
+    }
+    const horizontalScale = svg.viewBox.baseVal.width / rect.width;
+    const svgX = (event.clientX - rect.left) * horizontalScale;
+    const dayOffset = (svgX - CHART_LEFT_GUTTER) / chartModel.dayWidthPx;
+    const pointerOffsetX = event.clientX - scrollElement.getBoundingClientRect().left;
+    const zoomMultiplier = Math.exp(-event.deltaY * 25e-4);
+    const nextDayWidth = clamp(dayWidthPx * zoomMultiplier, DAY_WIDTH_MONTH_PX, DAY_WIDTH_WEEK_PX);
+    if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
+      return;
+    }
+    zoomAnchorRef.current = { dayOffset, pointerOffsetX };
+    setDayWidthPx(nextDayWidth);
+  }, [chartModel.dayWidthPx, dayWidthPx]);
+  import_react5.default.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+    const onWheel = (event) => {
+      handleChartWheel(event);
+    };
+    scrollElement.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      scrollElement.removeEventListener("wheel", onWheel);
+    };
+  }, [handleChartWheel]);
   const geometryByWorkItemId = import_react5.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar, index) => {
@@ -27018,14 +27269,14 @@ function TimelinePane(props) {
     if (!active || event.pointerId !== active.pointerId) {
       return;
     }
-    const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current);
+    const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
     if (deltaDays === active.lastDayDelta) {
       return;
     }
     const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
     setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
     updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
-  }, [activeScheduleDrag, updateEditedSchedule]);
+  }, [activeScheduleDrag, chartModel.dayWidthPx, updateEditedSchedule]);
   const persistDraggedSchedule = import_react5.default.useCallback(async (drag) => {
     const override = editedBarSchedulesByWorkItemId[drag.workItemId];
     if (!override || !props.onUpdateWorkItemSchedule) {
@@ -27076,10 +27327,9 @@ function TimelinePane(props) {
     }
   }, [props]);
   const scheduleUnscheduledFromDrop = import_react5.default.useCallback(async (input) => {
-    const normalizedStart = new Date(Date.UTC(input.startDate.getUTCFullYear(), input.startDate.getUTCMonth(), input.startDate.getUTCDate()));
-    const normalizedEnd = addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS - 1);
-    const startDate = toIsoDateUtc(normalizedStart);
-    const endDate = toIsoDateUtc(normalizedEnd);
+    const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
+    const startDate = toIsoDateUtc(range.startDate);
+    const endDate = toIsoDateUtc(range.endDate);
     await persistWorkItemSchedule({
       targetWorkItemId: input.workItemId,
       startDate,
@@ -27091,10 +27341,10 @@ function TimelinePane(props) {
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react5.default.useCallback((event, workItemId) => {
+  const startUnscheduledDrag = import_react5.default.useCallback((event, workItemId, fixedEndDate) => {
     event.dataTransfer.setData("text/plain", String(workItemId));
     event.dataTransfer.effectAllowed = "move";
-    setActiveUnschedulableDrag({ workItemId });
+    setActiveUnschedulableDrag({ workItemId, fixedEndDate });
   }, []);
   const clearUnscheduledDrag = import_react5.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
@@ -27106,40 +27356,55 @@ function TimelinePane(props) {
     }
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart);
-    setUnscheduledDropPreview({
-      startDate,
-      endDate: addDays(startDate, DEFAULT_UNSCHEDULED_DURATION_DAYS - 1)
-    });
-  }, [activeUnschedulableDrag, chartModel.domainStart]);
+    const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
+    setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
+  }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
   const handleChartDrop = import_react5.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
     event.preventDefault();
     setAdoptScheduleError(null);
-    const droppedDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart);
+    const droppedDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
     const workItemId = activeUnschedulableDrag.workItemId;
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
-    void scheduleUnscheduledFromDrop({ workItemId, startDate: droppedDate }).catch((error) => {
+    void scheduleUnscheduledFromDrop({
+      workItemId,
+      startDate: droppedDate,
+      fixedEndDate: activeUnschedulableDrag.fixedEndDate
+    }).catch((error) => {
       const message = error instanceof Error ? error.message : "Unknown error";
       setAdoptScheduleError(message);
     });
-  }, [activeUnschedulableDrag, chartModel.domainStart, scheduleUnscheduledFromDrop]);
+  }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]);
   const detailProps = {
     timeline: effectiveTimeline,
-    selectedWorkItemId
+    selectedWorkItemId,
+    collapsed: detailsCollapsed,
+    onToggleCollapsed: () => {
+      setDetailsCollapsed((current) => !current);
+    },
+    organization: props.organization,
+    project: props.project,
+    onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails
   };
   const selectedTitle = resolveSelectedTitle(effectiveTimeline, selectedWorkItemId);
   const barCount = chartModel.bars.length;
   const unscheduledCount = effectiveTimeline?.unschedulable.length ?? 0;
-  const dependencyCount = effectiveTimeline?.dependencies.length ?? 0;
   return import_react5.default.createElement("section", {
     "aria-label": "timeline-pane",
     className: "timeline-pane"
-  }, import_react5.default.createElement("div", { className: "timeline-pane-header timeline-pane-header-card" }, import_react5.default.createElement("header", { className: "timeline-pane-title-block" }, import_react5.default.createElement("h3", null, "Timeline"), import_react5.default.createElement("div", { className: "timeline-pane-header-meta" }, import_react5.default.createElement("span", { className: "timeline-header-chip" }, `${barCount} bars`), import_react5.default.createElement("span", { className: "timeline-header-chip" }, `${unscheduledCount} unscheduled`), import_react5.default.createElement("span", { className: "timeline-header-chip" }, `${dependencyCount} deps`))), import_react5.default.createElement("div", { className: "timeline-pane-density" }, import_react5.default.createElement("div", { className: "timeline-density-label" }, `Density mode: ${density}`), import_react5.default.createElement("div", {
-    className: "timeline-density-controls timeline-density-controls-harmonized",
+  }, import_react5.default.createElement("div", {
+    className: "timeline-pane-actions"
+  }, import_react5.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react5.default.createElement("button", {
+    type: "button",
+    className: "timeline-action-button timeline-action-button-primary",
+    onClick: () => {
+      props.onRetryRefresh?.();
+    }
+  }, "Refresh"), import_react5.default.createElement("div", {
+    className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-density",
     role: "group",
     "aria-label": "Timeline density"
   }, import_react5.default.createElement("button", {
@@ -27160,30 +27425,33 @@ function TimelinePane(props) {
       setDensity("compact");
       props.onDensityChange?.("compact");
     }
-  }, "Compact")))), import_react5.default.createElement("div", {
-    className: "timeline-pane-actions"
-  }, import_react5.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react5.default.createElement("button", {
+  }, "Compact")), import_react5.default.createElement("div", {
+    className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom",
+    role: "group",
+    "aria-label": "Timeline zoom"
+  }, import_react5.default.createElement("button", {
     type: "button",
-    className: "timeline-action-button timeline-action-button-primary",
+    className: zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": zoomLevel === "week",
+    "aria-label": "Zoom in to week view",
     onClick: () => {
-      props.onRetryRefresh?.();
+      setDayWidthPx(DAY_WIDTH_WEEK_PX);
     }
-  }, "Refresh"), import_react5.default.createElement("button", {
+  }, "Week"), import_react5.default.createElement("button", {
     type: "button",
-    className: "timeline-action-button",
+    className: zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": zoomLevel === "month",
+    "aria-label": "Zoom out to month view",
     onClick: () => {
-      const nextSelection = firstSelectableWorkItemId(effectiveTimeline);
-      if (nextSelection !== null) {
-        selectWorkItem(nextSelection);
-      }
+      setDayWidthPx(DAY_WIDTH_MONTH_PX);
     }
-  }, "Select first item")), selectedTitle ? import_react5.default.createElement("div", {
+  }, "Month"))), selectedTitle ? import_react5.default.createElement("div", {
     "aria-label": "selected-timeline-item",
     className: "timeline-selected-item timeline-selected-item-pill"
   }, `Selected timeline item: ${selectedTitle}`) : null), adoptScheduleError ? import_react5.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
-  }, `Save failed: ${adoptScheduleError}`) : null, import_react5.default.createElement("div", { className: "timeline-main-grid" }, import_react5.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react5.default.createElement("div", { className: "timeline-empty-state" }, import_react5.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react5.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react5.default.createElement("div", {
+  }, `Save failed: ${adoptScheduleError}`) : null, import_react5.default.createElement("div", { className: detailsCollapsed ? "timeline-main-grid timeline-main-grid-details-collapsed" : "timeline-main-grid" }, import_react5.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react5.default.createElement("div", { className: "timeline-empty-state" }, import_react5.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react5.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react5.default.createElement("div", {
     className: activeScheduleDrag ? "timeline-chart-scroll timeline-chart-scroll-dragging" : "timeline-chart-scroll",
     ref: chartScrollRef
   }, import_react5.default.createElement("svg", {
@@ -27198,15 +27466,40 @@ function TimelinePane(props) {
     onPointerCancel: finishActiveDrag,
     onDragOver: handleChartDragOver,
     onDrop: handleChartDrop
-  }, chartModel.ticks.map((tick) => import_react5.default.createElement("g", { key: tick.label }, import_react5.default.createElement("line", {
+  }, chartModel.currentPeriod ? import_react5.default.createElement("rect", {
+    x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
+    y: CHART_GRID_START_Y,
+    width: chartModel.currentPeriod.width,
+    height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
+    className: "timeline-current-period-highlight"
+  }) : null, chartModel.dailyGridLines.map((dayX) => import_react5.default.createElement("line", {
+    key: `day-grid-${dayX}`,
+    x1: CHART_LEFT_GUTTER + dayX,
+    y1: CHART_GRID_START_Y,
+    x2: CHART_LEFT_GUTTER + dayX,
+    y2: chartModel.height - CHART_BOTTOM_PADDING,
+    className: "timeline-grid-line-day"
+  })), chartModel.monthBoundaries.map((boundaryX) => import_react5.default.createElement("line", {
+    key: `month-boundary-${boundaryX}`,
+    x1: CHART_LEFT_GUTTER + boundaryX,
+    y1: CHART_GRID_START_Y,
+    x2: CHART_LEFT_GUTTER + boundaryX,
+    y2: chartModel.height - CHART_BOTTOM_PADDING,
+    className: "timeline-month-boundary-line"
+  })), chartModel.monthLabels.map((month) => import_react5.default.createElement("text", {
+    key: `month-label-${month.x}-${month.label}`,
+    x: CHART_LEFT_GUTTER + month.x,
+    y: CHART_AXIS_MONTH_LABEL_Y,
+    className: "timeline-axis-month-label"
+  }, month.label)), chartModel.ticks.map((tick) => import_react5.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react5.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + tick.x,
-    y1: CHART_TOP_PADDING - 18,
+    y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + tick.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line"
   }), import_react5.default.createElement("text", {
     x: CHART_LEFT_GUTTER + tick.x + 4,
-    y: CHART_TOP_PADDING - 24,
+    y: CHART_AXIS_TICK_LABEL_Y,
     className: "timeline-axis-label"
   }, tick.label))), props.showDependencies ? effectiveTimeline?.dependencies.map((dependency, index) => {
     const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
@@ -27281,24 +27574,43 @@ function TimelinePane(props) {
   }), activeUnschedulableDrag && unscheduledDropPreview ? import_react5.default.createElement("g", {
     className: "timeline-unscheduled-drop-preview"
   }, import_react5.default.createElement("rect", {
-    x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * DAY_WIDTH_PX,
+    x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 8,
-    width: DEFAULT_UNSCHEDULED_DURATION_DAYS * DAY_WIDTH_PX,
+    width: dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate) * chartModel.dayWidthPx,
     height: BAR_HEIGHT,
     rx: 6,
     className: "timeline-unscheduled-drop-preview-bar"
   }), import_react5.default.createElement("text", {
-    x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * DAY_WIDTH_PX + 8,
+    x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx + 8,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 24,
     className: "timeline-unscheduled-drop-preview-label"
-  }, `${formatTickDate(unscheduledDropPreview.startDate)} \u2192 ${formatTickDate(unscheduledDropPreview.endDate)} (14d)`)) : null)), import_react5.default.createElement("div", { className: "timeline-unschedulable-list" }, import_react5.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react5.default.createElement("h4", null, "Unscheduled"), import_react5.default.createElement("p", null, "Select one item and assign a schedule from chart or selected bar.")), effectiveTimeline?.unschedulable.length ? import_react5.default.createElement("ul", null, ...effectiveTimeline.unschedulable.map((item) => import_react5.default.createElement("li", { key: item.workItemId }, import_react5.default.createElement("button", {
+  }, `${formatTickDate(unscheduledDropPreview.startDate)} \u2192 ${formatTickDate(unscheduledDropPreview.endDate)} (${dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate)}d)`)) : null), stickyTodayMarker && chartViewport.clientHeight > 0 ? import_react5.default.createElement("svg", {
+    className: stickyTodayMarker.isPinnedToEdge ? "timeline-today-sticky-overlay timeline-today-sticky-overlay-pinned" : "timeline-today-sticky-overlay",
+    viewBox: `0 0 ${Math.max(1, chartViewport.clientWidth)} ${Math.max(1, chartViewport.clientHeight)}`,
+    preserveAspectRatio: "none",
+    style: {
+      width: `${chartViewport.clientWidth}px`,
+      height: `${chartViewport.clientHeight}px`
+    },
+    "aria-hidden": "true"
+  }, import_react5.default.createElement("line", {
+    x1: stickyTodayMarker.x,
+    y1: 0,
+    x2: stickyTodayMarker.x,
+    y2: chartViewport.clientHeight,
+    className: "timeline-today-line"
+  }), import_react5.default.createElement("text", {
+    x: stickyTodayMarker.x + 6,
+    y: CHART_AXIS_TODAY_LABEL_Y,
+    className: "timeline-today-label"
+  }, "Today")) : null), import_react5.default.createElement("div", { className: "timeline-unschedulable-list" }, import_react5.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react5.default.createElement("h4", null, "Unscheduled"), import_react5.default.createElement("p", null, "Select one item and assign a schedule from chart or selected bar.")), effectiveTimeline?.unschedulable.length ? import_react5.default.createElement("ul", null, ...effectiveTimeline.unschedulable.map((item) => import_react5.default.createElement("li", { key: item.workItemId }, import_react5.default.createElement("button", {
     type: "button",
     className: "timeline-unschedulable-button",
     "aria-label": `#${item.details.mappedId} ${item.title} (${item.reason})`,
     "aria-pressed": selectedWorkItemId === item.workItemId,
     draggable: true,
     onDragStart: (event) => {
-      startUnscheduledDrag(event, item.workItemId);
+      startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
     },
     onDragEnd: () => {
       clearUnscheduledDrag();
@@ -27316,29 +27628,41 @@ function TimelinePane(props) {
   }, import_react5.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react5.default.createElement("span", { className: "timeline-unschedulable-item-title" }, `#${item.details.mappedId} ${truncateTitleToBarWidth(item.title, 220)}`), import_react5.default.createElement("span", { className: "timeline-unschedulable-item-reason" }, item.reason)), import_react5.default.createElement("span", { className: "timeline-unschedulable-button-state" }, import_react5.default.createElement("span", {
     className: "timeline-unschedulable-state-dot",
     style: { backgroundColor: item.state.color }
-  }), import_react5.default.createElement("span", { className: "timeline-unschedulable-button-badge" }, item.state.badge)))))) : import_react5.default.createElement("div", null, "None"))), import_react5.default.createElement(TimelineDetailsPanel, detailProps)));
+  }), import_react5.default.createElement("span", { className: "timeline-unschedulable-button-badge" }, item.state.badge)))))) : import_react5.default.createElement("div", null, "None")), import_react5.default.createElement("p", { className: "timeline-unschedulable-fyi" }, `${barCount} bars`, " \xB7 ", `${unscheduledCount} unscheduled`)), import_react5.default.createElement(TimelineDetailsPanel, detailProps)));
 }
 var CHART_ROW_HEIGHT = 40;
-var CHART_TOP_PADDING = 34;
+var CHART_TOP_PADDING = 56;
 var CHART_BOTTOM_PADDING = 18;
 var CHART_LEFT_GUTTER = 24;
+var CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
+var CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
+var CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
+var CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 var BAR_HEIGHT = 24;
-var DAY_WIDTH_PX = 22;
+var DAY_WIDTH_WEEK_PX = 22;
+var DAY_WIDTH_MONTH_PX = 8;
+var DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 var MIN_BAR_WIDTH_PX = 10;
 var HANDLE_WIDTH = 8;
 var DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 var BAR_LABEL_HORIZONTAL_PADDING = 8;
 var APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
-function buildVisualChartModel(timeline) {
+function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
   if (!timeline || timeline.bars.length === 0) {
-    const todayUtc = /* @__PURE__ */ new Date();
-    const normalizedTodayUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
+    const todayUtc2 = /* @__PURE__ */ new Date();
+    const normalizedTodayUtc2 = new Date(Date.UTC(todayUtc2.getUTCFullYear(), todayUtc2.getUTCMonth(), todayUtc2.getUTCDate()));
     return {
       width: 900,
       height: 180,
+      dayWidthPx,
       bars: [],
       ticks: [],
-      domainStart: addDays(normalizedTodayUtc, -1)
+      dailyGridLines: [],
+      monthBoundaries: [],
+      monthLabels: [],
+      domainStart: addDays(normalizedTodayUtc2, -1),
+      currentPeriod: null,
+      todayX: null
     };
   }
   const normalizedBars = timeline.bars.map((bar) => {
@@ -27358,14 +27682,20 @@ function buildVisualChartModel(timeline) {
     };
   }).filter((bar) => bar !== null);
   if (normalizedBars.length === 0) {
-    const todayUtc = /* @__PURE__ */ new Date();
-    const normalizedTodayUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
+    const todayUtc2 = /* @__PURE__ */ new Date();
+    const normalizedTodayUtc2 = new Date(Date.UTC(todayUtc2.getUTCFullYear(), todayUtc2.getUTCMonth(), todayUtc2.getUTCDate()));
     return {
       width: 900,
       height: 180,
+      dayWidthPx,
       bars: [],
       ticks: [],
-      domainStart: addDays(normalizedTodayUtc, -1)
+      dailyGridLines: [],
+      monthBoundaries: [],
+      monthLabels: [],
+      domainStart: addDays(normalizedTodayUtc2, -1),
+      currentPeriod: null,
+      todayX: null
     };
   }
   const minStart = new Date(Math.min(...normalizedBars.map((bar) => bar.start.getTime())));
@@ -27373,6 +27703,21 @@ function buildVisualChartModel(timeline) {
   const domainStart = addDays(minStart, -1);
   const domainEnd = addDays(maxEnd, 1);
   const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd));
+  const todayUtc = /* @__PURE__ */ new Date();
+  const normalizedTodayUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
+  const todayOffset = dayDiff(domainStart, normalizedTodayUtc);
+  const todayVisible = todayOffset >= 0 && todayOffset <= totalDays;
+  const todayX = todayVisible ? (todayOffset + 0.5) * dayWidthPx : null;
+  const currentPeriodStart = startOfIsoWeekUtc(normalizedTodayUtc);
+  const currentPeriodEnd = addDays(currentPeriodStart, 6);
+  const currentPeriodStartOffset = dayDiff(domainStart, currentPeriodStart);
+  const currentPeriodEndOffset = dayDiff(domainStart, currentPeriodEnd);
+  const visiblePeriodStart = Math.max(0, currentPeriodStartOffset);
+  const visiblePeriodEndExclusive = Math.min(totalDays, currentPeriodEndOffset + 1);
+  const currentPeriod = visiblePeriodEndExclusive > visiblePeriodStart ? {
+    x: visiblePeriodStart * dayWidthPx,
+    width: (visiblePeriodEndExclusive - visiblePeriodStart) * dayWidthPx
+  } : null;
   const bars = normalizedBars.map((bar) => {
     const startOffset = dayDiff(domainStart, bar.start);
     const spanDays = Math.max(1, dayDiffInclusive(bar.start, bar.end));
@@ -27384,25 +27729,26 @@ function buildVisualChartModel(timeline) {
       stateBadge: bar.source.state.badge,
       start: bar.start,
       end: bar.end,
-      x: startOffset * DAY_WIDTH_PX,
-      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * DAY_WIDTH_PX)
+      x: startOffset * dayWidthPx,
+      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx)
     };
   });
-  const ticks = [];
-  for (let dayIndex = 0; dayIndex <= totalDays; dayIndex += 7) {
-    const tickDate = addDays(domainStart, dayIndex);
-    ticks.push({
-      x: dayIndex * DAY_WIDTH_PX,
-      label: formatTickDate(tickDate)
-    });
-  }
-  const timelineWidth = totalDays * DAY_WIDTH_PX;
+  const ticks = buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx);
+  const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
+  const { monthBoundaries, monthLabels } = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const timelineWidth = totalDays * dayWidthPx;
   return {
     width: Math.max(900, CHART_LEFT_GUTTER + timelineWidth + 80),
     height: CHART_TOP_PADDING + (bars.length + 1) * CHART_ROW_HEIGHT + CHART_BOTTOM_PADDING,
+    dayWidthPx,
     bars,
     ticks,
-    domainStart
+    dailyGridLines,
+    monthBoundaries,
+    monthLabels,
+    domainStart,
+    currentPeriod,
+    todayX
   };
 }
 function parseIso(value) {
@@ -27412,10 +27758,39 @@ function parseIso(value) {
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
+function normalizeUtcDate(value) {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+}
+function resolveUnschedulableFixedEndDate(item) {
+  return parseIso(item.schedule?.endDate ?? null);
+}
+function resolveUnscheduledDropRange(startDate, fixedEndDate) {
+  let normalizedStart = normalizeUtcDate(startDate);
+  const normalizedEnd = fixedEndDate ? normalizeUtcDate(fixedEndDate) : addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS - 1);
+  if (normalizedStart.getTime() > normalizedEnd.getTime()) {
+    normalizedStart = normalizedEnd;
+  }
+  return {
+    startDate: normalizedStart,
+    endDate: normalizedEnd
+  };
+}
 function addDays(value, days) {
   const next = new Date(value.getTime());
   next.setUTCDate(next.getUTCDate() + days);
   return next;
+}
+function startOfIsoWeekUtc(value) {
+  const normalized = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+  const day = normalized.getUTCDay();
+  const isoWeekdayOffset = day === 0 ? 6 : day - 1;
+  return addDays(normalized, -isoWeekdayOffset);
+}
+function startOfMonthUtc(value) {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
+}
+function addMonthsUtc(value, months) {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth() + months, 1));
 }
 function dayDiff(from, to) {
   const fromUtc = Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate());
@@ -27425,19 +27800,83 @@ function dayDiff(from, to) {
 function dayDiffInclusive(from, to) {
   return dayDiff(from, to) + 1;
 }
+function buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx) {
+  const ticks = [];
+  const domainEnd = addDays(domainStart, totalDays);
+  if (zoomLevel === "week") {
+    let cursor = startOfIsoWeekUtc(domainStart);
+    if (cursor.getTime() < domainStart.getTime()) {
+      cursor = addDays(cursor, 7);
+    }
+    while (cursor.getTime() <= domainEnd.getTime()) {
+      const offset = dayDiff(domainStart, cursor);
+      ticks.push({
+        x: offset * dayWidthPx,
+        label: cursor.toISOString().slice(0, 10)
+      });
+      cursor = addDays(cursor, 7);
+    }
+  } else {
+    let cursor = startOfMonthUtc(domainStart);
+    if (cursor.getTime() < domainStart.getTime()) {
+      cursor = addMonthsUtc(cursor, 1);
+    }
+    while (cursor.getTime() <= domainEnd.getTime()) {
+      const offset = dayDiff(domainStart, cursor);
+      ticks.push({
+        x: offset * dayWidthPx,
+        label: cursor.toISOString().slice(0, 7)
+      });
+      cursor = addMonthsUtc(cursor, 1);
+    }
+  }
+  return ticks.length ? ticks : [{ x: 0, label: zoomLevel === "week" ? domainStart.toISOString().slice(0, 10) : domainStart.toISOString().slice(0, 7) }];
+}
+function buildDailyGridLines(totalDays, dayWidthPx) {
+  const lines = [];
+  for (let dayIndex = 0; dayIndex <= totalDays; dayIndex += 1) {
+    lines.push(dayIndex * dayWidthPx);
+  }
+  return lines;
+}
+function buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx) {
+  const domainEndExclusive = addDays(domainStart, totalDays + 1);
+  let cursor = startOfMonthUtc(domainStart);
+  const monthBoundaries = [];
+  const monthLabels = [];
+  while (cursor.getTime() < domainEndExclusive.getTime()) {
+    const monthStartOffset = dayDiff(domainStart, cursor);
+    const nextMonth = addMonthsUtc(cursor, 1);
+    const monthEndOffsetExclusive = dayDiff(domainStart, nextMonth);
+    if (monthStartOffset >= 0 && monthStartOffset <= totalDays) {
+      monthBoundaries.push(monthStartOffset * dayWidthPx);
+    }
+    const visibleStartOffset = Math.max(0, monthStartOffset);
+    const visibleEndOffsetExclusive = Math.min(totalDays + 1, monthEndOffsetExclusive);
+    if (visibleEndOffsetExclusive > visibleStartOffset) {
+      const centerOffset = visibleStartOffset + (visibleEndOffsetExclusive - visibleStartOffset) / 2;
+      monthLabels.push({
+        x: centerOffset * dayWidthPx,
+        label: cursor.toISOString().slice(0, 7)
+      });
+    }
+    cursor = nextMonth;
+  }
+  return { monthBoundaries, monthLabels };
+}
 function formatTickDate(value) {
   return value.toISOString().slice(0, 10);
 }
-function clientDeltaToDays(deltaClientX, svg) {
+function clientDeltaToDays(deltaClientX, svg, dayWidthPx) {
   if (!svg) {
-    return Math.round(deltaClientX / DAY_WIDTH_PX);
+    return Math.round(deltaClientX / dayWidthPx);
   }
   const rect = svg.getBoundingClientRect();
   const horizontalScale = rect.width > 0 ? svg.viewBox.baseVal.width / rect.width : 1;
   const svgDeltaX = deltaClientX * horizontalScale;
-  return Math.round(svgDeltaX / DAY_WIDTH_PX);
+  return Math.round(svgDeltaX / dayWidthPx);
 }
-function clientXToDate(clientX, svg, domainStart) {
+function clientXToDate(clientX, svg, domainStart, dayWidthPx) {
   const safeClientX = Number.isFinite(clientX) ? clientX : CHART_LEFT_GUTTER;
   let svgX = safeClientX;
   if (svg) {
@@ -27447,11 +27886,14 @@ function clientXToDate(clientX, svg, domainStart) {
       svgX = (clientX - rect.left) * horizontalScale;
     }
   }
-  const dayIndex = Math.max(0, Math.round((svgX - CHART_LEFT_GUTTER) / DAY_WIDTH_PX));
+  const dayIndex = Math.max(0, Math.round((svgX - CHART_LEFT_GUTTER) / dayWidthPx));
   return addDays(domainStart, dayIndex);
 }
 function toIsoDateUtc(value) {
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 function calculateDraggedSchedule(mode, sourceStart, sourceEnd, dayDelta) {
   if (mode === "move") {
@@ -27497,17 +27939,6 @@ function resolveSelectedTitle(timeline, selectedWorkItemId) {
   }
   const unschedulable = timeline.unschedulable.find((entry) => entry.workItemId === selectedWorkItemId);
   return unschedulable ? unschedulable.title : null;
-}
-function firstSelectableWorkItemId(timeline) {
-  if (!timeline) {
-    return null;
-  }
-  const firstBar = timeline.bars[0];
-  if (firstBar) {
-    return firstBar.workItemId;
-  }
-  const firstUnschedulable = timeline.unschedulable[0];
-  return firstUnschedulable ? firstUnschedulable.workItemId : null;
 }
 function applyAdoptedSchedules(timeline, adoptedSchedulesByWorkItemId) {
   if (!timeline) {
@@ -27683,6 +28114,30 @@ function applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate) {
     } : bar)
   };
 }
+function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml) {
+  if (!timeline) {
+    return timeline;
+  }
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) => bar.workItemId === targetWorkItemId ? {
+      ...bar,
+      title,
+      details: {
+        ...bar.details,
+        descriptionHtml
+      }
+    } : bar),
+    unschedulable: timeline.unschedulable.map((item) => item.workItemId === targetWorkItemId ? {
+      ...item,
+      title,
+      details: {
+        ...item.details,
+        descriptionHtml
+      }
+    } : item)
+  };
+}
 function renderAdoCommLogPanel(params) {
   return import_react9.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
@@ -27720,8 +28175,13 @@ function UiShellApp(props) {
   const [adoCommLogsError, setAdoCommLogsError] = import_react9.default.useState(null);
   const [adoCommLogsLoading, setAdoCommLogsLoading] = import_react9.default.useState(true);
   const [themeMode, setThemeMode] = import_react9.default.useState(() => readPersistedThemeMode());
+  const [workItemSyncState, setWorkItemSyncState] = import_react9.default.useState("up_to_date");
+  const [workItemSyncError, setWorkItemSyncError] = import_react9.default.useState(null);
   const adoCommPollInFlightRef = import_react9.default.useRef(false);
+  const workItemSyncInFlightRef = import_react9.default.useRef(0);
   const timelineSelectionStoreRef = import_react9.default.useRef(createTimelineSelectionStore());
+  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
+  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
   import_react9.default.useEffect(() => {
     let active = true;
     const poll = async () => {
@@ -27845,6 +28305,24 @@ function UiShellApp(props) {
       queryId: persistedQueryInput2
     });
   }, [lastRunRequest, props.composition.controller, runQuery]);
+  const runTrackedWorkItemUpdate = import_react9.default.useCallback(async (operation) => {
+    workItemSyncInFlightRef.current += 1;
+    setWorkItemSyncState("syncing");
+    setWorkItemSyncError(null);
+    try {
+      return await operation();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Write failed.";
+      setWorkItemSyncState("error");
+      setWorkItemSyncError(message);
+      throw error;
+    } finally {
+      workItemSyncInFlightRef.current = Math.max(0, workItemSyncInFlightRef.current - 1);
+      if (workItemSyncInFlightRef.current === 0) {
+        setWorkItemSyncState((current) => current === "error" ? current : "up_to_date");
+      }
+    }
+  }, []);
   import_react9.default.useEffect(() => {
     persistUiShellState({
       activeTab,
@@ -27907,7 +28385,13 @@ function UiShellApp(props) {
     onClick: () => {
       setControlsOpen((current) => !current);
     }
-  }, controlsOpen ? "Close controls" : "Open controls"))), import_react9.default.createElement("section", { className: "ui-shell-content" }, import_react9.default.createElement("section", { className: "gantt-primary-card" }, import_react9.default.createElement("div", { className: "gantt-primary-head" }, import_react9.default.createElement("h2", null, "Gantt Chart")), import_react9.default.createElement(WarningBanner, {
+  }, controlsOpen ? "Close controls" : "Open controls"))), import_react9.default.createElement("section", { className: "ui-shell-content" }, import_react9.default.createElement("section", { className: "gantt-primary-card" }, import_react9.default.createElement("div", { className: "gantt-primary-head" }, import_react9.default.createElement("h2", null, "Gantt Chart"), import_react9.default.createElement("div", {
+    className: "gantt-sync-status",
+    "data-state": workItemSyncState,
+    role: "status",
+    "aria-live": "polite",
+    title: workItemSyncState === "error" ? workItemSyncError ?? void 0 : void 0
+  }, import_react9.default.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }), import_react9.default.createElement("span", null, workItemSyncState === "syncing" ? "Updating work items..." : workItemSyncState === "error" ? "Work item update failed" : "Work items up to date"))), import_react9.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -27918,42 +28402,68 @@ function UiShellApp(props) {
   }), import_react9.default.createElement(TimelinePane, {
     timeline: uiModel.timeline,
     showDependencies: true,
+    organization,
+    project,
     selectionStore: timelineSelectionStoreRef.current,
     onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-        targetWorkItemId,
-        startDate,
-        endDate
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+          targetWorkItemId,
+          startDate,
+          endDate
+        });
+        if (!writeResult.accepted) {
+          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+        }
+        setUiModel((current) => ({
+          ...current,
+          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+        }));
+        setResponse((current) => current ? {
+          ...current,
+          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+        } : current);
       });
-      if (!writeResult.accepted) {
-        throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
-      }
-      setUiModel((current) => ({
-        ...current,
-        timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-      }));
-      setResponse((current) => current ? {
-        ...current,
-        timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-      } : current);
     },
     onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-        targetWorkItemId,
-        startDate,
-        endDate
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+          targetWorkItemId,
+          startDate,
+          endDate
+        });
+        if (!writeResult.accepted) {
+          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+        }
+        setUiModel((current) => ({
+          ...current,
+          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+        }));
+        setResponse((current) => current ? {
+          ...current,
+          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+        } : current);
       });
-      if (!writeResult.accepted) {
-        throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
-      }
-      setUiModel((current) => ({
-        ...current,
-        timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-      }));
-      setResponse((current) => current ? {
-        ...current,
-        timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-      } : current);
+    },
+    onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.updateWorkItemDetails({
+          targetWorkItemId,
+          title,
+          descriptionHtml
+        });
+        if (!writeResult.accepted) {
+          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+        }
+        setUiModel((current) => ({
+          ...current,
+          timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+        }));
+        setResponse((current) => current ? {
+          ...current,
+          timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+        } : current);
+      });
     },
     onRetryRefresh: () => {
       void retryRefresh();
@@ -28241,23 +28751,31 @@ window.__phase6Mount = () => {
         appendAdoResponseLog(request.queryInput);
         return next;
       },
-    fetchAdoCommLogs: async ({ afterSeq, limit }) => readAdoEntries(afterSeq, limit),
-    adoptWorkItemSchedule: async () => ({
-      accepted: true,
-      mode: "EXECUTED",
-      commandKind: "WORK_ITEM_PATCH",
-      operationCount: 2,
-      reasonCode: "WRITE_ENABLED"
-    }),
-    updateWorkItemDetails: async () => ({
-      accepted: true,
-      mode: "EXECUTED",
-      commandKind: "WORK_ITEM_PATCH",
-      operationCount: 2,
-      reasonCode: "WRITE_ENABLED"
-    })
-  }
-});
+      fetchAdoCommLogs: async ({ afterSeq, limit }) => readAdoEntries(afterSeq, limit),
+      adoptWorkItemSchedule: async () => ({
+        accepted: true,
+        mode: "EXECUTED",
+        commandKind: "WORK_ITEM_PATCH",
+        operationCount: 2,
+        reasonCode: "WRITE_ENABLED"
+      }),
+      updateWorkItemDetails: async () => ({
+        accepted: true,
+        mode: "EXECUTED",
+        commandKind: "WORK_ITEM_PATCH",
+        operationCount: 2,
+        reasonCode: "WRITE_ENABLED"
+      }),
+      authenticateAzureCli: async () => ({
+        status: "OK",
+        message: "Azure CLI login completed. Retry query intake."
+      }),
+      setAzureCliPath: async (nextPath) => ({
+        status: "OK",
+        path: nextPath.trim().length > 0 ? nextPath : "az"
+      })
+    }
+  });
   bootstrapUiClient({
     container,
     composition

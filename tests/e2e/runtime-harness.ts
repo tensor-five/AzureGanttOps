@@ -122,6 +122,14 @@ window.__phase6Mount = () => {
         commandKind: "WORK_ITEM_PATCH",
         operationCount: 2,
         reasonCode: "WRITE_ENABLED"
+      }),
+      authenticateAzureCli: async () => ({
+        status: "OK",
+        message: "Azure CLI login completed. Retry query intake."
+      }),
+      setAzureCliPath: async (nextPath) => ({
+        status: "OK",
+        path: nextPath.trim().length > 0 ? nextPath : "az"
       })
     }
   });

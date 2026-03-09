@@ -2,6 +2,9 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import os from "node:os";
 import path from "node:path";
 import { readFile, stat } from "node:fs/promises";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+import { buildAzCommand, resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
@@ -82,6 +85,8 @@ const ADO_COMM_ORIGIN = "http://127.0.0.1";
 const ADO_COMM_ROUTE_PATH = "/phase2/ado-comm-logs";
 const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
+const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
+const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const ADO_COMM_URL_PATH_ORIGIN = "https://dev.azure.com";
 const ADO_COMM_INVALID_LIMIT = 0;
 const ADO_COMM_DEFAULT_AFTER_SEQ = 0;
@@ -102,6 +107,12 @@ const ADO_COMM_ROUTE_NOT_FOUND = {
   code: "NOT_FOUND",
   message: "Route not found."
 } as const;
+const execAsync = promisify(exec);
+
+type AzLoginRunner = () => Promise<{
+  message: string;
+}>;
+type AzCliPathResolver = () => Promise<string>;
 
 function createAdoCommLogStore(maxEntries: number): AdoCommLogStore {
   const entries: AdoCommLogEntry[] = [];
@@ -282,6 +293,14 @@ function isUpdateDetailsRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_DETAILS_ROUTE_PATH;
 }
 
+function isAzLoginRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === AZ_LOGIN_ROUTE_PATH;
+}
+
+function isAzCliPathRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === AZ_CLI_PATH_ROUTE_PATH;
+}
+
 function writeAdoCommLogsResponse(res: ServerResponse, store: AdoCommLogStore, url: URL): void {
   const request = resolveAdoCommLogRequest(url);
   const snapshot = store.read(request.afterSeq, request.limit);
@@ -299,6 +318,8 @@ export function createHttpServer(params: {
   port?: number;
   contextFilePath?: string;
   distRootPath?: string;
+  azLoginRunner?: AzLoginRunner;
+  azCliPathResolver?: AzCliPathResolver;
 }): HttpServer {
   const verboseLogs = process.env.ADO_VERBOSE_LOGS === "1";
   if (verboseLogs) {
@@ -368,9 +389,22 @@ export function createHttpServer(params: {
   const contextStore = new AdoContextStore(settingsAdapter);
   const controller = new QueryIntakeController(contextStore, queryFlow.runQueryIntake);
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
+  const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
+  const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
 
   const server = createServer(async (req, res) => {
-    await route(req, res, controller, queryFlow.submitWriteCommand, queryFlow.capabilities.writeEnabled, distRootPath, verboseLogs, adoCommLogStore);
+    await route(
+      req,
+      res,
+      controller,
+      queryFlow.submitWriteCommand,
+      queryFlow.capabilities.writeEnabled,
+      distRootPath,
+      verboseLogs,
+      adoCommLogStore,
+      azLoginRunner,
+      azCliPathResolver
+    );
   });
   server.listen(params.port ?? 8080, "127.0.0.1");
 
@@ -397,7 +431,9 @@ async function route(
   writeEnabled: boolean,
   distRootPath: string,
   verboseLogs: boolean,
-  adoCommLogStore: AdoCommLogStore
+  adoCommLogStore: AdoCommLogStore,
+  azLoginRunner: AzLoginRunner,
+  azCliPathResolver: AzCliPathResolver
 ): Promise<void> {
   const method = req.method ?? "GET";
   const url = sanitizeIncomingPath(req.url);
@@ -524,6 +560,54 @@ async function route(
       });
       return;
     }
+  }
+
+  if (isAzLoginRoute(method, url.pathname)) {
+    try {
+      const result = await azLoginRunner();
+      writeJson(res, 200, {
+        status: "OK",
+        message: result.message
+      });
+      return;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "AZ_LOGIN_FAILED",
+        message: error instanceof Error ? error.message : "Azure CLI login failed."
+      });
+      return;
+    }
+  }
+
+  if (isAzCliPathRoute(method, url.pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const azCliPath = parseAzCliPathPayload(payload);
+
+    if (azCliPath === null) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide path as a string."
+      });
+      return;
+    }
+
+    if (azCliPath.length > 0) {
+      process.env.ADO_AZ_CLI_PATH = azCliPath;
+    } else {
+      const autoDetectedPath = await azCliPathResolver();
+      if (autoDetectedPath && autoDetectedPath !== "az") {
+        process.env.ADO_AZ_CLI_PATH = autoDetectedPath;
+      } else {
+        delete process.env.ADO_AZ_CLI_PATH;
+      }
+    }
+
+    writeJson(res, 200, {
+      status: "OK",
+      path: process.env.ADO_AZ_CLI_PATH ?? "az"
+    });
+    return;
   }
 
   if (isAdoCommLogRoute(method, url.pathname)) {
@@ -670,6 +754,35 @@ function parseMappingProfileUpsert(input: unknown):
       endOrTarget: candidate.fields.endOrTarget
     }
   };
+}
+
+function parseAzCliPathPayload(input: Record<string, unknown> | null): string | null {
+  if (!input || typeof input.path !== "string") {
+    return null;
+  }
+
+  return input.path.trim();
+}
+
+async function defaultAzLoginRunner(): Promise<{ message: string }> {
+  try {
+    const azExecutable = await resolveAzCliExecutablePath();
+    await execAsync(buildAzCommand(azExecutable, ["login", "--use-device-code", "--output", "none"]), {
+      timeout: 5 * 60_000,
+      windowsHide: true
+    });
+    return {
+      message: "Azure CLI login completed. Retry query intake."
+    };
+  } catch (error: unknown) {
+    const nodeError = error as {
+      stdout?: string;
+      stderr?: string;
+    };
+    const details = sanitizeLogText(`${nodeError.stderr ?? ""} ${nodeError.stdout ?? ""}`.trim());
+    const suffix = details ? ` Details: ${details.slice(0, 300)}` : "";
+    throw new Error(`Azure CLI login failed.${suffix}`);
+  }
 }
 
 async function serveDistAsset(pathname: string, distRootPath: string, res: ServerResponse): Promise<void> {

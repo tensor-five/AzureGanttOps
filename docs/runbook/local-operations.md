@@ -32,6 +32,7 @@ The app expects Azure DevOps organization and project context. Context is persis
 - `PORT` (default `8080`)
 - `ADO_VERBOSE_LOGS` (`1` or `0`)
 - `ADO_WRITE_ENABLED` (`1` or `0`)
+- `ADO_AZ_CLI_PATH` (optional path override, e.g. `C:\\...\\az.cmd`)
 
 ## Troubleshooting
 
@@ -46,6 +47,10 @@ The app expects Azure DevOps organization and project context. Context is persis
    - Update org/project in app settings or align Azure DevOps defaults.
 5. `ADO_AUTH_REQUIRED`
    - Set PAT env var or refresh Azure CLI login.
+6. Azure CLI path resolution fails (`CLI_NOT_FOUND` despite installed CLI)
+   - Open Query tab and click "Auto-detect with Get-Command".
+   - If needed, set the manual Azure CLI path (`az.cmd`) with "Apply CLI path".
+   - Then use "Sign in with Azure CLI" and retry query intake.
 
 ## Local quality gate
 

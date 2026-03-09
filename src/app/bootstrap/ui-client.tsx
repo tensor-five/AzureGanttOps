@@ -461,6 +461,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     mappingFixResponse,
     onRun: runQuery,
     onNeedsFix: handleNeedsFix,
+    onAuthenticateAzureCli: props.composition.controller.authenticateAzureCli,
+    onSetAzureCliPath: props.composition.controller.setAzureCliPath,
     onApplyMappingDefaults: applyMappingDefaults,
     onRetryRefresh: retryRefresh,
     adoCommLogs,
@@ -845,6 +847,14 @@ function renderActivePanel(params: {
     };
   }) => Promise<QueryIntakeResponse>;
   onNeedsFix: (response: QueryIntakeResponse) => void;
+  onAuthenticateAzureCli: () => Promise<{
+    status: "OK";
+    message: string;
+  }>;
+  onSetAzureCliPath: (path: string) => Promise<{
+    status: "OK";
+    path: string;
+  }>;
   onApplyMappingDefaults: (selection: {
     id: string;
     title: string;
@@ -870,7 +880,10 @@ function renderActivePanel(params: {
           "Microsoft.VSTS.Scheduling.TargetDate"
         ],
         onRun: params.onRun,
-        onNeedsFix: params.onNeedsFix
+        onNeedsFix: params.onNeedsFix,
+        authStatus: params.response?.preflightStatus ?? null,
+        onAuthenticateAzureCli: params.onAuthenticateAzureCli,
+        onSetAzureCliPath: params.onSetAzureCliPath
       })
     );
   }

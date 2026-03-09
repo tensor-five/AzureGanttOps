@@ -254,6 +254,98 @@ describe("createHttpServer", () => {
       await server.close();
     }
   });
+
+  it("starts Azure CLI login via POST /phase2/az-login", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      azLoginRunner: async () => ({
+        message: "Azure CLI login completed. Retry query intake."
+      })
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/az-login`, {
+        method: "POST",
+        headers: {
+          accept: "application/json"
+        }
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({
+        status: "OK",
+        message: "Azure CLI login completed. Retry query intake."
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("stores manual Azure CLI path via POST /phase2/az-cli-path", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/az-cli-path`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          path: "C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({
+        status: "OK",
+        path: "C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"
+      });
+    } finally {
+      await server.close();
+      delete process.env.ADO_AZ_CLI_PATH;
+    }
+  });
+
+  it("auto-detects Azure CLI path via POST /phase2/az-cli-path with empty input", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      azCliPathResolver: async () => "C:\\Tools\\AzureCLI\\az.cmd"
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/az-cli-path`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          path: ""
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({
+        status: "OK",
+        path: "C:\\Tools\\AzureCLI\\az.cmd"
+      });
+    } finally {
+      await server.close();
+      delete process.env.ADO_AZ_CLI_PATH;
+    }
+  });
 });
 
 function startServer(params: {
@@ -266,6 +358,8 @@ function startServer(params: {
       headers: Record<string, string | undefined>;
     }>;
   };
+  azLoginRunner?: () => Promise<{ message: string }>;
+  azCliPathResolver?: () => Promise<string>;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
@@ -282,7 +376,9 @@ function startServer(params: {
           },
           headers: {}
         })
-      }
+      },
+    azLoginRunner: params.azLoginRunner,
+    azCliPathResolver: params.azCliPathResolver
   });
 
   return {

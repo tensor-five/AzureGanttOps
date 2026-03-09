@@ -2,6 +2,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
 import type { AuthPreflightPort } from "../../../application/ports/auth-preflight.port.js";
+import { resolveAzCliExecutablePath } from "../../../shared/utils/azure-cli-path.js";
 
 const execAsync = promisify(exec);
 
@@ -37,29 +38,31 @@ export class AzureCliPreflightAdapter implements AuthPreflightPort {
   ) {}
 
   public async check(context: PreflightContext): Promise<PreflightResult> {
-    const cli = await this.runner.run("az --version");
-    logPreflightStep("az --version", cli);
+    const azExecutable = await resolveAzCliExecutablePath();
+
+    const cli = await this.runner.run(buildAzCommand(azExecutable, "--version"));
+    logPreflightStep(buildAzCommand(azExecutable, "--version"), cli);
 
     if (cli.exitCode !== 0) {
       return { status: "CLI_NOT_FOUND" };
     }
 
-    const extension = await this.runner.run("az extension show --name azure-devops -o json");
-    logPreflightStep("az extension show --name azure-devops -o json", extension);
+    const extension = await this.runner.run(buildAzCommand(azExecutable, "extension show --name azure-devops -o json"));
+    logPreflightStep(buildAzCommand(azExecutable, "extension show --name azure-devops -o json"), extension);
 
     if (extension.exitCode !== 0) {
       return { status: "MISSING_EXTENSION" };
     }
 
-    const session = await this.runner.run("az account show -o json");
-    logPreflightStep("az account show -o json", session);
+    const session = await this.runner.run(buildAzCommand(azExecutable, "account show -o json"));
+    logPreflightStep(buildAzCommand(azExecutable, "account show -o json"), session);
 
     if (session.exitCode !== 0) {
       return { status: "SESSION_EXPIRED" };
     }
 
-    const defaults = await this.runner.run("az devops configure --list");
-    logPreflightStep("az devops configure --list", defaults);
+    const defaults = await this.runner.run(buildAzCommand(azExecutable, "devops configure --list"));
+    logPreflightStep(buildAzCommand(azExecutable, "devops configure --list"), defaults);
 
     if (defaults.exitCode !== 0) {
       return {
@@ -189,4 +192,16 @@ function matchesContext(
   }
 
   return normalizedConfiguredProject === normalizedExpectedProject;
+}
+
+function buildAzCommand(executablePath: string, args: string): string {
+  return `${shellQuote(executablePath)} ${args}`;
+}
+
+function shellQuote(input: string): string {
+  if (/^[A-Za-z0-9_./:-]+$/.test(input)) {
+    return input;
+  }
+
+  return `"${input.replace(/["\\$`]/g, "\\$&")}"`;
 }

@@ -57,6 +57,14 @@ export type QueryIntakeTransport = {
     operationCount: number;
     reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
   }>;
+  authenticateAzureCli: () => Promise<{
+    status: "OK";
+    message: string;
+  }>;
+  setAzureCliPath: (path: string) => Promise<{
+    status: "OK";
+    path: string;
+  }>;
 };
 
 export type UiShellComposition = {
@@ -141,6 +149,14 @@ export function createLocalUiShellController(params: {
       commandKind: "WORK_ITEM_PATCH",
       operationCount: 0,
       reasonCode: "WRITE_DISABLED"
+    }),
+    authenticateAzureCli: async () => ({
+      status: "OK",
+      message: "Azure CLI login is available in local server mode."
+    }),
+    setAzureCliPath: async () => ({
+      status: "OK",
+      path: "az"
     })
   };
 }

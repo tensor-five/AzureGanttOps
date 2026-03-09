@@ -38,6 +38,11 @@ Key variables:
 - `ADO_PAT` or `AZURE_DEVOPS_EXT_PAT`: optional PAT auth (otherwise Azure CLI token is used)
 - `ADO_VERBOSE_LOGS`: verbose runtime and preflight logs (`1` or `0`)
 - `ADO_WRITE_ENABLED`: enables writeback routes (`1` or `0`)
+- `ADO_AZ_CLI_PATH`: optional manual Azure CLI executable path (for environments where `az` is not on `PATH`)
+
+If Azure CLI is not found at runtime, the Query tab supports:
+- auto-detecting CLI path via `Get-Command az` / `where`
+- manually setting an `az.cmd` path
 
 ## Operational assumptions
 
