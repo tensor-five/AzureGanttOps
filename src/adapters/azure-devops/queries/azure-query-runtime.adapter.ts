@@ -61,7 +61,7 @@ export class AzureQueryRuntimeAdapter {
     const response = await this.httpClient.get(url);
 
     if (response.status !== 200) {
-      throw new Error("QUERY_LIST_FAILED");
+      throw new Error(buildHttpFailureCode("QUERY_LIST_FAILED", response));
     }
 
     return normalizeSavedQueries(response.json);
@@ -81,7 +81,7 @@ export class AzureQueryRuntimeAdapter {
     }
 
     if (wiqlResponse.response.status !== 200) {
-      throw new Error("QUERY_EXECUTION_FAILED");
+      throw new Error(buildHttpFailureCode("QUERY_EXECUTION_FAILED", wiqlResponse.response));
     }
 
     const wiqlResult = normalizeExecutionPayload(wiqlResponse.response.json);
@@ -174,8 +174,7 @@ export class AzureQueryRuntimeAdapter {
 
   private async hydrateChunk(chunkIdsValue: number[], context: AdoContext): Promise<HydrationChunkResult> {
     const ids = chunkIdsValue.join(",");
-    const fields = encodeURIComponent("System.Id,System.Title");
-    const url = `https://dev.azure.com/${context.organization}/${context.project}/_apis/wit/workitems?ids=${ids}&fields=${fields}&errorPolicy=Omit&api-version=${API_VERSION}`;
+    const url = `https://dev.azure.com/${context.organization}/${context.project}/_apis/wit/workitems?ids=${ids}&errorPolicy=Omit&api-version=${API_VERSION}`;
 
     const { response, retriedRequests } = await this.requestWithRetry(
       () => this.httpClient.get(url),
@@ -183,7 +182,7 @@ export class AzureQueryRuntimeAdapter {
     );
 
     if (response.status !== 200) {
-      throw new Error("HYDRATION_REQUEST_FAILED");
+      throw new Error(buildHttpFailureCode("HYDRATION_REQUEST_FAILED", response));
     }
 
     const items = normalizeHydratedItems(response.json);
@@ -255,13 +254,16 @@ export class AzureQueryRuntimeAdapter {
 }
 
 function normalizeSavedQueries(payload: unknown): SavedQuery[] {
-  if (!payload || typeof payload !== "object" || !Array.isArray((payload as { value?: unknown }).value)) {
+  if (!payload || typeof payload !== "object") {
     throw new Error("MALFORMED_PAYLOAD");
   }
 
-  const roots = (payload as { value: unknown[] }).value;
+  const record = payload as { value?: unknown };
+  if (Array.isArray(record.value)) {
+    return flattenQueries(record.value);
+  }
 
-  return flattenQueries(roots);
+  return flattenQueries([payload]);
 }
 
 function flattenQueries(nodes: unknown[], parentPath = ""): SavedQuery[] {
@@ -366,9 +368,24 @@ function normalizeHydratedItems(payload: unknown): IngestionWorkItem[] {
           ? ((fields as Record<string, unknown>)["System.Title"] as string)
           : "";
 
+      const flattenedFields: Record<string, string | number | null | undefined> = {};
+      if (fields && typeof fields === "object") {
+        Object.entries(fields as Record<string, unknown>).forEach(([fieldRef, value]) => {
+          if (typeof value === "string" || typeof value === "number") {
+            flattenedFields[fieldRef] = value;
+            return;
+          }
+
+          if (value === null || typeof value === "undefined") {
+            flattenedFields[fieldRef] = value;
+          }
+        });
+      }
+
       return {
         id,
-        title
+        title,
+        ...flattenedFields
       };
     })
     .filter((item): item is IngestionWorkItem => item !== null);
@@ -422,4 +439,63 @@ function computeBackoffDelayMs(attempt: number, retryAfterMs?: number): number {
 
 function wait(delayMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+function buildHttpFailureCode(baseCode: string, response: HttpResponse): string {
+  const summary = summarizeHttpPayload(response.json);
+  const serialized = summary ? `_${summary}` : "";
+  return `${baseCode}_HTTP_${response.status}${serialized}`;
+}
+
+function summarizeHttpPayload(payload: unknown): string {
+  if (!payload || typeof payload !== "object") {
+    return "";
+  }
+
+  const record = payload as Record<string, unknown>;
+  const directMessage = firstString([
+    record.message,
+    record.error,
+    record.typeKey,
+    record.customMessage,
+    record.rawText
+  ]);
+
+  if (directMessage) {
+    return normalizeErrorFragment(directMessage);
+  }
+
+  const inner = record.value;
+  if (Array.isArray(inner) && inner.length > 0) {
+    const first = inner[0];
+    if (first && typeof first === "object") {
+      const nested = first as Record<string, unknown>;
+      const nestedMessage = firstString([
+        nested.message,
+        nested.error,
+        nested.typeKey,
+        nested.customMessage
+      ]);
+      if (nestedMessage) {
+        return normalizeErrorFragment(nestedMessage);
+      }
+    }
+  }
+
+  return "";
+}
+
+function firstString(candidates: unknown[]): string | null {
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function normalizeErrorFragment(input: string): string {
+  const alnum = input.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return alnum.slice(0, 64);
 }

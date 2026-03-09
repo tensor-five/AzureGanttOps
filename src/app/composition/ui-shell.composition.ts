@@ -5,6 +5,17 @@ import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
+export type AdoCommLogEntry = {
+  seq: number;
+  timestamp: string;
+  direction: "request" | "response";
+  method: string;
+  url: string;
+  status: number | null;
+  durationMs: number | null;
+  preview: string;
+};
+
 export type QueryIntakeTransport = {
   submit: (request: {
     queryInput: string;
@@ -20,6 +31,32 @@ export type QueryIntakeTransport = {
       };
     };
   }) => Promise<QueryIntakeResponse>;
+  fetchAdoCommLogs: (params: { afterSeq: number; limit: number }) => Promise<{
+    entries: AdoCommLogEntry[];
+    nextSeq: number;
+  }>;
+  adoptWorkItemSchedule: (request: {
+    targetWorkItemId: number;
+    startDate: string;
+    endDate: string;
+  }) => Promise<{
+    accepted: boolean;
+    mode: "NO_OP" | "EXECUTED";
+    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
+    operationCount: number;
+    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  }>;
+  updateWorkItemDetails: (request: {
+    targetWorkItemId: number;
+    title: string;
+    descriptionHtml: string;
+  }) => Promise<{
+    accepted: boolean;
+    mode: "NO_OP" | "EXECUTED";
+    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
+    operationCount: number;
+    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  }>;
 };
 
 export type UiShellComposition = {
@@ -86,6 +123,24 @@ export function createLocalUiShellController(params: {
         mappingProfileId: request.mappingProfileId,
         mappingProfileUpsert: request.mappingProfileUpsert
       });
-    }
+    },
+    fetchAdoCommLogs: async () => ({
+      entries: [],
+      nextSeq: 0
+    }),
+    adoptWorkItemSchedule: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_PATCH",
+      operationCount: 0,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    updateWorkItemDetails: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_PATCH",
+      operationCount: 0,
+      reasonCode: "WRITE_DISABLED"
+    })
   };
 }

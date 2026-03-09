@@ -17,6 +17,7 @@ export type TimelineBar = {
   };
   details: {
     mappedId: string;
+    descriptionHtml?: string | null;
   };
 };
 
@@ -24,8 +25,14 @@ export type TimelineUnschedulableItem = {
   workItemId: number;
   title: string;
   state: TimelineStateBadge;
+  schedule?: {
+    startDate: string | null;
+    endDate: string | null;
+    missingBoundary: "start" | "end" | null;
+  };
   details: {
     mappedId: string;
+    descriptionHtml?: string | null;
   };
   reason: "missing-both-dates";
 };

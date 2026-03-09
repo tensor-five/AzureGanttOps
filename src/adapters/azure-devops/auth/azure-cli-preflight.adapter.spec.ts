@@ -110,6 +110,58 @@ describe("AzureCliPreflightAdapter", () => {
     });
   });
 
+  it("returns READY when organization matches and project default is not set", async () => {
+    const adapter = new AzureCliPreflightAdapter(makeRunner((command) => {
+      if (command === "az --version") {
+        return ok("azure-cli 2.0");
+      }
+
+      if (command === "az extension show --name azure-devops -o json") {
+        return ok('{"name":"azure-devops"}');
+      }
+
+      if (command === "az account show -o json") {
+        return ok('{"tenantId":"abc"}');
+      }
+
+      if (command === "az devops configure --list") {
+        return ok("[defaults]\norganization = https://dev.azure.com/contoso\nUse git alias = No");
+      }
+
+      throw new Error(`unexpected command: ${command}`);
+    }));
+
+    await expect(adapter.check(context)).resolves.toEqual({
+      status: "READY"
+    });
+  });
+
+  it("maps mismatch when project default exists and differs", async () => {
+    const adapter = new AzureCliPreflightAdapter(makeRunner((command) => {
+      if (command === "az --version") {
+        return ok("azure-cli 2.0");
+      }
+
+      if (command === "az extension show --name azure-devops -o json") {
+        return ok('{"name":"azure-devops"}');
+      }
+
+      if (command === "az account show -o json") {
+        return ok('{"tenantId":"abc"}');
+      }
+
+      if (command === "az devops configure --list") {
+        return ok("[defaults]\norganization = https://dev.azure.com/contoso\nproject = wrong");
+      }
+
+      throw new Error(`unexpected command: ${command}`);
+    }));
+
+    await expect(adapter.check(context)).resolves.toEqual({
+      status: "CONTEXT_MISMATCH"
+    });
+  });
+
   it("maps missing cli to CLI_NOT_FOUND", async () => {
     const adapter = new AzureCliPreflightAdapter(makeRunner((command) => {
       if (command === "az --version") {

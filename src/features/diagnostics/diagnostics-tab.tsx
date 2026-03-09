@@ -17,18 +17,28 @@ export type DiagnosticsTabModel = {
 };
 
 export function DiagnosticsTab(props: DiagnosticsTabModel): React.ReactElement {
-  const lines = buildDiagnosticsTabLines(props);
+  const lines = buildDiagnosticsTabLines(props).slice(1);
+  const rows = lines.map((line, index) =>
+    React.createElement(
+      "li",
+      { key: `${index}-${line}`, className: "diagnostics-row" },
+      line.replace(/^- /, "")
+    )
+  );
 
   return React.createElement(
     "section",
     {
-      "aria-label": "diagnostics-tab"
+      "aria-label": "diagnostics-tab",
+      className: "diagnostics-card"
     },
-    React.createElement("pre", null, lines.join("\n")),
+    React.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"),
+    React.createElement("ul", { className: "diagnostics-list" }, ...rows),
     React.createElement(
       "button",
       {
         type: "button",
+        className: "timeline-action-button timeline-action-button-primary",
         onClick: () => {
           props.onRetryRefresh?.();
         }

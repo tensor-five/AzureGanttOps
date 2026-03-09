@@ -12,6 +12,7 @@ export type WarningBannerModel = {
   guidance: string | null;
   retryActionLabel: string | null;
   hasStrictFailFallback: boolean;
+  onRetryRefresh?: () => void;
 };
 
 export function WarningBanner(props: WarningBannerModel): React.ReactElement | null {
@@ -19,13 +20,34 @@ export function WarningBanner(props: WarningBannerModel): React.ReactElement | n
   if (lines.length === 0) {
     return null;
   }
+  const title = lines[0] ?? "[WARN]";
+  const detail = (lines[1] ?? "").replace(/^- /, "");
+  const actionLine = (lines[2] ?? "").replace(/^- /, "");
 
   return React.createElement(
     "section",
     {
-      "aria-label": "timeline-warning-banner"
+      "aria-label": "timeline-warning-banner",
+      className: "warning-banner-card"
     },
-    React.createElement("pre", null, lines.join("\n"))
+    React.createElement(
+      "div",
+      { className: "warning-banner-copy" },
+      React.createElement("p", { className: "warning-banner-title" }, title),
+      React.createElement("p", { className: "warning-banner-detail" }, detail),
+      React.createElement("p", { className: "warning-banner-action-line" }, actionLine)
+    ),
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "timeline-action-button timeline-action-button-primary",
+        onClick: () => {
+          props.onRetryRefresh?.();
+        }
+      },
+      props.retryActionLabel ?? "Refresh"
+    )
   );
 }
 
@@ -34,7 +56,7 @@ export function buildWarningBannerLines(model: WarningBannerModel): string[] {
     return [
       "[WARN] Partial failure in timeline hydration",
       `- ${model.guidance ?? "Some work items could not be hydrated."}`,
-      `- Action: ${model.retryActionLabel ?? "Retry refresh"}`
+      `- Action: ${model.retryActionLabel ?? "Refresh"}`
     ];
   }
 
@@ -42,7 +64,7 @@ export function buildWarningBannerLines(model: WarningBannerModel): string[] {
     return [
       "[WARN] Strict-fail fallback active",
       `- ${model.guidance ?? "Latest refresh failed; showing last-known-good timeline."}`,
-      `- Action: ${model.retryActionLabel ?? "Retry now"}`
+      `- Action: ${model.retryActionLabel ?? "Refresh"}`
     ];
   }
 

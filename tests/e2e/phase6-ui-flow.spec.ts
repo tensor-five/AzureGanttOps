@@ -6,7 +6,11 @@ declare global {
   interface Window {
     __phase6Configure: (responses: QueryIntakeResponse[]) => void;
     __phase6Mount: () => void;
-    __phase6Read: () => { callLog: Array<{ queryInput: string }>; density: string | null };
+    __phase6Read: () => {
+      callLog: Array<{ queryInput: string }>;
+      density: string | null;
+      adoEntries: Array<{ seq: number; direction: "request" | "response"; url: string }>;
+    };
   }
 }
 
@@ -109,6 +113,33 @@ type QueryIntakeResponse = {
 type ResponsePatch = Partial<QueryIntakeResponse> & {
   savedQueries?: Array<{ id: string; name: string; path: string }>;
 };
+
+const REQUIRED_MAPPING_ISSUES: QueryIntakeResponse["mappingValidation"]["issues"] = [
+  {
+    code: "MAP_REQUIRED_MISSING",
+    field: "id",
+    message: "Missing id mapping",
+    guidance: "Set ID to System.Id"
+  },
+  {
+    code: "MAP_REQUIRED_MISSING",
+    field: "title",
+    message: "Missing title mapping",
+    guidance: "Set Title to System.Title"
+  },
+  {
+    code: "MAP_REQUIRED_MISSING",
+    field: "start",
+    message: "Missing start mapping",
+    guidance: "Set Start Date to Microsoft.VSTS.Scheduling.StartDate"
+  },
+  {
+    code: "MAP_REQUIRED_MISSING",
+    field: "endOrTarget",
+    message: "Missing end/target mapping",
+    guidance: "Set End/Target Date to Microsoft.VSTS.Scheduling.TargetDate"
+  }
+];
 
 function buildResponse(patch: ResponsePatch = {}): QueryIntakeResponse {
   const selectedQueryId = patch.selectedQueryId ?? patch.activeQueryId ?? "q-default";
@@ -216,7 +247,11 @@ async function mountRuntimeUi(page: Page, responses: QueryIntakeResponse[]): Pro
   }, responses);
 }
 
-async function getRuntimeInfo(page: Page): Promise<{ callLog: Array<{ queryInput: string }>; density: string | null }> {
+async function getRuntimeInfo(page: Page): Promise<{
+  callLog: Array<{ queryInput: string }>;
+  density: string | null;
+  adoEntries: Array<{ seq: number; direction: "request" | "response"; url: string }>;
+}> {
   return page.evaluate(() => window.__phase6Read());
 }
 
@@ -283,11 +318,13 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
 
   await mountRuntimeUi(page, responses);
 
-  await expect(page.getByRole("heading", { name: "Azure DevOps Query-Driven Gantt" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Azure GanttOps" })).toBeVisible();
   await expect(page.getByLabel("global-trust-badge")).toContainText("Needs attention");
+  await expect(page.getByLabel("timeline-pane")).toBeVisible();
 
   await page.getByRole("tab", { name: "Mapping [blocked]" }).click();
   await expect(page.getByLabel("tab-blocker-guidance")).toContainText("No query selected yet");
+  await expect(page.getByRole("tab", { name: "Diagnostics [blocked]" })).toBeVisible();
 
   await page.getByRole("tab", { name: "Query [ok]" }).click();
   await page.getByLabel("Query ID").fill("q-1");
@@ -302,7 +339,7 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await page.getByRole("tab", { name: "Timeline [ok]" }).click();
   await expect(page.getByLabel("timeline-warning-banner")).toContainText("Action: Retry refresh");
 
-  await page.getByRole("button", { name: "Retry refresh" }).first().click();
+  await page.getByLabel("timeline-warning-banner").getByRole("button", { name: "Retry refresh" }).click();
   await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
 
   await page.getByRole("tab", { name: "Query [ok]" }).click();
@@ -316,10 +353,66 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
 
   await page.getByRole("tab", { name: "Diagnostics [ok]" }).click();
   await expect(page.getByLabel("diagnostics-tab")).toContainText("source health: HEALTHY");
-  await page.getByRole("button", { name: "Retry refresh" }).click();
+  await expect(page.getByLabel("ado-communication-log-panel")).toBeVisible();
+  await expect(page.getByLabel("ado-communication-log-panel").getByLabel("ado-log-entry").first()).toBeVisible();
+  await page.getByLabel("diagnostics-tab").getByRole("button", { name: "Retry refresh" }).click();
 
   const runtimeInfo = await getRuntimeInfo(page);
   expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual(["q-1", "q-2", "q-2", "q-1", "q-1"]);
+  expect(runtimeInfo.adoEntries.length).toBeGreaterThanOrEqual(10);
+  expect(runtimeInfo.adoEntries[0]?.direction).toBe("request");
+  expect(runtimeInfo.adoEntries[1]?.direction).toBe("response");
+  expect(runtimeInfo.adoEntries.every((entry) => entry.url.includes("token=%5BREDACTED%5D"))).toBe(true);
+});
+
+test("mapping remediation journey: invalid mapping to apply defaults to timeline and diagnostics", async ({ page }) => {
+  const responses = [
+    buildResponse({
+      selectedQueryId: "q-map",
+      activeQueryId: "q-map",
+      statusCode: "OK",
+      trustState: "needs_attention",
+      mappingValidation: {
+        status: "invalid",
+        issues: REQUIRED_MAPPING_ISSUES
+      },
+      timeline: null,
+      activeMappingProfileId: null
+    }),
+    buildResponse({
+      selectedQueryId: "q-map",
+      activeQueryId: "q-map",
+      statusCode: "OK",
+      trustState: "ready",
+      mappingValidation: {
+        status: "valid",
+        issues: []
+      },
+      activeMappingProfileId: "auto-required-defaults"
+    })
+  ];
+
+  await mountRuntimeUi(page, responses);
+
+  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await page.getByLabel("Query ID").fill("q-map");
+  await page.getByRole("button", { name: "Run query by ID" }).click();
+
+  await expect(page.getByLabel("mapping-fix-panel")).toBeVisible();
+  await expect(page.getByLabel("mapping-fix-panel")).toContainText("Fix required mapping fields");
+  await page.getByRole("button", { name: "Apply required defaults" }).click();
+
+  await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
+  await expect(page.getByLabel("timeline-pane")).toBeVisible();
+
+  await page.getByRole("button", { name: "Select first item" }).click();
+  await expect(page.getByLabel("timeline-details-panel")).toContainText("- selected work item: #801");
+
+  await page.getByRole("tab", { name: "Diagnostics [ok]" }).click();
+  await expect(page.getByLabel("diagnostics-tab")).toContainText("active query source: q-map");
+
+  const runtimeInfo = await getRuntimeInfo(page);
+  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual(["q-map", "q-map"]);
 });
 
 test("density timeline preference persists across query switch and remount", async ({ page }) => {
@@ -340,6 +433,8 @@ test("density timeline preference persists across query switch and remount", asy
 
   await mountRuntimeUi(page, responses);
 
+  await page.getByRole("tab", { name: "Query [ok]" }).click();
+
   await page.getByLabel("Query ID").fill("q-density");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
@@ -358,6 +453,7 @@ test("density timeline preference persists across query switch and remount", asy
   await expect(page.getByLabel("timeline-pane")).toContainText("Density mode: compact");
 
   await mountRuntimeUi(page, [buildResponse({ selectedQueryId: "q-density-2", activeQueryId: "q-density-2" })]);
+  await page.getByRole("tab", { name: "Query [ok]" }).click();
   await page.getByLabel("Query ID").fill("q-density-2");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 

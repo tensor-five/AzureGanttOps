@@ -13,16 +13,37 @@ export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
     : props.trustState === "partial_failure"
       ? "Partial failure"
       : "Needs attention";
+  const isHealthy = props.trustState === "ready";
+  const pillLabel = isHealthy ? "Trust OK" : "Trust Attention";
+  const pillIcon = isHealthy ? "✓" : "!";
+  const statusLine = `[${props.statusCode}] ${label}`;
 
   return React.createElement(
-    "section",
+    "details",
     {
-      "aria-label": "global-trust-badge"
+      "aria-label": "global-trust-badge",
+      className: "trust-badge-details",
+      "data-trust-state": isHealthy ? "healthy" : "unhealthy"
     },
     React.createElement(
-      "span",
-      null,
-      `[${props.statusCode}] ${label} | last-updated=${props.lastRefreshAt ?? "none"} | read-only=${props.readOnlyTimeline ? "true" : "false"}`
+      "summary",
+      { className: "trust-badge-trigger" },
+      React.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon),
+      React.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)
+    ),
+    React.createElement(
+      "div",
+      { className: "trust-badge-panel" },
+      React.createElement("p", { className: "trust-badge-label" }, "Trust state"),
+      React.createElement("p", { className: "trust-badge-status" }, statusLine),
+      React.createElement(
+        "dl",
+        { className: "trust-badge-meta" },
+        React.createElement("dt", null, "last-updated"),
+        React.createElement("dd", null, props.lastRefreshAt ?? "none"),
+        React.createElement("dt", null, "read-only"),
+        React.createElement("dd", null, props.readOnlyTimeline ? "true" : "false")
+      )
     )
   );
 }

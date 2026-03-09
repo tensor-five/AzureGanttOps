@@ -507,10 +507,14 @@ function guidanceForRuntimeError(error: unknown): string {
   switch (code) {
     case "QUERY_NOT_FOUND":
       return "Query not found. Confirm query ID and try again.";
+    case "QUERY_LIST_FAILED":
+      return "Saved query listing failed. Check project access/permissions and retry.";
     case "QUERY_EXECUTION_FAILED":
       return "Query failed to run. Retry or verify query permissions.";
     case "QRY_SHAPE_UNSUPPORTED":
       return "Only flat queries are supported in this phase. Use a flat query and retry.";
+    case "HYDRATION_REQUEST_FAILED":
+      return "Work item hydration request failed. Verify field permissions and retry.";
     case "HYDRATION_TRANSIENT_RETRY_EXHAUSTED":
       return "Hydration retries were exhausted. Retry shortly.";
     case "MAP_PROFILE_NOT_FOUND":
@@ -676,8 +680,10 @@ function toDiagnosticsStatusCode(code: string): DiagnosticsStatusCode {
     "CLI_NOT_FOUND",
     "UNKNOWN_ERROR",
     "QUERY_NOT_FOUND",
+    "QUERY_LIST_FAILED",
     "QUERY_EXECUTION_FAILED",
     "QRY_SHAPE_UNSUPPORTED",
+    "HYDRATION_REQUEST_FAILED",
     "HYDRATION_TRANSIENT_RETRY_EXHAUSTED",
     "HYDRATION_PARTIAL_FAILURE",
     "MAP_PROFILE_NOT_FOUND",

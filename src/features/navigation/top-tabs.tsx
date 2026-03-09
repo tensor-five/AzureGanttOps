@@ -1,7 +1,8 @@
 import React from "react";
 
 import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
-import { resolveTabBlocker, type TabId } from "./tab-blockers.js";
+import { resolveTabBlocker } from "./tab-blockers.js";
+import type { TabId } from "../../shared/ui-state/tab-id.js";
 
 const TAB_ORDER: TabId[] = ["query", "mapping", "timeline", "diagnostics"];
 
@@ -30,9 +31,11 @@ export function TopTabs(props: TopTabsProps): React.ReactElement {
         key: tab,
         type: "button",
         role: "tab",
+        className: "top-tab-button",
         id: `tab-${tab}`,
         "aria-selected": selected,
         "aria-controls": `tabpanel-${tab}`,
+        "aria-label": `${label} [${badge}]`,
         onClick: () => {
           if (blocker.blocked) {
             props.onBlockedAttempt?.({
@@ -45,7 +48,9 @@ export function TopTabs(props: TopTabsProps): React.ReactElement {
           props.onTabChange(tab);
         }
       },
-      `${label} [${badge}]`
+      React.createElement("span", { className: "top-tab-label" }, label),
+      " ",
+      React.createElement("span", { className: "top-tab-badge", "data-badge-state": badge }, `[${badge}]`)
     );
   });
 

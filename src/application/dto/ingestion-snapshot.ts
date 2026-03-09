@@ -13,6 +13,7 @@ export type IngestionRelation = {
 export type IngestionWorkItem = {
   id: number;
   title: string;
+  [fieldRef: string]: string | number | null | undefined;
 };
 
 export type IngestionHydrationStatus = "OK" | "HYDRATION_PARTIAL_FAILURE";

@@ -61,6 +61,42 @@ describe("AzureQueryRuntimeAdapter", () => {
     ]);
   });
 
+  it("lists saved shared queries when Azure returns a single root node payload", async () => {
+    const client = makeClient((url) => {
+      if (url.includes("$depth=2")) {
+        return {
+          status: 200,
+          json: {
+            id: "b52b84ee-b62f-4ea7-86cb-f8ab85f6f99a",
+            name: "Shared Queries",
+            isFolder: true,
+            path: "Shared Queries",
+            children: [
+              {
+                id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+                name: "Delivery Timeline",
+                isFolder: false,
+                path: "Shared Queries/Delivery Timeline"
+              }
+            ]
+          }
+        };
+      }
+
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const adapter = makeAdapter(client);
+
+    await expect(adapter.listSavedQueries()).resolves.toEqual([
+      {
+        id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+        name: "Delivery Timeline",
+        path: "Shared Queries/Delivery Timeline"
+      }
+    ]);
+  });
+
   it.each([
     { totalIds: 0, expectedChunks: [] },
     { totalIds: 1, expectedChunks: [1] },

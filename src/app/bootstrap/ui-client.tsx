@@ -3,17 +3,150 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 
-import { createUiShellComposition, type UiShellComposition } from "../composition/ui-shell.composition.js";
+import {
+  createUiShellComposition,
+  type AdoCommLogEntry,
+  type UiShellComposition
+} from "../composition/ui-shell.composition.js";
 import { TopTabs } from "../../features/navigation/top-tabs.js";
-import type { TabId } from "../../features/navigation/tab-blockers.js";
-import { QuerySelector } from "../../features/query-switching/query-selector.js";
+import type { TabId } from "../../shared/ui-state/tab-id.js";
+import { QuerySelector, ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
-import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
+import { TimelinePane, applyAdoptedSchedules } from "../../features/gantt-view/timeline-pane.js";
+import { createTimelineSelectionStore } from "../../features/gantt-view/selection-store.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
+
+const ADO_COMM_LOG_POLL_INTERVAL_MS = 1000;
+const ADO_COMM_LOG_READ_LIMIT = 200;
+const ADO_COMM_LOG_UI_MAX = 1000;
+const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
+const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
+
+type ThemeMode = "system" | "light" | "dark";
+type WorkItemSyncState = "up_to_date" | "syncing" | "error";
+
+function applyScheduleUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  startDate: string,
+  endDate: string
+): QueryIntakeResponse["timeline"] {
+  const adopted = applyAdoptedSchedules(timeline, {
+    [targetWorkItemId]: { startDate, endDate }
+  });
+  if (!adopted) {
+    return adopted;
+  }
+
+  return {
+    ...adopted,
+    bars: adopted.bars.map((bar) =>
+      bar.workItemId === targetWorkItemId
+        ? {
+            ...bar,
+            schedule: {
+              startDate,
+              endDate,
+              missingBoundary: null
+            }
+          }
+        : bar
+    )
+  };
+}
+
+function applyWorkItemMetadataUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  title: string,
+  descriptionHtml: string
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) =>
+      bar.workItemId === targetWorkItemId
+        ? {
+            ...bar,
+            title,
+            details: {
+              ...bar.details,
+              descriptionHtml
+            }
+          }
+        : bar
+    ),
+    unschedulable: timeline.unschedulable.map((item) =>
+      item.workItemId === targetWorkItemId
+        ? {
+            ...item,
+            title,
+            details: {
+              ...item.details,
+              descriptionHtml
+            }
+          }
+        : item
+    )
+  };
+}
+
+type RunRequest = {
+  queryInput: string;
+  mappingProfileId?: string;
+  mappingProfileUpsert?: {
+    id: string;
+    name: string;
+    fields: {
+      id: string;
+      title: string;
+      start: string;
+      endOrTarget: string;
+    };
+  };
+};
+
+function renderAdoCommLogPanel(params: {
+  logs: AdoCommLogEntry[];
+  loading: boolean;
+  error: string | null;
+}): React.ReactElement {
+  return React.createElement(
+    "details",
+    {
+      "aria-label": "ado-communication-log-panel",
+      className: "ado-communication-log-panel",
+      open: true
+    },
+    React.createElement("summary", null, "Azure DevOps API logs"),
+    params.loading ? React.createElement("div", null, "Loading communication logs…") : null,
+    params.error ? React.createElement("div", null, `Log stream error: ${params.error}`) : null,
+    React.createElement(
+      "div",
+      { className: "ado-communication-log-list" },
+      params.logs.length === 0
+        ? React.createElement("div", null, "No Azure communication entries yet.")
+        : params.logs.map((entry) =>
+            React.createElement(
+              "pre",
+              {
+                key: `${entry.seq}-${entry.direction}`,
+                "aria-label": "ado-log-entry",
+                className: "ado-communication-log-entry"
+              },
+              `[${entry.seq}] ${entry.timestamp} ${entry.direction.toUpperCase()} ${entry.method} ${entry.url} status=${entry.status ?? "-"} durationMs=${entry.durationMs ?? "-"} ${entry.preview}`
+            )
+          )
+    )
+  );
+}
 
 export type UiBootstrapOptions = {
   container: HTMLElement;
@@ -49,29 +182,99 @@ export function createDefaultUiShellComposition(params: Parameters<typeof create
 }
 
 function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
-  const [activeTab, setActiveTab] = React.useState<TabId>("query");
-  const [response, setResponse] = React.useState<QueryIntakeResponse | null>(null);
-  const [lastRunRequest, setLastRunRequest] = React.useState<{
-    queryInput: string;
-    mappingProfileId?: string;
-    mappingProfileUpsert?: {
-      id: string;
-      name: string;
-      fields: {
-        id: string;
-        title: string;
-        start: string;
-        endOrTarget: string;
-      };
-    };
-  } | null>(null);
-  const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(createInitialUiModel());
+  const restoredState = React.useMemo(() => readPersistedUiShellState(), []);
+  const initialResponse = restoredState?.response ?? null;
+  const initialActiveTab: TabId =
+    initialResponse && initialResponse.mappingValidation.status === "invalid"
+      ? "mapping"
+      : (restoredState?.activeTab ?? "query");
+  const persistedQueryInput = resolvePersistedRefreshQueryInput();
+  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
+
+  const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = React.useState(!hasInitialQuery);
+  const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(restoredState?.lastRunRequest ?? null);
+  const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
+    initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel()
+  );
   const [blockerMessage, setBlockerMessage] = React.useState<{
     tab: TabId;
     reason: string;
     nextAction: string;
   } | null>(null);
-  const [mappingFixResponse, setMappingFixResponse] = React.useState<QueryIntakeResponse | null>(null);
+  const [mappingFixResponse, setMappingFixResponse] = React.useState<QueryIntakeResponse | null>(
+    initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null
+  );
+  const [adoCommLogs, setAdoCommLogs] = React.useState<AdoCommLogEntry[]>([]);
+  const [adoCommLogsCursor, setAdoCommLogsCursor] = React.useState(0);
+  const [adoCommLogsError, setAdoCommLogsError] = React.useState<string | null>(null);
+  const [adoCommLogsLoading, setAdoCommLogsLoading] = React.useState(true);
+  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => readPersistedThemeMode());
+  const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
+  const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
+  const adoCommPollInFlightRef = React.useRef(false);
+  const workItemSyncInFlightRef = React.useRef(0);
+  const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
+  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
+  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+
+  React.useEffect(() => {
+    let active = true;
+
+    const poll = async () => {
+      if (adoCommPollInFlightRef.current || !active) {
+        return;
+      }
+
+      adoCommPollInFlightRef.current = true;
+
+      try {
+        const snapshot = await props.composition.controller.fetchAdoCommLogs({
+          afterSeq: adoCommLogsCursor,
+          limit: ADO_COMM_LOG_READ_LIMIT
+        });
+
+        if (!active) {
+          return;
+        }
+
+        setAdoCommLogs((current) => {
+          const next = current.concat(snapshot.entries);
+          if (next.length > ADO_COMM_LOG_UI_MAX) {
+            return next.slice(next.length - ADO_COMM_LOG_UI_MAX);
+          }
+
+          return next;
+        });
+        setAdoCommLogsCursor(snapshot.nextSeq);
+        setAdoCommLogsError(null);
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        const message = error instanceof Error ? error.message : "Unable to load Azure communication logs.";
+        setAdoCommLogsError(message);
+      } finally {
+        if (active) {
+          setAdoCommLogsLoading(false);
+        }
+
+        adoCommPollInFlightRef.current = false;
+      }
+    };
+
+    void poll();
+    const intervalId = window.setInterval(() => {
+      void poll();
+    }, ADO_COMM_LOG_POLL_INTERVAL_MS);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [adoCommLogsCursor, props.composition.controller]);
 
   const runQuery = React.useCallback(
     async (request: {
@@ -103,11 +306,16 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       });
       setBlockerMessage(null);
 
-      if (submitted.mappingValidation.status === "invalid") {
+      if (
+        submitted.preflightStatus === "READY" &&
+        submitted.statusCode === "OK" &&
+        submitted.mappingValidation.status === "invalid"
+      ) {
         setMappingFixResponse(submitted);
         setActiveTab("mapping");
       } else {
         setMappingFixResponse(null);
+        setActiveTab("timeline");
       }
 
       return submitted;
@@ -152,19 +360,99 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   );
 
   const retryRefresh = React.useCallback(async () => {
-    if (!lastRunRequest) {
+    if (lastRunRequest) {
+      const refreshed = await props.composition.controller.submit(lastRunRequest);
+      setResponse(refreshed);
+      setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
+
+      if (
+        refreshed.preflightStatus === "READY" &&
+        refreshed.statusCode === "OK" &&
+        refreshed.mappingValidation.status === "invalid"
+      ) {
+        setMappingFixResponse(refreshed);
+        setActiveTab("mapping");
+        setControlsOpen(true);
+        return;
+      }
+
+      setActiveTab("timeline");
       return;
     }
 
-    const refreshed = await props.composition.controller.submit(lastRunRequest);
-    setResponse(refreshed);
-    setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
-
-    if (refreshed.mappingValidation.status === "invalid") {
-      setMappingFixResponse(refreshed);
-      setActiveTab("mapping");
+    const persistedQueryInput = resolvePersistedRefreshQueryInput();
+    if (!persistedQueryInput) {
+      setActiveTab("query");
+      setControlsOpen(true);
+      setBlockerMessage({
+        tab: "query",
+        reason: "No query available to refresh.",
+        nextAction: "Open controls, enter Query ID, then run query."
+      });
+      return;
     }
-  }, [lastRunRequest, props.composition.controller]);
+
+    await runQuery({
+      queryId: persistedQueryInput
+    });
+  }, [lastRunRequest, props.composition.controller, runQuery]);
+
+  const runTrackedWorkItemUpdate = React.useCallback(
+    async <T,>(operation: () => Promise<T>): Promise<T> => {
+      workItemSyncInFlightRef.current += 1;
+      setWorkItemSyncState("syncing");
+      setWorkItemSyncError(null);
+
+      try {
+        return await operation();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Write failed.";
+        setWorkItemSyncState("error");
+        setWorkItemSyncError(message);
+        throw error;
+      } finally {
+        workItemSyncInFlightRef.current = Math.max(0, workItemSyncInFlightRef.current - 1);
+        if (workItemSyncInFlightRef.current === 0) {
+          setWorkItemSyncState((current) => (current === "error" ? current : "up_to_date"));
+        }
+      }
+    },
+    []
+  );
+
+  React.useEffect(() => {
+    persistUiShellState({
+      activeTab,
+      response,
+      lastRunRequest
+    });
+  }, [activeTab, lastRunRequest, response]);
+
+  React.useEffect(() => {
+    persistThemeMode(themeMode);
+    applyThemeMode(themeMode);
+
+    if (themeMode !== "system" || typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      applyThemeMode("system");
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleSystemThemeChange);
+      return () => {
+        mediaQuery.removeEventListener("change", handleSystemThemeChange);
+      };
+    }
+
+    mediaQuery.addListener(handleSystemThemeChange);
+    return () => {
+      mediaQuery.removeListener(handleSystemThemeChange);
+    };
+  }, [themeMode]);
 
   const mainPanel = renderActivePanel({
     activeTab,
@@ -174,57 +462,367 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     onRun: runQuery,
     onNeedsFix: handleNeedsFix,
     onApplyMappingDefaults: applyMappingDefaults,
-    onRetryRefresh: retryRefresh
+    onRetryRefresh: retryRefresh,
+    adoCommLogs,
+    adoCommLogsLoading,
+    adoCommLogsError
   });
-
-  const diagnostics = buildDiagnosticsModel(uiModel);
 
   return React.createElement(
     "main",
-    { "data-ui-shell": "phase-6-runtime" },
-    React.createElement("h2", null, "Azure DevOps Query-Driven Gantt"),
-    React.createElement(TrustBadge, {
-      statusCode: uiModel.statusCode,
-      trustState: uiModel.trustState,
-      lastRefreshAt: uiModel.freshness.lastRefreshAt,
-      readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
-    }),
-    React.createElement(TopTabs, {
-      activeTab,
-      model: uiModel,
-      onTabChange: (tab) => {
-        setActiveTab(tab);
-      },
-      onBlockedAttempt: (payload) => {
-        setBlockerMessage(payload);
-      }
-    }),
-    blockerMessage
-      ? React.createElement(
-          "section",
-          {
-            "aria-label": "tab-blocker-guidance"
-          },
-          React.createElement("strong", null, `Blocked ${blockerMessage.tab}`),
-          React.createElement("div", null, `Reason: ${blockerMessage.reason}`),
-          React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
-        )
-      : null,
-    activeTab === "timeline"
-      ? React.createElement(WarningBanner, {
-          uiState: uiModel.uiState,
-          guidance: uiModel.guidance,
-          retryActionLabel: uiModel.strictFail.retryActionLabel,
-          hasStrictFailFallback: uiModel.strictFail.active
-        })
-      : null,
-    mainPanel,
+    { "data-ui-shell": "phase-6-runtime", className: "ui-shell" },
     React.createElement(
-      "footer",
-      null,
-      `Active query source: ${diagnostics.activeQueryId ?? "none"} | last refresh: ${diagnostics.lastRefreshAt ?? "none"}`
+      "section",
+      { className: "ui-shell-header" },
+      React.createElement(
+        "div",
+        { className: "ui-shell-brand" },
+        React.createElement("h1", null, "Azure GanttOps")
+      ),
+      React.createElement(
+        "div",
+        { className: "ui-shell-header-actions" },
+        React.createElement(
+          "div",
+          { className: "theme-menu" },
+          React.createElement("button", {
+            type: "button",
+            className: "theme-menu-trigger",
+            "aria-label": `Theme wechseln (aktuell: ${labelForThemeMode(themeMode)})`,
+            title: `Theme: ${labelForThemeMode(themeMode)} (klicken zum Wechseln)`,
+            onClick: () => {
+              setThemeMode(nextThemeMode(themeMode));
+            }
+          }, React.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))
+        ),
+        React.createElement(TrustBadge, {
+          statusCode: uiModel.statusCode,
+          trustState: uiModel.trustState,
+          lastRefreshAt: uiModel.freshness.lastRefreshAt,
+          readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
+        }),
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            className: "controls-toggle-button",
+            "aria-expanded": controlsOpen,
+            "aria-controls": "ui-controls-drawer",
+            onClick: () => {
+              setControlsOpen((current) => !current);
+            }
+          },
+          controlsOpen ? "Close controls" : "Open controls"
+        )
+      )
+    ),
+    React.createElement(
+      "section",
+      { className: "ui-shell-content" },
+      React.createElement(
+        "section",
+        { className: "gantt-primary-card" },
+        React.createElement(
+          "div",
+          { className: "gantt-primary-head" },
+          React.createElement("h2", null, "Gantt Chart"),
+          React.createElement(
+            "div",
+            {
+              className: "gantt-sync-status",
+              "data-state": workItemSyncState,
+              role: "status",
+              "aria-live": "polite",
+              title: workItemSyncState === "error" ? workItemSyncError ?? undefined : undefined
+            },
+            React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
+            React.createElement(
+              "span",
+              null,
+              workItemSyncState === "syncing"
+                ? "Updating work items..."
+                : workItemSyncState === "error"
+                  ? "Work item update failed"
+                  : "Work items up to date"
+            )
+          )
+        ),
+        React.createElement(WarningBanner, {
+        uiState: uiModel.uiState,
+        guidance: uiModel.guidance,
+        retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
+        hasStrictFailFallback: uiModel.strictFail.active,
+        onRetryRefresh: () => {
+          void retryRefresh();
+          }
+        }),
+        React.createElement(TimelinePane, {
+          timeline: uiModel.timeline,
+          showDependencies: true,
+          organization,
+          project,
+          selectionStore: timelineSelectionStoreRef.current,
+          onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+                targetWorkItemId,
+                startDate,
+                endDate
+              });
+
+              if (!writeResult.accepted) {
+                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+              }
+
+              setUiModel((current) => ({
+                ...current,
+                timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+              }));
+              setResponse((current) =>
+                current
+                  ? {
+                      ...current,
+                      timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+                    }
+                  : current
+              );
+            });
+          },
+          onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+                targetWorkItemId,
+                startDate,
+                endDate
+              });
+
+              if (!writeResult.accepted) {
+                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+              }
+
+              setUiModel((current) => ({
+                ...current,
+                timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+              }));
+              setResponse((current) =>
+                current
+                  ? {
+                      ...current,
+                      timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
+                    }
+                  : current
+              );
+            });
+          },
+          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.updateWorkItemDetails({
+                targetWorkItemId,
+                title,
+                descriptionHtml
+              });
+
+              if (!writeResult.accepted) {
+                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+              }
+
+              setUiModel((current) => ({
+                ...current,
+                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+              }));
+              setResponse((current) =>
+                current
+                  ? {
+                      ...current,
+                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+                    }
+                  : current
+              );
+            });
+          },
+          onRetryRefresh: () => {
+            void retryRefresh();
+          }
+        })
+      ),
+      React.createElement(
+        "section",
+        {
+          id: "ui-controls-drawer",
+          className: controlsOpen ? "ui-shell-workspace ui-shell-workspace-open" : "ui-shell-workspace",
+          "aria-hidden": controlsOpen ? "false" : "true"
+        },
+        React.createElement(
+          "p",
+          { className: "ui-shell-side-title" },
+          "Controls"
+        ),
+        React.createElement(TopTabs, {
+          activeTab,
+          model: uiModel,
+          onTabChange: (tab) => {
+            setActiveTab(tab);
+          },
+          onBlockedAttempt: (payload) => {
+            setBlockerMessage(payload);
+          }
+        }),
+        blockerMessage
+          ? React.createElement(
+              "section",
+              {
+                "aria-label": "tab-blocker-guidance",
+                className: "tab-blocker-guidance"
+              },
+              React.createElement("strong", null, `Blocked ${blockerMessage.tab}`),
+              React.createElement("div", null, `Reason: ${blockerMessage.reason}`),
+              React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
+            )
+          : null,
+        mainPanel
+      )
     )
   );
+}
+
+function resolvePersistedRefreshQueryInput(): string | null {
+  if (typeof localStorage === "undefined") {
+    return null;
+  }
+
+  const queryInput = localStorage.getItem(QUERY_INPUT_KEY) ?? "";
+  const organization = localStorage.getItem(ORG_KEY) ?? "";
+  const project = localStorage.getItem(PROJECT_KEY) ?? "";
+
+  return resolveQueryRunInput(queryInput, organization, project);
+}
+
+type PersistedUiShellState = {
+  activeTab: TabId;
+  response: QueryIntakeResponse | null;
+  lastRunRequest: RunRequest | null;
+};
+
+function readPersistedUiShellState(): PersistedUiShellState | null {
+  if (typeof localStorage === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = localStorage.getItem(UI_SHELL_STATE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as PersistedUiShellState;
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    const activeTab = parsed.activeTab;
+    if (activeTab !== "query" && activeTab !== "mapping" && activeTab !== "timeline" && activeTab !== "diagnostics") {
+      return null;
+    }
+
+    return {
+      activeTab,
+      response: parsed.response ?? null,
+      lastRunRequest: parsed.lastRunRequest ?? null
+    };
+  } catch {
+    return null;
+  }
+}
+
+function persistUiShellState(state: PersistedUiShellState): void {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+
+  localStorage.setItem(UI_SHELL_STATE_KEY, JSON.stringify(state));
+}
+
+function resolveEffectiveTheme(mode: ThemeMode): "light" | "dark" {
+  if (mode === "dark") {
+    return "dark";
+  }
+
+  if (mode === "light") {
+    return "light";
+  }
+
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+
+  return "light";
+}
+
+function applyThemeMode(mode: ThemeMode): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const root = document.documentElement;
+  root.dataset.themeMode = mode;
+  root.dataset.theme = resolveEffectiveTheme(mode);
+}
+
+function readPersistedThemeMode(): ThemeMode {
+  if (typeof localStorage === "undefined") {
+    return "system";
+  }
+
+  const mode = localStorage.getItem(THEME_MODE_KEY);
+  if (mode === "system" || mode === "dark" || mode === "light") {
+    return mode;
+  }
+
+  return "system";
+}
+
+function persistThemeMode(mode: ThemeMode): void {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+
+  localStorage.setItem(THEME_MODE_KEY, mode);
+}
+
+function iconForThemeMode(mode: ThemeMode): string {
+  if (mode === "dark") {
+    return "☾";
+  }
+
+  if (mode === "light") {
+    return "☼";
+  }
+
+  return "◩";
+}
+
+function labelForThemeMode(mode: ThemeMode): string {
+  if (mode === "dark") {
+    return "Dark";
+  }
+
+  if (mode === "light") {
+    return "Light";
+  }
+
+  return "System";
+}
+
+function nextThemeMode(mode: ThemeMode): ThemeMode {
+  if (mode === "system") {
+    return "dark";
+  }
+
+  if (mode === "dark") {
+    return "light";
+  }
+
+  return "system";
 }
 
 function renderActivePanel(params: {
@@ -254,6 +852,9 @@ function renderActivePanel(params: {
     endOrTarget: string;
   }) => Promise<void>;
   onRetryRefresh: () => Promise<void>;
+  adoCommLogs: AdoCommLogEntry[];
+  adoCommLogsLoading: boolean;
+  adoCommLogsError: string | null;
 }): React.ReactElement {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
@@ -293,13 +894,11 @@ function renderActivePanel(params: {
     return React.createElement(
       "section",
       { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" },
-      React.createElement(TimelinePane, {
-        timeline: params.uiModel.timeline,
-        showDependencies: true,
-        onRetryRefresh: () => {
-          void params.onRetryRefresh();
-        }
-      })
+      React.createElement(
+        "p",
+        { className: "timeline-focus-note" },
+        "Gantt-Fokus ist aktiv. Nutze Query und Mapping Tabs nur, um Datenquelle und Feldzuordnung anzupassen."
+      )
     );
   }
 
@@ -312,6 +911,11 @@ function renderActivePanel(params: {
       onRetryRefresh: () => {
         void params.onRetryRefresh();
       }
+    }),
+    renderAdoCommLogPanel({
+      logs: params.adoCommLogs,
+      loading: params.adoCommLogsLoading,
+      error: params.adoCommLogsError
     })
   );
 }
@@ -330,7 +934,7 @@ function createInitialUiModel(): QueryIntakeUiModel {
     },
     capabilities: {
       canRefresh: false,
-      canSwitchQuery: true,
+      canSwitchQuery: false,
       canChangeDensity: true,
       canOpenDetails: true,
       readOnlyTimeline: true

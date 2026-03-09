@@ -33,22 +33,34 @@ export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement
     const issue = issueByField.get(field);
     return React.createElement(
       "li",
-      { key: field },
-      `${REQUIRED_LABELS[field]} required: ${issue?.guidance ?? "Apply required defaults to continue."}`
+      { key: field, className: "mapping-fix-item" },
+      React.createElement("strong", null, REQUIRED_LABELS[field]),
+      React.createElement(
+        "span",
+        null,
+        issue?.guidance ?? "Apply required defaults to continue."
+      )
     );
   });
 
   return React.createElement(
     "section",
     {
-      "aria-label": "mapping-fix-panel"
+      "aria-label": "mapping-fix-panel",
+      className: "mapping-fix-panel"
     },
-    React.createElement("h3", null, "Fix required mapping fields"),
-    React.createElement("ul", null, ...required),
+    React.createElement(
+      "header",
+      { className: "mapping-fix-header" },
+      React.createElement("h3", null, "Fix required mapping fields"),
+      React.createElement("p", null, "These fields must be mapped before timeline rendering can continue.")
+    ),
+    React.createElement("ul", { className: "mapping-fix-list" }, ...required),
     React.createElement(
       "button",
       {
         type: "button",
+        className: "mapping-fix-primary",
         onClick: () =>
           props.onApply({
             id: "System.Id",

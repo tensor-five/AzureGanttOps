@@ -10,6 +10,7 @@ import { RunQueryIntakeUseCase } from "../../application/use-cases/run-query-int
 import { BuildTimelineViewUseCase } from "../../application/use-cases/build-timeline-view.use-case.js";
 import { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
 import { WriteCommandNoopAdapter } from "../../adapters/azure-devops/work-items/write-command.noop.adapter.js";
+import { WriteCommandAzureAdapter } from "../../adapters/azure-devops/work-items/write-command.azure.adapter.js";
 
 export type Phase1QueryFlow = {
   runQueryIntake: RunQueryIntakeUseCase;
@@ -18,7 +19,13 @@ export type Phase1QueryFlow = {
 };
 
 export function createPhase1QueryFlow(params: {
-  httpClient: HttpClient;
+  httpClient: HttpClient & {
+    patch?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers?: Record<string, string | undefined>;
+    }>;
+  };
   contextFilePath: string;
   mappingFilePath?: string;
   capabilities?: Partial<CapabilityFlags>;
@@ -40,7 +47,10 @@ export function createPhase1QueryFlow(params: {
   );
 
   const capabilities = resolveCapabilityFlags(params.capabilities);
-  const writeCommandPort = new WriteCommandNoopAdapter();
+  const writeCommandPort =
+    capabilities.writeEnabled && params.httpClient.patch
+      ? new WriteCommandAzureAdapter({ patch: params.httpClient.patch }, contextStore)
+      : new WriteCommandNoopAdapter();
   const submitWriteCommand = new SubmitWriteCommandUseCase(writeCommandPort);
 
   return {

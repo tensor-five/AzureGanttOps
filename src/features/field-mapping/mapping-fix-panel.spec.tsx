@@ -48,13 +48,13 @@ describe("mapping-fix-panel routed workflows", () => {
     createRoutesStub(routes, { initialEntries: ["/mapping"] });
 
     expect(screen.getByRole("heading", { name: "Fix required mapping fields" })).toBeDefined();
-    expect(screen.getByText("ID required: Provide the Azure field reference for ID.")).toBeDefined();
-    expect(
-      screen.getByText("Start Date required: Provide a non-empty Azure field reference for Start Date.")
-    ).toBeDefined();
-    expect(
-      screen.getByText("End/Target Date required: Provide a non-empty Azure field reference for End/Target Date.")
-    ).toBeDefined();
+    expect(screen.getByText("These fields must be mapped before timeline rendering can continue.")).toBeDefined();
+    expect(screen.getByText("ID")).toBeDefined();
+    expect(screen.getByText("Provide the Azure field reference for ID.")).toBeDefined();
+    expect(screen.getByText("Start Date")).toBeDefined();
+    expect(screen.getByText("Provide a non-empty Azure field reference for Start Date.")).toBeDefined();
+    expect(screen.getByText("End/Target Date")).toBeDefined();
+    expect(screen.getByText("Provide a non-empty Azure field reference for End/Target Date.")).toBeDefined();
 
     await user.click(screen.getByRole("button", { name: "Apply required defaults" }));
 
@@ -91,7 +91,8 @@ describe("mapping-fix-panel routed workflows", () => {
     createRoutesStub(routes, { initialEntries: ["/mapping"] });
 
     expect(screen.getByRole("heading", { name: "Fix required mapping fields" })).toBeDefined();
-    expect(screen.getByText("Title required: Pick one unique field for title.")).toBeDefined();
+    expect(screen.getByText("Title")).toBeDefined();
+    expect(screen.getByText("Pick one unique field for title.")).toBeDefined();
     expect(screen.queryByText("Optional mapping can be left empty.")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Apply required defaults" }));

@@ -1,6 +1,5 @@
 import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
-
-export type TabId = "query" | "mapping" | "timeline" | "diagnostics";
+import type { TabId } from "../../shared/ui-state/tab-id.js";
 
 export type TabBlocker = {
   blocked: boolean;
@@ -10,18 +9,50 @@ export type TabBlocker = {
 
 export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlocker {
   if (tab === "query") {
-    if (!model.capabilities.canSwitchQuery) {
-      return {
-        blocked: true,
-        reason: "No active Azure session.",
-        nextAction: "Restore Azure session, then pick a saved query."
-      };
-    }
-
     return {
       blocked: false,
       reason: "",
       nextAction: ""
+    };
+  }
+
+  if (model.statusCode === "CONTEXT_MISMATCH") {
+    return {
+      blocked: true,
+      reason: "Azure defaults do not match selected query context.",
+      nextAction: "Paste full query URL or set Organization + Project in Query tab and run again."
+    };
+  }
+
+  if (model.statusCode === "SESSION_EXPIRED") {
+    return {
+      blocked: true,
+      reason: "Azure session expired.",
+      nextAction: "Run az login and retry query intake."
+    };
+  }
+
+  if (model.statusCode === "CLI_NOT_FOUND") {
+    return {
+      blocked: true,
+      reason: "Azure CLI not found.",
+      nextAction: "Install Azure CLI, then retry query intake."
+    };
+  }
+
+  if (model.statusCode === "MISSING_EXTENSION") {
+    return {
+      blocked: true,
+      reason: "Azure DevOps extension is missing.",
+      nextAction: "Run az extension add --name azure-devops and retry."
+    };
+  }
+
+  if (model.uiState === "auth_failure") {
+    return {
+      blocked: true,
+      reason: "Azure preflight is not ready.",
+      nextAction: "Open Query tab, correct context/session, then run again."
     };
   }
 
@@ -30,7 +61,7 @@ export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlo
       return {
         blocked: true,
         reason: "No query selected yet.",
-        nextAction: "Select a saved query first."
+        nextAction: "Run query intake first."
       };
     }
 
@@ -46,7 +77,7 @@ export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlo
       return {
         blocked: true,
         reason: "Timeline requires an active query run.",
-        nextAction: "Select a query and run intake."
+        nextAction: "Run query intake from Query tab."
       };
     }
 
@@ -69,7 +100,7 @@ export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlo
     return {
       blocked: true,
       reason: "Diagnostics require an attempted query run.",
-      nextAction: "Select a query to populate diagnostics and freshness state."
+      nextAction: "Run query intake from Query tab."
     };
   }
 

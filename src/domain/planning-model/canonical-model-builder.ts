@@ -43,6 +43,7 @@ function buildTasks(snapshot: IngestionSnapshot, mappings: RequiredFieldMappings
         workItemId: item.id,
         mappedId,
         title,
+        descriptionHtml: readValue(record, "System.Description"),
         startDate: toIsoDate(readValue(record, mappings.start)),
         endDate: toIsoDate(readValue(record, mappings.endOrTarget)),
         state: toState(record)

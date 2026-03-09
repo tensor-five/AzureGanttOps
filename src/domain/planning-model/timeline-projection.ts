@@ -28,7 +28,8 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
         title: task.title,
         state: task.state,
         details: {
-          mappedId: task.mappedId
+          mappedId: task.mappedId,
+          descriptionHtml: task.descriptionHtml
         },
         reason: "missing-both-dates"
       });
@@ -52,7 +53,8 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
         missingBoundary
       },
       details: {
-        mappedId: task.mappedId
+        mappedId: task.mappedId,
+        descriptionHtml: task.descriptionHtml
       }
     });
 

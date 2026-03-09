@@ -11,6 +11,7 @@ describe("projectTimeline", () => {
           workItemId: 1,
           mappedId: "WI-1",
           title: "Alpha",
+          descriptionHtml: "<p>Alpha</p>",
           startDate: "2026-03-02T00:00:00.000Z",
           endDate: "2026-03-03T00:00:00.000Z",
           state: { code: "Active", badge: "A", color: "#1d4ed8" }
@@ -19,6 +20,7 @@ describe("projectTimeline", () => {
           workItemId: 2,
           mappedId: "WI-2",
           title: "Beta",
+          descriptionHtml: null,
           startDate: null,
           endDate: "2026-03-04T00:00:00.000Z",
           state: { code: "New", badge: "N", color: "#7c3aed" }
@@ -27,6 +29,7 @@ describe("projectTimeline", () => {
           workItemId: 3,
           mappedId: "WI-3",
           title: "Gamma",
+          descriptionHtml: null,
           startDate: null,
           endDate: null,
           state: { code: "Closed", badge: "C", color: "#6b7280" }
@@ -82,7 +85,8 @@ describe("projectTimeline", () => {
         title: "Gamma",
         state: { code: "Closed", badge: "C", color: "#6b7280" },
         details: {
-          mappedId: "WI-3"
+          mappedId: "WI-3",
+          descriptionHtml: null
         },
         reason: "missing-both-dates"
       }
@@ -114,6 +118,7 @@ describe("projectTimeline", () => {
           workItemId: 4,
           mappedId: "WI-4",
           title: "Delta",
+          descriptionHtml: null,
           startDate: "2026-03-05T00:00:00.000Z",
           endDate: null,
           state: { code: "Resolved", badge: "R", color: "#15803d" }

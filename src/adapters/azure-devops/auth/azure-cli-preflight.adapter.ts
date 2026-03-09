@@ -38,22 +38,29 @@ export class AzureCliPreflightAdapter implements AuthPreflightPort {
 
   public async check(context: PreflightContext): Promise<PreflightResult> {
     const cli = await this.runner.run("az --version");
+    logPreflightStep("az --version", cli);
 
     if (cli.exitCode !== 0) {
       return { status: "CLI_NOT_FOUND" };
     }
 
     const extension = await this.runner.run("az extension show --name azure-devops -o json");
+    logPreflightStep("az extension show --name azure-devops -o json", extension);
+
     if (extension.exitCode !== 0) {
       return { status: "MISSING_EXTENSION" };
     }
 
     const session = await this.runner.run("az account show -o json");
+    logPreflightStep("az account show -o json", session);
+
     if (session.exitCode !== 0) {
       return { status: "SESSION_EXPIRED" };
     }
 
     const defaults = await this.runner.run("az devops configure --list");
+    logPreflightStep("az devops configure --list", defaults);
+
     if (defaults.exitCode !== 0) {
       return {
         status: "UNKNOWN_ERROR",
@@ -62,6 +69,7 @@ export class AzureCliPreflightAdapter implements AuthPreflightPort {
     }
 
     const parsedDefaults = parseDefaults(defaults.stdout);
+    logPreflightContext(context, parsedDefaults);
 
     if (!matchesContext(parsedDefaults.organization, parsedDefaults.project, context)) {
       return { status: "CONTEXT_MISMATCH" };
@@ -69,6 +77,42 @@ export class AzureCliPreflightAdapter implements AuthPreflightPort {
 
     return { status: "READY" };
   }
+}
+
+function logPreflightStep(
+  command: string,
+  result: {
+    stdout: string;
+    stderr: string;
+    exitCode: number;
+  }
+): void {
+  if (process.env.ADO_VERBOSE_LOGS !== "1") {
+    return;
+  }
+
+  const stdout = sanitizeLogText(result.stdout).slice(0, 400);
+  const stderr = sanitizeLogText(result.stderr).slice(0, 400);
+  console.log(
+    `[ado-preflight] ${command} exit=${result.exitCode} stdout=${JSON.stringify(stdout)} stderr=${JSON.stringify(stderr)}`
+  );
+}
+
+function logPreflightContext(
+  expected: PreflightContext,
+  configured: { organization: string; project: string }
+): void {
+  if (process.env.ADO_VERBOSE_LOGS !== "1") {
+    return;
+  }
+
+  console.log(
+    `[ado-preflight] expected org=${JSON.stringify(expected.organization)} project=${JSON.stringify(expected.project)} configured org=${JSON.stringify(configured.organization)} project=${JSON.stringify(configured.project)}`
+  );
+}
+
+function sanitizeLogText(input: string): string {
+  return input.replace(/[\r\n\t]+/g, " ").trim();
 }
 
 class NodeCliCommandRunner implements CliCommandRunner {
@@ -122,7 +166,7 @@ function matchesContext(
   configuredProject: string,
   expected: PreflightContext
 ): boolean {
-  if (!configuredOrganization || !configuredProject) {
+  if (!configuredOrganization) {
     return false;
   }
 
@@ -132,11 +176,16 @@ function matchesContext(
     .toLowerCase();
   const normalizedExpectedOrg = expected.organization.trim().toLowerCase();
 
+  if (normalizedConfiguredOrg !== normalizedExpectedOrg) {
+    return false;
+  }
+
   const normalizedConfiguredProject = configuredProject.trim().toLowerCase();
   const normalizedExpectedProject = expected.project.trim().toLowerCase();
 
-  return (
-    normalizedConfiguredOrg === normalizedExpectedOrg &&
-    normalizedConfiguredProject === normalizedExpectedProject
-  );
+  if (!normalizedConfiguredProject) {
+    return true;
+  }
+
+  return normalizedConfiguredProject === normalizedExpectedProject;
 }

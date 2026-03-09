@@ -1,5 +1,5 @@
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
-import type { TabId } from "../../features/navigation/tab-blockers.js";
+import type { TabId } from "./tab-id.js";
 
 export type QueryIntakeUiModel = {
   uiState: QueryIntakeResponse["uiState"];
