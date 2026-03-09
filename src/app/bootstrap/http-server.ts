@@ -14,6 +14,24 @@ import { QueryIntakeController } from "../../features/query-switching/query-inta
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
+const FAVICON_ICO_BASE64 =
+  "AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+const FAVICON_ICO_BUFFER = Buffer.from(FAVICON_ICO_BASE64, "base64");
+const FAVICON_SVG = [
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">',
+  '<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1e293b"/></linearGradient></defs>',
+  '<rect width="64" height="64" rx="14" fill="url(#bg)"/>',
+  '<g opacity="0.22" stroke="#94a3b8" stroke-width="1">',
+  '<path d="M12 18H52M12 28H52M12 38H52M12 48H52"/>',
+  '<path d="M16 14V52M28 14V52M40 14V52M52 14V52"/>',
+  "</g>",
+  '<rect x="14" y="16" width="22" height="6" rx="3" fill="#22d3ee"/>',
+  '<rect x="24" y="26" width="26" height="6" rx="3" fill="#38bdf8"/>',
+  '<rect x="18" y="36" width="18" height="6" rx="3" fill="#60a5fa"/>',
+  '<rect x="32" y="46" width="16" height="6" rx="3" fill="#93c5fd"/>',
+  "</svg>"
+].join("");
+const FAVICON_SVG_BUFFER = Buffer.from(FAVICON_SVG, "utf8");
 
 const ROOT_HTML = `<!doctype html>
 <html lang="de">
@@ -21,6 +39,8 @@ const ROOT_HTML = `<!doctype html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Azure DevOps Query-Driven Gantt</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <script>
       (() => {
         const key = "${THEME_MODE_STORAGE_KEY}";
@@ -284,6 +304,14 @@ function isRootRoute(method: string, pathname: string): boolean {
 
 function isDistRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname.startsWith("/dist/");
+}
+
+function isFaviconRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === "/favicon.ico";
+}
+
+function isFaviconSvgRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === "/favicon.svg";
 }
 
 function isQueryIntakeRoute(method: string, pathname: string): boolean {
@@ -671,6 +699,16 @@ async function route(
 
   if (isRootRoute(method, url.pathname)) {
     writeHtml(res, 200, ROOT_HTML);
+    return;
+  }
+
+  if (isFaviconRoute(method, url.pathname)) {
+    writeFavicon(res);
+    return;
+  }
+
+  if (isFaviconSvgRoute(method, url.pathname)) {
+    writeFaviconSvg(res);
     return;
   }
 
@@ -1089,6 +1127,18 @@ function writeJson(res: ServerResponse, statusCode: number, payload: unknown): v
   res.statusCode = statusCode;
   res.setHeader("content-type", "application/json; charset=utf-8");
   res.end(`${JSON.stringify(payload)}\n`);
+}
+
+function writeFavicon(res: ServerResponse): void {
+  res.statusCode = 200;
+  res.setHeader("content-type", "image/x-icon");
+  res.end(FAVICON_ICO_BUFFER);
+}
+
+function writeFaviconSvg(res: ServerResponse): void {
+  res.statusCode = 200;
+  res.setHeader("content-type", "image/svg+xml; charset=utf-8");
+  res.end(FAVICON_SVG_BUFFER);
 }
 
 function sanitizeLogText(input: string): string {

@@ -37,8 +37,48 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("text/html");
       expect(text).toContain('<div id="app"></div>');
+      expect(text).toContain('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />');
+      expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.css');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.js');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves favicon for GET /favicon.svg", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/favicon.svg`);
+      const text = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("image/svg+xml");
+      expect(text).toContain("<svg");
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves favicon for GET /favicon.ico", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/favicon.ico`);
+      const body = await response.arrayBuffer();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("image/x-icon");
+      expect(body.byteLength).toBeGreaterThan(0);
     } finally {
       await server.close();
     }
