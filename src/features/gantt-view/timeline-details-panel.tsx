@@ -13,22 +13,33 @@ export type TimelineDetailsPanelProps = {
     targetWorkItemId: number;
     title: string;
     descriptionHtml: string;
+    state: string;
   }) => Promise<void>;
+  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<string[]>;
 };
+
+const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
 
 export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.ReactElement {
   const collapsed = props.collapsed ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
   const [titleDraft, setTitleDraft] = React.useState("");
   const [descriptionDraft, setDescriptionDraft] = React.useState("");
+  const [stateDraft, setStateDraft] = React.useState("");
+  const [serverStateOptions, setServerStateOptions] = React.useState<string[]>([]);
+  const [isDescriptionEditing, setIsDescriptionEditing] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
+  const descriptionFieldRef = React.useRef<HTMLDivElement | null>(null);
   const descriptionRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (!selected) {
       setTitleDraft("");
       setDescriptionDraft("");
+      setStateDraft("");
+      setServerStateOptions([]);
+      setIsDescriptionEditing(false);
       setSaveError(null);
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
@@ -38,33 +49,60 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
 
     setTitleDraft(selected.title);
     setDescriptionDraft(selected.descriptionHtml);
+    setStateDraft(selected.state);
+    setServerStateOptions([]);
+    setIsDescriptionEditing(false);
     setSaveError(null);
     if (descriptionRef.current) {
       descriptionRef.current.innerHTML = selected.descriptionHtml;
     }
   }, [selected?.workItemId]);
 
-  const lines = buildTimelineDetailsLines(props);
-  const entries = lines.map((line, index) => {
-    const parsed = parseTimelineDetailLine(line);
-    if (!parsed) {
-      return React.createElement(
-        "div",
-        { key: `${index}-${line}`, className: "timeline-details-note" },
-        line.replace(/^- /, "")
-      );
+  React.useEffect(() => {
+    if (!selected || !props.onFetchWorkItemStateOptions) {
+      return;
     }
 
-    return React.createElement(
-      "article",
-      { key: `${index}-${line}`, className: "timeline-details-card" },
-      React.createElement("p", { className: "timeline-details-card-label" }, parsed.label),
-      React.createElement("p", { className: "timeline-details-card-value" }, parsed.value)
+    let cancelled = false;
+    void props
+      .onFetchWorkItemStateOptions({ targetWorkItemId: selected.workItemId })
+      .then((states) => {
+        if (cancelled) {
+          return;
+        }
+        setServerStateOptions(states.filter((state) => state.trim().length > 0));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setServerStateOptions([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
+
+  const lines = buildTimelineDetailsLines(props);
+  const entries = lines
+    .map((line) => parseTimelineDetailLine(line))
+    .filter((entry): entry is { label: string; value: string } => entry !== null)
+    .filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase()))
+    .map((entry, index) =>
+      React.createElement(
+        "div",
+        { key: `${index}-${entry.label}`, className: "timeline-details-row" },
+        React.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`),
+        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value))
+      )
     );
-  });
+
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = selected?.descriptionHtml ?? "";
-  const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription;
+  const baselineState = selected?.state ?? "";
+  const isDirty =
+    titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+
   const azureLink = selected
     ? buildAzureWorkItemUrl({
         organization: props.organization,
@@ -73,17 +111,29 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       })
     : null;
 
-  const applyDescriptionCommand = (command: "bold" | "italic" | "insertUnorderedList") => {
+  const stateOptions = React.useMemo(
+    () => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions),
+    [props.timeline, selected?.state, serverStateOptions]
+  );
+
+  const applyDescriptionCommand = (command: string, value?: string) => {
     if (!descriptionRef.current) {
       return;
     }
 
     descriptionRef.current.focus();
-    document.execCommand(command);
+    document.execCommand(command, false, value);
+    setDescriptionDraft(descriptionRef.current.innerHTML);
   };
 
   const saveDetails = async () => {
-    if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || !isDirty) {
+    if (
+      !selected ||
+      !props.onUpdateSelectedWorkItemDetails ||
+      titleDraft.trim().length === 0 ||
+      stateDraft.trim().length === 0 ||
+      !isDirty
+    ) {
       return;
     }
 
@@ -94,7 +144,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       await props.onUpdateSelectedWorkItemDetails({
         targetWorkItemId: selected.workItemId,
         title: titleDraft.trim(),
-        descriptionHtml: descriptionDraft
+        descriptionHtml: descriptionDraft,
+        state: stateDraft.trim()
       });
       setTitleDraft(titleDraft.trim());
     } catch (error) {
@@ -126,139 +177,231 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
             props.onToggleCollapsed?.();
           }
         },
-        collapsed ? "◀" : "▶"
+        React.createElement(
+          "svg",
+          {
+            viewBox: "0 0 16 16",
+            "aria-hidden": "true",
+            className: "timeline-details-collapse-icon"
+          },
+          collapsed
+            ? React.createElement(
+                React.Fragment,
+                null,
+                React.createElement("path", { d: "M2 6V2h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "M14 10v4h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "M6 2 2 6", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "m10 14 4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+              )
+            : React.createElement(
+                React.Fragment,
+                null,
+                React.createElement("path", { d: "M6 2H2v4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "M10 14h4v-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "m2 2 4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
+                React.createElement("path", { d: "m14 14-4-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
+              )
+        )
       ),
-      collapsed
-        ? null
-        : React.createElement("h4", null, "Work item details"),
+      collapsed ? null : React.createElement("h4", null, "Work item details"),
       collapsed
         ? null
         : selected
-          ? React.createElement(
-              "span",
-              { className: "timeline-details-work-item-id" },
-              `#${selected.workItemId}`
-            )
+          ? azureLink
+            ? React.createElement(
+                "a",
+                {
+                  className: "timeline-details-work-item-id timeline-details-work-item-link",
+                  href: azureLink,
+                  target: "_blank",
+                  rel: "noreferrer"
+                },
+                `#${selected.workItemId}`
+              )
+            : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)
           : null
     ),
     collapsed
       ? null
       : selected
-      ? React.createElement(
-          "div",
-          { className: "timeline-details-edit-form" },
-          React.createElement(
-            "label",
-            { className: "timeline-details-field" },
-            React.createElement("span", { className: "timeline-details-label" }, "Title"),
-            React.createElement("input", {
-              type: "text",
-              className: "timeline-details-input",
-              value: titleDraft,
-              onChange: (event) => {
-                setTitleDraft((event.target as HTMLInputElement).value);
-              }
-            })
-          ),
-          React.createElement(
+        ? React.createElement(
             "div",
-            { className: "timeline-details-field" },
-            React.createElement("span", { className: "timeline-details-label" }, "Description"),
+            { className: "timeline-details-edit-form" },
+            React.createElement(
+              "label",
+              { className: "timeline-details-field" },
+              React.createElement("span", { className: "timeline-details-label" }, "Title"),
+              React.createElement("input", {
+                type: "text",
+                className: "timeline-details-input",
+                value: titleDraft,
+                onChange: (event) => {
+                  setTitleDraft((event.target as HTMLInputElement).value);
+                }
+              })
+            ),
+            React.createElement(
+              "label",
+              { className: "timeline-details-field" },
+              React.createElement("span", { className: "timeline-details-label" }, "State"),
+              React.createElement(
+                "select",
+                {
+                  className: "timeline-details-input",
+                  value: stateDraft,
+                  onChange: (event) => {
+                    setStateDraft((event.target as HTMLSelectElement).value);
+                  }
+                },
+                ...stateOptions.map((option) => React.createElement("option", { key: option, value: option }, option))
+              )
+            ),
             React.createElement(
               "div",
-              { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" },
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-richtext-button",
-                  onClick: () => {
-                    applyDescriptionCommand("bold");
-                  }
-                },
-                "Bold"
-              ),
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-richtext-button",
-                  onClick: () => {
-                    applyDescriptionCommand("italic");
-                  }
-                },
-                "Italic"
-              ),
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-richtext-button",
-                  onClick: () => {
-                    applyDescriptionCommand("insertUnorderedList");
-                  }
-                },
-                "List"
-              )
-            ),
-            React.createElement("div", {
-              ref: descriptionRef,
-              className: "timeline-details-richtext",
-              contentEditable: true,
-              suppressContentEditableWarning: true,
-              onInput: (event) => {
-                setDescriptionDraft((event.target as HTMLDivElement).innerHTML);
-              }
-            })
-          ),
-          React.createElement(
-            "div",
-            { className: "timeline-details-actions" },
-            React.createElement(
-              "button",
-              {
-                type: "button",
-                className: "timeline-action-button timeline-action-button-primary",
+              { className: "timeline-details-field", ref: descriptionFieldRef },
+              React.createElement("span", { className: "timeline-details-label" }, "Description"),
+              isDescriptionEditing
+                ? React.createElement(
+                    "div",
+                    { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" },
+                    React.createElement(
+                      "button",
+                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("bold") },
+                      "B"
+                    ),
+                    React.createElement(
+                      "button",
+                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("italic") },
+                      "I"
+                    ),
+                    React.createElement(
+                      "button",
+                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("underline") },
+                      "U"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-richtext-button",
+                        onClick: () => applyDescriptionCommand("insertOrderedList")
+                      },
+                      "1."
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-richtext-button",
+                        onClick: () => applyDescriptionCommand("insertUnorderedList")
+                      },
+                      "•"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-richtext-button",
+                        onClick: () => applyDescriptionCommand("formatBlock", "<h2>")
+                      },
+                      "H2"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-richtext-button",
+                        onClick: () => applyDescriptionCommand("formatBlock", "<blockquote>")
+                      },
+                      "Quote"
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-richtext-button",
+                        onClick: () => {
+                          const url = window.prompt("Link URL", "https://");
+                          if (url && url.trim().length > 0) {
+                            applyDescriptionCommand("createLink", url.trim());
+                          }
+                        }
+                      },
+                      "Link"
+                    ),
+                    React.createElement(
+                      "button",
+                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("removeFormat") },
+                      "Clear"
+                    )
+                  )
+                : React.createElement(
+                    "p",
+                    { className: "timeline-details-muted timeline-description-edit-hint" },
+                    "Click description to edit"
+                  ),
+              React.createElement("div", {
+                ref: descriptionRef,
+                className: isDescriptionEditing
+                  ? "timeline-details-richtext timeline-details-richtext-editing"
+                  : "timeline-details-richtext timeline-details-richtext-readonly",
+                contentEditable: isDescriptionEditing,
+                suppressContentEditableWarning: true,
                 onClick: () => {
-                  void saveDetails();
+                  if (!isDescriptionEditing) {
+                    setIsDescriptionEditing(true);
+                    requestAnimationFrame(() => {
+                      descriptionRef.current?.focus();
+                    });
+                  }
                 },
-                disabled: isSaving || !isDirty || titleDraft.trim().length === 0 || !props.onUpdateSelectedWorkItemDetails
-              },
-              isSaving ? "Saving..." : "Save"
+                onInput: (event) => {
+                  setDescriptionDraft((event.target as HTMLDivElement).innerHTML);
+                },
+                onBlur: () => {
+                  requestAnimationFrame(() => {
+                    const activeElement = document.activeElement;
+                    if (descriptionFieldRef.current && activeElement && descriptionFieldRef.current.contains(activeElement)) {
+                      return;
+                    }
+                    setIsDescriptionEditing(false);
+                  });
+                }
+              })
             ),
-            azureLink
-              ? React.createElement(
-                  "a",
-                  {
-                    className: "timeline-details-azure-link",
-                    href: azureLink,
-                    target: "_blank",
-                    rel: "noreferrer"
-                  },
-                  "Open in Azure DevOps"
-                )
-              : React.createElement(
-                  "span",
-                  { className: "timeline-details-muted" },
-                  "Azure link unavailable (missing organization/project)."
-                )
-          ),
-          saveError
-            ? React.createElement(
-                "p",
+            React.createElement(
+              "div",
+              { className: "timeline-details-actions" },
+              React.createElement(
+                "button",
                 {
-                  className: "timeline-update-error",
-                  role: "status"
+                  type: "button",
+                  className: "timeline-action-button timeline-action-button-primary",
+                  onClick: () => {
+                    void saveDetails();
+                  },
+                  disabled:
+                    isSaving ||
+                    !isDirty ||
+                    titleDraft.trim().length === 0 ||
+                    stateDraft.trim().length === 0 ||
+                    !props.onUpdateSelectedWorkItemDetails
                 },
-                `Save failed: ${saveError}`
+                isSaving ? "Saving..." : "Save"
               )
-            : null
-        )
-      : React.createElement(
-          "p",
-          { className: "timeline-details-muted" },
-          "Select a work item to edit title and description."
-        ),
+            ),
+            saveError
+              ? React.createElement(
+                  "p",
+                  {
+                    className: "timeline-update-error",
+                    role: "status"
+                  },
+                  `Save failed: ${saveError}`
+                )
+              : null
+          )
+        : React.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."),
     collapsed ? null : React.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries),
     React.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n"))
   );
@@ -285,7 +428,6 @@ export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): str
       `- state: ${selectedBar.state.code}`,
       `- start: ${selectedBar.schedule.startDate ?? "none"}`,
       `- end: ${selectedBar.schedule.endDate ?? "none"}`,
-      `- missing boundary: ${selectedBar.schedule.missingBoundary ?? "none"}`,
       `- predecessors: ${predecessorCount}`,
       `- successors: ${successorCount}`
     ];
@@ -310,7 +452,7 @@ export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): str
 function resolveSelectedWorkItem(
   timeline: TimelineReadModel | null,
   selectedWorkItemId: number | null
-): { workItemId: number; title: string; descriptionHtml: string } | null {
+): { workItemId: number; title: string; descriptionHtml: string; state: string } | null {
   if (!timeline || selectedWorkItemId === null) {
     return null;
   }
@@ -320,7 +462,8 @@ function resolveSelectedWorkItem(
     return {
       workItemId: selectedBar.workItemId,
       title: selectedBar.title,
-      descriptionHtml: selectedBar.details.descriptionHtml ?? ""
+      descriptionHtml: selectedBar.details.descriptionHtml ?? "",
+      state: selectedBar.state.code
     };
   }
 
@@ -329,7 +472,8 @@ function resolveSelectedWorkItem(
     return {
       workItemId: selectedUnschedulable.workItemId,
       title: selectedUnschedulable.title,
-      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? ""
+      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
+      state: selectedUnschedulable.state.code
     };
   }
 
@@ -361,4 +505,69 @@ function parseTimelineDetailLine(line: string): { label: string; value: string }
     label: match[1],
     value: match[2]
   };
+}
+
+function formatTimelineDetailValue(label: string, value: string): string {
+  const normalizedLabel = label.trim().toLowerCase();
+  if (normalizedLabel === "start" || normalizedLabel === "end") {
+    return formatDateForDisplay(value);
+  }
+
+  return value;
+}
+
+function formatDateForDisplay(raw: string): string {
+  if (raw === "none") {
+    return raw;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return raw;
+  }
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = parsed.getFullYear();
+  const hours = String(parsed.getHours()).padStart(2, "0");
+  const minutes = String(parsed.getMinutes()).padStart(2, "0");
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+function resolveStateOptions(timeline: TimelineReadModel | null, selectedState: string, serverStateOptions: string[]): string[] {
+  if (serverStateOptions.length > 0) {
+    const normalizedServerOptions = serverStateOptions.map((state) => state.trim()).filter((state) => state.length > 0);
+    if (selectedState.trim().length > 0 && !normalizedServerOptions.some((entry) => entry.toLowerCase() === selectedState.trim().toLowerCase())) {
+      normalizedServerOptions.unshift(selectedState.trim());
+    }
+    return normalizedServerOptions;
+  }
+
+  const discovered = new Set<string>();
+  timeline?.bars.forEach((bar) => {
+    if (bar.state.code.trim().length > 0) {
+      discovered.add(bar.state.code.trim());
+    }
+  });
+  timeline?.unschedulable.forEach((item) => {
+    if (item.state.code.trim().length > 0) {
+      discovered.add(item.state.code.trim());
+    }
+  });
+
+  if (selectedState.trim().length > 0) {
+    discovered.add(selectedState.trim());
+  }
+
+  const result: string[] = [];
+  KNOWN_STATE_ORDER.forEach((state) => {
+    result.push(state);
+    discovered.delete(state);
+  });
+
+  [...discovered].sort((left, right) => left.localeCompare(right)).forEach((state) => {
+    result.push(state);
+  });
+
+  return result.length > 0 ? result : [selectedState || "To Do"];
 }

@@ -50,12 +50,16 @@ export type QueryIntakeTransport = {
     targetWorkItemId: number;
     title: string;
     descriptionHtml: string;
+    state: string;
   }) => Promise<{
     accepted: boolean;
     mode: "NO_OP" | "EXECUTED";
     commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
     operationCount: number;
     reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  }>;
+  fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
+    states: string[];
   }>;
   authenticateAzureCli: () => Promise<{
     status: "OK";
@@ -149,6 +153,9 @@ export function createLocalUiShellController(params: {
       commandKind: "WORK_ITEM_PATCH",
       operationCount: 0,
       reasonCode: "WRITE_DISABLED"
+    }),
+    fetchWorkItemStateOptions: async () => ({
+      states: []
     }),
     authenticateAzureCli: async () => ({
       status: "OK",

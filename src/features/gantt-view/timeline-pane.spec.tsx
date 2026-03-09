@@ -98,7 +98,6 @@ describe("timeline-pane unschedulable date adoption", () => {
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: "#22 Target Item (missing-both-dates)" })).toBeNull();
     });
-    expect(screen.getByLabelText("selected-timeline-item").textContent).toContain("Target Item");
     const detailsText = screen.getByLabelText("timeline-details-panel").textContent ?? "";
     expect(detailsText).toContain("- selected work item: #22");
     expect(detailsText).toContain("- start: 2026-03-01T00:00:00.000Z");
@@ -195,6 +194,92 @@ describe("timeline-pane unschedulable date adoption", () => {
     const end = new Date(call.endDate);
     const dayDelta = Math.floor((end.getTime() - start.getTime()) / 86_400_000);
     expect(dayDelta).toBe(13);
+  });
+
+  it("renders end-only bars with a default two-week length", () => {
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          startDate: null,
+          endDate: "2026-03-10T00:00:00.000Z",
+          missingBoundary: "start"
+        }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const bar = screen.getByLabelText("timeline-bar-11");
+    expect(bar.getAttribute("width")).toBe("308");
+  });
+
+  it("uses tighter vertical spacing between bars", () => {
+    const timeline = makeTimeline();
+    timeline.bars = [
+      timeline.bars[0],
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        details: { mappedId: "12" },
+        title: "Second Item"
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const firstBarY = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const secondBarY = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(secondBarY - firstBarY).toBe(26);
+  });
+
+  it("draws the today line through the full chart height", () => {
+    const todayUtc = new Date();
+    const normalizedTodayUtc = new Date(
+      Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate())
+    );
+    const endUtc = new Date(normalizedTodayUtc.getTime());
+    endUtc.setUTCDate(endUtc.getUTCDate() + 1);
+
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          startDate: normalizedTodayUtc.toISOString(),
+          endDate: endUtc.toISOString(),
+          missingBoundary: null
+        }
+      }
+    ];
+
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const todayLine = container.querySelector("line.timeline-today-line");
+    expect(todayLine).not.toBeNull();
+
+    const chart = screen.getByLabelText("gantt-chart");
+    const viewBox = chart.getAttribute("viewBox");
+    expect(viewBox).not.toBeNull();
+    const viewBoxHeight = Number((viewBox as string).split(" ")[3]);
+    const todayLineEndY = Number((todayLine as SVGLineElement).getAttribute("y2"));
+    expect(todayLineEndY).toBe(viewBoxHeight - 18);
   });
 
   it("keeps existing end date when dropping unscheduled item into chart", async () => {

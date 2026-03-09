@@ -107,7 +107,7 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
       };
     },
-    updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml }) => {
+    updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
       const response = await fetch("/phase2/work-item-details-update", {
         method: "POST",
         headers: {
@@ -117,7 +117,8 @@ const composition = createDefaultUiShellComposition({
         body: JSON.stringify({
           targetWorkItemId,
           title,
-          descriptionHtml
+          descriptionHtml,
+          state
         })
       });
 
@@ -146,6 +147,26 @@ const composition = createDefaultUiShellComposition({
         operationCount: number;
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
       };
+    },
+    fetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
+      const response = await fetch(`/phase2/work-item-state-options?targetWorkItemId=${encodeURIComponent(String(targetWorkItemId))}`, {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as { states?: unknown; message?: string };
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && typeof payload.message === "string"
+            ? payload.message
+            : `State options request failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      const states = Array.isArray(payload.states) ? payload.states.filter((entry): entry is string => typeof entry === "string") : [];
+      return { states };
     },
     authenticateAzureCli: async () => {
       const response = await fetch("/phase2/az-login", {

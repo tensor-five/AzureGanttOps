@@ -1,7 +1,7 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
-import { loadLastDensity, saveLastDensity, type TimelineDensity } from "./timeline-density-preference.js";
+import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
   buildTimelineDetailsLines,
   TimelineDetailsPanel,
@@ -32,7 +32,9 @@ export type TimelinePaneProps = {
     targetWorkItemId: number;
     title: string;
     descriptionHtml: string;
+    state: string;
   }) => Promise<void>;
+  onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<string[]>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
 };
@@ -82,7 +84,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     selectionStore.getSelectedWorkItemId()
   );
   const [adoptScheduleError, setAdoptScheduleError] = React.useState<string | null>(null);
-  const [density, setDensity] = React.useState<TimelineDensity>(() => props.density ?? loadLastDensity() ?? "comfortable");
   const [dayWidthPx, setDayWidthPx] = React.useState<number>(DAY_WIDTH_WEEK_PX);
   const [activeScheduleDrag, setActiveScheduleDrag] = React.useState<ActiveScheduleDrag | null>(null);
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
@@ -90,10 +91,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [detailsCollapsed, setDetailsCollapsed] = React.useState(false);
   const [chartViewport, setChartViewport] = React.useState<{
     scrollLeft: number;
+    scrollTop: number;
     clientWidth: number;
     clientHeight: number;
   }>({
     scrollLeft: 0,
+    scrollTop: 0,
     clientWidth: 0,
     clientHeight: 0
   });
@@ -105,22 +108,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule);
 
   React.useEffect(() => {
-    if (props.density) {
-      setDensity(props.density);
-    }
-  }, [props.density]);
-
-  React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, [props.timeline]);
-
-  React.useEffect(() => {
-    saveLastDensity(density);
-  }, [density]);
 
   React.useEffect(() => {
     const scrollElement = chartScrollRef.current;
@@ -131,6 +124,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const syncViewport = () => {
       setChartViewport({
         scrollLeft: scrollElement.scrollLeft,
+        scrollTop: scrollElement.scrollTop,
         clientWidth: scrollElement.clientWidth,
         clientHeight: scrollElement.clientHeight
       });
@@ -198,10 +192,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
     const absoluteTodayX = CHART_LEFT_GUTTER + chartModel.todayX;
     const viewportTodayX = absoluteTodayX - chartViewport.scrollLeft;
-    const clampedViewportX = Math.max(0, Math.min(chartViewport.clientWidth, viewportTodayX));
+    const labelPaddingPx = TODAY_LABEL_EDGE_PADDING_PX;
+    const clampedLabelX = Math.max(labelPaddingPx, Math.min(chartViewport.clientWidth - labelPaddingPx, viewportTodayX));
     return {
-      x: clampedViewportX,
-      isPinnedToEdge: viewportTodayX < 0 || viewportTodayX > chartViewport.clientWidth
+      labelX: clampedLabelX,
+      isPinnedToEdge: viewportTodayX < labelPaddingPx || viewportTodayX > chartViewport.clientWidth - labelPaddingPx
     };
   }, [chartModel.todayX, chartViewport.clientWidth, chartViewport.scrollLeft]);
 
@@ -492,7 +487,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     },
     organization: props.organization,
     project: props.project,
-    onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails
+    onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
   };
 
   const barCount = chartModel.bars.length;
@@ -522,42 +518,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             }
           },
           "Refresh"
-        ),
-        React.createElement(
-          "div",
-          {
-            className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-density",
-            role: "group",
-            "aria-label": "Timeline density"
-          },
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: density === "comfortable" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-              "aria-pressed": density === "comfortable",
-              "aria-label": "Density comfortable",
-              onClick: () => {
-                setDensity("comfortable");
-                props.onDensityChange?.("comfortable");
-              }
-            },
-            "Comfortable"
-          ),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: density === "compact" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-              "aria-pressed": density === "compact",
-              "aria-label": "Density compact",
-              onClick: () => {
-                setDensity("compact");
-                props.onDensityChange?.("compact");
-              }
-            },
-            "Compact"
-          )
         ),
         React.createElement(
           "div",
@@ -709,6 +669,15 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     )
                   )
                 ),
+                chartModel.todayX !== null
+                  ? React.createElement("line", {
+                      x1: CHART_LEFT_GUTTER + chartModel.todayX,
+                      y1: CHART_GRID_START_Y,
+                      x2: CHART_LEFT_GUTTER + chartModel.todayX,
+                      y2: chartModel.height - CHART_BOTTOM_PADDING,
+                      className: "timeline-today-line"
+                    })
+                  : null,
                 props.showDependencies
                   ? effectiveTimeline?.dependencies.map((dependency, index) => {
                       const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
@@ -796,7 +765,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       {
                         x: CHART_LEFT_GUTTER + bar.x + 8,
                         y: y + 16,
-                        className: "timeline-bar-label"
+                        className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
                       },
                       truncateTitleToBarWidth(bar.title, bar.width)
                     )
@@ -839,21 +808,15 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       preserveAspectRatio: "none",
                       style: {
                         width: `${chartViewport.clientWidth}px`,
-                        height: `${chartViewport.clientHeight}px`
+                        height: `${chartViewport.clientHeight}px`,
+                        transform: `translate(${chartViewport.scrollLeft}px, ${chartViewport.scrollTop}px)`
                       },
                       "aria-hidden": "true"
                     },
-                    React.createElement("line", {
-                      x1: stickyTodayMarker.x,
-                      y1: 0,
-                      x2: stickyTodayMarker.x,
-                      y2: chartViewport.clientHeight,
-                      className: "timeline-today-line"
-                    }),
                     React.createElement(
                       "text",
                       {
-                        x: stickyTodayMarker.x + 6,
+                        x: stickyTodayMarker.labelX,
                         y: CHART_AXIS_TODAY_LABEL_Y,
                         className: "timeline-today-label"
                       },
@@ -950,15 +913,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   );
 }
 
-const CHART_ROW_HEIGHT = 40;
+const BAR_HEIGHT = 24;
+const BAR_ROW_GAP = 2;
+const CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
 const CHART_TOP_PADDING = 56;
 const CHART_BOTTOM_PADDING = 18;
 const CHART_LEFT_GUTTER = 24;
 const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
+const TODAY_LABEL_EDGE_PADDING_PX = 22;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
 const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
-const BAR_HEIGHT = 24;
 const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
 const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
@@ -1027,7 +992,7 @@ function buildVisualChartModel(
         return null;
       }
 
-      const normalizedStart = start ?? addDays(end as Date, -2);
+      const normalizedStart = start ?? addDays(end as Date, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
       const normalizedEnd = end ?? addDays(start as Date, 2);
       const rangeStart = normalizedStart.getTime() <= normalizedEnd.getTime() ? normalizedStart : normalizedEnd;
       const rangeEnd = normalizedEnd.getTime() >= normalizedStart.getTime() ? normalizedEnd : normalizedStart;

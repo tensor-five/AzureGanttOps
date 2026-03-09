@@ -28766,6 +28766,9 @@ window.__phase6Mount = () => {
         operationCount: 2,
         reasonCode: "WRITE_ENABLED"
       }),
+      fetchWorkItemStateOptions: async () => ({
+        states: ["To Do", "Active", "Closed"]
+      }),
       authenticateAzureCli: async () => ({
         status: "OK",
         message: "Azure CLI login completed. Retry query intake."

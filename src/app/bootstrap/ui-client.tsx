@@ -63,11 +63,14 @@ function applyWorkItemMetadataUpdate(
   timeline: QueryIntakeResponse["timeline"],
   targetWorkItemId: number,
   title: string,
-  descriptionHtml: string
+  descriptionHtml: string,
+  stateCode: string
 ): QueryIntakeResponse["timeline"] {
   if (!timeline) {
     return timeline;
   }
+
+  const nextState = toTimelineStateBadge(stateCode);
 
   return {
     ...timeline,
@@ -76,6 +79,7 @@ function applyWorkItemMetadataUpdate(
         ? {
             ...bar,
             title,
+            state: nextState,
             details: {
               ...bar.details,
               descriptionHtml
@@ -88,6 +92,7 @@ function applyWorkItemMetadataUpdate(
         ? {
             ...item,
             title,
+            state: nextState,
             details: {
               ...item.details,
               descriptionHtml
@@ -96,6 +101,33 @@ function applyWorkItemMetadataUpdate(
         : item
     )
   };
+}
+
+function toTimelineStateBadge(code: string): { code: string; badge: string; color: string } {
+  const normalizedCode = code.trim().length > 0 ? code.trim() : "Unknown";
+  return {
+    code: normalizedCode,
+    badge: normalizedCode.charAt(0).toUpperCase() || "?",
+    color: colorForStateCode(normalizedCode)
+  };
+}
+
+function colorForStateCode(code: string): string {
+  switch (code.toLowerCase()) {
+    case "new":
+    case "to do":
+      return "#7c3aed";
+    case "active":
+    case "in progress":
+      return "#1d4ed8";
+    case "resolved":
+      return "#15803d";
+    case "closed":
+    case "done":
+      return "#6b7280";
+    default:
+      return "#334155";
+  }
 }
 
 type RunRequest = {
@@ -616,12 +648,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               );
             });
           },
-          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml }) => {
+          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
             await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.updateWorkItemDetails({
                 targetWorkItemId,
                 title,
-                descriptionHtml
+                descriptionHtml,
+                state
               });
 
               if (!writeResult.accepted) {
@@ -630,17 +663,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
               setUiModel((current) => ({
                 ...current,
-                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state)
               }));
               setResponse((current) =>
                 current
                   ? {
                       ...current,
-                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
+                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state)
                     }
                   : current
               );
             });
+          },
+          onFetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
+            const response = await props.composition.controller.fetchWorkItemStateOptions({ targetWorkItemId });
+            return response.states;
           },
           onRetryRefresh: () => {
             void retryRefresh();

@@ -85,6 +85,7 @@ const ADO_COMM_ORIGIN = "http://127.0.0.1";
 const ADO_COMM_ROUTE_PATH = "/phase2/ado-comm-logs";
 const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
+const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const ADO_COMM_URL_PATH_ORIGIN = "https://dev.azure.com";
@@ -293,6 +294,10 @@ function isUpdateDetailsRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_DETAILS_ROUTE_PATH;
 }
 
+function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === WORK_ITEM_STATE_OPTIONS_ROUTE_PATH;
+}
+
 function isAzLoginRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === AZ_LOGIN_ROUTE_PATH;
 }
@@ -402,6 +407,8 @@ export function createHttpServer(params: {
       distRootPath,
       verboseLogs,
       adoCommLogStore,
+      contextStore,
+      instrumentedHttpClient,
       azLoginRunner,
       azCliPathResolver
     );
@@ -432,6 +439,8 @@ async function route(
   distRootPath: string,
   verboseLogs: boolean,
   adoCommLogStore: AdoCommLogStore,
+  contextStore: AdoContextStore,
+  httpClient: HttpClient,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver
 ): Promise<void> {
@@ -524,7 +533,7 @@ async function route(
     if (!update) {
       writeJson(res, 400, {
         code: "INVALID_INPUT",
-        message: "Provide targetWorkItemId/title/descriptionHtml."
+        message: "Provide targetWorkItemId/title/descriptionHtml/state."
       });
       return;
     }
@@ -537,7 +546,8 @@ async function route(
           workItemId: update.targetWorkItemId,
           operations: [
             { op: "add", path: "/fields/System.Title", value: update.title },
-            { op: "add", path: "/fields/System.Description", value: update.descriptionHtml }
+            { op: "add", path: "/fields/System.Description", value: update.descriptionHtml },
+            { op: "add", path: "/fields/System.State", value: update.state }
           ]
         }
       });
@@ -557,6 +567,33 @@ async function route(
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to patch work item."
+      });
+      return;
+    }
+  }
+
+  if (isWorkItemStateOptionsRoute(method, url.pathname)) {
+    const targetWorkItemId = parseTargetWorkItemIdFromQuery(url);
+    if (!targetWorkItemId) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId query param."
+      });
+      return;
+    }
+
+    try {
+      const states = await fetchAllowedStateCodesForWorkItem({
+        workItemId: targetWorkItemId,
+        contextStore,
+        httpClient
+      });
+      writeJson(res, 200, { states });
+      return;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "STATE_OPTIONS_FAILED",
+        message: error instanceof Error ? error.message : "Unable to fetch allowed work item states."
       });
       return;
     }
@@ -647,6 +684,100 @@ function parsePayload(raw: string): Record<string, unknown> | null {
   }
 }
 
+function parseTargetWorkItemIdFromQuery(url: URL): number | null {
+  const raw = url.searchParams.get("targetWorkItemId");
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+async function fetchAllowedStateCodesForWorkItem(input: {
+  workItemId: number;
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+}): Promise<string[]> {
+  const context = await input.contextStore.getActiveContext();
+  if (!context) {
+    throw new Error("ADO_CONTEXT_MISSING");
+  }
+
+  const workItemUrl =
+    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
+    `/_apis/wit/workitems/${input.workItemId}?fields=System.WorkItemType&api-version=7.1`;
+  const workItemResponse = await input.httpClient.get(workItemUrl);
+  if (workItemResponse.status < 200 || workItemResponse.status >= 300) {
+    throw new Error("WORK_ITEM_FETCH_FAILED");
+  }
+
+  const workItemType = extractWorkItemType(workItemResponse.json);
+  if (!workItemType) {
+    return [];
+  }
+
+  const statesUrl =
+    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
+    `/_apis/wit/workitemtypes/${encodeURIComponent(workItemType)}/states?api-version=7.1`;
+  const statesResponse = await input.httpClient.get(statesUrl);
+  if (statesResponse.status < 200 || statesResponse.status >= 300) {
+    throw new Error("WORK_ITEM_STATES_FETCH_FAILED");
+  }
+
+  return extractStateCodes(statesResponse.json);
+}
+
+function extractWorkItemType(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const fields = (payload as { fields?: unknown }).fields;
+  if (!fields || typeof fields !== "object") {
+    return null;
+  }
+
+  const workItemType = (fields as Record<string, unknown>)["System.WorkItemType"];
+  if (typeof workItemType !== "string") {
+    return null;
+  }
+
+  const trimmed = workItemType.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function extractStateCodes(payload: unknown): string[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const value = (payload as { value?: unknown }).value;
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+
+      const name = (entry as Record<string, unknown>).name;
+      if (typeof name !== "string") {
+        return null;
+      }
+
+      const trimmed = name.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    })
+    .filter((entry): entry is string => entry !== null);
+}
+
 function parseAdoptSchedulePayload(
   input: Record<string, unknown> | null
 ): { targetWorkItemId: number; startDate: string; endDate: string } | null {
@@ -679,7 +810,7 @@ function parseAdoptSchedulePayload(
 
 function parseUpdateDetailsPayload(
   input: Record<string, unknown> | null
-): { targetWorkItemId: number; title: string; descriptionHtml: string } | null {
+): { targetWorkItemId: number; title: string; descriptionHtml: string; state: string } | null {
   if (!input) {
     return null;
   }
@@ -687,13 +818,16 @@ function parseUpdateDetailsPayload(
   const targetWorkItemId = input.targetWorkItemId;
   const title = input.title;
   const descriptionHtml = input.descriptionHtml;
+  const state = input.state;
 
   if (
     typeof targetWorkItemId !== "number" ||
     !Number.isFinite(targetWorkItemId) ||
     typeof title !== "string" ||
     title.trim().length === 0 ||
-    typeof descriptionHtml !== "string"
+    typeof descriptionHtml !== "string" ||
+    typeof state !== "string" ||
+    state.trim().length === 0
   ) {
     return null;
   }
@@ -701,7 +835,8 @@ function parseUpdateDetailsPayload(
   return {
     targetWorkItemId,
     title: title.trim(),
-    descriptionHtml
+    descriptionHtml,
+    state: state.trim()
   };
 }
 
