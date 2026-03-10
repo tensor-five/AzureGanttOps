@@ -44,6 +44,7 @@ type WiqlExecutionResult = {
 
 type HydrationChunkResult = {
   items: IngestionWorkItem[];
+  relations: unknown[];
   missingIds: number[];
   retriedRequests: number;
 };
@@ -89,7 +90,9 @@ export class AzureQueryRuntimeAdapter {
     enforceFlatQueryShape(wiqlResult.queryType);
 
     const hydration = await this.hydrateWorkItems(wiqlResult.workItemIds, activeContext);
-    const relations = filterRuntimeRelations(wiqlResult.workItemRelations);
+    const relations = deduplicateRelations(
+      filterRuntimeRelations([...wiqlResult.workItemRelations, ...hydration.relationCandidates])
+    );
 
     return {
       queryType: "flat",
@@ -103,10 +106,11 @@ export class AzureQueryRuntimeAdapter {
   private async hydrateWorkItems(
     workItemIds: number[],
     context: AdoContext
-  ): Promise<{ workItems: IngestionWorkItem[]; metadata: IngestionHydrationMetadata }> {
+  ): Promise<{ workItems: IngestionWorkItem[]; metadata: IngestionHydrationMetadata; relationCandidates: unknown[] }> {
     if (workItemIds.length === 0) {
       return {
         workItems: [],
+        relationCandidates: [],
         metadata: {
           maxIdsPerBatch: MAX_IDS_PER_BATCH,
           requestedIds: 0,
@@ -139,6 +143,7 @@ export class AzureQueryRuntimeAdapter {
 
     const byId = new Map<number, IngestionWorkItem>();
     const missingIds: number[] = [];
+    const relationCandidates: unknown[] = [];
     let retriedRequests = 0;
 
     for (const chunkResult of chunkResults) {
@@ -147,6 +152,7 @@ export class AzureQueryRuntimeAdapter {
       for (const item of chunkResult.items) {
         byId.set(item.id, item);
       }
+      relationCandidates.push(...chunkResult.relations);
 
       missingIds.push(...chunkResult.missingIds);
     }
@@ -159,6 +165,7 @@ export class AzureQueryRuntimeAdapter {
 
     return {
       workItems: orderedWorkItems,
+      relationCandidates,
       metadata: {
         maxIdsPerBatch: MAX_IDS_PER_BATCH,
         requestedIds: workItemIds.length,
@@ -174,7 +181,9 @@ export class AzureQueryRuntimeAdapter {
 
   private async hydrateChunk(chunkIdsValue: number[], context: AdoContext): Promise<HydrationChunkResult> {
     const ids = chunkIdsValue.join(",");
-    const url = `https://dev.azure.com/${context.organization}/${context.project}/_apis/wit/workitems?ids=${ids}&errorPolicy=Omit&api-version=${API_VERSION}`;
+    const url =
+      `https://dev.azure.com/${context.organization}/${context.project}/_apis/wit/workitems` +
+      `?ids=${ids}&errorPolicy=Omit&$expand=relations&api-version=${API_VERSION}`;
 
     const { response, retriedRequests } = await this.requestWithRetry(
       () => this.httpClient.get(url),
@@ -185,12 +194,14 @@ export class AzureQueryRuntimeAdapter {
       throw new Error(buildHttpFailureCode("HYDRATION_REQUEST_FAILED", response));
     }
 
-    const items = normalizeHydratedItems(response.json);
+    const normalized = normalizeHydratedPayload(response.json);
+    const items = normalized.items;
     const returnedIds = new Set(items.map((item) => item.id));
     const missingIds = chunkIdsValue.filter((id) => !returnedIds.has(id));
 
     return {
       items,
+      relations: normalized.relations,
       missingIds,
       retriedRequests
     };
@@ -344,14 +355,18 @@ function normalizeExecutionPayload(payload: unknown): WiqlExecutionResult {
   };
 }
 
-function normalizeHydratedItems(payload: unknown): IngestionWorkItem[] {
+function normalizeHydratedPayload(payload: unknown): {
+  items: IngestionWorkItem[];
+  relations: unknown[];
+} {
   if (!payload || typeof payload !== "object" || !Array.isArray((payload as { value?: unknown }).value)) {
     throw new Error("MALFORMED_PAYLOAD");
   }
 
   const value = (payload as { value: unknown[] }).value;
+  const relations: unknown[] = [];
 
-  return value
+  const items = value
     .map((item) => {
       if (!item || typeof item !== "object") {
         return null;
@@ -396,6 +411,16 @@ function normalizeHydratedItems(payload: unknown): IngestionWorkItem[] {
         });
       }
 
+      const relationCandidates = Array.isArray((item as { relations?: unknown }).relations)
+        ? ((item as { relations: unknown[] }).relations ?? [])
+        : [];
+      relationCandidates.forEach((relation) => {
+        const normalizedRelation = normalizeHydratedRelation(id, relation);
+        if (normalizedRelation) {
+          relations.push(normalizedRelation);
+        }
+      });
+
       return {
         id,
         title,
@@ -403,6 +428,61 @@ function normalizeHydratedItems(payload: unknown): IngestionWorkItem[] {
       };
     })
     .filter((item): item is IngestionWorkItem => item !== null);
+
+  return {
+    items,
+    relations
+  };
+}
+
+function normalizeHydratedRelation(sourceId: number, relation: unknown): {
+  rel: string;
+  source: { id: number };
+  target: { id: number };
+} | null {
+  if (!relation || typeof relation !== "object") {
+    return null;
+  }
+
+  const rel = (relation as { rel?: unknown }).rel;
+  const targetUrl = (relation as { url?: unknown }).url;
+  if (typeof rel !== "string" || rel.trim().length === 0 || typeof targetUrl !== "string") {
+    return null;
+  }
+
+  const targetId = extractWorkItemIdFromRelationUrl(targetUrl);
+  if (targetId === null) {
+    return null;
+  }
+
+  return {
+    rel,
+    source: { id: sourceId },
+    target: { id: targetId }
+  };
+}
+
+function extractWorkItemIdFromRelationUrl(targetUrl: string): number | null {
+  const match = targetUrl.match(/\/_apis\/wit\/workitems\/(\d+)(?:$|[/?#])/i);
+  if (!match) {
+    return null;
+  }
+
+  const id = Number.parseInt(match[1], 10);
+  return Number.isFinite(id) ? id : null;
+}
+
+function deduplicateRelations(relations: ReturnType<typeof filterRuntimeRelations>): ReturnType<typeof filterRuntimeRelations> {
+  const seen = new Set<string>();
+  return relations.filter((relation) => {
+    const key = `${relation.type}:${relation.sourceId}->${relation.targetId}`;
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
 }
 
 function chunkIds(ids: number[], size: number): number[][] {

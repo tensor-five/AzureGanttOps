@@ -7,11 +7,14 @@ export type TimelineFieldColorCodingPreference = {
   valueColors?: Record<string, string>;
 };
 
+export type TimelineLabelFieldPreference = string;
+
 export type UserPreferences = {
   themeMode?: ThemeModePreference;
   timelineDensity?: TimelineDensityPreference;
   timelineColorCoding?: TimelineColorCodingPreference;
   timelineFieldColorCoding?: TimelineFieldColorCodingPreference;
+  timelineLabelFields?: TimelineLabelFieldPreference[];
   filters?: Record<string, unknown>;
   views?: Record<string, unknown>;
   updatedAt?: string;
@@ -149,6 +152,13 @@ function sanitizePreferences(value: unknown): UserPreferences {
       fieldRef: fieldRef.length > 0 ? fieldRef : undefined,
       valueColors: Object.keys(valueColors).length > 0 ? valueColors : undefined
     };
+  }
+
+  if (Array.isArray(candidate.timelineLabelFields)) {
+    const normalized = [...new Set(candidate.timelineLabelFields)]
+      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .filter((entry) => entry.length > 0);
+    next.timelineLabelFields = normalized.length > 0 ? normalized : undefined;
   }
 
   if (isPlainRecord(candidate.filters)) {

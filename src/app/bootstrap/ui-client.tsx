@@ -1000,6 +1000,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           : null,
         mainPanel
       )
+    ),
+    React.createElement(
+      "footer",
+      { className: "ui-shell-footer" },
+      React.createElement("span", null, "An Open Source Project by Christian Betz @ TensorFive GmbH"),
+      " ",
+      React.createElement(
+        "a",
+        {
+          href: "https://tensorfive.com",
+          target: "_blank",
+          rel: "noreferrer"
+        },
+        "tensorfive.com"
+      )
     )
   );
 }

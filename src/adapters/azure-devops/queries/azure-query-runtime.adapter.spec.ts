@@ -389,6 +389,62 @@ describe("AzureQueryRuntimeAdapter", () => {
     });
   });
 
+  it("restores dependency relations from hydrated work item links when WIQL relations are empty", async () => {
+    const client = makeClient((url) => {
+      if (url.includes("/_apis/wit/wiql/")) {
+        return {
+          status: 200,
+          json: {
+            queryType: "flat",
+            workItems: [{ id: 101 }, { id: 202 }],
+            workItemRelations: []
+          }
+        };
+      }
+
+      if (url.includes("/_apis/wit/workitems")) {
+        return {
+          status: 200,
+          json: {
+            value: [
+              makeHydratedItem(101, [
+                {
+                  rel: "System.LinkTypes.Dependency-Forward",
+                  url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/202"
+                }
+              ]),
+              makeHydratedItem(202, [
+                {
+                  rel: "System.LinkTypes.Dependency-Reverse",
+                  url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/101"
+                }
+              ])
+            ]
+          }
+        };
+      }
+
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const adapter = makeAdapter(client);
+
+    await expect(adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95")).resolves.toMatchObject({
+      relations: [
+        {
+          type: "System.LinkTypes.Dependency-Forward",
+          sourceId: 101,
+          targetId: 202
+        },
+        {
+          type: "System.LinkTypes.Dependency-Reverse",
+          sourceId: 202,
+          targetId: 101
+        }
+      ]
+    });
+  });
+
   it("reports partial hydration when Azure omits requested ids", async () => {
     const client = makeClient((url) => {
       if (url.includes("/_apis/wit/wiql/")) {
@@ -476,11 +532,15 @@ function extractIdsFromWorkItemsUrl(rawUrl: string): number[] {
     .filter((value) => Number.isFinite(value));
 }
 
-function makeHydratedItem(id: number): { id: number; fields: { "System.Title": string } } {
+function makeHydratedItem(
+  id: number,
+  relations?: Array<{ rel: string; url: string }>
+): { id: number; fields: { "System.Title": string }; relations?: Array<{ rel: string; url: string }> } {
   return {
     id,
     fields: {
       "System.Title": `Work item ${id}`
-    }
+    },
+    ...(relations ? { relations } : {})
   };
 }

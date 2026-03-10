@@ -9,10 +9,15 @@ import {
   clearTimelineColorCodingPreferenceForTests,
   saveLastTimelineColorCoding
 } from "./timeline-color-coding-preference.js";
+import { clearTimelineLabelFieldsPreferenceForTests } from "./timeline-label-fields-preference.js";
+import { clearTimelineViewportPreferenceForTests } from "./timeline-viewport-preference.js";
 
 afterEach(() => {
   cleanup();
   clearTimelineColorCodingPreferenceForTests();
+  clearTimelineLabelFieldsPreferenceForTests();
+  clearTimelineViewportPreferenceForTests();
+  window.history.replaceState(window.history.state, "", "/");
 });
 
 function makeTimeline(): TimelineReadModel {
@@ -104,6 +109,139 @@ function makeViolatingDependencyTimeline(): TimelineReadModel {
         }
       }
     ]
+  };
+}
+
+function makeMixedDependencyTimeline(): TimelineReadModel {
+  const base = makeDependencyTimeline();
+  return {
+    ...base,
+    bars: [
+      {
+        ...base.bars[0],
+        workItemId: 11,
+        details: { mappedId: "11" },
+        schedule: {
+          startDate: "2026-03-06T00:00:00.000Z",
+          endDate: "2026-03-10T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...base.bars[1],
+        workItemId: 12,
+        details: { mappedId: "12" },
+        schedule: {
+          startDate: "2026-03-07T00:00:00.000Z",
+          endDate: "2026-03-08T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...base.bars[1],
+        workItemId: 13,
+        title: "Third Item",
+        details: { mappedId: "13" },
+        schedule: {
+          startDate: "2026-03-11T00:00:00.000Z",
+          endDate: "2026-03-12T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ],
+    dependencies: [
+      {
+        predecessorWorkItemId: 11,
+        successorWorkItemId: 12,
+        dependencyType: "FS",
+        label: "#11 [end] -> #12 [start]"
+      },
+      {
+        predecessorWorkItemId: 12,
+        successorWorkItemId: 13,
+        dependencyType: "FS",
+        label: "#12 [end] -> #13 [start]"
+      }
+    ]
+  };
+}
+
+function makeFieldFilterTimeline(): TimelineReadModel {
+  return {
+    bars: [
+      {
+        workItemId: 11,
+        title: "Alpha Platform",
+        state: { code: "Active", badge: "A", color: "#2f855a" },
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-03T00:00:00.000Z",
+          missingBoundary: null
+        },
+        details: {
+          mappedId: "11",
+          fieldValues: {
+            "Custom.Team": "Alpha",
+            "Custom.Stream": "Platform"
+          }
+        }
+      },
+      {
+        workItemId: 12,
+        title: "Beta Platform",
+        state: { code: "Active", badge: "A", color: "#2f855a" },
+        schedule: {
+          startDate: "2026-03-03T00:00:00.000Z",
+          endDate: "2026-03-05T00:00:00.000Z",
+          missingBoundary: null
+        },
+        details: {
+          mappedId: "12",
+          fieldValues: {
+            "Custom.Team": "Beta",
+            "Custom.Stream": "Platform"
+          }
+        }
+      },
+      {
+        workItemId: 13,
+        title: "Alpha Business",
+        state: { code: "Active", badge: "A", color: "#2f855a" },
+        schedule: {
+          startDate: "2026-03-05T00:00:00.000Z",
+          endDate: "2026-03-07T00:00:00.000Z",
+          missingBoundary: null
+        },
+        details: {
+          mappedId: "13",
+          fieldValues: {
+            "Custom.Team": "Alpha",
+            "Custom.Stream": "Business"
+          }
+        }
+      }
+    ],
+    unschedulable: [
+      {
+        workItemId: 22,
+        title: "Unsched Beta",
+        state: { code: "New", badge: "N", color: "#2b6cb0" },
+        details: {
+          mappedId: "22",
+          fieldValues: {
+            "Custom.Team": "Beta",
+            "Custom.Stream": "Operations"
+          }
+        },
+        reason: "missing-both-dates"
+      }
+    ],
+    dependencies: [],
+    suppressedDependencies: [],
+    mappingValidation: {
+      status: "valid",
+      issues: []
+    }
   };
 }
 
@@ -218,6 +356,62 @@ describe("timeline-pane unschedulable date adoption", () => {
         endDate: "2026-03-04T00:00:00.000Z"
       });
     });
+  });
+
+  it("zooms chart to fit visible timeline range via fit button", async () => {
+    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
+
+    try {
+      render(
+        React.createElement(TimelinePane, {
+          timeline: makeTimeline(),
+          showDependencies: true
+        })
+      );
+
+      const bar = screen.getByLabelText("timeline-bar-11");
+      const beforeWidth = Number(bar.getAttribute("width"));
+      expect(beforeWidth).toBe(66);
+
+      fireEvent.click(screen.getByRole("button", { name: "Zoom to fit timeline" }));
+
+      await waitFor(() => {
+        const afterWidth = Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"));
+        expect(afterWidth).toBeGreaterThan(beforeWidth);
+      });
+    } finally {
+      clientWidthSpy.mockRestore();
+    }
+  });
+
+  it("pans timeline while holding space and dragging", async () => {
+    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(280);
+
+    try {
+      const { container } = render(
+        React.createElement(TimelinePane, {
+          timeline: makeTimeline(),
+          showDependencies: true
+        })
+      );
+
+      const scrollContainer = container.querySelector(".timeline-chart-scroll") as HTMLDivElement | null;
+      expect(scrollContainer).not.toBeNull();
+
+      (scrollContainer as HTMLDivElement).scrollLeft = 100;
+      (scrollContainer as HTMLDivElement).scrollTop = 40;
+
+      fireEvent.keyDown(window, { key: " " });
+      fireEvent.pointerDown(scrollContainer as HTMLDivElement, { pointerId: 7, button: 0, clientX: 220, clientY: 180 });
+      fireEvent.pointerMove(scrollContainer as HTMLDivElement, { pointerId: 7, clientX: 180, clientY: 160 });
+      fireEvent.pointerUp(scrollContainer as HTMLDivElement, { pointerId: 7, clientX: 180, clientY: 160 });
+      fireEvent.keyUp(window, { key: " " });
+
+      expect((scrollContainer as HTMLDivElement).scrollLeft).toBeGreaterThan(100);
+      expect((scrollContainer as HTMLDivElement).scrollTop).toBeGreaterThan(40);
+    } finally {
+      clientWidthSpy.mockRestore();
+    }
   });
 
   it("updates end date when dragging end handle", async () => {
@@ -367,7 +561,7 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Cycle dependency mode" }));
+    fireEvent.change(screen.getByLabelText("Dependency mode"), { target: { value: "edit" } });
 
     const sourceBar = screen.getByLabelText("timeline-bar-11");
     const targetBar = screen.getByLabelText("timeline-bar-12");
@@ -412,7 +606,7 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Cycle dependency mode" }));
+    fireEvent.change(screen.getByLabelText("Dependency mode"), { target: { value: "edit" } });
 
     const sourceBar = screen.getByLabelText("timeline-bar-11");
     const chart = screen.getByLabelText("gantt-chart");
@@ -428,29 +622,50 @@ describe("timeline-pane unschedulable date adoption", () => {
     });
   });
 
-  it("cycles dependency toggle through Show -> Edit -> No -> Show", () => {
+  it("switches dependency dropdown across all modes", () => {
     render(
       React.createElement(TimelinePane, {
-        timeline: makeDependencyTimeline(),
+        timeline: makeViolatingDependencyTimeline(),
         showDependencies: true
       })
     );
 
-    const cycleButton = screen.getByRole("button", { name: "Cycle dependency mode" });
-    expect(cycleButton.textContent).toContain("Show Dependency");
+    const dependencyModeSelect = screen.getByLabelText("Dependency mode");
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("show");
     expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
 
-    fireEvent.click(cycleButton);
-    expect(cycleButton.textContent).toContain("Edit Dependency");
+    fireEvent.change(dependencyModeSelect, { target: { value: "edit" } });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("edit");
     expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
 
-    fireEvent.click(cycleButton);
-    expect(cycleButton.textContent).toContain("No Dependency");
+    fireEvent.change(dependencyModeSelect, { target: { value: "violations" } });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("violations");
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+
+    fireEvent.change(dependencyModeSelect, { target: { value: "none" } });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("none");
     expect(screen.queryByLabelText("dependency-11-12")).toBeNull();
 
-    fireEvent.click(cycleButton);
-    expect(cycleButton.textContent).toContain("Show Dependency");
+    fireEvent.change(dependencyModeSelect, { target: { value: "show" } });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("show");
     expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+  });
+
+  it("shows only violated dependencies in conflicts mode", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeMixedDependencyTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+    expect(screen.queryByLabelText("dependency-12-13")).not.toBeNull();
+
+    fireEvent.change(screen.getByLabelText("Dependency mode"), { target: { value: "violations" } });
+
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+    expect(screen.queryByLabelText("dependency-12-13")).toBeNull();
   });
 
   it("removes selected dependency via Delete key", async () => {
@@ -503,6 +718,69 @@ describe("timeline-pane unschedulable date adoption", () => {
     const penultimate = points[points.length - 2];
     const endpoint = points[points.length - 1];
     expect(penultimate.x).toBeLessThan(endpoint.x);
+  });
+
+  it("renders duplicate dependencies only once", () => {
+    const timeline = makeDependencyTimeline();
+    timeline.dependencies = [
+      ...timeline.dependencies,
+      {
+        predecessorWorkItemId: 11,
+        successorWorkItemId: 12,
+        dependencyType: "FS",
+        label: "#11 [end] -> #12 [start] (duplicate)"
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getAllByLabelText("dependency-11-12")).toHaveLength(1);
+  });
+
+  it("reroutes dependency paths when work item geometry changes", () => {
+    const base = makeDependencyTimeline();
+
+    const { rerender } = render(
+      React.createElement(TimelinePane, {
+        timeline: base,
+        showDependencies: true
+      })
+    );
+
+    const pathBeforeMove = screen.getByLabelText("dependency-11-12").getAttribute("d");
+    expect(pathBeforeMove).toBeTruthy();
+
+    const timelineAfterMove: TimelineReadModel = {
+      ...base,
+      bars: base.bars.map((bar) =>
+        bar.workItemId === 12
+          ? {
+              ...bar,
+              schedule: {
+                startDate: "2026-03-09T00:00:00.000Z",
+                endDate: "2026-03-11T00:00:00.000Z",
+                missingBoundary: null
+              }
+            }
+          : bar
+      )
+    };
+
+    rerender(
+      React.createElement(TimelinePane, {
+        timeline: timelineAfterMove,
+        showDependencies: true
+      })
+    );
+
+    const pathAfterMove = screen.getByLabelText("dependency-11-12").getAttribute("d");
+    expect(pathAfterMove).toBeTruthy();
+    expect(pathAfterMove).not.toBe(pathBeforeMove);
   });
 
   it("extends chart width to match visible viewport beyond work item range", async () => {
@@ -707,6 +985,170 @@ describe("timeline-pane unschedulable date adoption", () => {
     const bars = container.querySelectorAll("rect.timeline-bar");
     expect(bars).toHaveLength(2);
     expect((bars[0] as SVGRectElement).style.fill).not.toBe((bars[1] as SVGRectElement).style.fill);
+  });
+
+  it("starts with one filter slot and adds another on plus click", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    expect(screen.getByLabelText("Timeline filters")).toBeTruthy();
+    expect(screen.getByLabelText("Select filter field 1")).toBeTruthy();
+    expect(screen.queryByLabelText("Select filter field 2")).toBeNull();
+    await user.click(screen.getByLabelText("Add timeline filter"));
+    expect(screen.getByLabelText("Select filter field 2")).toBeTruthy();
+  });
+
+  it("filters by one field with multi-select values", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByRole("button", { name: /#22 Unsched Beta/ })).toBeNull();
+
+    await user.click(screen.getByLabelText("Include Beta in filter 1"));
+    expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /#22 Unsched Beta/ })).toBeTruthy();
+  });
+
+  it("applies multiple field filters in parallel", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    await user.click(screen.getByLabelText("Add timeline filter"));
+    await user.click(screen.getByLabelText("Select filter field 2"));
+    await user.type(screen.getByLabelText("Search filter fields 2"), "stream");
+    await user.click(screen.getByRole("button", { name: /Stream/ }));
+    await user.click(screen.getByLabelText("Select filter values 2"));
+    await user.click(screen.getByLabelText("Include Platform in filter 2"));
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+  });
+
+  it("hydrates timeline filters from URL query params", async () => {
+    const params = new URLSearchParams();
+    params.append("tf", "Custom.Team~Alpha");
+    window.history.replaceState(window.history.state, "", `/?${params.toString()}`);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+  });
+
+  it("writes selected filters to URL query params", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      const all = params.getAll("tf");
+      expect(all.length).toBeGreaterThan(0);
+      expect(all[0]).toContain("Custom.Team");
+      expect(all[0]).toContain("Alpha");
+    });
+  });
+
+  it("shows label settings gear directly after the filter toggle", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const filterToggle = screen.getByLabelText("Toggle timeline filters");
+    const labelToggle = screen.getByLabelText("Toggle timeline label fields");
+    expect(Boolean(filterToggle.compareDocumentPosition(labelToggle) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+  });
+
+  it("composes bar labels from multiple configured fields with dash separator", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-04-10T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline label fields"));
+    await user.click(screen.getByLabelText("Show Team in timeline bars"));
+    await user.click(screen.getByLabelText("Show Stream in timeline bars"));
+
+    const label = container.querySelector("text.timeline-bar-label");
+    expect(label).not.toBeNull();
+    expect((label as SVGTextElement).textContent).toBe("Alpha Platform - Alpha - Platform");
   });
 
   it("updates settings value list when switching selected field from color coding dropdown", async () => {

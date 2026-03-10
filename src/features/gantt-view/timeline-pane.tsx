@@ -16,6 +16,18 @@ import {
   TimelineDetailsPanel,
   type TimelineDetailsPanelProps
 } from "./timeline-details-panel.js";
+import {
+  hydrateTimelineViewportPreference,
+  loadLastTimelineViewportPreference,
+  saveTimelineViewportPreference,
+  type TimelineViewportPreference
+} from "./timeline-viewport-preference.js";
+import {
+  DEFAULT_TIMELINE_LABEL_FIELDS,
+  hydrateTimelineLabelFieldsPreference,
+  loadLastTimelineLabelFields,
+  saveTimelineLabelFields
+} from "./timeline-label-fields-preference.js";
 import { createTimelineSelectionStore, type TimelineSelectionStore } from "./selection-store.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
@@ -84,7 +96,15 @@ type ActiveDependencyDrag = {
   hoveredTargetWorkItemId: number | null;
 };
 
-type DependencyViewMode = "edit" | "show" | "none";
+type ActivePanDrag = {
+  pointerId: number;
+  originClientX: number;
+  originClientY: number;
+  originScrollLeft: number;
+  originScrollTop: number;
+};
+
+type DependencyViewMode = "edit" | "show" | "none" | "violations";
 
 type SelectedDependency = {
   predecessorWorkItemId: number;
@@ -93,8 +113,45 @@ type SelectedDependency = {
 };
 
 type TimelineZoomLevel = "week" | "month";
+type TimelineFieldFilter = {
+  slotId: number;
+  fieldRef: string | null;
+  selectedValueKeys: string[];
+};
+
+type OpenFilterDropdownState =
+  | {
+      slotId: number;
+      kind: "field";
+    }
+  | {
+      slotId: number;
+      kind: "value";
+    }
+  | null;
+
+type TimelineLabelFieldOption = {
+  fieldRef: string;
+  label: string;
+  subtitle: string;
+  searchText: string;
+};
+
+type DependencyViewModeOption = {
+  value: DependencyViewMode;
+  label: string;
+};
+
+const DEPENDENCY_VIEW_MODE_OPTIONS: readonly DependencyViewModeOption[] = [
+  { value: "show", label: "Show all" },
+  { value: "edit", label: "Edit links" },
+  { value: "violations", label: "Show conflicts only" },
+  { value: "none", label: "Hide all" }
+];
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
+  const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(), []);
+  const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(), []);
   const internalSelectionStoreRef = React.useRef<TimelineSelectionStore | null>(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
@@ -115,8 +172,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     selectionStore.getSelectedWorkItemId()
   );
   const [adoptScheduleError, setAdoptScheduleError] = React.useState<string | null>(null);
-  const [dayWidthPx, setDayWidthPx] = React.useState<number>(DAY_WIDTH_WEEK_PX);
+  const [dayWidthPx, setDayWidthPx] = React.useState<number>(() => {
+    if (!initialViewportPreference) {
+      return DAY_WIDTH_WEEK_PX;
+    }
+
+    return clamp(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+  });
   const [activeScheduleDrag, setActiveScheduleDrag] = React.useState<ActiveScheduleDrag | null>(null);
+  const [activePanDrag, setActivePanDrag] = React.useState<ActivePanDrag | null>(null);
+  const [spacePanPressed, setSpacePanPressed] = React.useState(false);
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
   const [activeDependencyDrag, setActiveDependencyDrag] = React.useState<ActiveDependencyDrag | null>(null);
   const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
@@ -133,12 +198,36 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
   const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
   const [colorCodingSearchDraft, setColorCodingSearchDraft] = React.useState("");
+  const [timelineFiltersOpen, setTimelineFiltersOpen] = React.useState(false);
+  const [timelineFieldFilters, setTimelineFieldFilters] = React.useState<TimelineFieldFilter[]>(
+    () => initialTimelineFilterState.filters
+  );
+  const [nextFilterSlotId, setNextFilterSlotId] = React.useState(() => initialTimelineFilterState.nextSlotId);
+  const [openFilterDropdown, setOpenFilterDropdown] = React.useState<OpenFilterDropdownState>(null);
+  const [filterFieldSearchDraft, setFilterFieldSearchDraft] = React.useState("");
+  const [filterValueSearchDraft, setFilterValueSearchDraft] = React.useState("");
+  const [labelSettingsOpen, setLabelSettingsOpen] = React.useState(false);
+  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = React.useState("");
+  const [timelineLabelFields, setTimelineLabelFields] = React.useState<string[]>(
+    () => loadLastTimelineLabelFields() ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]
+  );
   const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
 
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
   const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
+  const filterToggleControlRef = React.useRef<HTMLDivElement | null>(null);
+  const filterPanelRef = React.useRef<HTMLDivElement | null>(null);
+  const labelToggleControlRef = React.useRef<HTMLDivElement | null>(null);
+  const labelPanelRef = React.useRef<HTMLDivElement | null>(null);
   const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
+  const wheelZoomFrameRef = React.useRef<number | null>(null);
+  const pendingWheelDayWidthRef = React.useRef<number | null>(null);
+  const liveDayWidthRef = React.useRef(dayWidthPx);
+  const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
+  const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
+  const viewportPersistDebounceRef = React.useRef<number | null>(null);
+  const spacePanPressedRef = React.useRef(false);
   const initialViewportAppliedRef = React.useRef(false);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
@@ -155,6 +244,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
 
   React.useEffect(() => {
+    hydrateTimelineViewportPreference((viewport) => {
+      pendingViewportRestoreRef.current = viewport;
+      setDayWidthPx(clamp(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
+      initialViewportAppliedRef.current = false;
+    });
+  }, []);
+
+  React.useEffect(() => {
     hydrateTimelineColorCodingPreference((mode) => {
       setColorCoding(mode);
       const config = loadTimelineFieldColorCodingConfig();
@@ -166,7 +263,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, []);
 
   React.useEffect(() => {
-    if (!colorCodingDropdownOpen) {
+    hydrateTimelineLabelFieldsPreference((fieldRefs) => {
+      setTimelineLabelFields(sanitizeTimelineLabelFields(fieldRefs));
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (!colorCodingDropdownOpen && !openFilterDropdown && !labelSettingsOpen) {
       return;
     }
 
@@ -181,12 +284,36 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         return;
       }
 
+      const filterToggleControl = filterToggleControlRef.current;
+      if (filterToggleControl && filterToggleControl.contains(target)) {
+        return;
+      }
+
+      const filterPanel = filterPanelRef.current;
+      if (filterPanel && filterPanel.contains(target)) {
+        return;
+      }
+
+      const labelControl = labelToggleControlRef.current;
+      if (labelControl && labelControl.contains(target)) {
+        return;
+      }
+
+      const labelPanel = labelPanelRef.current;
+      if (labelPanel && labelPanel.contains(target)) {
+        return;
+      }
+
       setColorCodingDropdownOpen(false);
+      setOpenFilterDropdown(null);
+      setLabelSettingsOpen(false);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setColorCodingDropdownOpen(false);
+        setOpenFilterDropdown(null);
+        setLabelSettingsOpen(false);
       }
     };
 
@@ -197,12 +324,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [colorCodingDropdownOpen]);
+  }, [colorCodingDropdownOpen, labelSettingsOpen, openFilterDropdown]);
 
   React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
+    setActivePanDrag(null);
     setActiveUnschedulableDrag(null);
     setActiveDependencyDrag(null);
     setUnscheduledDropPreview(null);
@@ -217,66 +345,31 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [dependencyViewMode]);
 
   React.useEffect(() => {
-    if (!selectedDependency || !effectiveTimeline) {
-      return;
-    }
-
-    const stillPresent = effectiveTimeline.dependencies.some(
-      (dependency) =>
-        dependency.predecessorWorkItemId === selectedDependency.predecessorWorkItemId &&
-        dependency.successorWorkItemId === selectedDependency.successorWorkItemId &&
-        dependency.dependencyType === selectedDependency.dependencyType
-    );
-    if (!stillPresent) {
-      setSelectedDependency(null);
-    }
-  }, [effectiveTimeline, selectedDependency]);
+    syncTimelineFiltersToUrl(timelineFieldFilters);
+  }, [timelineFieldFilters]);
 
   React.useEffect(() => {
-    const selectableItems = [
-      ...(effectiveTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? []),
-      ...(effectiveTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? [])
-    ];
-    const reconciled = selectionStore.reconcile(selectableItems);
-    setSelectedWorkItemId(reconciled);
-  }, [effectiveTimeline, selectionStore]);
-
-  const selectWorkItem = React.useCallback(
-    (workItemId: number | null) => {
-      selectionStore.select(workItemId);
-      setSelectedWorkItemId(workItemId);
-    },
-    [selectionStore]
-  );
-
-  const adoptUnschedulableSchedule = React.useCallback(
-    async (targetWorkItemId: number, sourceWorkItemId: number) => {
-      const sourceBar = effectiveTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
-      if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
-        return;
-      }
-
-      if (props.onAdoptUnschedulableSchedule) {
-        await props.onAdoptUnschedulableSchedule({
-          targetWorkItemId,
-          startDate: sourceBar.schedule.startDate,
-          endDate: sourceBar.schedule.endDate
-        });
-      }
-
-      setAdoptedSchedulesByWorkItemId((current) => ({
-        ...current,
-        [targetWorkItemId]: {
-          startDate: sourceBar.schedule.startDate,
-          endDate: sourceBar.schedule.endDate
-        }
-      }));
-    },
-    [effectiveTimeline, props]
-  );
+    initialViewportAppliedRef.current = false;
+    const scrollElement = chartScrollRef.current;
+    if (scrollElement) {
+      scrollElement.scrollTop = 0;
+    }
+  }, [timelineFieldFilters]);
 
   const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
   const availableFieldRefs = React.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const availableTimelineLabelFieldOptions = React.useMemo(
+    () => buildTimelineLabelFieldOptions(availableFieldRefs),
+    [availableFieldRefs]
+  );
+  const filteredTimeline = React.useMemo(
+    () => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters),
+    [effectiveTimeline, timelineFieldFilters]
+  );
+  const activeTimelineFilters = React.useMemo(
+    () => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)),
+    [timelineFieldFilters]
+  );
   const colorCodingOptions = React.useMemo(
     () => buildColorCodingOptions(availableFieldRefs),
     [availableFieldRefs]
@@ -299,9 +392,77 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     [effectiveTimeline, colorCoding, fieldColorCoding]
   );
   const chartModel = React.useMemo(
-    () => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx),
-    [effectiveTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx]
+    () =>
+      buildVisualChartModel(filteredTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields),
+    [filteredTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields]
   );
+  const filteredTimelineLabelFieldOptions = React.useMemo(
+    () => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft),
+    [availableTimelineLabelFieldOptions, labelFieldSearchDraft]
+  );
+
+  React.useEffect(() => {
+    const selectableItems = [
+      ...(filteredTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? []),
+      ...(filteredTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? [])
+    ];
+    const reconciled = selectionStore.reconcile(selectableItems);
+    setSelectedWorkItemId(reconciled);
+  }, [filteredTimeline, selectionStore]);
+
+  const selectWorkItem = React.useCallback(
+    (workItemId: number | null) => {
+      selectionStore.select(workItemId);
+      setSelectedWorkItemId(workItemId);
+    },
+    [selectionStore]
+  );
+
+  const adoptUnschedulableSchedule = React.useCallback(
+    async (targetWorkItemId: number, sourceWorkItemId: number) => {
+      const sourceBar = filteredTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
+      if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
+        return;
+      }
+
+      if (props.onAdoptUnschedulableSchedule) {
+        await props.onAdoptUnschedulableSchedule({
+          targetWorkItemId,
+          startDate: sourceBar.schedule.startDate,
+          endDate: sourceBar.schedule.endDate
+        });
+      }
+
+      setAdoptedSchedulesByWorkItemId((current) => ({
+        ...current,
+        [targetWorkItemId]: {
+          startDate: sourceBar.schedule.startDate,
+          endDate: sourceBar.schedule.endDate
+        }
+      }));
+    },
+    [filteredTimeline, props]
+  );
+
+  const persistTimelineViewportSoon = React.useCallback(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    if (viewportPersistDebounceRef.current !== null) {
+      window.clearTimeout(viewportPersistDebounceRef.current);
+    }
+
+    viewportPersistDebounceRef.current = window.setTimeout(() => {
+      viewportPersistDebounceRef.current = null;
+      saveTimelineViewportPreference({
+        dayWidthPx: liveDayWidthRef.current,
+        scrollLeftPx: scrollElement.scrollLeft,
+        scrollTopPx: scrollElement.scrollTop
+      });
+    }, VIEWPORT_PERSIST_DEBOUNCE_MS);
+  }, []);
 
   React.useEffect(() => {
     const scrollElement = chartScrollRef.current;
@@ -316,10 +477,22 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         return;
       }
 
-      const todayTargetX = clientWidth * TODAY_INITIAL_VIEWPORT_RATIO;
-      const absoluteTodayX = chartModel.todayX === null ? 0 : CHART_LEFT_GUTTER + chartModel.todayX;
       const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - clientWidth);
       const maxScrollTop = Math.max(0, scrollElement.scrollHeight - clientHeight);
+
+      const restoredViewport = pendingViewportRestoreRef.current;
+      if (restoredViewport) {
+        const nextScrollLeft = clamp(restoredViewport.scrollLeftPx, 0, maxScrollLeft);
+        const nextScrollTop = clamp(restoredViewport.scrollTopPx, 0, maxScrollTop);
+        scrollElement.scrollLeft = nextScrollLeft;
+        scrollElement.scrollTop = nextScrollTop;
+        pendingViewportRestoreRef.current = null;
+        initialViewportAppliedRef.current = true;
+        return;
+      }
+
+      const todayTargetX = clientWidth * TODAY_INITIAL_VIEWPORT_RATIO;
+      const absoluteTodayX = chartModel.todayX === null ? 0 : CHART_LEFT_GUTTER + chartModel.todayX;
       const nextScrollLeft = clamp(absoluteTodayX - todayTargetX, 0, maxScrollLeft);
       const nextScrollTop = clamp(CHART_TOP_PADDING, 0, maxScrollTop);
 
@@ -369,6 +542,27 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [chartModel.bars.length]);
 
   React.useEffect(() => {
+    liveDayWidthRef.current = dayWidthPx;
+    persistTimelineViewportSoon();
+  }, [dayWidthPx, persistTimelineViewportSoon]);
+
+  React.useEffect(() => {
+    return () => {
+      if (viewportPersistDebounceRef.current !== null) {
+        window.clearTimeout(viewportPersistDebounceRef.current);
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (wheelZoomFrameRef.current !== null) {
+        window.cancelAnimationFrame(wheelZoomFrameRef.current);
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
@@ -379,7 +573,24 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const desiredScrollLeft = absoluteTargetX - anchor.pointerOffsetX;
     scrollElement.scrollLeft = Math.max(0, desiredScrollLeft);
     zoomAnchorRef.current = null;
-  }, [chartModel.dayWidthPx]);
+    persistTimelineViewportSoon();
+  }, [chartModel.dayWidthPx, persistTimelineViewportSoon]);
+
+  React.useEffect(() => {
+    const fitRange = pendingFitRangeRef.current;
+    const scrollElement = chartScrollRef.current;
+    if (!fitRange || !scrollElement) {
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - scrollElement.clientWidth);
+    const rangeStartWithPadding = addDays(fitRange.start, -FIT_TO_VIEW_SIDE_PADDING_DAYS);
+    const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
+    const desiredStartX = CHART_LEFT_GUTTER + rangeStartOffset * chartModel.dayWidthPx;
+    scrollElement.scrollLeft = clamp(desiredStartX - FIT_TO_VIEW_INSET_PX, 0, maxScrollLeft);
+    pendingFitRangeRef.current = null;
+    persistTimelineViewportSoon();
+  }, [chartModel.dayWidthPx, chartModel.domainStart, persistTimelineViewportSoon]);
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -388,6 +599,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       }
 
       if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (event.key === " ") {
+        spacePanPressedRef.current = true;
+        setSpacePanPressed(true);
+        event.preventDefault();
         return;
       }
 
@@ -417,9 +635,25 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       props.onRetryRefresh?.();
     };
 
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.key === " ") {
+        spacePanPressedRef.current = false;
+        setSpacePanPressed(false);
+      }
+    };
+
+    const onWindowBlur = () => {
+      spacePanPressedRef.current = false;
+      setSpacePanPressed(false);
+    };
+
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
     };
   }, [props.isRefreshing, props.onRemoveDependency, props.onRetryRefresh, selectedDependency]);
 
@@ -445,15 +679,31 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const svgX = (event.clientX - rect.left) * horizontalScale;
       const dayOffset = (svgX - CHART_LEFT_GUTTER) / chartModel.dayWidthPx;
       const pointerOffsetX = event.clientX - scrollElement.getBoundingClientRect().left;
-      const zoomMultiplier = Math.exp(-event.deltaY * 0.0025);
-      const nextDayWidth = clamp(dayWidthPx * zoomMultiplier, DAY_WIDTH_MONTH_PX, DAY_WIDTH_WEEK_PX);
+      const deltaPixels = normalizeWheelDelta(event);
+      const zoomMultiplier = Math.exp(-deltaPixels * ZOOM_WHEEL_SENSITIVITY);
+      const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
+      const nextDayWidth = quantizeDayWidth(clamp(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
 
       if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
         return;
       }
 
       zoomAnchorRef.current = { dayOffset, pointerOffsetX };
-      setDayWidthPx(nextDayWidth);
+      pendingWheelDayWidthRef.current = nextDayWidth;
+      if (wheelZoomFrameRef.current !== null) {
+        return;
+      }
+
+      wheelZoomFrameRef.current = window.requestAnimationFrame(() => {
+        wheelZoomFrameRef.current = null;
+        const pendingDayWidth = pendingWheelDayWidthRef.current;
+        pendingWheelDayWidthRef.current = null;
+        if (pendingDayWidth === null) {
+          return;
+        }
+
+        setDayWidthPx((current) => (Math.abs(current - pendingDayWidth) < 0.01 ? current : pendingDayWidth));
+      });
     },
     [chartModel.dayWidthPx, dayWidthPx]
   );
@@ -474,6 +724,102 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     };
   }, [handleChartWheel]);
 
+  React.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    const onScroll = () => {
+      persistTimelineViewportSoon();
+    };
+
+    scrollElement.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      scrollElement.removeEventListener("scroll", onScroll);
+    };
+  }, [persistTimelineViewportSoon]);
+
+  const zoomToFitTimeline = React.useCallback(() => {
+    const scrollElement = chartScrollRef.current;
+    const visibleTimelineRange = resolveTimelineVisibleRange(filteredTimeline);
+    if (!scrollElement || !visibleTimelineRange) {
+      return;
+    }
+
+    const availableWidth =
+      scrollElement.clientWidth - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX - FIT_TO_VIEW_INSET_PX * 2;
+    if (availableWidth <= 0) {
+      return;
+    }
+
+    const spanDays = Math.max(1, dayDiffInclusive(visibleTimelineRange.start, visibleTimelineRange.end));
+    const fittedDayWidthPx = clamp(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+    pendingFitRangeRef.current = visibleTimelineRange;
+    setDayWidthPx(fittedDayWidthPx);
+  }, [filteredTimeline]);
+
+  const beginPanDrag = React.useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!spacePanPressedRef.current || event.button !== 0) {
+        return;
+      }
+
+      const scrollElement = chartScrollRef.current;
+      if (!scrollElement) {
+        return;
+      }
+
+      event.preventDefault();
+      if ("setPointerCapture" in event.currentTarget) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+
+      setActivePanDrag({
+        pointerId: event.pointerId,
+        originClientX: event.clientX,
+        originClientY: event.clientY,
+        originScrollLeft: scrollElement.scrollLeft,
+        originScrollTop: scrollElement.scrollTop
+      });
+    },
+    []
+  );
+
+  const updatePanDrag = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    setActivePanDrag((current) => {
+      if (!current || current.pointerId !== event.pointerId) {
+        return current;
+      }
+
+      const scrollElement = chartScrollRef.current;
+      if (!scrollElement) {
+        return current;
+      }
+
+      const deltaX = event.clientX - current.originClientX;
+      const deltaY = event.clientY - current.originClientY;
+      scrollElement.scrollLeft = current.originScrollLeft - deltaX;
+      scrollElement.scrollTop = current.originScrollTop - deltaY;
+      return current;
+    });
+  }, []);
+
+  const finishPanDrag = React.useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      const pointerId = event.pointerId;
+      setActivePanDrag((current) => {
+        if (!current || current.pointerId !== pointerId) {
+          return current;
+        }
+
+        persistTimelineViewportSoon();
+        return null;
+      });
+    },
+    [persistTimelineViewportSoon]
+  );
+
   const geometryByWorkItemId = React.useMemo(() => {
     const byId = new Map<number, BarGeometry>();
     chartModel.bars.forEach((bar, index) => {
@@ -490,12 +836,28 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     });
     return byId;
   }, [chartModel.bars]);
+  const visibleDependencies = React.useMemo(() => {
+    if (!filteredTimeline) {
+      return [];
+    }
+
+    if (dependencyViewMode !== "violations") {
+      return filteredTimeline.dependencies;
+    }
+
+    return filteredTimeline.dependencies.filter((dependency) => {
+      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+      return isDependencyViolated(predecessorBar, successorBar);
+    });
+  }, [chartBarByWorkItemId, dependencyViewMode, filteredTimeline]);
   const dependencyConnectors = React.useMemo(() => {
-    if (!dependencyVisible || !effectiveTimeline) {
+    if (!dependencyVisible || !filteredTimeline) {
       return [] as VisualDependencyConnector[];
     }
 
-    return effectiveTimeline.dependencies.flatMap((dependency, index) => {
+    const uniqueDependencies = deduplicateTimelineDependencies(visibleDependencies);
+    return uniqueDependencies.flatMap((dependency, index) => {
       const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
       const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
       if (!from || !to) {
@@ -503,10 +865,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       }
       const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
       const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
-      const isViolated =
-        predecessorBar !== undefined &&
-        successorBar !== undefined &&
-        predecessorBar.end.getTime() > successorBar.start.getTime();
+      const isViolated = isDependencyViolated(predecessorBar, successorBar);
       const predecessorToSuccessorGapDays =
         predecessorBar !== undefined && successorBar !== undefined ? dayDiff(predecessorBar.end, successorBar.start) : null;
       const forceNearGapDetour =
@@ -516,7 +875,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
       return [
         {
-          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${index}`,
+          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${index}`,
           path: buildDependencyConnectorPath(from, to, index, { forceNearGapDetour }),
           markerEnd: `url(#${isViolated ? dependencyAlertMarkerId : dependencyMarkerId})`,
           predecessorWorkItemId: dependency.predecessorWorkItemId,
@@ -526,7 +885,29 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         }
       ];
     });
-  }, [chartBarByWorkItemId, dependencyAlertMarkerId, dependencyMarkerId, dependencyVisible, effectiveTimeline, geometryByWorkItemId]);
+  }, [
+    chartBarByWorkItemId,
+    dependencyAlertMarkerId,
+    dependencyMarkerId,
+    dependencyVisible,
+    visibleDependencies,
+    geometryByWorkItemId
+  ]);
+  React.useEffect(() => {
+    if (!selectedDependency) {
+      return;
+    }
+
+    const stillVisible = dependencyConnectors.some(
+      (dependency) =>
+        dependency.predecessorWorkItemId === selectedDependency.predecessorWorkItemId &&
+        dependency.successorWorkItemId === selectedDependency.successorWorkItemId &&
+        dependency.dependencyType === selectedDependency.dependencyType
+    );
+    if (!stillVisible) {
+      setSelectedDependency(null);
+    }
+  }, [dependencyConnectors, selectedDependency]);
   const activeDependencyDragPreview = React.useMemo(() => {
     if (!activeDependencyDrag) {
       return null;
@@ -938,8 +1319,113 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     return true;
   }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
 
+  const applyFieldFilterSelection = React.useCallback((slotId: number, fieldRef: string | null) => {
+    const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
+    setTimelineFieldFilters((current) =>
+      current.map((filter) =>
+        filter.slotId === slotId
+          ? {
+              ...filter,
+              fieldRef: normalizedFieldRef,
+              selectedValueKeys: normalizedFieldRef && filter.fieldRef === normalizedFieldRef ? filter.selectedValueKeys : []
+            }
+          : filter
+      )
+    );
+  }, []);
+
+  const toggleTimelineFieldValueSelection = React.useCallback((slotId: number, valueKey: string) => {
+    setTimelineFieldFilters((current) =>
+      current.map((filter) => {
+        if (filter.slotId !== slotId) {
+          return filter;
+        }
+
+        const exists = filter.selectedValueKeys.includes(valueKey);
+        if (exists) {
+          return {
+            ...filter,
+            selectedValueKeys: filter.selectedValueKeys.filter((entry) => entry !== valueKey)
+          };
+        }
+
+        return {
+          ...filter,
+          selectedValueKeys: [...filter.selectedValueKeys, valueKey]
+        };
+      })
+    );
+  }, []);
+
+  const addTimelineFilterSlot = React.useCallback(() => {
+    setTimelineFieldFilters((current) => {
+      if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
+        return current;
+      }
+      return [...current, createTimelineFieldFilter(nextFilterSlotId)];
+    });
+    setNextFilterSlotId((current) => current + 1);
+  }, [nextFilterSlotId]);
+
+  const removeTimelineFilterSlot = React.useCallback(
+    (slotId: number) => {
+      setTimelineFieldFilters((current) => {
+        if (current.length <= 1) {
+          return current.map((filter) =>
+            filter.slotId === slotId ? { ...filter, fieldRef: null, selectedValueKeys: [] } : filter
+          );
+        }
+
+        return current.filter((filter) => filter.slotId !== slotId);
+      });
+
+      if (openFilterDropdown?.slotId === slotId) {
+        setOpenFilterDropdown(null);
+      }
+    },
+    [openFilterDropdown?.slotId]
+  );
+
+  const toggleTimelineLabelField = React.useCallback((fieldRef: string) => {
+    const normalized = fieldRef.trim();
+    if (!normalized) {
+      return;
+    }
+
+    setTimelineLabelFields((current) => {
+      const exists = current.includes(normalized);
+      const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
+      const sanitized = sanitizeTimelineLabelFields(next);
+      saveTimelineLabelFields(sanitized);
+      return sanitized;
+    });
+  }, []);
+
+  const openFilterSlot = React.useMemo(
+    () =>
+      openFilterDropdown === null
+        ? null
+        : timelineFieldFilters.find((filter) => filter.slotId === openFilterDropdown.slotId) ?? null,
+    [openFilterDropdown, timelineFieldFilters]
+  );
+  const openFilterFieldOptions = React.useMemo(() => {
+    if (!openFilterDropdown || openFilterDropdown.kind !== "field") {
+      return [];
+    }
+    return filterFieldRefsBySearch(availableFieldRefs, filterFieldSearchDraft);
+  }, [availableFieldRefs, filterFieldSearchDraft, openFilterDropdown]);
+  const openFilterValueOptions = React.useMemo(() => {
+    if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
+      return [];
+    }
+    return filterFieldValueStatsBySearch(
+      listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef),
+      filterValueSearchDraft
+    );
+  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
+
   const detailProps: TimelineDetailsPanelProps = {
-    timeline: effectiveTimeline,
+    timeline: filteredTimeline,
     selectedWorkItemId,
     collapsed: detailsCollapsed,
     onToggleCollapsed: () => {
@@ -952,7 +1438,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   };
 
   const barCount = chartModel.bars.length;
-  const unscheduledCount = effectiveTimeline?.unschedulable.length ?? 0;
+  const unscheduledCount = filteredTimeline?.unschedulable.length ?? 0;
   const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
   const isFieldColorCodingMode = colorCoding === "field";
   const isConfigurableModeColorCoding = colorCoding === "person" || colorCoding === "status";
@@ -1032,21 +1518,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         React.createElement(
           "div",
           {
-            className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-dependency",
-            role: "group",
-            "aria-label": "Dependency mode"
+            className: "timeline-dependency-control timeline-control-cluster"
           },
+          React.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"),
           React.createElement(
-            "button",
+            "select",
             {
-              type: "button",
-              className: dependencyViewMode === "edit" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-              "aria-pressed": dependencyViewMode === "edit",
-              "aria-label": "Cycle dependency mode",
-              onClick: () => {
-                setDependencyViewMode((current) =>
-                  current === "show" ? "edit" : current === "edit" ? "none" : "show"
-                );
+              className: "timeline-dependency-select",
+              "aria-label": "Dependency mode",
+              value: dependencyViewMode,
+              onChange: (event) => {
+                setDependencyViewMode((event.target as HTMLSelectElement).value as DependencyViewMode);
                 setActiveDependencyDrag(null);
                 setActiveScheduleDrag(null);
                 setActiveUnschedulableDrag(null);
@@ -1054,11 +1536,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 setSelectedDependency(null);
               }
             },
-            dependencyViewMode === "edit"
-              ? "Edit Dependency"
-              : dependencyViewMode === "show"
-                ? "Show Dependency"
-                : "No Dependency"
+            DEPENDENCY_VIEW_MODE_OPTIONS.map((option) =>
+              React.createElement("option", { key: option.value, value: option.value }, option.label)
+            )
           )
         ),
         React.createElement(
@@ -1146,6 +1626,122 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             },
             "Settings"
           )
+        ),
+        React.createElement(
+          "div",
+          { className: "timeline-filter-control", ref: filterToggleControlRef },
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
+              "aria-label": "Toggle timeline filters",
+              "aria-expanded": timelineFiltersOpen ? "true" : "false",
+              "aria-haspopup": "dialog",
+              onClick: () => {
+                setTimelineFiltersOpen((current) => {
+                  if (current) {
+                    setOpenFilterDropdown(null);
+                  }
+                  return !current;
+                });
+              }
+            },
+            React.createElement(
+              "svg",
+              {
+                viewBox: "0 0 24 24",
+                className: "timeline-filter-toggle-icon",
+                "aria-hidden": "true"
+              },
+              React.createElement("path", {
+                d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
+              })
+            ),
+            activeTimelineFilters.length > 0 ? React.createElement("span", { className: "timeline-filter-toggle-count" }, activeTimelineFilters.length) : null
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "timeline-label-control", ref: labelToggleControlRef },
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
+              "aria-label": "Toggle timeline label fields",
+              "aria-expanded": labelSettingsOpen ? "true" : "false",
+              "aria-haspopup": "dialog",
+              onClick: () => {
+                setLabelSettingsOpen((current) => !current);
+                setLabelFieldSearchDraft("");
+              }
+            },
+            React.createElement(
+              "svg",
+              {
+                viewBox: "0 0 24 24",
+                className: "timeline-label-toggle-icon",
+                "aria-hidden": "true"
+              },
+              React.createElement("path", {
+                d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
+              })
+            ),
+            React.createElement("span", { className: "timeline-label-toggle-count" }, timelineLabelFields.length)
+          ),
+          labelSettingsOpen
+            ? React.createElement(
+                "div",
+                {
+                  className: "timeline-label-menu",
+                  role: "group",
+                  "aria-label": "Timeline label fields",
+                  ref: labelPanelRef
+                },
+                React.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"),
+                React.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown as \" - \" joined text."),
+                React.createElement("input", {
+                  type: "search",
+                  className: "timeline-color-coding-dropdown-search",
+                  "aria-label": "Search timeline label fields",
+                  placeholder: "Search field",
+                  value: labelFieldSearchDraft,
+                  onChange: (event) => {
+                    setLabelFieldSearchDraft((event.target as HTMLInputElement).value);
+                  }
+                }),
+                React.createElement(
+                  "div",
+                  { className: "timeline-label-menu-options" },
+                  filteredTimelineLabelFieldOptions.length === 0
+                    ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                    : filteredTimelineLabelFieldOptions.map((option) =>
+                        React.createElement(
+                          "label",
+                          {
+                            key: `timeline-label-field-${option.fieldRef}`,
+                            className: "timeline-label-menu-option"
+                          },
+                          React.createElement("input", {
+                            type: "checkbox",
+                            checked: timelineLabelFields.includes(option.fieldRef),
+                            "aria-label": `Show ${option.label} in timeline bars`,
+                            onChange: () => {
+                              toggleTimelineLabelField(option.fieldRef);
+                            }
+                          }),
+                          React.createElement(
+                            "span",
+                            { className: "timeline-label-menu-option-meta" },
+                            React.createElement("strong", null, option.label),
+                            React.createElement("span", null, option.subtitle)
+                          )
+                        )
+                      )
+                )
+              )
+            : null
         )
       ),
       React.createElement(
@@ -1173,6 +1769,229 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         )
       ),
     ),
+    timelineFiltersOpen
+      ? React.createElement(
+          "div",
+          {
+            className: "timeline-filter-panel",
+            role: "group",
+            "aria-label": "Timeline filters",
+            ref: filterPanelRef
+          },
+          availableFieldRefs.length === 0
+            ? React.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.")
+            : React.createElement(
+                "div",
+                { className: "timeline-filter-grid" },
+                ...timelineFieldFilters.map((filter, index) => {
+                  const selectedFieldDisplay = filter.fieldRef ? getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
+                  const valueLabel =
+                    !filter.fieldRef || filter.selectedValueKeys.length === 0
+                      ? "All values"
+                      : `${filter.selectedValueKeys.length} selected`;
+                  const isFieldDropdownOpen = openFilterDropdown?.kind === "field" && openFilterDropdown.slotId === filter.slotId;
+                  const isValueDropdownOpen = openFilterDropdown?.kind === "value" && openFilterDropdown.slotId === filter.slotId;
+                  const filterValueOptions =
+                    isValueDropdownOpen && openFilterDropdown?.slotId === filter.slotId
+                      ? openFilterValueOptions
+                      : filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, filter.fieldRef), "");
+
+                  return React.createElement(
+                    "div",
+                    {
+                      key: `timeline-filter-slot-${filter.slotId}`,
+                      className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
+                    },
+                    React.createElement(
+                      "div",
+                      { className: "timeline-filter-dropdown-anchor" },
+                      React.createElement(
+                        "button",
+                        {
+                          type: "button",
+                          className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+                          "aria-label": `Select filter field ${index + 1}`,
+                          "aria-haspopup": "listbox",
+                          "aria-expanded": isFieldDropdownOpen ? "true" : "false",
+                          onClick: () => {
+                            setOpenFilterDropdown((current) =>
+                              current?.kind === "field" && current.slotId === filter.slotId
+                                ? null
+                                : { slotId: filter.slotId, kind: "field" }
+                            );
+                            setFilterFieldSearchDraft("");
+                            setFilterValueSearchDraft("");
+                          }
+                        },
+                        selectedFieldDisplay
+                      ),
+                      isFieldDropdownOpen
+                        ? React.createElement(
+                            "div",
+                            {
+                              className: "timeline-color-coding-dropdown",
+                              role: "listbox",
+                              "aria-label": `Filter field options ${index + 1}`
+                            },
+                            React.createElement("input", {
+                              type: "search",
+                              className: "timeline-color-coding-dropdown-search",
+                              "aria-label": `Search filter fields ${index + 1}`,
+                              placeholder: "Search field",
+                              value: filterFieldSearchDraft,
+                              onChange: (event) => {
+                                setFilterFieldSearchDraft((event.target as HTMLInputElement).value);
+                              },
+                              onKeyDown: (event) => {
+                                if (event.key !== "Enter") {
+                                  return;
+                                }
+
+                                event.preventDefault();
+                                const firstField = openFilterFieldOptions[0] ?? null;
+                                if (!firstField) {
+                                  return;
+                                }
+                                applyFieldFilterSelection(filter.slotId, firstField);
+                                setOpenFilterDropdown(null);
+                              }
+                            }),
+                            React.createElement(
+                              "div",
+                              { className: "timeline-color-coding-dropdown-options" },
+                              openFilterFieldOptions.length === 0
+                                ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                                : openFilterFieldOptions.map((fieldRef) =>
+                                    React.createElement(
+                                      "button",
+                                      {
+                                        key: `${filter.slotId}-${fieldRef}`,
+                                        type: "button",
+                                        className:
+                                          filter.fieldRef === fieldRef
+                                            ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                            : "timeline-color-coding-option",
+                                        onClick: () => {
+                                          applyFieldFilterSelection(filter.slotId, fieldRef);
+                                          setOpenFilterDropdown(null);
+                                        }
+                                      },
+                                      React.createElement("span", { className: "timeline-color-coding-option-label" }, getFieldDisplayName(fieldRef)),
+                                      React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef)
+                                    )
+                                  )
+                            )
+                          )
+                        : null
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: "timeline-filter-dropdown-anchor" },
+                      React.createElement(
+                        "button",
+                        {
+                          type: "button",
+                          className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+                          "aria-label": `Select filter values ${index + 1}`,
+                          "aria-haspopup": "listbox",
+                          "aria-expanded": isValueDropdownOpen ? "true" : "false",
+                          disabled: !filter.fieldRef,
+                          onClick: () => {
+                            if (!filter.fieldRef) {
+                              return;
+                            }
+
+                            setOpenFilterDropdown((current) =>
+                              current?.kind === "value" && current.slotId === filter.slotId
+                                ? null
+                                : { slotId: filter.slotId, kind: "value" }
+                            );
+                            setFilterValueSearchDraft("");
+                            setFilterFieldSearchDraft("");
+                          }
+                        },
+                        valueLabel
+                      ),
+                      isValueDropdownOpen
+                        ? React.createElement(
+                            "div",
+                            {
+                              className: "timeline-color-coding-dropdown",
+                              role: "listbox",
+                              "aria-label": `Filter value options ${index + 1}`
+                            },
+                            React.createElement("input", {
+                              type: "search",
+                              className: "timeline-color-coding-dropdown-search",
+                              "aria-label": `Search filter values ${index + 1}`,
+                              placeholder: "Search value",
+                              value: filterValueSearchDraft,
+                              onChange: (event) => {
+                                setFilterValueSearchDraft((event.target as HTMLInputElement).value);
+                              }
+                            }),
+                            React.createElement(
+                              "div",
+                              { className: "timeline-color-coding-dropdown-options" },
+                              filterValueOptions.length === 0
+                                ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
+                                : filterValueOptions.map((entry) =>
+                                    React.createElement(
+                                      "label",
+                                      {
+                                        key: `${filter.slotId}-value-${entry.key}`,
+                                        className: "timeline-filter-value-option"
+                                      },
+                                      React.createElement("input", {
+                                        type: "checkbox",
+                                        checked: filter.selectedValueKeys.includes(entry.key),
+                                        "aria-label": `Include ${entry.label} in filter ${index + 1}`,
+                                        onChange: () => {
+                                          toggleTimelineFieldValueSelection(filter.slotId, entry.key);
+                                        }
+                                      }),
+                                      React.createElement(
+                                        "span",
+                                        { className: "timeline-filter-value-option-meta" },
+                                        React.createElement("strong", null, entry.label),
+                                        React.createElement("span", null, `${entry.count} item(s)`)
+                                      )
+                                    )
+                                  )
+                            )
+                          )
+                        : null
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-filter-row-clear",
+                        "aria-label": timelineFieldFilters.length > 1 ? `Remove filter ${index + 1}` : `Clear filter ${index + 1}`,
+                        onClick: () => {
+                          removeTimelineFilterSlot(filter.slotId);
+                        }
+                      },
+                      timelineFieldFilters.length > 1 ? "Remove" : "Clear"
+                    )
+                  );
+                }),
+                React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    className: "timeline-filter-add",
+                    "aria-label": "Add timeline filter",
+                    disabled: timelineFieldFilters.length >= MAX_TIMELINE_FILTER_SLOTS,
+                    onClick: () => {
+                      addTimelineFilterSlot();
+                    }
+                  },
+                  "+"
+                )
+              )
+        )
+      : null,
     adoptScheduleError
       ? React.createElement(
           "div",
@@ -1350,10 +2169,85 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             )
           : React.createElement(
               "div",
-              {
-                className: activeScheduleDrag ? "timeline-chart-scroll timeline-chart-scroll-dragging" : "timeline-chart-scroll",
-                ref: chartScrollRef
-              },
+              { className: "timeline-chart-viewport-shell" },
+              React.createElement(
+                "div",
+                { className: "timeline-chart-overlay-actions" },
+                React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    className: "timeline-chart-fit-button",
+                    "aria-label": "Zoom to fit timeline",
+                    onClick: zoomToFitTimeline
+                  },
+                  "Fit"
+                )
+              ),
+              React.createElement(
+                "div",
+                {
+                  className: [
+                    "timeline-chart-scroll",
+                    activeScheduleDrag ? "timeline-chart-scroll-dragging" : "",
+                    activePanDrag ? "timeline-chart-scroll-panning" : "",
+                    spacePanPressed ? "timeline-chart-scroll-space-pan-ready" : ""
+                  ]
+                    .filter(Boolean)
+                    .join(" "),
+                  ref: chartScrollRef,
+                  onPointerDown: beginPanDrag,
+                  onPointerMove: updatePanDrag,
+                  onPointerUp: finishPanDrag,
+                  onPointerCancel: finishPanDrag
+                },
+              React.createElement(
+                "div",
+                { className: "timeline-chart-axis-sticky", "aria-hidden": "true" },
+                React.createElement(
+                  "svg",
+                  {
+                    className: "timeline-chart-axis",
+                    viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
+                    style: { width: `${chartModel.width}px` }
+                  },
+                  chartModel.monthLabels.map((month) =>
+                    React.createElement(
+                      "text",
+                      {
+                        key: `sticky-month-label-${month.x}-${month.label}`,
+                        x: CHART_LEFT_GUTTER + month.x,
+                        y: CHART_AXIS_MONTH_LABEL_Y,
+                        className: "timeline-axis-month-label"
+                      },
+                      month.label
+                    )
+                  ),
+                  chartModel.ticks.map((tick) =>
+                    React.createElement(
+                      "text",
+                      {
+                        key: `sticky-tick-label-${tick.x}-${tick.label}`,
+                        x: CHART_LEFT_GUTTER + tick.x + 4,
+                        y: CHART_AXIS_TICK_LABEL_Y,
+                        className: "timeline-axis-label"
+                      },
+                      tick.label
+                    )
+                  ),
+                  chartModel.todayX !== null
+                    ? React.createElement(
+                        "text",
+                        {
+                          x: CHART_LEFT_GUTTER + chartModel.todayX,
+                          y: CHART_AXIS_TODAY_LABEL_Y,
+                          className: "timeline-today-label"
+                        },
+                        "Today"
+                      )
+                    : null
+                )
+              ),
               React.createElement(
                 "svg",
                 {
@@ -1364,7 +2258,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   viewBox: `0 0 ${chartModel.width} ${chartModel.height}`,
                   role: "img",
                   "aria-label": "gantt-chart",
-                  style: { width: `${chartModel.width}px` },
+                  style: { width: `${chartModel.width}px`, height: `${chartModel.height}px` },
                   ref: chartSvgRef,
                   onPointerMove: handleChartPointerMove,
                   onPointerUp: finishActiveDrag,
@@ -1429,6 +2323,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     className: "timeline-grid-line-day"
                   })
                 ),
+                chartModel.monthWeekLines.map((weekX) =>
+                  React.createElement("line", {
+                    key: `month-week-grid-${weekX}`,
+                    x1: CHART_LEFT_GUTTER + weekX,
+                    y1: CHART_GRID_START_Y,
+                    x2: CHART_LEFT_GUTTER + weekX,
+                    y2: chartModel.height - CHART_BOTTOM_PADDING,
+                    className: "timeline-grid-line-weekly"
+                  })
+                ),
                 chartModel.monthBoundaries.map((boundaryX) =>
                   React.createElement("line", {
                     key: `month-boundary-${boundaryX}`,
@@ -1438,18 +2342,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     y2: chartModel.height - CHART_BOTTOM_PADDING,
                     className: "timeline-month-boundary-line"
                   })
-                ),
-                chartModel.monthLabels.map((month) =>
-                  React.createElement(
-                    "text",
-                    {
-                      key: `month-label-${month.x}-${month.label}`,
-                      x: CHART_LEFT_GUTTER + month.x,
-                      y: CHART_AXIS_MONTH_LABEL_Y,
-                      className: "timeline-axis-month-label"
-                    },
-                    month.label
-                  )
                 ),
                 chartModel.ticks.map((tick) =>
                   React.createElement(
@@ -1461,16 +2353,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       x2: CHART_LEFT_GUTTER + tick.x,
                       y2: chartModel.height - CHART_BOTTOM_PADDING,
                       className: "timeline-grid-line"
-                    }),
-                    React.createElement(
-                      "text",
-                      {
-                        x: CHART_LEFT_GUTTER + tick.x + 4,
-                        y: CHART_AXIS_TICK_LABEL_Y,
-                        className: "timeline-axis-label"
-                      },
-                      tick.label
-                    )
+                    })
                   )
                 ),
                 chartModel.todayX !== null
@@ -1483,16 +2366,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         x2: CHART_LEFT_GUTTER + chartModel.todayX,
                         y2: chartModel.height - CHART_BOTTOM_PADDING,
                         className: "timeline-today-line"
-                      }),
-                      React.createElement(
-                        "text",
-                        {
-                          x: CHART_LEFT_GUTTER + chartModel.todayX,
-                          y: CHART_AXIS_TODAY_LABEL_Y,
-                          className: "timeline-today-label"
-                        },
-                        "Today"
-                      )
+                      })
                     )
                   : null,
                 chartModel.bars.map((bar, index) => {
@@ -1526,6 +2400,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         }
                       },
                       onPointerDown: (event) => {
+                        if (spacePanPressedRef.current) {
+                          return;
+                        }
                         if (dependencyMode) {
                           beginDependencyDrag({ event, sourceWorkItemId: bar.workItemId });
                           return;
@@ -1543,6 +2420,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           className: "timeline-bar-handle timeline-bar-handle-start",
                           "aria-label": `timeline-bar-start-handle-${bar.workItemId}`,
                           onPointerDown: (event) => {
+                            if (spacePanPressedRef.current) {
+                              return;
+                            }
                             void beginBarDrag({ event, mode: "resize-start", bar });
                           }
                         })
@@ -1557,6 +2437,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           className: "timeline-bar-handle timeline-bar-handle-end",
                           "aria-label": `timeline-bar-end-handle-${bar.workItemId}`,
                           onPointerDown: (event) => {
+                            if (spacePanPressedRef.current) {
+                              return;
+                            }
                             void beginBarDrag({ event, mode: "resize-end", bar });
                           }
                         })
@@ -1568,7 +2451,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         y: y + 16,
                         className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
                       },
-                      truncateTitleToBarWidth(bar.title, bar.width)
+                      truncateTitleToBarWidth(bar.displayLabel, bar.width)
                     ),
                     React.createElement("circle", {
                       cx: CHART_LEFT_GUTTER + bar.x + 10,
@@ -1640,6 +2523,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     })
                   : null
               )
+              )
             ),
         React.createElement(
           "div",
@@ -1649,11 +2533,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             { className: "timeline-unschedulable-header" },
             React.createElement("h4", null, "Unscheduled")
           ),
-          effectiveTimeline?.unschedulable.length
+          filteredTimeline?.unschedulable.length
             ? React.createElement(
                 "ul",
                 null,
-                ...effectiveTimeline.unschedulable.map((item) =>
+                ...filteredTimeline.unschedulable.map((item) =>
                   React.createElement(
                     "li",
                     { key: item.workItemId },
@@ -1721,6 +2605,7 @@ const CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
 const CHART_TOP_PADDING = 56;
 const CHART_BOTTOM_PADDING = 18;
 const CHART_LEFT_GUTTER = 24;
+const CHART_RIGHT_PADDING_PX = 80;
 const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 46;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
@@ -1728,7 +2613,14 @@ const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 const TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
+const DAY_WIDTH_MAX_PX = 40;
+const DAY_WIDTH_MIN_PX = 4;
+const ZOOM_WHEEL_SENSITIVITY = 0.0018;
+const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
 const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+const FIT_TO_VIEW_INSET_PX = 20;
+const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
+const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
 const MIN_BAR_WIDTH_PX = 10;
 const HANDLE_WIDTH = 8;
 const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
@@ -1740,13 +2632,20 @@ const OVERDUE_OK_TIMELINE_COLOR = "#475569";
 const DEPENDENCY_ENDPOINT_GAP_PX = 6;
 const DEPENDENCY_LEFT_APPROACH_PX = 16;
 const DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
-const DEPENDENCY_LANE_COUNT = 3;
 const DEPENDENCY_LANE_GAP_PX = 6;
 const DEPENDENCY_LANE_TOP_OFFSET_PX = 6;
 const DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
 const DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX = 4;
 const DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR = 2;
 const DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX = 9;
+const MAX_TIMELINE_FILTER_SLOTS = 5;
+const TIMELINE_FILTERS_QUERY_PARAM = "tf";
+const LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
+const TIMELINE_LABEL_SPECIAL_FIELD_REFS = {
+  title: "title",
+  mappedId: "mappedId",
+  state: "state"
+} as const;
 const TIMELINE_CATEGORY_COLORS = [
   "#1d4ed8",
   "#0f766e",
@@ -1776,10 +2675,16 @@ type BarGeometry = {
   midY: number;
 };
 
+type PathPoint = {
+  x: number;
+  y: number;
+};
+
 type VisualTimelineBar = {
   workItemId: number;
   mappedId: string;
   title: string;
+  displayLabel: string;
   color: string;
   stateColor: string;
   stateBadge: string;
@@ -1805,6 +2710,7 @@ type VisualChartModel = {
   dayWidthPx: number;
   bars: VisualTimelineBar[];
   ticks: { x: number; label: string }[];
+  monthWeekLines: number[];
   dailyGridLines: number[];
   monthBoundaries: number[];
   monthLabels: { x: number; label: string }[];
@@ -1818,7 +2724,8 @@ function buildVisualChartModel(
   dayWidthPx: number,
   zoomLevel: TimelineZoomLevel,
   colorByWorkItemId: ReadonlyMap<number, string>,
-  viewportWidthPx: number
+  viewportWidthPx: number,
+  timelineLabelFields: string[]
 ): VisualChartModel {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc = new Date();
@@ -1831,6 +2738,7 @@ function buildVisualChartModel(
       dayWidthPx,
       bars: [],
       ticks: [],
+      monthWeekLines: [],
       dailyGridLines: [],
       monthBoundaries: [],
       monthLabels: [],
@@ -1872,6 +2780,7 @@ function buildVisualChartModel(
       dayWidthPx,
       bars: [],
       ticks: [],
+      monthWeekLines: [],
       dailyGridLines: [],
       monthBoundaries: [],
       monthLabels: [],
@@ -1885,7 +2794,7 @@ function buildVisualChartModel(
   const maxEnd = new Date(Math.max(...normalizedBars.map((bar) => bar.end.getTime())));
   const domainStart = addDays(minStart, -1);
   const domainEnd = addDays(maxEnd, 1);
-  const timelineCanvasMinWidthPx = Math.max(0, viewportWidthPx - CHART_LEFT_GUTTER - 80);
+  const timelineCanvasMinWidthPx = Math.max(0, viewportWidthPx - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX);
   const minDaysForViewport = Math.ceil(timelineCanvasMinWidthPx / dayWidthPx);
   const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd), minDaysForViewport);
   const todayUtc = new Date();
@@ -1917,6 +2826,7 @@ function buildVisualChartModel(
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
       title: bar.source.title,
+      displayLabel: buildTimelineBarLabel(bar.source, timelineLabelFields),
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
@@ -1928,17 +2838,19 @@ function buildVisualChartModel(
   });
 
   const ticks = buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx);
+  const monthWeekLines = zoomLevel === "month" ? buildWeeklyGridLines(domainStart, totalDays, dayWidthPx) : [];
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
   const { monthBoundaries, monthLabels } = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
 
   const timelineWidth = totalDays * dayWidthPx;
 
   return {
-    width: Math.max(900, CHART_LEFT_GUTTER + timelineWidth + 80),
+    width: Math.max(900, CHART_LEFT_GUTTER + timelineWidth + CHART_RIGHT_PADDING_PX),
     height: CHART_TOP_PADDING + (bars.length + 1) * CHART_ROW_HEIGHT + CHART_BOTTOM_PADDING,
     dayWidthPx,
     bars,
     ticks,
+    monthWeekLines,
     dailyGridLines,
     monthBoundaries,
     monthLabels,
@@ -2056,6 +2968,334 @@ function buildColorByWorkItemId(
   return map;
 }
 
+function resolveTimelineVisibleRange(timeline: TimelineReadModel | null): { start: Date; end: Date } | null {
+  if (!timeline || timeline.bars.length === 0) {
+    return null;
+  }
+
+  const normalizedRanges = timeline.bars
+    .map((bar) => {
+      const start = parseIso(bar.schedule.startDate);
+      const end = parseIso(bar.schedule.endDate);
+      if (!start && !end) {
+        return null;
+      }
+
+      const normalizedStart = start ?? addDays(end as Date, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
+      const normalizedEnd = end ?? addDays(start as Date, 2);
+      return normalizedStart.getTime() <= normalizedEnd.getTime()
+        ? { start: normalizedStart, end: normalizedEnd }
+        : { start: normalizedEnd, end: normalizedStart };
+    })
+    .filter((value): value is { start: Date; end: Date } => value !== null);
+
+  if (normalizedRanges.length === 0) {
+    return null;
+  }
+
+  return {
+    start: new Date(Math.min(...normalizedRanges.map((range) => range.start.getTime()))),
+    end: new Date(Math.max(...normalizedRanges.map((range) => range.end.getTime())))
+  };
+}
+
+function createInitialTimelineFieldFilters(): TimelineFieldFilter[] {
+  return [createTimelineFieldFilter(0)];
+}
+
+function createTimelineFieldFilter(slotId: number): TimelineFieldFilter {
+  return {
+    slotId,
+    fieldRef: null,
+    selectedValueKeys: []
+  };
+}
+
+function resolveInitialTimelineFilterState(): { filters: TimelineFieldFilter[]; nextSlotId: number } {
+  if (typeof globalThis.location === "undefined") {
+    return {
+      filters: createInitialTimelineFieldFilters(),
+      nextSlotId: 1
+    };
+  }
+
+  const parsed = parseTimelineFiltersFromSearch(globalThis.location.search);
+  if (parsed.length === 0) {
+    return {
+      filters: createInitialTimelineFieldFilters(),
+      nextSlotId: 1
+    };
+  }
+
+  const filters = parsed.map((entry, index) => ({
+    slotId: index,
+    fieldRef: entry.fieldRef,
+    selectedValueKeys: entry.selectedValueKeys
+  }));
+
+  return {
+    filters,
+    nextSlotId: filters.length
+  };
+}
+
+function parseTimelineFiltersFromSearch(search: string): Array<{ fieldRef: string | null; selectedValueKeys: string[] }> {
+  try {
+    const params = new URLSearchParams(search);
+    const compactEntries = params.getAll(TIMELINE_FILTERS_QUERY_PARAM);
+    if (compactEntries.length > 0) {
+      return compactEntries
+        .map((entry) => parseCompactTimelineFilterParam(entry))
+        .filter((entry): entry is { fieldRef: string; selectedValueKeys: string[] } => entry !== null)
+        .slice(0, MAX_TIMELINE_FILTER_SLOTS);
+    }
+
+    const legacyRaw = params.get(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+    if (!legacyRaw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(legacyRaw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((entry) => {
+        if (!entry || typeof entry !== "object") {
+          return null;
+        }
+
+        const maybeFieldRef = "fieldRef" in entry ? (entry.fieldRef as unknown) : null;
+        const maybeValues = "selectedValueKeys" in entry ? (entry.selectedValueKeys as unknown) : [];
+        const fieldRef =
+          typeof maybeFieldRef === "string" && maybeFieldRef.trim().length > 0 ? maybeFieldRef.trim() : null;
+        const selectedValueKeys = Array.isArray(maybeValues)
+          ? [...new Set(maybeValues.filter((value): value is string => typeof value === "string"))]
+          : [];
+        if (!fieldRef) {
+          return null;
+        }
+
+        return {
+          fieldRef,
+          selectedValueKeys
+        };
+      })
+      .filter((entry): entry is { fieldRef: string; selectedValueKeys: string[] } => entry !== null)
+      .slice(0, MAX_TIMELINE_FILTER_SLOTS);
+  } catch {
+    return [];
+  }
+}
+
+function serializeTimelineFiltersForUrl(
+  filters: TimelineFieldFilter[]
+): Array<{ fieldRef: string | null; selectedValueKeys: string[] }> {
+  return filters
+    .map((filter) => ({
+      fieldRef: filter.fieldRef?.trim() ? filter.fieldRef.trim() : null,
+      selectedValueKeys: [...new Set(filter.selectedValueKeys)]
+    }))
+    .filter((entry) => entry.fieldRef !== null);
+}
+
+function toCompactTimelineFilterParam(entry: { fieldRef: string | null; selectedValueKeys: string[] }): string | null {
+  const fieldRef = entry.fieldRef?.trim();
+  if (!fieldRef) {
+    return null;
+  }
+
+  const valuePart = entry.selectedValueKeys.length > 0 ? entry.selectedValueKeys.join(",") : "";
+  return `${fieldRef}~${valuePart}`;
+}
+
+function parseCompactTimelineFilterParam(value: string): { fieldRef: string; selectedValueKeys: string[] } | null {
+  try {
+    const [rawFieldRef, rawValues = ""] = value.split("~", 2);
+    if (!rawFieldRef) {
+      return null;
+    }
+
+    const fieldRef = rawFieldRef.trim();
+    if (fieldRef.length === 0) {
+      return null;
+    }
+
+    const selectedValueKeys = rawValues
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+
+    return {
+      fieldRef,
+      selectedValueKeys: [...new Set(selectedValueKeys)]
+    };
+  } catch {
+    return null;
+  }
+}
+
+function syncTimelineFiltersToUrl(filters: TimelineFieldFilter[]): void {
+  if (typeof globalThis.window === "undefined") {
+    return;
+  }
+
+  const params = new URLSearchParams(globalThis.window.location.search);
+  params.delete(TIMELINE_FILTERS_QUERY_PARAM);
+  params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+  serializeTimelineFiltersForUrl(filters)
+    .map((entry) => toCompactTimelineFilterParam(entry))
+    .filter((entry): entry is string => entry !== null)
+    .forEach((entry) => {
+      params.append(TIMELINE_FILTERS_QUERY_PARAM, entry);
+    });
+
+  const nextSearch = params.toString();
+  const normalizedCurrentSearch = globalThis.window.location.search.startsWith("?")
+    ? globalThis.window.location.search.slice(1)
+    : globalThis.window.location.search;
+  if (nextSearch === normalizedCurrentSearch) {
+    return;
+  }
+
+  const nextUrl = `${globalThis.window.location.pathname}${nextSearch.length > 0 ? `?${nextSearch}` : ""}${globalThis.window.location.hash}`;
+  globalThis.window.history.replaceState(globalThis.window.history.state, "", nextUrl);
+}
+
+function isActiveTimelineFieldFilter(filter: TimelineFieldFilter): boolean {
+  return Boolean(filter.fieldRef && filter.selectedValueKeys.length > 0);
+}
+
+function applyTimelineFieldFilters(
+  timeline: TimelineReadModel | null,
+  filters: TimelineFieldFilter[]
+): TimelineReadModel | null {
+  if (!timeline) {
+    return null;
+  }
+
+  const activeFilters = filters.filter((filter) => isActiveTimelineFieldFilter(filter));
+  if (activeFilters.length === 0) {
+    return timeline;
+  }
+
+  const matchesAll = (fieldValues: Record<string, string | number | null> | undefined): boolean => {
+    return activeFilters.every((filter) => {
+      const normalizedFieldRef = filter.fieldRef?.trim();
+      if (!normalizedFieldRef || filter.selectedValueKeys.length === 0) {
+        return true;
+      }
+
+      const valueKey = fieldValueToStorageKey(fieldValues?.[normalizedFieldRef]);
+      return filter.selectedValueKeys.includes(valueKey);
+    });
+  };
+
+  const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
+  const unschedulable = timeline.unschedulable.filter((item) => matchesAll(item.details.fieldValues));
+  const visibleWorkItemIds = new Set<number>([
+    ...bars.map((bar) => bar.workItemId),
+    ...unschedulable.map((item) => item.workItemId)
+  ]);
+  const dependencies = timeline.dependencies.filter(
+    (dependency) =>
+      visibleWorkItemIds.has(dependency.predecessorWorkItemId) &&
+      visibleWorkItemIds.has(dependency.successorWorkItemId)
+  );
+  const suppressedDependencies = timeline.suppressedDependencies.filter(
+    (dependency) =>
+      visibleWorkItemIds.has(dependency.predecessorWorkItemId) &&
+      visibleWorkItemIds.has(dependency.successorWorkItemId)
+  );
+
+  return {
+    ...timeline,
+    bars,
+    unschedulable,
+    dependencies,
+    suppressedDependencies
+  };
+}
+
+function filterFieldRefsBySearch(fieldRefs: string[], search: string): string[] {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return fieldRefs;
+  }
+
+  return fieldRefs.filter((fieldRef) => {
+    const displayName = getFieldDisplayName(fieldRef);
+    return (
+      fieldRef.toLowerCase().includes(normalizedSearch) ||
+      displayName.toLowerCase().includes(normalizedSearch)
+    );
+  });
+}
+
+function filterFieldValueStatsBySearch(stats: FieldValueStat[], search: string): FieldValueStat[] {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return stats;
+  }
+
+  return stats.filter((entry) => entry.label.toLowerCase().includes(normalizedSearch));
+}
+
+function sanitizeTimelineLabelFields(fieldRefs: string[]): string[] {
+  const normalized = [...new Set(fieldRefs)]
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  return normalized.length > 0 ? normalized : [...DEFAULT_TIMELINE_LABEL_FIELDS];
+}
+
+function buildTimelineLabelFieldOptions(fieldRefs: string[]): TimelineLabelFieldOption[] {
+  const options: TimelineLabelFieldOption[] = [
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.title,
+      label: "Title",
+      subtitle: "Built-in",
+      searchText: "title built in"
+    },
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId,
+      label: "ID",
+      subtitle: "Built-in",
+      searchText: "id mappedid built in"
+    },
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.state,
+      label: "State",
+      subtitle: "Built-in",
+      searchText: "state status built in"
+    }
+  ];
+
+  fieldRefs.forEach((fieldRef) => {
+    const displayName = getFieldDisplayName(fieldRef);
+    options.push({
+      fieldRef,
+      label: displayName,
+      subtitle: fieldRef,
+      searchText: `${displayName} ${fieldRef}`.toLowerCase()
+    });
+  });
+
+  return options;
+}
+
+function filterTimelineLabelFieldOptions(
+  options: TimelineLabelFieldOption[],
+  search: string
+): TimelineLabelFieldOption[] {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options;
+  }
+
+  return options.filter((option) => option.searchText.includes(normalizedSearch));
+}
+
 type ColorCodingOption = {
   key: string;
   mode: TimelineColorCoding;
@@ -2155,6 +3395,46 @@ function getFieldDisplayName(fieldRef: string): string {
   const parts = trimmed.split(".");
   const lastPart = parts[parts.length - 1]?.trim();
   return lastPart && lastPart.length > 0 ? lastPart : trimmed;
+}
+
+function buildTimelineBarLabel(bar: TimelineReadModel["bars"][number], fieldRefs: string[]): string {
+  const parts = sanitizeTimelineLabelFields(fieldRefs)
+    .map((fieldRef) => timelineBarLabelValueForFieldRef(bar, fieldRef))
+    .filter((value): value is string => value !== null && value.length > 0);
+
+  if (parts.length === 0) {
+    return bar.title;
+  }
+
+  return parts.join(" - ");
+}
+
+function timelineBarLabelValueForFieldRef(
+  bar: TimelineReadModel["bars"][number],
+  fieldRef: string
+): string | null {
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.title) {
+    return normalizeTimelineLabelValue(bar.title);
+  }
+
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId) {
+    return normalizeTimelineLabelValue(bar.details.mappedId);
+  }
+
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.state) {
+    return normalizeTimelineLabelValue(bar.state.code);
+  }
+
+  return normalizeTimelineLabelValue(bar.details.fieldValues?.[fieldRef]);
+}
+
+function normalizeTimelineLabelValue(value: string | number | null | undefined): string | null {
+  if (value === null || typeof value === "undefined") {
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function listAvailableColorCodingFields(timeline: TimelineReadModel | null): string[] {
@@ -2405,36 +3685,25 @@ function buildAdaptiveTicks(
   dayWidthPx: number
 ): { x: number; label: string }[] {
   const ticks: { x: number; label: string }[] = [];
-  const domainEnd = addDays(domainStart, totalDays);
-  if (zoomLevel === "week") {
-    let cursor = startOfIsoWeekUtc(domainStart);
-    if (cursor.getTime() < domainStart.getTime()) {
-      cursor = addDays(cursor, 7);
-    }
-    while (cursor.getTime() <= domainEnd.getTime()) {
-      const offset = dayDiff(domainStart, cursor);
-      ticks.push({
-        x: offset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 10)
-      });
-      cursor = addDays(cursor, 7);
-    }
-  } else {
-    let cursor = startOfMonthUtc(domainStart);
-    if (cursor.getTime() < domainStart.getTime()) {
-      cursor = addMonthsUtc(cursor, 1);
-    }
-    while (cursor.getTime() <= domainEnd.getTime()) {
-      const offset = dayDiff(domainStart, cursor);
-      ticks.push({
-        x: offset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 7)
-      });
-      cursor = addMonthsUtc(cursor, 1);
-    }
+  if (zoomLevel !== "week") {
+    return ticks;
   }
 
-  return ticks.length ? ticks : [{ x: 0, label: zoomLevel === "week" ? domainStart.toISOString().slice(0, 10) : domainStart.toISOString().slice(0, 7) }];
+  const domainEnd = addDays(domainStart, totalDays);
+  let cursor = startOfIsoWeekUtc(domainStart);
+  if (cursor.getTime() < domainStart.getTime()) {
+    cursor = addDays(cursor, 7);
+  }
+  while (cursor.getTime() <= domainEnd.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    ticks.push({
+      x: offset * dayWidthPx,
+      label: formatDayMonthLabel(cursor)
+    });
+    cursor = addDays(cursor, 7);
+  }
+
+  return ticks.length ? ticks : [{ x: 0, label: formatDayMonthLabel(domainStart) }];
 }
 
 function buildDailyGridLines(totalDays: number, dayWidthPx: number): number[] {
@@ -2442,6 +3711,22 @@ function buildDailyGridLines(totalDays: number, dayWidthPx: number): number[] {
   for (let dayIndex = 0; dayIndex <= totalDays; dayIndex += 1) {
     lines.push(dayIndex * dayWidthPx);
   }
+  return lines;
+}
+
+function buildWeeklyGridLines(domainStart: Date, totalDays: number, dayWidthPx: number): number[] {
+  const lines: number[] = [];
+  const domainEnd = addDays(domainStart, totalDays);
+  let cursor = startOfIsoWeekUtc(domainStart);
+  if (cursor.getTime() < domainStart.getTime()) {
+    cursor = addDays(cursor, 7);
+  }
+
+  while (cursor.getTime() <= domainEnd.getTime()) {
+    lines.push(dayDiff(domainStart, cursor) * dayWidthPx);
+    cursor = addDays(cursor, 7);
+  }
+
   return lines;
 }
 
@@ -2471,7 +3756,7 @@ function buildMonthAxisMarkers(
       const centerOffset = visibleStartOffset + (visibleEndOffsetExclusive - visibleStartOffset) / 2;
       monthLabels.push({
         x: centerOffset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 7)
+        label: formatMonthYearLabel(cursor)
       });
     }
 
@@ -2483,6 +3768,20 @@ function buildMonthAxisMarkers(
 
 function formatTickDate(value: Date): string {
   return value.toISOString().slice(0, 10);
+}
+
+function formatDayMonthLabel(value: Date): string {
+  const day = String(value.getUTCDate()).padStart(2, "0");
+  const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+  return `${day}.${month}.`;
+}
+
+function formatMonthYearLabel(value: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(value);
 }
 
 function clientDeltaToDays(deltaClientX: number, svg: SVGSVGElement | null, dayWidthPx: number): number {
@@ -2543,6 +3842,23 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function quantizeDayWidth(value: number): number {
+  return Math.round(value / ZOOM_DAY_WIDTH_STEP_PX) * ZOOM_DAY_WIDTH_STEP_PX;
+}
+
+function normalizeWheelDelta(event: WheelEvent): number {
+  if (event.deltaMode === 1) {
+    return event.deltaY * 16;
+  }
+
+  if (event.deltaMode === 2) {
+    const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 900;
+    return event.deltaY * Math.max(200, viewportHeight);
+  }
+
+  return event.deltaY;
+}
+
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false;
@@ -2599,16 +3915,18 @@ function buildDependencyConnectorPath(
   const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
   const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
   const horizontalDistance = endX - startX;
-  const minLaneEntryOffsetPx = options?.forceNearGapDetour ? 6 : 4;
-  const laneEntryOffset =
-    horizontalDistance > 0
-      ? Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.max(minLaneEntryOffsetPx, horizontalDistance / 2))
-      : minLaneEntryOffsetPx;
-  const minApproachDistancePx = options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 4;
-  const leftApproachDistance = Math.min(
-    DEPENDENCY_LEFT_APPROACH_PX,
-    Math.max(minApproachDistancePx, Math.abs(horizontalDistance) / 2)
-  );
+  const minDirectDistance = options?.forceNearGapDetour ? 20 : 10;
+  const directLaneX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+
+  if (horizontalDistance >= minDirectDistance) {
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: directLaneX, y: from.midY },
+      { x: directLaneX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+
   const laneY = resolveDependencyLaneY(laneSeed, {
     fromTopY: from.y,
     fromMidY: from.midY,
@@ -2616,10 +3934,17 @@ function buildDependencyConnectorPath(
     toTopY: to.y,
     toMidY: to.midY
   });
-  const laneEntryX = startX + laneEntryOffset;
-  const approachX = endX - leftApproachDistance;
-  const laneTravelX = approachX;
-  return `M ${startX} ${from.midY} L ${laneEntryX} ${from.midY} L ${laneEntryX} ${laneY} L ${laneTravelX} ${laneY} L ${approachX} ${laneY} L ${approachX} ${to.midY} L ${endX} ${to.midY}`;
+  const detourX = Math.max(startX, endX) + DEPENDENCY_LEFT_APPROACH_PX;
+  const approachX = endX - Math.max(4, options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 6);
+
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: detourX, y: from.midY },
+    { x: detourX, y: laneY },
+    { x: approachX, y: laneY },
+    { x: approachX, y: to.midY },
+    { x: endX, y: to.midY }
+  ]);
 }
 
 function buildDependencyConnectorToPointPath(
@@ -2632,10 +3957,17 @@ function buildDependencyConnectorToPointPath(
   const safeTargetX = Number.isFinite(targetX) ? targetX : startX + DEPENDENCY_POINTER_SEGMENT_MIN_PX;
   const safeTargetY = Number.isFinite(targetY) ? targetY : from.midY;
   const horizontalDistance = safeTargetX - startX;
-  const laneEntryOffset =
-    horizontalDistance > 0
-      ? Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.max(4, horizontalDistance / 2))
-      : 4;
+
+  if (horizontalDistance >= 10) {
+    const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: safeTargetY },
+      { x: safeTargetX, y: safeTargetY }
+    ]);
+  }
+
   const estimatedTargetTopY = safeTargetY - BAR_HEIGHT / 2;
   const laneY = resolveDependencyLaneY(laneSeed, {
     fromTopY: from.y,
@@ -2644,10 +3976,22 @@ function buildDependencyConnectorToPointPath(
     toTopY: estimatedTargetTopY,
     toMidY: safeTargetY
   });
-  const laneEntryX = startX + laneEntryOffset;
-  const laneTravelX = safeTargetX;
+  const detourX = Math.max(startX, safeTargetX) + DEPENDENCY_LEFT_APPROACH_PX;
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: detourX, y: from.midY },
+    { x: detourX, y: laneY },
+    { x: safeTargetX, y: laneY },
+    { x: safeTargetX, y: safeTargetY }
+  ]);
+}
 
-  return `M ${startX} ${from.midY} L ${laneEntryX} ${from.midY} L ${laneEntryX} ${laneY} L ${laneTravelX} ${laneY} L ${safeTargetX} ${safeTargetY}`;
+function toDependencyPathString(points: readonly PathPoint[]): string {
+  if (points.length === 0) {
+    return "";
+  }
+  const [first, ...rest] = points;
+  return `M ${first.x} ${first.y}${rest.map((point) => ` L ${point.x} ${point.y}`).join("")}`;
 }
 
 function resolveDependencyLaneY(
@@ -2661,22 +4005,42 @@ function resolveDependencyLaneY(
   }
 ): number {
   const normalizedSeed = Number.isFinite(seed) ? Math.abs(Math.trunc(seed)) : 0;
-  const laneIndex = normalizedSeed % DEPENDENCY_LANE_COUNT;
-
+  const laneOffset = DEPENDENCY_LANE_GAP_PX * ((normalizedSeed % 3) + 1);
   if (input.toMidY > input.fromMidY) {
     const lowerLaneY = input.fromBottomY + DEPENDENCY_LANE_TOP_OFFSET_PX;
     const upperLaneY = input.toTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
     if (upperLaneY > lowerLaneY) {
-      const preferredLaneY = lowerLaneY + laneIndex * DEPENDENCY_LANE_GAP_PX;
-      return Math.min(upperLaneY, Math.max(lowerLaneY, preferredLaneY));
+      return Math.min(upperLaneY, lowerLaneY + laneOffset);
     }
     return input.fromMidY + (input.toMidY - input.fromMidY) / 2;
   }
-
   const upperBarTopY = Math.min(input.fromTopY, input.toTopY);
-  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
+  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX - laneOffset;
   const minLaneY = CHART_GRID_START_Y + DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX;
-  return Math.max(minLaneY, topLaneY - laneIndex * DEPENDENCY_LANE_GAP_PX);
+  return Math.max(minLaneY, topLaneY);
+}
+
+function deduplicateTimelineDependencies(
+  dependencies: TimelineReadModel["dependencies"]
+): TimelineReadModel["dependencies"] {
+  const unique: TimelineReadModel["dependencies"] = [];
+  const seen = new Set<string>();
+  dependencies.forEach((dependency) => {
+    const key = `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}`;
+    if (seen.has(key)) {
+      return;
+    }
+    seen.add(key);
+    unique.push(dependency);
+  });
+  return unique;
+}
+
+function isDependencyViolated(
+  predecessorBar: VisualTimelineBar | undefined,
+  successorBar: VisualTimelineBar | undefined
+): boolean {
+  return predecessorBar !== undefined && successorBar !== undefined && predecessorBar.end.getTime() > successorBar.start.getTime();
 }
 
 function resolveHoveredDependencyTargetWorkItemId(
