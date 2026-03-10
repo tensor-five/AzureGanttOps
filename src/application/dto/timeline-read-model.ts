@@ -19,6 +19,7 @@ export type TimelineBar = {
     mappedId: string;
     descriptionHtml?: string | null;
     workItemType?: string | null;
+    fieldValues?: Record<string, string | number | null>;
     assignedTo?: string | null;
     parentWorkItemId?: number | null;
   };
@@ -37,6 +38,7 @@ export type TimelineUnschedulableItem = {
     mappedId: string;
     descriptionHtml?: string | null;
     workItemType?: string | null;
+    fieldValues?: Record<string, string | number | null>;
     assignedTo?: string | null;
     parentWorkItemId?: number | null;
   };

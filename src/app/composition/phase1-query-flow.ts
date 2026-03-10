@@ -51,7 +51,7 @@ export function createPhase1QueryFlow(params: {
   const capabilities = resolveCapabilityFlags(params.capabilities);
   const writeCommandPort =
     capabilities.writeEnabled && params.httpClient.patch
-      ? new WriteCommandAzureAdapter({ patch: params.httpClient.patch }, contextStore)
+      ? new WriteCommandAzureAdapter({ get: params.httpClient.get, patch: params.httpClient.patch }, contextStore)
       : new WriteCommandNoopAdapter();
   const submitWriteCommand = new SubmitWriteCommandUseCase(writeCommandPort);
 

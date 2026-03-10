@@ -31,6 +31,7 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
           mappedId: task.mappedId,
           descriptionHtml: task.descriptionHtml,
           workItemType: task.workItemType,
+          fieldValues: task.fieldValues,
           assignedTo: task.assignedTo,
           parentWorkItemId: task.parentWorkItemId
         },
@@ -59,6 +60,7 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
         mappedId: task.mappedId,
         descriptionHtml: task.descriptionHtml,
         workItemType: task.workItemType,
+        fieldValues: task.fieldValues,
         assignedTo: task.assignedTo,
         parentWorkItemId: task.parentWorkItemId
       }

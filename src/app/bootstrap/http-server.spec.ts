@@ -386,11 +386,60 @@ describe("createHttpServer", () => {
       delete process.env.ADO_AZ_CLI_PATH;
     }
   });
+
+  it("persists and reloads user preferences via /phase2/user-preferences", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      userPreferencesFilePath: fixture.userPreferencesFilePath
+    });
+
+    try {
+      const saveResponse = await fetch(`${server.baseUrl}/phase2/user-preferences`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          preferences: {
+            themeMode: "dark",
+            timelineColorCoding: "status",
+            filters: {
+              assignee: "me"
+            }
+          }
+        })
+      });
+      const saveBody = await saveResponse.json();
+
+      expect(saveResponse.status).toBe(200);
+      expect(saveBody.preferences.themeMode).toBe("dark");
+      expect(saveBody.preferences.timelineColorCoding).toBe("status");
+      expect(saveBody.preferences.filters).toEqual({
+        assignee: "me"
+      });
+
+      const loadResponse = await fetch(`${server.baseUrl}/phase2/user-preferences`);
+      const loadBody = await loadResponse.json();
+
+      expect(loadResponse.status).toBe(200);
+      expect(loadBody.preferences.themeMode).toBe("dark");
+      expect(loadBody.preferences.timelineColorCoding).toBe("status");
+      expect(loadBody.preferences.filters).toEqual({
+        assignee: "me"
+      });
+    } finally {
+      await server.close();
+    }
+  });
 });
 
 function startServer(params: {
   distRootPath: string;
   contextFilePath: string;
+  userPreferencesFilePath?: string;
   httpClient?: {
     get: (url: string) => Promise<{
       status: number;
@@ -406,6 +455,7 @@ function startServer(params: {
     port,
     distRootPath: params.distRootPath,
     contextFilePath: params.contextFilePath,
+    userPreferencesFilePath: params.userPreferencesFilePath,
     httpClient:
       params.httpClient ??
       {
@@ -431,6 +481,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
   root: string;
   distRootPath: string;
   contextFilePath: string;
+  userPreferencesFilePath: string;
   azCliShimPath: string;
 }> {
   const root = await mkdtemp(path.join(os.tmpdir(), "azure-ganttops-http-server-"));
@@ -441,6 +492,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
   await writeFile(path.join(distRootPath, "src", "app", "bootstrap", "local-ui-entry.browser.js"), "export {}\n", "utf8");
 
   const contextFilePath = path.join(root, "ado-context.json");
+  const userPreferencesFilePath = path.join(root, "user-preferences.json");
   await writeFile(
     contextFilePath,
     JSON.stringify({
@@ -482,6 +534,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
     root,
     distRootPath,
     contextFilePath,
+    userPreferencesFilePath,
     azCliShimPath
   };
 }

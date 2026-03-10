@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   clearTimelineColorCodingPreferenceForTests,
   loadLastTimelineColorCoding,
+  loadTimelineFieldColorCodingConfig,
   saveLastTimelineColorCoding
 } from "./timeline-color-coding-preference.js";
 
@@ -22,5 +23,19 @@ describe("timeline-color-coding-preference", () => {
     clearTimelineColorCodingPreferenceForTests();
     saveLastTimelineColorCoding("overdue");
     expect(loadLastTimelineColorCoding()).toBe("overdue");
+  });
+
+  it("persists and loads field color coding mode", () => {
+    clearTimelineColorCodingPreferenceForTests();
+    saveLastTimelineColorCoding("field");
+    expect(loadLastTimelineColorCoding()).toBe("field");
+  });
+
+  it("returns empty field coding config by default", () => {
+    clearTimelineColorCodingPreferenceForTests();
+    expect(loadTimelineFieldColorCodingConfig()).toEqual({
+      fieldRef: null,
+      valueColors: {}
+    });
   });
 });

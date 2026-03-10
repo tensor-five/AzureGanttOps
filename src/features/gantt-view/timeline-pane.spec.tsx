@@ -48,6 +48,87 @@ function makeTimeline(): TimelineReadModel {
   };
 }
 
+function makeDependencyTimeline(): TimelineReadModel {
+  const base = makeTimeline();
+  return {
+    ...base,
+    bars: [
+      base.bars[0],
+      {
+        ...base.bars[0],
+        workItemId: 12,
+        title: "Dependent Item",
+        details: { mappedId: "12" },
+        schedule: {
+          startDate: "2026-03-05T00:00:00.000Z",
+          endDate: "2026-03-07T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ],
+    unschedulable: [],
+    dependencies: [
+      {
+        predecessorWorkItemId: 11,
+        successorWorkItemId: 12,
+        dependencyType: "FS",
+        label: "#11 [end] -> #12 [start]"
+      }
+    ]
+  };
+}
+
+function makeViolatingDependencyTimeline(): TimelineReadModel {
+  const base = makeDependencyTimeline();
+  return {
+    ...base,
+    bars: [
+      {
+        ...base.bars[0],
+        workItemId: 11,
+        details: { mappedId: "11" },
+        schedule: {
+          startDate: "2026-03-06T00:00:00.000Z",
+          endDate: "2026-03-10T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...base.bars[1],
+        workItemId: 12,
+        details: { mappedId: "12" },
+        schedule: {
+          startDate: "2026-03-07T00:00:00.000Z",
+          endDate: "2026-03-08T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ]
+  };
+}
+
+function extractPathPoints(pathValue: string | null): Array<{ x: number; y: number }> {
+  if (!pathValue) {
+    return [];
+  }
+
+  const segments = pathValue
+    .replace(/^M\s*/, "")
+    .split(" L ")
+    .map((segment) => segment.trim());
+  return segments
+    .map((segment) => {
+      const [xRaw, yRaw] = segment.split(/\s+/);
+      const x = Number(xRaw);
+      const y = Number(yRaw);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return null;
+      }
+      return { x, y };
+    })
+    .filter((point): point is { x: number; y: number } => point !== null);
+}
+
 function createDataTransferMock(): DataTransfer {
   const store = new Map<string, string>();
   return {
@@ -249,6 +330,181 @@ describe("timeline-pane unschedulable date adoption", () => {
     expect(secondBarY - firstBarY).toBe(26);
   });
 
+  it("renders visible predecessor/successor connectors with arrowheads", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeDependencyTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const connector = screen.getByLabelText("dependency-11-12");
+    expect(connector.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-/);
+    expect(connector.getAttribute("d")).toContain("L");
+  });
+
+  it("hides predecessor/successor connectors when dependency toggle is off", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeDependencyTimeline(),
+        showDependencies: false
+      })
+    );
+
+    expect(screen.queryByLabelText("dependency-11-12")).toBeNull();
+  });
+
+  it("creates predecessor/successor link via drag in dependency mode", () => {
+    const onCreateDependency = vi.fn(async () => undefined);
+    const timeline = makeDependencyTimeline();
+    timeline.dependencies = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        onCreateDependency
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Cycle dependency mode" }));
+
+    const sourceBar = screen.getByLabelText("timeline-bar-11");
+    const targetBar = screen.getByLabelText("timeline-bar-12");
+    const chart = screen.getByLabelText("gantt-chart");
+    const sourceX = Number(sourceBar.getAttribute("x"));
+    const sourceY = Number(sourceBar.getAttribute("y"));
+    const targetX = Number(targetBar.getAttribute("x"));
+    const targetY = Number(targetBar.getAttribute("y"));
+    const targetWidth = Number(targetBar.getAttribute("width"));
+
+    fireEvent.pointerDown(sourceBar, {
+      pointerId: 9,
+      button: 0,
+      clientX: sourceX + 12,
+      clientY: sourceY + 12
+    });
+    fireEvent.pointerMove(chart, {
+      pointerId: 9,
+      clientX: targetX + targetWidth / 2,
+      clientY: targetY + 12
+    });
+    fireEvent.pointerUp(chart, {
+      pointerId: 9,
+      clientX: targetX + targetWidth / 2,
+      clientY: targetY + 12
+    });
+
+    expect(onCreateDependency).toHaveBeenCalledWith({
+      predecessorWorkItemId: 11,
+      successorWorkItemId: 12
+    });
+  });
+
+  it("disables schedule dragging while dependency mode is active", async () => {
+    const onUpdateWorkItemSchedule = vi.fn(async () => undefined);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeDependencyTimeline(),
+        showDependencies: true,
+        onUpdateWorkItemSchedule
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Cycle dependency mode" }));
+
+    const sourceBar = screen.getByLabelText("timeline-bar-11");
+    const chart = screen.getByLabelText("gantt-chart");
+    const sourceX = Number(sourceBar.getAttribute("x"));
+    const sourceY = Number(sourceBar.getAttribute("y"));
+
+    fireEvent.pointerDown(sourceBar, { pointerId: 10, button: 0, clientX: sourceX + 8, clientY: sourceY + 12 });
+    fireEvent.pointerMove(chart, { pointerId: 10, clientX: sourceX + 80, clientY: sourceY + 12 });
+    fireEvent.pointerUp(chart, { pointerId: 10, clientX: sourceX + 80, clientY: sourceY + 12 });
+
+    await waitFor(() => {
+      expect(onUpdateWorkItemSchedule).not.toHaveBeenCalled();
+    });
+  });
+
+  it("cycles dependency toggle through Show -> Edit -> No -> Show", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeDependencyTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const cycleButton = screen.getByRole("button", { name: "Cycle dependency mode" });
+    expect(cycleButton.textContent).toContain("Show Dependency");
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+
+    fireEvent.click(cycleButton);
+    expect(cycleButton.textContent).toContain("Edit Dependency");
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+
+    fireEvent.click(cycleButton);
+    expect(cycleButton.textContent).toContain("No Dependency");
+    expect(screen.queryByLabelText("dependency-11-12")).toBeNull();
+
+    fireEvent.click(cycleButton);
+    expect(cycleButton.textContent).toContain("Show Dependency");
+    expect(screen.queryByLabelText("dependency-11-12")).not.toBeNull();
+  });
+
+  it("removes selected dependency via Delete key", async () => {
+    const onRemoveDependency = vi.fn(async () => undefined);
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeDependencyTimeline(),
+        showDependencies: true,
+        onRemoveDependency
+      })
+    );
+
+    const connector = screen.getByLabelText("dependency-11-12");
+    fireEvent.click(connector);
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    await waitFor(() => {
+      expect(onRemoveDependency).toHaveBeenCalledWith({
+        predecessorWorkItemId: 11,
+        successorWorkItemId: 12
+      });
+    });
+  });
+
+  it("colors violated FS dependencies red when predecessor end is after successor start", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeViolatingDependencyTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const connector = screen.getByLabelText("dependency-11-12");
+    expect(connector.getAttribute("class")).toContain("timeline-dependency-line-violated");
+    expect(connector.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-alert-/);
+  });
+
+  it("routes backward dependencies to enter successor from the left side", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeViolatingDependencyTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const connector = screen.getByLabelText("dependency-11-12");
+    const points = extractPathPoints(connector.getAttribute("d"));
+    expect(points.length).toBeGreaterThanOrEqual(5);
+
+    const penultimate = points[points.length - 2];
+    const endpoint = points[points.length - 1];
+    expect(penultimate.x).toBeLessThan(endpoint.x);
+  });
+
   it("extends chart width to match visible viewport beyond work item range", async () => {
     const clientWidthSpy = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1600);
 
@@ -362,8 +618,8 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    const colorCodingSelect = screen.getByLabelText("Color coding") as HTMLSelectElement;
-    expect(colorCodingSelect.value).toBe("none");
+    const colorCodingButton = screen.getByLabelText("Color coding") as HTMLButtonElement;
+    expect(colorCodingButton.textContent).toContain("None");
 
     const bar = container.querySelector("rect.timeline-bar");
     expect(bar).not.toBeNull();
@@ -395,7 +651,10 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    await user.selectOptions(screen.getByLabelText("Color coding"), "status");
+    const colorCodingButton = screen.getByLabelText("Color coding");
+    await user.click(colorCodingButton);
+    await user.type(screen.getByLabelText("Search color coding"), "status");
+    await user.click(screen.getByRole("button", { name: /Status/ }));
 
     const bars = container.querySelectorAll("rect.timeline-bar");
     expect(bars).toHaveLength(2);
@@ -412,8 +671,267 @@ describe("timeline-pane unschedulable date adoption", () => {
       })
     );
 
-    const colorCodingSelect = screen.getByLabelText("Color coding") as HTMLSelectElement;
-    expect(colorCodingSelect.value).toBe("overdue");
+    const colorCodingButton = screen.getByLabelText("Color coding") as HTMLButtonElement;
+    expect(colorCodingButton.textContent).toContain("Overdue");
+  });
+
+  it("supports field-based color coding via searchable field selector", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        details: { mappedId: "11", fieldValues: { "System.AreaPath": "Team/A" } }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Second Item",
+        details: { mappedId: "12", fieldValues: { "System.AreaPath": "Team/B" } }
+      }
+    ];
+
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const colorCodingButton = screen.getByLabelText("Color coding");
+    await user.click(colorCodingButton);
+    await user.type(screen.getByLabelText("Search color coding"), "areapath");
+    await user.click(screen.getByRole("button", { name: /AreaPath/ }));
+
+    const bars = container.querySelectorAll("rect.timeline-bar");
+    expect(bars).toHaveLength(2);
+    expect((bars[0] as SVGRectElement).style.fill).not.toBe((bars[1] as SVGRectElement).style.fill);
+  });
+
+  it("updates settings value list when switching selected field from color coding dropdown", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        details: {
+          mappedId: "11",
+          fieldValues: {
+            "Custom.Team": "Alpha",
+            "Custom.Stream": "Platform"
+          }
+        }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Second Item",
+        details: {
+          mappedId: "12",
+          fieldValues: {
+            "Custom.Team": "Beta",
+            "Custom.Stream": "Business"
+          }
+        }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getByText("Alpha")).toBeTruthy();
+    expect(screen.getByText("Beta")).toBeTruthy();
+    expect(screen.queryByText("Platform")).toBeNull();
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.clear(screen.getByLabelText("Search color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "stream");
+    await user.click(screen.getByRole("button", { name: /Stream/ }));
+
+    expect(screen.getByText("Platform")).toBeTruthy();
+    expect(screen.getByText("Business")).toBeTruthy();
+    expect(screen.queryByText("Alpha")).toBeNull();
+  });
+
+  it("does not show stale field value list in settings when switching to status mode", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        details: { mappedId: "11", fieldValues: { "Custom.Team": "Alpha" } }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getByText("Alpha")).toBeTruthy();
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.clear(screen.getByLabelText("Search color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "status");
+    await user.click(screen.getByRole("button", { name: /Status/ }));
+
+    expect(screen.queryByText("Alpha")).toBeNull();
+    expect(screen.getByText("Mode: Status")).toBeTruthy();
+    expect(screen.getByText("Active")).toBeTruthy();
+    expect(screen.getByText("New")).toBeTruthy();
+  });
+
+  it("selects filtered field option on Enter so settings use that field", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        details: { mappedId: "11", fieldValues: { "Custom.Team": "Alpha" } }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    const search = screen.getByLabelText("Search color coding");
+    await user.type(search, "team");
+    await user.keyboard("{Enter}");
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getAllByText(/Field: Custom\.Team/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Alpha")).toBeTruthy();
+  });
+
+  it("uses full field ref for settings when selecting field from dropdown", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        state: { code: "Active", badge: "A", color: "#1d4ed8" },
+        details: {
+          mappedId: "11",
+          fieldValues: {
+            "System.State": "Active"
+          }
+        }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "state");
+    await user.keyboard("{Enter}");
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getByText("Active selection: Field: State")).toBeTruthy();
+    expect(screen.getByText("Active")).toBeTruthy();
+  });
+
+  it("shows person values in settings and allows person color mapping", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        details: { mappedId: "11", assignedTo: "Alice" }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Second Item",
+        details: { mappedId: "12", assignedTo: "Bob" }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "person");
+    await user.click(screen.getByRole("button", { name: /Person/ }));
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getByText("Mode: Person")).toBeTruthy();
+    expect(screen.getByText("Alice")).toBeTruthy();
+    expect(screen.getByText("Bob")).toBeTruthy();
+  });
+
+  it("shows status values in settings and allows status color mapping", async () => {
+    const user = userEvent.setup();
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        state: { code: "Doing", badge: "D", color: "#007acc" },
+        details: { mappedId: "11", assignedTo: "Alice" }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Second Item",
+        state: { code: "Done", badge: "X", color: "#339933" },
+        details: { mappedId: "12", assignedTo: "Bob" }
+      }
+    ];
+
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Color coding"));
+    await user.type(screen.getByLabelText("Search color coding"), "status");
+    await user.click(screen.getByRole("button", { name: /Status/ }));
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    expect(screen.getByText("Mode: Status")).toBeTruthy();
+    expect(screen.getByText("Doing")).toBeTruthy();
+    expect(screen.getByText("Done")).toBeTruthy();
+
+    const doingColorInput = screen.getByLabelText("Color for Doing") as HTMLInputElement;
+    fireEvent.change(doingColorInput, { target: { value: "#ff0000" } });
+
+    const bars = container.querySelectorAll("rect.timeline-bar");
+    expect((bars[0] as SVGRectElement).style.fill).toBe("rgb(255, 0, 0)");
   });
 
   it("shows loading state in refresh button while refresh is in progress", () => {

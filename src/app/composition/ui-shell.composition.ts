@@ -51,6 +51,17 @@ export type QueryIntakeTransport = {
     operationCount: number;
     reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
   }>;
+  linkDependency: (request: {
+    predecessorWorkItemId: number;
+    successorWorkItemId: number;
+    action: "add" | "remove";
+  }) => Promise<{
+    accepted: boolean;
+    mode: "NO_OP" | "EXECUTED";
+    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
+    operationCount: number;
+    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  }>;
   updateWorkItemDetails: (request: {
     targetWorkItemId: number;
     title: string;
@@ -150,6 +161,13 @@ export function createLocalUiShellController(params: {
       mode: "NO_OP",
       commandKind: "WORK_ITEM_PATCH",
       operationCount: 0,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    linkDependency: async (_request) => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "DEPENDENCY_LINK",
+      operationCount: 1,
       reasonCode: "WRITE_DISABLED"
     }),
     updateWorkItemDetails: async () => ({

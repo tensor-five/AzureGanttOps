@@ -3,8 +3,12 @@ import React from "react";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
+  hydrateTimelineColorCodingPreference,
   loadLastTimelineColorCoding,
+  loadTimelineFieldColorCodingConfig,
   saveLastTimelineColorCoding,
+  saveTimelineFieldColorCodingConfig,
+  type TimelineFieldColorCodingConfig,
   type TimelineColorCoding
 } from "./timeline-color-coding-preference.js";
 import {
@@ -31,6 +35,8 @@ export type TimelinePaneProps = {
     startDate: string;
     endDate: string;
   }) => Promise<void>;
+  onCreateDependency?: (input: { predecessorWorkItemId: number; successorWorkItemId: number }) => Promise<void>;
+  onRemoveDependency?: (input: { predecessorWorkItemId: number; successorWorkItemId: number }) => Promise<void>;
   onUpdateWorkItemSchedule?: (input: {
     targetWorkItemId: number;
     startDate: string;
@@ -70,6 +76,22 @@ type UnscheduledDropPreview = {
   endDate: Date;
 };
 
+type ActiveDependencyDrag = {
+  pointerId: number;
+  sourceWorkItemId: number;
+  pointerX: number;
+  pointerY: number;
+  hoveredTargetWorkItemId: number | null;
+};
+
+type DependencyViewMode = "edit" | "show" | "none";
+
+type SelectedDependency = {
+  predecessorWorkItemId: number;
+  successorWorkItemId: number;
+  dependencyType: "FS";
+};
+
 type TimelineZoomLevel = "week" | "month";
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
@@ -96,26 +118,119 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [dayWidthPx, setDayWidthPx] = React.useState<number>(DAY_WIDTH_WEEK_PX);
   const [activeScheduleDrag, setActiveScheduleDrag] = React.useState<ActiveScheduleDrag | null>(null);
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
+  const [activeDependencyDrag, setActiveDependencyDrag] = React.useState<ActiveDependencyDrag | null>(null);
   const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
+  const [dependencyViewMode, setDependencyViewMode] = React.useState<DependencyViewMode>("show");
+  const [selectedDependency, setSelectedDependency] = React.useState<SelectedDependency | null>(null);
   const [detailsCollapsed, setDetailsCollapsed] = React.useState(false);
   const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
+    loadTimelineFieldColorCodingConfig()
+  );
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = React.useState<string | null>(() =>
+    loadTimelineFieldColorCodingConfig().fieldRef
+  );
+  const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = React.useState("");
   const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
 
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
+  const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
   const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
   const initialViewportAppliedRef = React.useRef(false);
+  const dependencyMarkerReactId = React.useId();
+  const dependencyMarkerId = React.useMemo(
+    () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
+    [dependencyMarkerReactId]
+  );
+  const dependencyAlertMarkerId = React.useMemo(
+    () => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`,
+    [dependencyMarkerReactId]
+  );
 
-  const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule);
+  const dependencyMode = dependencyViewMode === "edit";
+  const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
+  const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
+
+  React.useEffect(() => {
+    hydrateTimelineColorCodingPreference((mode) => {
+      setColorCoding(mode);
+      const config = loadTimelineFieldColorCodingConfig();
+      setFieldColorCoding(config);
+      if (config.fieldRef) {
+        setLastSelectedFieldRef(config.fieldRef);
+      }
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (!colorCodingDropdownOpen) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) {
+        return;
+      }
+
+      const control = colorCodingControlRef.current;
+      if (control && control.contains(target)) {
+        return;
+      }
+
+      setColorCodingDropdownOpen(false);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setColorCodingDropdownOpen(false);
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [colorCodingDropdownOpen]);
 
   React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
     setActiveUnschedulableDrag(null);
+    setActiveDependencyDrag(null);
     setUnscheduledDropPreview(null);
+    setSelectedDependency(null);
     initialViewportAppliedRef.current = false;
   }, [props.timeline]);
+
+  React.useEffect(() => {
+    if (dependencyViewMode === "none") {
+      setSelectedDependency(null);
+    }
+  }, [dependencyViewMode]);
+
+  React.useEffect(() => {
+    if (!selectedDependency || !effectiveTimeline) {
+      return;
+    }
+
+    const stillPresent = effectiveTimeline.dependencies.some(
+      (dependency) =>
+        dependency.predecessorWorkItemId === selectedDependency.predecessorWorkItemId &&
+        dependency.successorWorkItemId === selectedDependency.successorWorkItemId &&
+        dependency.dependencyType === selectedDependency.dependencyType
+    );
+    if (!stillPresent) {
+      setSelectedDependency(null);
+    }
+  }, [effectiveTimeline, selectedDependency]);
 
   React.useEffect(() => {
     const selectableItems = [
@@ -161,9 +276,27 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   );
 
   const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
-  const colorByWorkItemId = React.useMemo(
-    () => buildColorByWorkItemId(effectiveTimeline, colorCoding),
+  const availableFieldRefs = React.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const colorCodingOptions = React.useMemo(
+    () => buildColorCodingOptions(availableFieldRefs),
+    [availableFieldRefs]
+  );
+  const filteredColorCodingOptions = React.useMemo(
+    () => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft),
+    [colorCodingOptions, colorCodingSearchDraft]
+  );
+  const selectedFieldRef = colorCoding === "field" ? (fieldColorCoding.fieldRef ?? lastSelectedFieldRef) : null;
+  const selectedFieldValueStats = React.useMemo(
+    () => listFieldValueStats(effectiveTimeline, selectedFieldRef),
+    [effectiveTimeline, selectedFieldRef]
+  );
+  const selectedModeValueStats = React.useMemo(
+    () => listModeValueStats(effectiveTimeline, colorCoding),
     [effectiveTimeline, colorCoding]
+  );
+  const colorByWorkItemId = React.useMemo(
+    () => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding),
+    [effectiveTimeline, colorCoding, fieldColorCoding]
   );
   const chartModel = React.useMemo(
     () => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx),
@@ -250,11 +383,30 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() !== "r" || event.ctrlKey || event.metaKey || event.altKey) {
+      if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
 
       if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if ((event.key === "Delete" || event.key === "Backspace") && selectedDependency && props.onRemoveDependency) {
+        event.preventDefault();
+        void props
+          .onRemoveDependency({
+            predecessorWorkItemId: selectedDependency.predecessorWorkItemId,
+            successorWorkItemId: selectedDependency.successorWorkItemId
+          })
+          .catch((error) => {
+            const message = error instanceof Error ? error.message : "Unknown error";
+            setAdoptScheduleError(message);
+          });
+        setSelectedDependency(null);
+        return;
+      }
+
+      if (event.key.toLowerCase() !== "r") {
         return;
       }
 
@@ -269,7 +421,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [props.isRefreshing, props.onRetryRefresh]);
+  }, [props.isRefreshing, props.onRemoveDependency, props.onRetryRefresh, selectedDependency]);
 
   const handleChartWheel = React.useCallback(
     (event: WheelEvent) => {
@@ -323,7 +475,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [handleChartWheel]);
 
   const geometryByWorkItemId = React.useMemo(() => {
-    const byId = new Map<number, { x: number; y: number; width: number; midY: number }>();
+    const byId = new Map<number, BarGeometry>();
     chartModel.bars.forEach((bar, index) => {
       const y = CHART_TOP_PADDING + index * CHART_ROW_HEIGHT;
       const x = CHART_LEFT_GUTTER + bar.x;
@@ -331,6 +483,76 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     });
     return byId;
   }, [chartModel.bars]);
+  const chartBarByWorkItemId = React.useMemo(() => {
+    const byId = new Map<number, VisualTimelineBar>();
+    chartModel.bars.forEach((bar) => {
+      byId.set(bar.workItemId, bar);
+    });
+    return byId;
+  }, [chartModel.bars]);
+  const dependencyConnectors = React.useMemo(() => {
+    if (!dependencyVisible || !effectiveTimeline) {
+      return [] as VisualDependencyConnector[];
+    }
+
+    return effectiveTimeline.dependencies.flatMap((dependency, index) => {
+      const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
+      const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
+      if (!from || !to) {
+        return [];
+      }
+      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+      const isViolated =
+        predecessorBar !== undefined &&
+        successorBar !== undefined &&
+        predecessorBar.end.getTime() > successorBar.start.getTime();
+      const predecessorToSuccessorGapDays =
+        predecessorBar !== undefined && successorBar !== undefined ? dayDiff(predecessorBar.end, successorBar.start) : null;
+      const forceNearGapDetour =
+        predecessorToSuccessorGapDays !== null &&
+        predecessorToSuccessorGapDays >= 1 &&
+        predecessorToSuccessorGapDays <= DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR;
+
+      return [
+        {
+          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${index}`,
+          path: buildDependencyConnectorPath(from, to, index, { forceNearGapDetour }),
+          markerEnd: `url(#${isViolated ? dependencyAlertMarkerId : dependencyMarkerId})`,
+          predecessorWorkItemId: dependency.predecessorWorkItemId,
+          successorWorkItemId: dependency.successorWorkItemId,
+          dependencyType: dependency.dependencyType,
+          isViolated
+        }
+      ];
+    });
+  }, [chartBarByWorkItemId, dependencyAlertMarkerId, dependencyMarkerId, dependencyVisible, effectiveTimeline, geometryByWorkItemId]);
+  const activeDependencyDragPreview = React.useMemo(() => {
+    if (!activeDependencyDrag) {
+      return null;
+    }
+
+    const from = geometryByWorkItemId.get(activeDependencyDrag.sourceWorkItemId);
+    if (!from) {
+      return null;
+    }
+
+    const hoveredGeometry =
+      activeDependencyDrag.hoveredTargetWorkItemId === null
+        ? null
+        : geometryByWorkItemId.get(activeDependencyDrag.hoveredTargetWorkItemId) ?? null;
+    const targetX = hoveredGeometry ? hoveredGeometry.x : activeDependencyDrag.pointerX;
+    const targetY = hoveredGeometry ? hoveredGeometry.midY : activeDependencyDrag.pointerY;
+    const hoveredTargetIsValid =
+      hoveredGeometry !== null &&
+      activeDependencyDrag.hoveredTargetWorkItemId !== null &&
+      activeDependencyDrag.hoveredTargetWorkItemId !== activeDependencyDrag.sourceWorkItemId;
+
+    return {
+      path: buildDependencyConnectorToPointPath(from, targetX, targetY, activeDependencyDrag.sourceWorkItemId),
+      hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
+    };
+  }, [activeDependencyDrag, geometryByWorkItemId]);
 
   const updateEditedSchedule = React.useCallback((workItemId: number, startDate: Date, endDate: Date) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
@@ -375,9 +597,65 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     },
     [canEditSchedule, selectWorkItem]
   );
+  const beginDependencyDrag = React.useCallback(
+    (input: {
+      event: React.PointerEvent<SVGElement>;
+      sourceWorkItemId: number;
+    }) => {
+      if (!dependencyMode || input.event.button !== 0) {
+        return;
+      }
+
+      const sourceGeometry = geometryByWorkItemId.get(input.sourceWorkItemId);
+      if (!sourceGeometry) {
+        return;
+      }
+
+      const svgPoint = clientPointToSvg(input.event.clientX, input.event.clientY, chartSvgRef.current);
+      input.event.preventDefault();
+      input.event.stopPropagation();
+      if ("setPointerCapture" in input.event.currentTarget) {
+        input.event.currentTarget.setPointerCapture(input.event.pointerId);
+      }
+
+      setAdoptScheduleError(null);
+      selectWorkItem(input.sourceWorkItemId);
+      setActiveDependencyDrag({
+        pointerId: input.event.pointerId,
+        sourceWorkItemId: input.sourceWorkItemId,
+        pointerX: svgPoint.x,
+        pointerY: svgPoint.y,
+        hoveredTargetWorkItemId: null
+      });
+    },
+    [dependencyMode, geometryByWorkItemId, selectWorkItem]
+  );
 
   const handleChartPointerMove = React.useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
+      const activeDependency = activeDependencyDrag;
+      if (activeDependency && event.pointerId === activeDependency.pointerId) {
+        const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
+        const hoveredTargetWorkItemId = resolveHoveredDependencyTargetWorkItemId(
+          geometryByWorkItemId,
+          svgPoint.x,
+          svgPoint.y,
+          activeDependency.sourceWorkItemId
+        );
+
+        setActiveDependencyDrag((current) =>
+          current
+            ? {
+                ...current,
+                pointerX: svgPoint.x,
+                pointerY: svgPoint.y,
+                hoveredTargetWorkItemId
+              }
+            : current
+        );
+        return;
+      }
+
       const active = activeScheduleDrag;
       if (!active || event.pointerId !== active.pointerId) {
         return;
@@ -392,7 +670,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
       updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
     },
-    [activeScheduleDrag, chartModel.dayWidthPx, updateEditedSchedule]
+    [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateEditedSchedule]
   );
 
   const persistDraggedSchedule = React.useCallback(
@@ -436,6 +714,28 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const finishActiveDrag = React.useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
+      const dependencyDrag = activeDependencyDrag;
+      if (dependencyDrag && event.pointerId === dependencyDrag.pointerId) {
+        setActiveDependencyDrag(null);
+        const successorWorkItemId = dependencyDrag.hoveredTargetWorkItemId;
+        if (
+          successorWorkItemId !== null &&
+          successorWorkItemId !== dependencyDrag.sourceWorkItemId &&
+          props.onCreateDependency
+        ) {
+          void props
+            .onCreateDependency({
+              predecessorWorkItemId: dependencyDrag.sourceWorkItemId,
+              successorWorkItemId
+            })
+            .catch((error) => {
+              const message = error instanceof Error ? error.message : "Unknown error";
+              setAdoptScheduleError(message);
+            });
+        }
+        return;
+      }
+
       const active = activeScheduleDrag;
       if (!active || event.pointerId !== active.pointerId) {
         return;
@@ -444,7 +744,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       setActiveScheduleDrag(null);
       void persistDraggedSchedule(active);
     },
-    [activeScheduleDrag, persistDraggedSchedule]
+    [activeDependencyDrag, activeScheduleDrag, persistDraggedSchedule, props]
   );
 
   const persistWorkItemSchedule = React.useCallback(
@@ -484,11 +784,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const startUnscheduledDrag = React.useCallback(
     (event: React.DragEvent<HTMLElement>, workItemId: number, fixedEndDate: Date | null) => {
+      if (dependencyMode) {
+        return;
+      }
       event.dataTransfer.setData("text/plain", String(workItemId));
       event.dataTransfer.effectAllowed = "move";
       setActiveUnschedulableDrag({ workItemId, fixedEndDate });
     },
-    []
+    [dependencyMode]
   );
 
   const clearUnscheduledDrag = React.useCallback(() => {
@@ -536,6 +839,105 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]
   );
 
+  const updateFieldColorCoding = React.useCallback(
+    (next: TimelineFieldColorCodingConfig) => {
+      setFieldColorCoding(next);
+      saveTimelineFieldColorCodingConfig(next);
+    },
+    []
+  );
+
+  const selectFieldForColorCoding = React.useCallback(
+    (fieldRef: string | null) => {
+      const normalizedFieldRef = fieldRef && fieldRef.trim().length > 0 ? fieldRef.trim() : null;
+      if (normalizedFieldRef) {
+        setLastSelectedFieldRef(normalizedFieldRef);
+      }
+      updateFieldColorCoding({
+        fieldRef: normalizedFieldRef,
+        valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {}
+      });
+    },
+    [fieldColorCoding.valueColors, updateFieldColorCoding]
+  );
+
+  const updateFieldValueColor = React.useCallback(
+    (valueKey: string, color: string | null) => {
+      const nextValueColors = { ...fieldColorCoding.valueColors };
+      const scopedKey = toScopedFieldValueColorKey(fieldColorCoding.fieldRef, valueKey);
+      if (scopedKey) {
+        if (!color) {
+          delete nextValueColors[scopedKey];
+        } else {
+          nextValueColors[scopedKey] = color;
+        }
+      }
+
+      if (!color) {
+        delete nextValueColors[valueKey];
+      } else {
+        nextValueColors[valueKey] = color;
+      }
+
+      updateFieldColorCoding({
+        fieldRef: fieldColorCoding.fieldRef,
+        valueColors: nextValueColors
+      });
+    },
+    [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]
+  );
+
+  const updateModeValueColor = React.useCallback(
+    (mode: TimelineColorCoding, valueKey: string, color: string | null) => {
+      const scopedKey = toScopedModeValueColorKey(mode, valueKey);
+      if (!scopedKey) {
+        return;
+      }
+
+      const nextValueColors = { ...fieldColorCoding.valueColors };
+      if (!color) {
+        delete nextValueColors[scopedKey];
+        delete nextValueColors[valueKey];
+      } else {
+        nextValueColors[scopedKey] = color;
+      }
+
+      updateFieldColorCoding({
+        fieldRef: fieldColorCoding.fieldRef,
+        valueColors: nextValueColors
+      });
+    },
+    [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]
+  );
+
+  const selectColorCodingOption = React.useCallback(
+    (option: ColorCodingOption) => {
+      setColorCoding(option.mode);
+      saveLastTimelineColorCoding(option.mode);
+      if (option.mode === "field") {
+        selectFieldForColorCoding(option.fieldRef);
+      } else {
+        updateFieldColorCoding({
+          fieldRef: null,
+          valueColors: fieldColorCoding.valueColors
+        });
+      }
+      setColorCodingDropdownOpen(false);
+      setColorCodingSearchDraft("");
+    },
+    [fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]
+  );
+
+  const applyFirstFilteredColorCodingOption = React.useCallback((): boolean => {
+    const preferredOption = pickPreferredColorCodingOption(filteredColorCodingOptions, colorCodingSearchDraft);
+    if (!preferredOption) {
+      return false;
+    }
+
+    selectColorCodingOption(preferredOption);
+    return true;
+  }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
+
   const detailProps: TimelineDetailsPanelProps = {
     timeline: effectiveTimeline,
     selectedWorkItemId,
@@ -551,6 +953,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const barCount = chartModel.bars.length;
   const unscheduledCount = effectiveTimeline?.unschedulable.length ?? 0;
+  const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
+  const isFieldColorCodingMode = colorCoding === "field";
+  const isConfigurableModeColorCoding = colorCoding === "person" || colorCoding === "status";
 
   return React.createElement(
     "section",
@@ -592,7 +997,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         React.createElement(
           "div",
           {
-            className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom",
+            className:
+              "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
             role: "group",
             "aria-label": "Timeline zoom"
           },
@@ -624,26 +1030,121 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           )
         ),
         React.createElement(
-          "label",
-          { className: "timeline-color-coding-control" },
-          React.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"),
+          "div",
+          {
+            className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-dependency",
+            role: "group",
+            "aria-label": "Dependency mode"
+          },
           React.createElement(
-            "select",
+            "button",
             {
-              className: "timeline-color-coding-select",
-              "aria-label": "Color coding",
-              value: colorCoding,
-              onChange: (event) => {
-                const nextMode = (event.target as HTMLSelectElement).value as TimelineColorCoding;
-                setColorCoding(nextMode);
-                saveLastTimelineColorCoding(nextMode);
+              type: "button",
+              className: dependencyViewMode === "edit" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+              "aria-pressed": dependencyViewMode === "edit",
+              "aria-label": "Cycle dependency mode",
+              onClick: () => {
+                setDependencyViewMode((current) =>
+                  current === "show" ? "edit" : current === "edit" ? "none" : "show"
+                );
+                setActiveDependencyDrag(null);
+                setActiveScheduleDrag(null);
+                setActiveUnschedulableDrag(null);
+                setUnscheduledDropPreview(null);
+                setSelectedDependency(null);
               }
             },
-            React.createElement("option", { value: "none" }, "None"),
-            React.createElement("option", { value: "person" }, "Person"),
-            React.createElement("option", { value: "status" }, "Status"),
-            React.createElement("option", { value: "parent" }, "Parent"),
-            React.createElement("option", { value: "overdue" }, "Overdue")
+            dependencyViewMode === "edit"
+              ? "Edit Dependency"
+              : dependencyViewMode === "show"
+                ? "Show Dependency"
+                : "No Dependency"
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "timeline-color-coding-control timeline-control-cluster", ref: colorCodingControlRef },
+          React.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+              "aria-label": "Color coding",
+              "aria-haspopup": "listbox",
+              "aria-expanded": colorCodingDropdownOpen ? "true" : "false",
+              onClick: () => {
+                setColorCodingDropdownOpen((current) => !current);
+                setColorCodingSearchDraft("");
+              }
+            },
+            selectedColorCodingLabel
+          ),
+          colorCodingDropdownOpen
+            ? React.createElement(
+                "div",
+                { className: "timeline-color-coding-dropdown", role: "listbox", "aria-label": "Color coding options" },
+                React.createElement("input", {
+                  type: "search",
+                  className: "timeline-color-coding-dropdown-search",
+                  "aria-label": "Search color coding",
+                  placeholder: "Search mode or field",
+                  value: colorCodingSearchDraft,
+                  onChange: (event) => {
+                    setColorCodingSearchDraft((event.target as HTMLInputElement).value);
+                  },
+                  onKeyDown: (event) => {
+                    if (event.key !== "Enter") {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    applyFirstFilteredColorCodingOption();
+                  }
+                }),
+                React.createElement(
+                  "div",
+                  { className: "timeline-color-coding-dropdown-options" },
+                  filteredColorCodingOptions.length === 0
+                    ? React.createElement("p", { className: "timeline-details-muted" }, "No matching option.")
+                    : filteredColorCodingOptions.map((option) =>
+                        React.createElement(
+                          "button",
+                          {
+                            key: option.key,
+                            type: "button",
+                            className:
+                              option.mode === colorCoding &&
+                              ((option.mode !== "field" && colorCoding !== "field") || option.fieldRef === fieldColorCoding.fieldRef)
+                                ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                : "timeline-color-coding-option",
+                            onClick: () => {
+                              selectColorCodingOption(option);
+                            }
+                          },
+                          React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
+                          option.subtitle
+                            ? React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                            : null
+                        )
+                      )
+                )
+              )
+            : null,
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "timeline-color-coding-settings-button",
+              "aria-label": "Open color coding settings",
+              onClick: () => {
+                if (colorCodingDropdownOpen && colorCodingSearchDraft.trim().length > 0) {
+                  applyFirstFilteredColorCodingOption();
+                }
+                setColorSettingsOpen(true);
+              }
+            },
+            "Settings"
           )
         )
       ),
@@ -680,6 +1181,154 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             className: "timeline-update-error"
           },
           `Save failed: ${adoptScheduleError}`
+        )
+      : null,
+    colorSettingsOpen
+      ? React.createElement(
+          "div",
+          {
+            className: "timeline-color-coding-modal-backdrop",
+            role: "presentation",
+            onClick: () => {
+              setColorSettingsOpen(false);
+            }
+          },
+          React.createElement(
+            "section",
+            {
+              className: "timeline-color-coding-modal",
+              role: "dialog",
+              "aria-modal": "true",
+              "aria-label": "Color coding settings",
+              onClick: (event) => {
+                event.stopPropagation();
+              }
+            },
+            React.createElement(
+              "header",
+              { className: "timeline-color-coding-modal-header" },
+              React.createElement("h4", null, "Color coding settings"),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "timeline-color-coding-settings-button",
+                  onClick: () => {
+                    setColorSettingsOpen(false);
+                  }
+                },
+                "Close"
+              )
+            ),
+            React.createElement(
+              "p",
+              { className: "timeline-color-coding-active-selection" },
+              `Active selection: ${resolveSelectedColorCodingLabel(colorCoding, selectedFieldRef)}`
+            ),
+            React.createElement(
+              "p",
+              { className: "timeline-color-coding-modal-field" },
+              isFieldColorCodingMode
+                ? selectedFieldRef
+                  ? `Field: ${selectedFieldRef}`
+                  : "Field: Select a field from the Color coding dropdown first."
+                : `Mode: ${resolveSelectedColorCodingLabel(colorCoding, selectedFieldRef)}`
+            ),
+            isFieldColorCodingMode && selectedFieldRef
+              ? React.createElement(
+                  "div",
+                  { className: "timeline-color-coding-value-grid", key: `field-values-${selectedFieldRef}` },
+                  selectedFieldValueStats.length === 0
+                    ? React.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.")
+                    : selectedFieldValueStats.map((entry) => {
+                        const scopedKey = toScopedFieldValueColorKey(selectedFieldRef, entry.key);
+                        const customColor =
+                          (scopedKey ? fieldColorCoding.valueColors[scopedKey] : null) ?? fieldColorCoding.valueColors[entry.key] ?? null;
+                        const effectiveColor = customColor ?? entry.defaultColor;
+                        return React.createElement(
+                          "div",
+                          { key: entry.key, className: "timeline-color-coding-value-row" },
+                          React.createElement(
+                            "div",
+                            { className: "timeline-color-coding-value-meta" },
+                            React.createElement("strong", null, entry.label),
+                            React.createElement("span", null, `${entry.count} item(s)`)
+                          ),
+                          React.createElement("input", {
+                            type: "color",
+                            value: effectiveColor,
+                            "aria-label": `Color for ${entry.label}`,
+                            onChange: (event) => {
+                              updateFieldValueColor(entry.key, (event.target as HTMLInputElement).value);
+                            }
+                          }),
+                          React.createElement(
+                            "button",
+                            {
+                              type: "button",
+                              className: "timeline-color-coding-value-reset",
+                              onClick: () => {
+                                updateFieldValueColor(entry.key, null);
+                              }
+                            },
+                            "Auto"
+                          )
+                        );
+                      })
+                )
+              : isConfigurableModeColorCoding
+                ? React.createElement(
+                    "div",
+                    { className: "timeline-color-coding-value-grid", key: `mode-values-${colorCoding}` },
+                    selectedModeValueStats.length === 0
+                      ? React.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.")
+                      : selectedModeValueStats.map((entry) => {
+                          const scopedKey = toScopedModeValueColorKey(colorCoding, entry.key);
+                          const customColor =
+                            (scopedKey ? fieldColorCoding.valueColors[scopedKey] : null) ??
+                            fieldColorCoding.valueColors[entry.key] ??
+                            null;
+                          const effectiveColor = customColor ?? entry.defaultColor;
+
+                          return React.createElement(
+                            "div",
+                            { key: entry.key, className: "timeline-color-coding-value-row" },
+                            React.createElement(
+                              "div",
+                              { className: "timeline-color-coding-value-meta" },
+                              React.createElement("strong", null, entry.label),
+                              React.createElement("span", null, `${entry.count} item(s)`)
+                            ),
+                            React.createElement("input", {
+                              type: "color",
+                              value: effectiveColor,
+                              "aria-label": `Color for ${entry.label}`,
+                              onChange: (event) => {
+                                updateModeValueColor(colorCoding, entry.key, (event.target as HTMLInputElement).value);
+                              }
+                            }),
+                            React.createElement(
+                              "button",
+                              {
+                                type: "button",
+                                className: "timeline-color-coding-value-reset",
+                                onClick: () => {
+                                  updateModeValueColor(colorCoding, entry.key, null);
+                                }
+                              },
+                              "Auto"
+                            )
+                          );
+                        })
+                  )
+              : React.createElement(
+                  "p",
+                  { className: "timeline-details-muted" },
+                  isFieldColorCodingMode
+                    ? "Select a field to configure value-to-color mapping."
+                    : "This mode does not require field selection."
+                )
+          )
         )
       : null,
     React.createElement(
@@ -723,6 +1372,44 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   onDragOver: handleChartDragOver,
                   onDrop: handleChartDrop
                 },
+                React.createElement(
+                  "defs",
+                  null,
+                  React.createElement(
+                    "marker",
+                    {
+                      id: dependencyMarkerId,
+                      viewBox: "0 0 6 8",
+                      refX: 5.6,
+                      refY: 4,
+                      markerWidth: 6,
+                      markerHeight: 6,
+                      markerUnits: "strokeWidth",
+                      orient: "auto"
+                    },
+                    React.createElement("path", {
+                      d: "M 0 0 L 6 4 L 0 8",
+                      className: "timeline-dependency-arrowhead"
+                    })
+                  ),
+                  React.createElement(
+                    "marker",
+                    {
+                      id: dependencyAlertMarkerId,
+                      viewBox: "0 0 6 8",
+                      refX: 5.6,
+                      refY: 4,
+                      markerWidth: 6,
+                      markerHeight: 6,
+                      markerUnits: "strokeWidth",
+                      orient: "auto"
+                    },
+                    React.createElement("path", {
+                      d: "M 0 0 L 6 4 L 0 8",
+                      className: "timeline-dependency-arrowhead-alert"
+                    })
+                  )
+                ),
                 chartModel.currentPeriod
                   ? React.createElement("rect", {
                       x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
@@ -808,26 +1495,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       )
                     )
                   : null,
-                props.showDependencies
-                  ? effectiveTimeline?.dependencies.map((dependency, index) => {
-                      const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
-                      const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
-                      if (!from || !to) {
-                        return null;
-                      }
-
-                      const startX = from.x + from.width;
-                      const endX = to.x;
-                      const bendX = startX + Math.max(10, (endX - startX) / 2);
-                      const path = `M ${startX} ${from.midY} L ${bendX} ${from.midY} L ${bendX} ${to.midY} L ${endX} ${to.midY}`;
-
-                      return React.createElement("path", {
-                        key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${index}`,
-                        d: path,
-                        className: "timeline-dependency-line"
-                      });
-                    })
-                  : null,
                 chartModel.bars.map((bar, index) => {
                   const y = CHART_TOP_PADDING + index * CHART_ROW_HEIGHT;
                   const isSelected = selectedWorkItemId === bar.workItemId;
@@ -859,6 +1526,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         }
                       },
                       onPointerDown: (event) => {
+                        if (dependencyMode) {
+                          beginDependencyDrag({ event, sourceWorkItemId: bar.workItemId });
+                          return;
+                        }
                         void beginBarDrag({ event, mode: "move", bar });
                       }
                     }),
@@ -932,6 +1603,41 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         `${formatTickDate(unscheduledDropPreview.startDate)} → ${formatTickDate(unscheduledDropPreview.endDate)} (${dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate)}d)`
                       )
                     )
+                  : null,
+                dependencyConnectors.map((connector) => {
+                  const isSelected =
+                    selectedDependency?.predecessorWorkItemId === connector.predecessorWorkItemId &&
+                    selectedDependency?.successorWorkItemId === connector.successorWorkItemId &&
+                    selectedDependency?.dependencyType === connector.dependencyType;
+                  const className = [
+                    "timeline-dependency-line",
+                    connector.isViolated ? "timeline-dependency-line-violated" : "",
+                    isSelected ? "timeline-dependency-line-selected" : ""
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  return React.createElement("path", {
+                    key: connector.key,
+                    d: connector.path,
+                    className,
+                    markerEnd: connector.markerEnd,
+                    "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
+                    onClick: () => {
+                      setSelectedDependency({
+                        predecessorWorkItemId: connector.predecessorWorkItemId,
+                        successorWorkItemId: connector.successorWorkItemId,
+                        dependencyType: connector.dependencyType
+                      });
+                    }
+                  });
+                }),
+                activeDependencyDragPreview
+                  ? React.createElement("path", {
+                      d: activeDependencyDragPreview.path,
+                      className: "timeline-dependency-line timeline-dependency-line-draft",
+                      markerEnd: `url(#${dependencyMarkerId})`,
+                      "aria-label": "dependency-draft"
+                    })
                   : null
               )
             ),
@@ -969,7 +1675,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           },
                           "aria-label": label,
                           "aria-pressed": selectedWorkItemId === item.workItemId,
-                          draggable: true,
+                          draggable: !dependencyMode,
                           onDragStart: (event) => {
                             startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
                           },
@@ -978,7 +1684,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           },
                           onClick: () => {
                             setAdoptScheduleError(null);
-                            if (selectedWorkItemId !== null) {
+                            if (!dependencyMode && selectedWorkItemId !== null) {
                               void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
                                 const message = error instanceof Error ? error.message : "Unknown error";
                                 setAdoptScheduleError(message);
@@ -1031,6 +1737,16 @@ const APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
 const DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
 const OVERDUE_TIMELINE_COLOR = "#b91c1c";
 const OVERDUE_OK_TIMELINE_COLOR = "#475569";
+const DEPENDENCY_ENDPOINT_GAP_PX = 6;
+const DEPENDENCY_LEFT_APPROACH_PX = 16;
+const DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
+const DEPENDENCY_LANE_COUNT = 3;
+const DEPENDENCY_LANE_GAP_PX = 6;
+const DEPENDENCY_LANE_TOP_OFFSET_PX = 6;
+const DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
+const DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX = 4;
+const DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR = 2;
+const DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX = 9;
 const TIMELINE_CATEGORY_COLORS = [
   "#1d4ed8",
   "#0f766e",
@@ -1046,6 +1762,20 @@ const TIMELINE_CATEGORY_COLORS = [
   "#0f766e"
 ];
 
+type FieldValueStat = {
+  key: string;
+  label: string;
+  count: number;
+  defaultColor: string;
+};
+
+type BarGeometry = {
+  x: number;
+  y: number;
+  width: number;
+  midY: number;
+};
+
 type VisualTimelineBar = {
   workItemId: number;
   mappedId: string;
@@ -1057,6 +1787,16 @@ type VisualTimelineBar = {
   width: number;
   start: Date;
   end: Date;
+};
+
+type VisualDependencyConnector = {
+  key: string;
+  path: string;
+  markerEnd: string;
+  predecessorWorkItemId: number;
+  successorWorkItemId: number;
+  dependencyType: "FS";
+  isViolated: boolean;
 };
 
 type VisualChartModel = {
@@ -1210,7 +1950,8 @@ function buildVisualChartModel(
 
 function buildColorByWorkItemId(
   timeline: TimelineReadModel | null,
-  mode: TimelineColorCoding
+  mode: TimelineColorCoding,
+  fieldConfig: TimelineFieldColorCodingConfig
 ): Map<number, string> {
   const map = new Map<number, string>();
   if (!timeline) {
@@ -1224,6 +1965,7 @@ function buildColorByWorkItemId(
       endDate: bar.schedule.endDate,
       assignedTo: bar.details.assignedTo ?? null,
       parentWorkItemId: bar.details.parentWorkItemId ?? null,
+      fieldValues: bar.details.fieldValues ?? {},
       fallbackColor: bar.state.color
     })),
     ...timeline.unschedulable.map((item) => ({
@@ -1232,6 +1974,7 @@ function buildColorByWorkItemId(
       endDate: item.schedule?.endDate ?? null,
       assignedTo: item.details.assignedTo ?? null,
       parentWorkItemId: item.details.parentWorkItemId ?? null,
+      fieldValues: item.details.fieldValues ?? {},
       fallbackColor: item.state.color
     }))
   ];
@@ -1252,7 +1995,36 @@ function buildColorByWorkItemId(
 
   if (mode === "status") {
     items.forEach((item) => {
-      map.set(item.workItemId, item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+      const valueKey = fieldValueToStorageKey(item.stateCode);
+      const scopedKey = toScopedModeValueColorKey(mode, valueKey);
+      const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+      map.set(item.workItemId, customColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    });
+    return map;
+  }
+
+  if (mode === "field") {
+    const fieldRef = fieldConfig.fieldRef?.trim() ?? "";
+    if (fieldRef.length === 0) {
+      items.forEach((item) => {
+        map.set(item.workItemId, DEFAULT_NEUTRAL_TIMELINE_COLOR);
+      });
+      return map;
+    }
+
+    const categoryByWorkItemId = new Map<number, string>();
+    items.forEach((item) => {
+      categoryByWorkItemId.set(item.workItemId, fieldValueToCategoryLabel(item.fieldValues[fieldRef]));
+    });
+    const categoryColorMap = buildCategoricalColorMap([...categoryByWorkItemId.values()]);
+
+    items.forEach((item) => {
+      const category = categoryByWorkItemId.get(item.workItemId) ?? "Empty";
+      const valueKey = fieldValueToStorageKey(item.fieldValues[fieldRef]);
+      const scopedKey = toScopedFieldValueColorKey(fieldRef, valueKey);
+      const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+      const categoryColor = categoryColorMap.get(category) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR;
+      map.set(item.workItemId, customColor ?? categoryColor);
     });
     return map;
   }
@@ -1275,10 +2047,260 @@ function buildColorByWorkItemId(
   items.forEach((item) => {
     const category = categoryByWorkItemId.get(item.workItemId);
     const categoryColor = category ? categoryColorMap.get(category) : null;
-    map.set(item.workItemId, categoryColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    const valueKey = fieldValueToStorageKey(category);
+    const scopedKey = toScopedModeValueColorKey(mode, valueKey);
+    const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+    map.set(item.workItemId, customColor ?? categoryColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
   });
 
   return map;
+}
+
+type ColorCodingOption = {
+  key: string;
+  mode: TimelineColorCoding;
+  fieldRef: string | null;
+  label: string;
+  subtitle?: string;
+  searchText: string;
+};
+
+function buildColorCodingOptions(fieldRefs: string[]): ColorCodingOption[] {
+  const modeOptions: ColorCodingOption[] = [
+    { key: "mode:none", mode: "none", fieldRef: null, label: "None", subtitle: "Mode", searchText: "none mode" },
+    { key: "mode:person", mode: "person", fieldRef: null, label: "Person", subtitle: "Mode", searchText: "person mode assignee assignedto" },
+    { key: "mode:status", mode: "status", fieldRef: null, label: "Status", subtitle: "Mode", searchText: "status mode state" },
+    { key: "mode:parent", mode: "parent", fieldRef: null, label: "Parent", subtitle: "Mode", searchText: "parent mode hierarchy" },
+    { key: "mode:overdue", mode: "overdue", fieldRef: null, label: "Overdue", subtitle: "Mode", searchText: "overdue mode late due date" }
+  ];
+
+  const fieldOptions = fieldRefs.map((fieldRef) => {
+    const fieldDisplayName = getFieldDisplayName(fieldRef);
+    return {
+      key: `field:${fieldRef}`,
+      mode: "field" as const,
+      fieldRef,
+      label: fieldDisplayName,
+      subtitle: fieldRef,
+      searchText: `field ${fieldDisplayName} ${fieldRef}`.toLowerCase()
+    };
+  });
+
+  return [...modeOptions, ...fieldOptions];
+}
+
+function filterColorCodingOptions(options: ColorCodingOption[], search: string): ColorCodingOption[] {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options;
+  }
+
+  return options
+    .filter((option) => option.searchText.includes(normalizedSearch))
+    .sort((left, right) => {
+      if (left.mode === "field" && right.mode !== "field") {
+        return -1;
+      }
+      if (left.mode !== "field" && right.mode === "field") {
+        return 1;
+      }
+
+      return left.label.localeCompare(right.label);
+    });
+}
+
+function pickPreferredColorCodingOption(
+  options: ColorCodingOption[],
+  search: string
+): ColorCodingOption | null {
+  if (options.length === 0) {
+    return null;
+  }
+
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options[0];
+  }
+
+  const firstField = options.find((option) => option.mode === "field");
+  return firstField ?? options[0];
+}
+
+function resolveSelectedColorCodingLabel(mode: TimelineColorCoding, fieldRef: string | null): string {
+  if (mode === "field") {
+    return fieldRef ? `Field: ${getFieldDisplayName(fieldRef)}` : "Field";
+  }
+
+  if (mode === "none") {
+    return "None";
+  }
+  if (mode === "person") {
+    return "Person";
+  }
+  if (mode === "status") {
+    return "Status";
+  }
+  if (mode === "parent") {
+    return "Parent";
+  }
+  return "Overdue";
+}
+
+function getFieldDisplayName(fieldRef: string): string {
+  const trimmed = fieldRef.trim();
+  if (trimmed.length === 0) {
+    return fieldRef;
+  }
+
+  const parts = trimmed.split(".");
+  const lastPart = parts[parts.length - 1]?.trim();
+  return lastPart && lastPart.length > 0 ? lastPart : trimmed;
+}
+
+function listAvailableColorCodingFields(timeline: TimelineReadModel | null): string[] {
+  if (!timeline) {
+    return [];
+  }
+
+  const set = new Set<string>();
+  const register = (fieldValues: Record<string, string | number | null> | undefined): void => {
+    if (!fieldValues) {
+      return;
+    }
+
+    Object.keys(fieldValues).forEach((fieldRef) => {
+      if (fieldRef.trim().length > 0) {
+        set.add(fieldRef);
+      }
+    });
+  };
+
+  timeline.bars.forEach((bar) => register(bar.details.fieldValues));
+  timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+function listFieldValueStats(timeline: TimelineReadModel | null, fieldRef: string | null): FieldValueStat[] {
+  if (!timeline || !fieldRef) {
+    return [];
+  }
+
+  const trimmedFieldRef = fieldRef.trim();
+  if (trimmedFieldRef.length === 0) {
+    return [];
+  }
+
+  const counts = new Map<string, { label: string; count: number }>();
+  const register = (value: string | number | null | undefined): void => {
+    const key = fieldValueToStorageKey(value);
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+
+    counts.set(key, {
+      label: fieldValueToCategoryLabel(value),
+      count: 1
+    });
+  };
+
+  timeline.bars.forEach((bar) => register(bar.details.fieldValues?.[trimmedFieldRef]));
+  timeline.unschedulable.forEach((item) => register(item.details.fieldValues?.[trimmedFieldRef]));
+
+  const categoryColorMap = buildCategoricalColorMap([...counts.values()].map((entry) => entry.label));
+  return [...counts.entries()]
+    .map(([key, entry]) => ({
+      key,
+      label: entry.label,
+      count: entry.count,
+      defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
+    }))
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+      return left.label.localeCompare(right.label);
+    });
+}
+
+function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineColorCoding): FieldValueStat[] {
+  if (!timeline || (mode !== "person" && mode !== "status")) {
+    return [];
+  }
+
+  const counts = new Map<string, { label: string; count: number }>();
+  const register = (value: string): void => {
+    const key = fieldValueToStorageKey(value);
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+
+    counts.set(key, {
+      label: value,
+      count: 1
+    });
+  };
+
+  if (mode === "person") {
+    timeline.bars.forEach((bar) => register(bar.details.assignedTo?.trim() || "Unassigned"));
+    timeline.unschedulable.forEach((item) => register(item.details.assignedTo?.trim() || "Unassigned"));
+  } else if (mode === "status") {
+    timeline.bars.forEach((bar) => register(bar.state.code));
+    timeline.unschedulable.forEach((item) => register(item.state.code));
+  }
+
+  const categoryColorMap = buildCategoricalColorMap([...counts.values()].map((entry) => entry.label));
+  return [...counts.entries()]
+    .map(([key, entry]) => ({
+      key,
+      label: entry.label,
+      count: entry.count,
+      defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
+    }))
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+      return left.label.localeCompare(right.label);
+    });
+}
+
+function fieldValueToStorageKey(value: string | number | null | undefined): string {
+  if (value === null || typeof value === "undefined") {
+    return "__null__";
+  }
+
+  return String(value);
+}
+
+function toScopedFieldValueColorKey(fieldRef: string | null, valueKey: string): string | null {
+  const normalizedFieldRef = fieldRef?.trim();
+  if (!normalizedFieldRef) {
+    return null;
+  }
+
+  return `${normalizedFieldRef}::${valueKey}`;
+}
+
+function toScopedModeValueColorKey(mode: TimelineColorCoding, valueKey: string): string | null {
+  if (mode !== "person" && mode !== "parent" && mode !== "status") {
+    return null;
+  }
+
+  return `mode:${mode}::${valueKey}`;
+}
+
+function fieldValueToCategoryLabel(value: string | number | null | undefined): string {
+  if (value === null || typeof value === "undefined") {
+    return "Empty";
+  }
+
+  const text = String(value).trim();
+  return text.length > 0 ? text : "Empty";
 }
 
 function buildCategoricalColorMap(categories: string[]): Map<string, string> {
@@ -1489,6 +2511,30 @@ function clientXToDate(clientX: number, svg: SVGSVGElement | null, domainStart: 
   return addDays(domainStart, dayIndex);
 }
 
+function clientPointToSvg(clientX: number, clientY: number, svg: SVGSVGElement | null): { x: number; y: number } {
+  if (!svg) {
+    return {
+      x: Number.isFinite(clientX) ? clientX : 0,
+      y: Number.isFinite(clientY) ? clientY : 0
+    };
+  }
+
+  const rect = svg.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return {
+      x: Number.isFinite(clientX) ? clientX : 0,
+      y: Number.isFinite(clientY) ? clientY : 0
+    };
+  }
+
+  const horizontalScale = svg.viewBox.baseVal.width / rect.width;
+  const verticalScale = svg.viewBox.baseVal.height / rect.height;
+  return {
+    x: (clientX - rect.left) * horizontalScale,
+    y: (clientY - rect.top) * verticalScale
+  };
+}
+
 function toIsoDateUtc(value: Date): string {
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
 }
@@ -1542,6 +2588,116 @@ function calculateDraggedSchedule(
   }
 
   return { startDate: sourceStart, endDate: candidateEnd };
+}
+
+function buildDependencyConnectorPath(
+  from: BarGeometry,
+  to: BarGeometry,
+  laneSeed: number,
+  options?: { forceNearGapDetour?: boolean }
+): string {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
+  const horizontalDistance = endX - startX;
+  const minLaneEntryOffsetPx = options?.forceNearGapDetour ? 6 : 4;
+  const laneEntryOffset =
+    horizontalDistance > 0
+      ? Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.max(minLaneEntryOffsetPx, horizontalDistance / 2))
+      : minLaneEntryOffsetPx;
+  const minApproachDistancePx = options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 4;
+  const leftApproachDistance = Math.min(
+    DEPENDENCY_LEFT_APPROACH_PX,
+    Math.max(minApproachDistancePx, Math.abs(horizontalDistance) / 2)
+  );
+  const laneY = resolveDependencyLaneY(laneSeed, {
+    fromTopY: from.y,
+    fromMidY: from.midY,
+    fromBottomY: from.y + BAR_HEIGHT,
+    toTopY: to.y,
+    toMidY: to.midY
+  });
+  const laneEntryX = startX + laneEntryOffset;
+  const approachX = endX - leftApproachDistance;
+  const laneTravelX = approachX;
+  return `M ${startX} ${from.midY} L ${laneEntryX} ${from.midY} L ${laneEntryX} ${laneY} L ${laneTravelX} ${laneY} L ${approachX} ${laneY} L ${approachX} ${to.midY} L ${endX} ${to.midY}`;
+}
+
+function buildDependencyConnectorToPointPath(
+  from: BarGeometry,
+  targetX: number,
+  targetY: number,
+  laneSeed: number
+): string {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const safeTargetX = Number.isFinite(targetX) ? targetX : startX + DEPENDENCY_POINTER_SEGMENT_MIN_PX;
+  const safeTargetY = Number.isFinite(targetY) ? targetY : from.midY;
+  const horizontalDistance = safeTargetX - startX;
+  const laneEntryOffset =
+    horizontalDistance > 0
+      ? Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.max(4, horizontalDistance / 2))
+      : 4;
+  const estimatedTargetTopY = safeTargetY - BAR_HEIGHT / 2;
+  const laneY = resolveDependencyLaneY(laneSeed, {
+    fromTopY: from.y,
+    fromMidY: from.midY,
+    fromBottomY: from.y + BAR_HEIGHT,
+    toTopY: estimatedTargetTopY,
+    toMidY: safeTargetY
+  });
+  const laneEntryX = startX + laneEntryOffset;
+  const laneTravelX = safeTargetX;
+
+  return `M ${startX} ${from.midY} L ${laneEntryX} ${from.midY} L ${laneEntryX} ${laneY} L ${laneTravelX} ${laneY} L ${safeTargetX} ${safeTargetY}`;
+}
+
+function resolveDependencyLaneY(
+  seed: number,
+  input: {
+    fromTopY: number;
+    fromMidY: number;
+    fromBottomY: number;
+    toTopY: number;
+    toMidY: number;
+  }
+): number {
+  const normalizedSeed = Number.isFinite(seed) ? Math.abs(Math.trunc(seed)) : 0;
+  const laneIndex = normalizedSeed % DEPENDENCY_LANE_COUNT;
+
+  if (input.toMidY > input.fromMidY) {
+    const lowerLaneY = input.fromBottomY + DEPENDENCY_LANE_TOP_OFFSET_PX;
+    const upperLaneY = input.toTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
+    if (upperLaneY > lowerLaneY) {
+      const preferredLaneY = lowerLaneY + laneIndex * DEPENDENCY_LANE_GAP_PX;
+      return Math.min(upperLaneY, Math.max(lowerLaneY, preferredLaneY));
+    }
+    return input.fromMidY + (input.toMidY - input.fromMidY) / 2;
+  }
+
+  const upperBarTopY = Math.min(input.fromTopY, input.toTopY);
+  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
+  const minLaneY = CHART_GRID_START_Y + DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX;
+  return Math.max(minLaneY, topLaneY - laneIndex * DEPENDENCY_LANE_GAP_PX);
+}
+
+function resolveHoveredDependencyTargetWorkItemId(
+  geometryByWorkItemId: ReadonlyMap<number, BarGeometry>,
+  svgX: number,
+  svgY: number,
+  sourceWorkItemId: number
+): number | null {
+  for (const [workItemId, geometry] of geometryByWorkItemId.entries()) {
+    if (workItemId === sourceWorkItemId) {
+      continue;
+    }
+
+    const withinX = svgX >= geometry.x && svgX <= geometry.x + geometry.width;
+    const withinY = svgY >= geometry.y && svgY <= geometry.y + BAR_HEIGHT;
+    if (withinX && withinY) {
+      return workItemId;
+    }
+  }
+
+  return null;
 }
 
 export function buildTimelinePaneLines(input: {

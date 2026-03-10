@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
+    "lowdb": "^7.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router": "^7.13.1"

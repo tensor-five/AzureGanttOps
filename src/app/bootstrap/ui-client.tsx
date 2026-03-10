@@ -19,6 +19,11 @@ import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
+import {
+  getCachedUserPreferences,
+  hydrateUserPreferences,
+  persistUserPreferencesPatch
+} from "../../shared/user-preferences/user-preferences.client.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -100,6 +105,62 @@ function applyWorkItemMetadataUpdate(
             }
           }
         : item
+    )
+  };
+}
+
+function applyDependencyLinkUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  predecessorWorkItemId: number,
+  successorWorkItemId: number,
+  action: "add" | "remove"
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  if (action === "remove") {
+    return {
+      ...timeline,
+      dependencies: timeline.dependencies.filter(
+        (dependency) =>
+          !(
+            dependency.predecessorWorkItemId === predecessorWorkItemId &&
+            dependency.successorWorkItemId === successorWorkItemId &&
+            dependency.dependencyType === "FS"
+          )
+      )
+    };
+  }
+
+  const alreadyExists = timeline.dependencies.some(
+    (dependency) =>
+      dependency.predecessorWorkItemId === predecessorWorkItemId &&
+      dependency.successorWorkItemId === successorWorkItemId &&
+      dependency.dependencyType === "FS"
+  );
+  if (alreadyExists) {
+    return timeline;
+  }
+
+  return {
+    ...timeline,
+    dependencies: [
+      ...timeline.dependencies,
+      {
+        predecessorWorkItemId,
+        successorWorkItemId,
+        dependencyType: "FS",
+        label: `#${predecessorWorkItemId} [end] -> #${successorWorkItemId} [start]`
+      }
+    ],
+    suppressedDependencies: timeline.suppressedDependencies.filter(
+      (dependency) =>
+        !(
+          dependency.predecessorWorkItemId === predecessorWorkItemId &&
+          dependency.successorWorkItemId === successorWorkItemId &&
+          dependency.dependencyType === "FS"
+        )
     )
   };
 }
@@ -645,6 +706,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [activeTab, lastRunRequest, response]);
 
   React.useEffect(() => {
+    void hydrateUserPreferences().then((preferences) => {
+      if (preferences.themeMode) {
+        setThemeMode(preferences.themeMode);
+      }
+    });
+  }, []);
+
+  React.useEffect(() => {
     persistThemeMode(themeMode);
     applyThemeMode(themeMode);
 
@@ -810,6 +879,58 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               );
             });
           },
+          onCreateDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.linkDependency({
+                predecessorWorkItemId,
+                successorWorkItemId,
+                action: "add"
+              });
+
+              if (!writeResult.accepted) {
+                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+              }
+
+              setUiModel((current) => ({
+                ...current,
+                timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "add")
+              }));
+              setResponse((current) =>
+                current
+                  ? {
+                      ...current,
+                      timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "add")
+                    }
+                  : current
+              );
+            });
+          },
+          onRemoveDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.linkDependency({
+                predecessorWorkItemId,
+                successorWorkItemId,
+                action: "remove"
+              });
+
+              if (!writeResult.accepted) {
+                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+              }
+
+              setUiModel((current) => ({
+                ...current,
+                timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "remove")
+              }));
+              setResponse((current) =>
+                current
+                  ? {
+                      ...current,
+                      timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "remove")
+                    }
+                  : current
+              );
+            });
+          },
           onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state, stateColor }) => {
             await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.updateWorkItemDetails({
@@ -967,6 +1088,11 @@ function applyThemeMode(mode: ThemeMode): void {
 }
 
 function readPersistedThemeMode(): ThemeMode {
+  const cachedThemeMode = getCachedUserPreferences().themeMode;
+  if (cachedThemeMode === "system" || cachedThemeMode === "dark" || cachedThemeMode === "light") {
+    return cachedThemeMode;
+  }
+
   if (typeof localStorage === "undefined") {
     return "system";
   }
@@ -980,6 +1106,10 @@ function readPersistedThemeMode(): ThemeMode {
 }
 
 function persistThemeMode(mode: ThemeMode): void {
+  persistUserPreferencesPatch({
+    themeMode: mode
+  });
+
   if (typeof localStorage === "undefined") {
     return;
   }

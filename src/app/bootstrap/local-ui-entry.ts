@@ -107,6 +107,46 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
       };
     },
+    linkDependency: async ({ predecessorWorkItemId, successorWorkItemId, action }) => {
+      const response = await fetch("/phase2/dependency-link", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          predecessorWorkItemId,
+          successorWorkItemId,
+          action
+        })
+      });
+
+      const payload = (await response.json()) as
+        | {
+            accepted: boolean;
+            mode: "NO_OP" | "EXECUTED";
+            commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
+            operationCount: number;
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+          }
+        | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Dependency link failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as {
+        accepted: boolean;
+        mode: "NO_OP" | "EXECUTED";
+        commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
+        operationCount: number;
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+      };
+    },
     updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
       const response = await fetch("/phase2/work-item-details-update", {
         method: "POST",

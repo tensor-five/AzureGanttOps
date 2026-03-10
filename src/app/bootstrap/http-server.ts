@@ -5,6 +5,10 @@ import { readFile, stat } from "node:fs/promises";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { buildAzCommand, resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
+import {
+  LowdbUserPreferencesAdapter,
+  type UserPreferences
+} from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
@@ -108,10 +112,12 @@ const ADO_COMM_NO_DURATION = null;
 const ADO_COMM_ORIGIN = "http://127.0.0.1";
 const ADO_COMM_ROUTE_PATH = "/phase2/ado-comm-logs";
 const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
+const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
+const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
 const ADO_COMM_URL_PATH_ORIGIN = "https://dev.azure.com";
 const ADO_COMM_INVALID_LIMIT = 0;
 const ADO_COMM_DEFAULT_AFTER_SEQ = 0;
@@ -322,6 +328,10 @@ function isAdoptScheduleRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === ADOPT_SCHEDULE_ROUTE_PATH;
 }
 
+function isDependencyLinkRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === DEPENDENCY_LINK_ROUTE_PATH;
+}
+
 function isUpdateDetailsRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_DETAILS_ROUTE_PATH;
 }
@@ -336,6 +346,14 @@ function isAzLoginRoute(method: string, pathname: string): boolean {
 
 function isAzCliPathRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === AZ_CLI_PATH_ROUTE_PATH;
+}
+
+function isUserPreferencesGetRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === USER_PREFERENCES_ROUTE_PATH;
+}
+
+function isUserPreferencesPostRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === USER_PREFERENCES_ROUTE_PATH;
 }
 
 function writeAdoCommLogsResponse(res: ServerResponse, store: AdoCommLogStore, url: URL): void {
@@ -354,6 +372,7 @@ export function createHttpServer(params: {
   };
   port?: number;
   contextFilePath?: string;
+  userPreferencesFilePath?: string;
   distRootPath?: string;
   azLoginRunner?: AzLoginRunner;
   azCliPathResolver?: AzCliPathResolver;
@@ -413,6 +432,9 @@ export function createHttpServer(params: {
 
   const contextFilePath =
     params.contextFilePath ?? path.join(os.homedir(), ".azure-ganttops", "ado-context.json");
+  const userPreferencesFilePath =
+    params.userPreferencesFilePath ?? path.join(path.dirname(contextFilePath), "user-preferences.json");
+  const userId = resolveLocalUserId();
 
   const queryFlow = createPhase1QueryFlow({
     httpClient: instrumentedHttpClient,
@@ -425,6 +447,7 @@ export function createHttpServer(params: {
   const settingsAdapter = new FileContextSettingsAdapter(contextFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
   const controller = new QueryIntakeController(contextStore, queryFlow.runQueryIntake);
+  const userPreferences = new LowdbUserPreferencesAdapter(userPreferencesFilePath, userId);
   const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
   const workItemTypeCacheById = new Map<string, Promise<string | null>>();
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
@@ -445,6 +468,7 @@ export function createHttpServer(params: {
       instrumentedHttpClient,
       stateOptionsCacheByType,
       workItemTypeCacheById,
+      userPreferences,
       azLoginRunner,
       azCliPathResolver
     );
@@ -479,6 +503,7 @@ async function route(
   httpClient: HttpClient,
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>,
   workItemTypeCacheById: Map<string, Promise<string | null>>,
+  userPreferences: LowdbUserPreferencesAdapter,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver
 ): Promise<void> {
@@ -558,6 +583,51 @@ async function route(
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to patch work item."
+      });
+      return;
+    }
+  }
+
+  if (isDependencyLinkRoute(method, url.pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const link = parseDependencyLinkPayload(payload);
+
+    if (!link) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide predecessorWorkItemId/successorWorkItemId/action."
+      });
+      return;
+    }
+
+    try {
+      const writeResult = await submitWriteCommand.execute({
+        writeEnabled,
+        command: {
+          kind: "DEPENDENCY_LINK",
+          sourceId: link.predecessorWorkItemId,
+          targetId: link.successorWorkItemId,
+          relation: "System.LinkTypes.Dependency-Forward",
+          action: link.action
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeJson(res, 403, {
+          code: "WRITE_DISABLED",
+          message: "Writeback is disabled.",
+          result: writeResult
+        });
+        return;
+      }
+
+      writeJson(res, 200, writeResult);
+      return;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to update dependency link."
       });
       return;
     }
@@ -687,6 +757,51 @@ async function route(
     return;
   }
 
+  if (isUserPreferencesGetRoute(method, url.pathname)) {
+    try {
+      const preferences = await userPreferences.getPreferences();
+      writeJson(res, 200, {
+        preferences
+      });
+      return;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "PREFERENCES_READ_FAILED",
+        message: error instanceof Error ? error.message : "Unable to read user preferences."
+      });
+      return;
+    }
+  }
+
+  if (isUserPreferencesPostRoute(method, url.pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const patch = parseUserPreferencesPatch(payload);
+
+    if (!patch) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide preferences as an object."
+      });
+      return;
+    }
+
+    try {
+      const preferences = await userPreferences.mergePreferences(patch);
+      writeJson(res, 200, {
+        status: "OK",
+        preferences
+      });
+      return;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "PREFERENCES_WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to persist user preferences."
+      });
+      return;
+    }
+  }
+
   if (isAdoCommLogRoute(method, url.pathname)) {
     writeAdoCommLogsResponse(res, adoCommLogStore, url);
     return;
@@ -731,6 +846,32 @@ function parsePayload(raw: string): Record<string, unknown> | null {
     return parsed as Record<string, unknown>;
   } catch {
     return null;
+  }
+}
+
+function parseUserPreferencesPatch(payload: Record<string, unknown> | null): UserPreferences | null {
+  if (!payload) {
+    return null;
+  }
+
+  const raw = payload.preferences;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return null;
+  }
+
+  return raw as UserPreferences;
+}
+
+function resolveLocalUserId(): string {
+  const fromEnv = process.env.USER ?? process.env.USERNAME;
+  if (fromEnv && fromEnv.trim().length > 0) {
+    return fromEnv.trim();
+  }
+
+  try {
+    return os.userInfo().username;
+  } catch {
+    return "local-user";
   }
 }
 
@@ -908,6 +1049,37 @@ function parseAdoptSchedulePayload(
     targetWorkItemId,
     startDate,
     endDate
+  };
+}
+
+function parseDependencyLinkPayload(
+  input: Record<string, unknown> | null
+): { predecessorWorkItemId: number; successorWorkItemId: number; action: "add" | "remove" } | null {
+  if (!input) {
+    return null;
+  }
+
+  const predecessorWorkItemId = input.predecessorWorkItemId;
+  const successorWorkItemId = input.successorWorkItemId;
+  const action = input.action;
+
+  if (
+    typeof predecessorWorkItemId !== "number" ||
+    !Number.isFinite(predecessorWorkItemId) ||
+    predecessorWorkItemId <= 0 ||
+    typeof successorWorkItemId !== "number" ||
+    !Number.isFinite(successorWorkItemId) ||
+    successorWorkItemId <= 0 ||
+    predecessorWorkItemId === successorWorkItemId ||
+    (action !== "add" && action !== "remove")
+  ) {
+    return null;
+  }
+
+  return {
+    predecessorWorkItemId,
+    successorWorkItemId,
+    action
   };
 }
 

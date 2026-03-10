@@ -191,6 +191,31 @@ Empfohlene Richtung (anpassbar mit Begründung):
 
 Wenn du von diesen Entscheidungen abweichst, dokumentiere die Abweichung via ADR inkl. Trade-off.
 
+## Persistenz-Policy (verbindlich)
+
+### Standard für lokale Nutzerdaten
+
+- Für nutzerbezogene, lokal persistente UI-/Arbeitspräferenzen ist `lowdb` der Standard.
+- Speicherort: `~/.azure-ganttops/user-preferences.json`.
+- API-Schnittstelle: `GET/POST /phase2/user-preferences`.
+- Referenzimplementierung: `src/adapters/persistence/settings/lowdb-user-preferences.adapter.ts`.
+
+### Wann Datenbank einsetzen
+
+- Datenbank einsetzen, wenn Daten zwischen Sessions stabil verfügbar sein müssen:
+  - Theme, Color Coding, Density
+  - gespeicherte Filter
+  - gespeicherte Views/Ansichten
+  - ähnliche pro-User Preferences
+- Keine Datenbankpflicht für rein ephemere Laufzeitzustände:
+  - temporäre Lade-/Polling-States
+  - kurzlebige UI-Interaktionen ohne Restore-Bedarf
+
+### Abgrenzung zu localStorage und Cache
+
+- `localStorage` nur als Fallback-/Kompatibilitätsmechanismus im Frontend, nicht als führende Quelle.
+- Kein separater Cache-Layer für Preferences, solange Datenvolumen klein ist und keine besonderen Performance-Ziele bestehen.
+
 ---
 
 ## Roadmap (neu, auf Rewrite angepasst)

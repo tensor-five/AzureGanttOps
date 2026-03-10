@@ -46,6 +46,7 @@ function buildTasks(snapshot: IngestionSnapshot, mappings: RequiredFieldMappings
         title,
         descriptionHtml: readValue(record, "System.Description"),
         workItemType: readValue(record, "System.WorkItemType"),
+        fieldValues: readPrimitiveFieldValues(record),
         assignedTo: readAssignedTo(record),
         parentWorkItemId: parentByChildWorkItemId.get(item.id) ?? null,
         startDate: toIsoDate(readValue(record, mappings.start)),
@@ -140,6 +141,22 @@ function buildParentByChildMap(
   });
 
   return map;
+}
+
+function readPrimitiveFieldValues(record: Record<string, unknown>): Record<string, string | number | null> {
+  const values: Record<string, string | number | null> = {};
+
+  Object.entries(record).forEach(([fieldRef, value]) => {
+    if (fieldRef === "id" || fieldRef === "title") {
+      return;
+    }
+
+    if (typeof value === "string" || typeof value === "number" || value === null) {
+      values[fieldRef] = value;
+    }
+  });
+
+  return values;
 }
 
 function toState(record: Record<string, unknown>): CanonicalTaskState {
