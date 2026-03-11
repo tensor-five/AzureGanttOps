@@ -451,6 +451,7 @@ describe("createHttpServer", () => {
                 project: "delivery"
               }
             ],
+            selectedHeaderQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
             filters: {
               assignee: "me"
             }
@@ -475,6 +476,7 @@ describe("createHttpServer", () => {
           project: "delivery"
         }
       ]);
+      expect(saveBody.preferences.selectedHeaderQueryId).toBe("37f6f880-0b7b-4350-9f97-7263b40d4e95");
       expect(saveBody.preferences.filters).toEqual({
         assignee: "me"
       });
@@ -498,6 +500,7 @@ describe("createHttpServer", () => {
           project: "delivery"
         }
       ]);
+      expect(loadBody.preferences.selectedHeaderQueryId).toBe("37f6f880-0b7b-4350-9f97-7263b40d4e95");
       expect(loadBody.preferences.filters).toEqual({
         assignee: "me"
       });

@@ -6,6 +6,26 @@ Local-first Azure DevOps timeline tooling with a small HTTP backend and React UI
 
 This project is licensed under the MIT License. See [`LICENSE`](./LICENSE).
 
+## Contributing and Security
+
+- Contribution guide: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- Code of Conduct: [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
+- Security policy and private vulnerability reporting: [`SECURITY.md`](./SECURITY.md)
+
+## Scope and Non-Goals
+
+Scope:
+
+- Local-first timeline tooling for Azure DevOps work items
+- Query-driven read workflows, timeline rendering, and optional writeback flows
+- User-specific local persistence for context and preferences
+
+Non-goals:
+
+- Multi-tenant hosted SaaS operation
+- Centralized cloud persistence for user settings
+- Replacing Azure DevOps project/process administration capabilities
+
 ## Prerequisites
 
 - Node.js 20+ and npm
@@ -72,6 +92,18 @@ If Azure CLI is not found at runtime, the Query tab supports:
 - This app expects users to have Azure CLI installed and usable in `PATH`.
 - Azure DevOps context (organization/project) is user-specific and persisted under:
   - `~/.azure-ganttops/ado-context.json`
+- User preferences are persisted under:
+  - `~/.azure-ganttops/user-preferences.json`
+
+## Privacy and Data Handling
+
+- The app stores user-specific settings locally under `~/.azure-ganttops/`.
+- Azure DevOps data access is performed from the local backend process using your local auth context.
+- The UI currently loads a webfont from an external provider (Fontshare) during app load.
+
+## Trademark Notice
+
+Azure and Azure DevOps are trademarks of Microsoft. This project is an independent open source project and is not affiliated with, endorsed by, or sponsored by Microsoft.
 
 ## Architecture and operations docs
 
@@ -81,3 +113,9 @@ If Azure CLI is not found at runtime, the Query tab supports:
   - [`docs/c4/component.md`](./docs/c4/component.md)
 - ADRs: [`docs/adr/README.md`](./docs/adr/README.md)
 - Runbook: [`docs/runbook/local-operations.md`](./docs/runbook/local-operations.md)
+
+## Troubleshooting
+
+For common local operation failures and recovery steps, see:
+
+- [`docs/runbook/local-operations.md`](./docs/runbook/local-operations.md#troubleshooting)

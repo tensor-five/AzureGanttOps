@@ -421,7 +421,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [savedHeaderQueries, setSavedHeaderQueries] = React.useState<SavedQueryPreference[]>(
     () => getCachedUserPreferences().savedQueries ?? []
   );
-  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = React.useState("");
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = React.useState(
+    () => getCachedUserPreferences().selectedHeaderQueryId ?? ""
+  );
   const [newHeaderQueryMode, setNewHeaderQueryMode] = React.useState(false);
   const [newHeaderQueryInput, setNewHeaderQueryInput] = React.useState("");
   const [headerQuerySearch, setHeaderQuerySearch] = React.useState("");
@@ -713,6 +715,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           queryId: selected.queryInput
         });
         setSelectedHeaderQueryId(selected.id);
+        persistUserPreferencesPatch({
+          selectedHeaderQueryId: selected.id
+        });
         setHeaderQueryMessage(null);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Query could not be loaded.";
@@ -790,7 +795,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       setNewHeaderQueryInput("");
       setHeaderQueryMessage(null);
       persistUserPreferencesPatch({
-        savedQueries: nextSavedQueries
+        savedQueries: nextSavedQueries,
+        selectedHeaderQueryId: candidate.id
       });
       setHeaderQueryLoading(false);
     },
@@ -800,13 +806,18 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const deleteSavedHeaderQuery = React.useCallback(
     (queryId: string) => {
       const nextSavedQueries = savedHeaderQueries.filter((entry) => entry.id !== queryId);
+      const nextSelectedHeaderQueryId =
+        selectedHeaderQueryId === queryId
+          ? (nextSavedQueries[0]?.id ?? "")
+          : selectedHeaderQueryId;
       setSavedHeaderQueries(nextSavedQueries);
       if (selectedHeaderQueryId === queryId) {
-        setSelectedHeaderQueryId(nextSavedQueries[0]?.id ?? "");
+        setSelectedHeaderQueryId(nextSelectedHeaderQueryId);
       }
       setHeaderQueryMessage(null);
       persistUserPreferencesPatch({
-        savedQueries: nextSavedQueries
+        savedQueries: nextSavedQueries,
+        selectedHeaderQueryId: nextSelectedHeaderQueryId || undefined
       });
     },
     [savedHeaderQueries, selectedHeaderQueryId]
@@ -862,7 +873,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       if (preferences.themeMode) {
         setThemeMode(preferences.themeMode);
       }
-      setSavedHeaderQueries(preferences.savedQueries ?? []);
+      const hydratedSavedQueries = preferences.savedQueries ?? [];
+      const preferredSelectedQueryId = preferences.selectedHeaderQueryId ?? "";
+      const selectedExistsInSavedQueries = hydratedSavedQueries.some((entry) => entry.id === preferredSelectedQueryId);
+
+      setSavedHeaderQueries(hydratedSavedQueries);
+      setSelectedHeaderQueryId(selectedExistsInSavedQueries ? preferredSelectedQueryId : "");
     });
   }, []);
 

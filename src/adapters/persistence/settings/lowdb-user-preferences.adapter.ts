@@ -32,6 +32,7 @@ export type UserPreferences = {
   timelineSidebarWidthPx?: number;
   timelineDetailsWidthPx?: number;
   savedQueries?: SavedQueryPreference[];
+  selectedHeaderQueryId?: string;
   filters?: Record<string, unknown>;
   views?: Record<string, unknown>;
   updatedAt?: string;
@@ -193,6 +194,11 @@ function sanitizePreferences(value: unknown): UserPreferences {
     });
 
     next.savedQueries = deduped.size > 0 ? [...deduped.values()] : undefined;
+  }
+
+  if (typeof candidate.selectedHeaderQueryId === "string") {
+    const selectedHeaderQueryId = candidate.selectedHeaderQueryId.trim();
+    next.selectedHeaderQueryId = selectedHeaderQueryId.length > 0 ? selectedHeaderQueryId : undefined;
   }
 
   if (isPlainRecord(candidate.filters)) {
