@@ -1,92 +1,34 @@
-import {
-  getCachedUserPreferences,
-  hydrateUserPreferences,
-  persistUserPreferencesPatch
-} from "../../shared/user-preferences/user-preferences.client.js";
+import { createUserPreferenceStore } from "./create-user-preference-store.js";
 
 const STORAGE_KEY = "azure-ganttops.timeline-sidebar-width-px.v1";
 const MIN_WIDTH_PX = 160;
 const MAX_WIDTH_PX = 640;
 
-let memorySidebarWidthPx: number | null = null;
-let hydrationStarted = false;
+const store = createUserPreferenceStore<number>({
+  storageKey: STORAGE_KEY,
+  readFromServerCache: (preferences) => preferences.timelineSidebarWidthPx,
+  sanitize: sanitizeWidthPx,
+  buildPatch: (widthPx) => ({
+    timelineSidebarWidthPx: widthPx
+  }),
+  serialize: (widthPx) => String(widthPx),
+  deserialize: (raw) => Number(raw)
+});
 
 export function loadLastTimelineSidebarWidthPx(): number | null {
-  const fromStorage = readFromLocalStorage();
-  if (fromStorage !== null) {
-    memorySidebarWidthPx = fromStorage;
-    return fromStorage;
-  }
-
-  const fromCache = sanitizeWidthPx(getCachedUserPreferences().timelineSidebarWidthPx);
-  if (fromCache !== null) {
-    memorySidebarWidthPx = fromCache;
-    writeToLocalStorage(fromCache);
-    return fromCache;
-  }
-
-  return memorySidebarWidthPx;
+  return store.load();
 }
 
 export function saveTimelineSidebarWidthPx(widthPx: number): void {
-  const sanitized = sanitizeWidthPx(widthPx);
-  if (sanitized === null) {
-    return;
-  }
-
-  memorySidebarWidthPx = sanitized;
-  writeToLocalStorage(sanitized);
-  persistUserPreferencesPatch({
-    timelineSidebarWidthPx: sanitized
-  });
+  store.save(widthPx);
 }
 
 export function hydrateTimelineSidebarWidthPreference(onHydrated?: (widthPx: number) => void): void {
-  if (hydrationStarted) {
-    return;
-  }
-
-  hydrationStarted = true;
-  void hydrateUserPreferences().then((preferences) => {
-    const widthPx = sanitizeWidthPx(preferences.timelineSidebarWidthPx);
-    if (widthPx === null) {
-      return;
-    }
-
-    memorySidebarWidthPx = widthPx;
-    writeToLocalStorage(widthPx);
-    onHydrated?.(widthPx);
-  });
+  store.hydrate(onHydrated);
 }
 
 export function clearTimelineSidebarWidthPreferenceForTests(): void {
-  memorySidebarWidthPx = null;
-  hydrationStarted = false;
-
-  if (typeof globalThis.localStorage !== "undefined") {
-    globalThis.localStorage.removeItem(STORAGE_KEY);
-  }
-}
-
-function readFromLocalStorage(): number | null {
-  if (typeof globalThis.localStorage === "undefined") {
-    return null;
-  }
-
-  const raw = globalThis.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  return sanitizeWidthPx(Number(raw));
-}
-
-function writeToLocalStorage(widthPx: number): void {
-  if (typeof globalThis.localStorage === "undefined") {
-    return;
-  }
-
-  globalThis.localStorage.setItem(STORAGE_KEY, String(widthPx));
+  store.clearForTests();
 }
 
 function sanitizeWidthPx(value: unknown): number | null {

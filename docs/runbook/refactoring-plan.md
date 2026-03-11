@@ -35,6 +35,8 @@ Primäres Ziel ist nicht "alles neu", sondern eine schrittweise Verbesserung ent
 
 ## 3.1 Paket A (Priorität 1): Preferences-Schema und Sanitizing deduplizieren
 
+Status: ✅ Abgeschlossen (2026-03-11)
+
 ### Problem
 
 `sanitizePreferences`, `sanitizeSavedQueryPreference`, `clamp` und Teile der Typdefinition sind derzeit doppelt vorhanden:
@@ -79,6 +81,8 @@ Eine zentrale, wiederverwendbare Preferences-Schema-/Sanitizing-Schicht, die sow
 
 ## 3.2 Paket B (Priorität 2): Generische Preference-Store-Factory im Gantt-Bereich
 
+Status: ✅ Abgeschlossen (2026-03-11, inkl. schrittweiser Migration)
+
 ### Problem
 
 Mehrere Dateien implementieren dasselbe Muster für `load/save/hydrate/clear`, Memory-Cache, LocalStorage-Fallback und API-Persistenz.
@@ -119,6 +123,8 @@ Boilerplate reduzieren, Verhalten vereinheitlichen, neue Preferences günstiger 
 
 ## 3.3 Paket C (Priorität 3): `TimelinePane` in domänenspezifische Hooks und Subcomponents schneiden
 
+Status: 🟡 Teilweise abgeschlossen (2026-03-11, erste Hooks/Subcomponents extrahiert)
+
 ### Problem
 
 `timeline-pane.tsx` ist sehr groß und vereint viele Verantwortlichkeiten:
@@ -158,6 +164,8 @@ Komplexität reduzieren, Local Reasoning verbessern, testbare Einheiten schaffen
 
 ## 3.4 Paket D (Priorität 4): `ui-client.tsx` auf Bootstrapping reduzieren
 
+Status: ✅ Abgeschlossen (2026-03-11)
+
 ### Problem
 
 `ui-client.tsx` bündelt Bootstrapping, Persistenzdetails, Theme-Handling, Query-Context-Fallbacks und Timeline-Mutationslogik.
@@ -178,12 +186,31 @@ Sauberere Start-/Orchestrierungsschicht; Logik in dedizierten Services/Utilities
 - Gleiches Laufzeitverhalten.
 - Bestehende Integrations- und UI-Tests grün.
 
+---
+
+## 3.5 Offene Folgepakete (neu)
+
+Status: 🔄 Offen
+
+### Checkliste
+
+- [ ] Paket E1: `TimelinePane` weiter modularisieren (`useScheduleDragging`, `useDependencyEditing`, `useTimelineFilters`) und gezielte Hook-Tests ergänzen.
+- [ ] Paket E2: `timeline-color-coding-preference.ts` auf `createUserPreferenceStore<T>` migrieren (inkl. Field-Config-Persistenzpfad), Verhalten unverändert halten.
+- [ ] Paket E3: Restliche Orchestrierungslogik aus `ui-client.tsx` weiter auslagern (Header-Query-Flow, Runtime-State-Color-Enrichment).
+- [ ] Paket E4: Unit-Tests für neue Utility-Module ergänzen:
+  - `src/app/bootstrap/ui-client-storage.ts`
+  - `src/app/bootstrap/ui-client-theme.ts`
+  - `src/app/bootstrap/ui-client-timeline-mutations.ts`
+- [ ] Paket E5: Query-/Header-Workflow in dedizierten State-Container/Service schneiden, damit Render- und Ablauf-Logik klar getrennt sind.
+
 ## 4. Empfohlene Reihenfolge und Meilensteine
 
-1. M1: Paket A abschließen (Schema zentralisieren)
-2. M2: Paket B in 2-3 Teil-PRs (erst einfache Preferences, dann komplexe wie Color-Coding/Viewport)
-3. M3: Paket C iterativ (pro Hook/Subcomponent ein PR)
-4. M4: Paket D als abschließendes Orchestrierungs-Refactor
+1. [x] M1: Paket A abschließen (Schema zentralisieren)
+2. [x] M2: Paket B in 2-3 Teil-PRs (erst einfache Preferences, dann komplexe wie Color-Coding/Viewport)
+3. [ ] M3: Paket C iterativ abschließen (pro Hook/Subcomponent ein PR)
+4. [x] M4: Paket D als abschließendes Orchestrierungs-Refactor
+5. [ ] M5: Paket E1/E2 abschließen (TimelinePane + Color-Coding-Store vereinheitlichen)
+6. [ ] M6: Paket E3/E4/E5 abschließen (UI-Orchestrierung final entkoppeln + Testabdeckung schließen)
 
 ## 5. Teststrategie pro Paket
 
@@ -213,3 +240,10 @@ Erster technischer Schritt:
 3. Client und LowDB-Adapter auf Shared-Schema umstellen
 4. Tests für das Schema hinzufügen
 
+## 8. Umsetzungsstatus (Checkliste)
+
+- [x] Paket A umgesetzt
+- [x] Paket B umgesetzt
+- [x] Paket D umgesetzt
+- [ ] Paket C vollständig abgeschlossen (in Arbeit, erste Extraktionen erledigt)
+- [ ] Folgepakete E1-E5 offen

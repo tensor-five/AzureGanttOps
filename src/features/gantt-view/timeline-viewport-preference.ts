@@ -1,8 +1,4 @@
-import {
-  getCachedUserPreferences,
-  hydrateUserPreferences,
-  persistUserPreferencesPatch
-} from "../../shared/user-preferences/user-preferences.client.js";
+import { createUserPreferenceStore } from "./create-user-preference-store.js";
 
 export type TimelineViewportPreference = {
   dayWidthPx: number;
@@ -13,70 +9,36 @@ export type TimelineViewportPreference = {
 const STORAGE_KEY = "azure-ganttops.timeline-viewport";
 const VIEW_KEY = "timelineViewport";
 
-let memoryViewport: TimelineViewportPreference | null = null;
-let hydrationStarted = false;
+const store = createUserPreferenceStore<TimelineViewportPreference>({
+  storageKey: STORAGE_KEY,
+  readFromServerCache: (preferences) => readFromViews(preferences.views),
+  sanitize: normalizeViewport,
+  buildPatch: (viewport, cachedPreferences) => {
+    const cachedViews = cachedPreferences.views;
+    const baseViews = isPlainRecord(cachedViews) ? cachedViews : {};
+    return {
+      views: {
+        ...baseViews,
+        [VIEW_KEY]: viewport
+      }
+    };
+  }
+});
 
 export function loadLastTimelineViewportPreference(): TimelineViewportPreference | null {
-  const fromStorage = readFromLocalStorage();
-  if (fromStorage) {
-    memoryViewport = fromStorage;
-    return fromStorage;
-  }
-
-  const fromCache = readFromViews(getCachedUserPreferences().views);
-  if (fromCache) {
-    memoryViewport = fromCache;
-    writeToLocalStorage(fromCache);
-    return fromCache;
-  }
-
-  return memoryViewport;
+  return store.load();
 }
 
 export function saveTimelineViewportPreference(viewport: TimelineViewportPreference): void {
-  const normalized = normalizeViewport(viewport);
-  if (!normalized) {
-    return;
-  }
-
-  memoryViewport = normalized;
-  writeToLocalStorage(normalized);
-
-  const cachedViews = getCachedUserPreferences().views;
-  const baseViews = isPlainRecord(cachedViews) ? cachedViews : {};
-  persistUserPreferencesPatch({
-    views: {
-      ...baseViews,
-      [VIEW_KEY]: normalized
-    }
-  });
+  store.save(viewport);
 }
 
 export function hydrateTimelineViewportPreference(onHydrated?: (viewport: TimelineViewportPreference) => void): void {
-  if (hydrationStarted) {
-    return;
-  }
-
-  hydrationStarted = true;
-  void hydrateUserPreferences().then((preferences) => {
-    const viewport = readFromViews(preferences.views);
-    if (!viewport) {
-      return;
-    }
-
-    memoryViewport = viewport;
-    writeToLocalStorage(viewport);
-    onHydrated?.(viewport);
-  });
+  store.hydrate(onHydrated);
 }
 
 export function clearTimelineViewportPreferenceForTests(): void {
-  memoryViewport = null;
-  hydrationStarted = false;
-
-  if (typeof globalThis.localStorage !== "undefined") {
-    globalThis.localStorage.removeItem(STORAGE_KEY);
-  }
+  store.clearForTests();
 }
 
 function readFromViews(views: unknown): TimelineViewportPreference | null {
@@ -86,31 +48,6 @@ function readFromViews(views: unknown): TimelineViewportPreference | null {
 
   const candidate = views[VIEW_KEY];
   return normalizeViewport(candidate);
-}
-
-function readFromLocalStorage(): TimelineViewportPreference | null {
-  if (typeof globalThis.localStorage === "undefined") {
-    return null;
-  }
-
-  const raw = globalThis.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    return normalizeViewport(JSON.parse(raw));
-  } catch {
-    return null;
-  }
-}
-
-function writeToLocalStorage(viewport: TimelineViewportPreference): void {
-  if (typeof globalThis.localStorage === "undefined") {
-    return;
-  }
-
-  globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(viewport));
 }
 
 function normalizeViewport(value: unknown): TimelineViewportPreference | null {

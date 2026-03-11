@@ -1128,7 +1128,7 @@ button {
 .timeline-left-sidebar-embedded {
   grid-column: 1;
   z-index: 12;
-  background: color-mix(in srgb, #ffffff 50%, transparent);
+  background: color-mix(in srgb, #ffffff 95%, transparent);
   box-shadow: none;
 }
 

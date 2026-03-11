@@ -45,6 +45,9 @@ import {
   saveTimelineDetailsWidthPx
 } from "./timeline-details-width-preference.js";
 import { createTimelineSelectionStore, type TimelineSelectionStore } from "./selection-store.js";
+import { TimelineMainSplitter } from "./timeline-main-splitter.js";
+import { useTimelineOverlayDismiss } from "./use-timeline-overlay-dismiss.js";
+import { useTimelineKeyboardShortcuts } from "./use-timeline-keyboard-shortcuts.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -350,63 +353,25 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     });
   }, []);
 
-  React.useEffect(() => {
-    if (!colorCodingDropdownOpen && !openFilterDropdown && !labelSettingsOpen) {
-      return;
-    }
-
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node | null;
-      if (!target) {
-        return;
-      }
-
-      const control = colorCodingControlRef.current;
-      if (control && control.contains(target)) {
-        return;
-      }
-
-      const filterToggleControl = filterToggleControlRef.current;
-      if (filterToggleControl && filterToggleControl.contains(target)) {
-        return;
-      }
-
-      const filterPanel = filterPanelRef.current;
-      if (filterPanel && filterPanel.contains(target)) {
-        return;
-      }
-
-      const labelControl = labelToggleControlRef.current;
-      if (labelControl && labelControl.contains(target)) {
-        return;
-      }
-
-      const labelPanel = labelPanelRef.current;
-      if (labelPanel && labelPanel.contains(target)) {
-        return;
-      }
-
+  useTimelineOverlayDismiss({
+    colorCodingDropdownOpen,
+    openFilterDropdown,
+    labelSettingsOpen,
+    colorCodingControlRef,
+    filterToggleControlRef,
+    filterPanelRef,
+    labelToggleControlRef,
+    labelPanelRef,
+    onCloseColorCodingDropdown: () => {
       setColorCodingDropdownOpen(false);
+    },
+    onCloseFilterDropdown: () => {
       setOpenFilterDropdown(null);
+    },
+    onCloseLabelSettings: () => {
       setLabelSettingsOpen(false);
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setColorCodingDropdownOpen(false);
-        setOpenFilterDropdown(null);
-        setLabelSettingsOpen(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [colorCodingDropdownOpen, labelSettingsOpen, openFilterDropdown]);
+    }
+  });
 
   React.useEffect(() => {
     detailsWidthLiveRef.current = detailsWidthPx;
@@ -811,70 +776,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     persistTimelineViewportSoon();
   }, [chartModel.dayWidthPx, chartModel.domainStart, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
 
-  React.useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-
-      if (isEditableTarget(event.target)) {
-        return;
-      }
-
-      if (event.key === " ") {
-        spacePanPressedRef.current = true;
-        setSpacePanPressed(true);
-        event.preventDefault();
-        return;
-      }
-
-      if ((event.key === "Delete" || event.key === "Backspace") && selectedDependency && props.onRemoveDependency) {
-        event.preventDefault();
-        void props
-          .onRemoveDependency({
-            predecessorWorkItemId: selectedDependency.predecessorWorkItemId,
-            successorWorkItemId: selectedDependency.successorWorkItemId
-          })
-          .catch((error) => {
-            const message = error instanceof Error ? error.message : "Unknown error";
-            setAdoptScheduleError(message);
-          });
-        setSelectedDependency(null);
-        return;
-      }
-
-      if (event.key.toLowerCase() !== "r") {
-        return;
-      }
-
-      if (props.isRefreshing === true) {
-        return;
-      }
-
-      props.onRetryRefresh?.();
-    };
-
-    const onKeyUp = (event: KeyboardEvent) => {
-      if (event.key === " ") {
-        spacePanPressedRef.current = false;
-        setSpacePanPressed(false);
-      }
-    };
-
-    const onWindowBlur = () => {
-      spacePanPressedRef.current = false;
-      setSpacePanPressed(false);
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("blur", onWindowBlur);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keyup", onKeyUp);
-      window.removeEventListener("blur", onWindowBlur);
-    };
-  }, [props.isRefreshing, props.onRemoveDependency, props.onRetryRefresh, selectedDependency]);
+  useTimelineKeyboardShortcuts({
+    isRefreshing: props.isRefreshing,
+    onRemoveDependency: props.onRemoveDependency,
+    onRetryRefresh: props.onRetryRefresh,
+    selectedDependency,
+    setSelectedDependency,
+    setSpacePanPressed,
+    setAdoptScheduleError,
+    spacePanPressedRef
+  });
 
   const handleChartWheel = React.useCallback(
     (event: WheelEvent) => {
@@ -2723,17 +2634,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     ]
               ),
               !sidebarCollapsed
-                ? React.createElement("button", {
-                    type: "button",
-                    className: activeSidebarResize
-                      ? "timeline-main-splitter timeline-main-splitter-active timeline-main-splitter-embedded"
-                      : "timeline-main-splitter timeline-main-splitter-embedded",
-                    "aria-label": "Resize timeline sidebar",
-                    role: "separator",
-                    "aria-orientation": "vertical",
-                    "aria-valuemin": TIMELINE_SIDEBAR_MIN_WIDTH_PX,
-                    "aria-valuemax": resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthPx),
-                    "aria-valuenow": Math.round(sidebarWidthPx),
+                ? React.createElement(TimelineMainSplitter, {
+                    active: activeSidebarResize !== null,
+                    embedded: true,
+                    ariaLabel: "Resize timeline sidebar",
+                    ariaValueMin: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
+                    ariaValueMax: resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthPx),
+                    ariaValueNow: sidebarWidthPx,
                     onPointerDown: beginSidebarResize,
                     style: { height: `${chartModel.height}px`, left: `${Math.round(effectiveSidebarWidthPx)}px` }
                   })
@@ -3160,16 +3067,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         )
       ),
       React.createElement(
-        "button",
+        TimelineMainSplitter,
         {
-          type: "button",
-          className: activeDetailsResize ? "timeline-main-splitter timeline-main-splitter-active" : "timeline-main-splitter",
-          "aria-label": detailsContentHidden ? "Expand details panel" : "Resize details panel",
-          role: "separator",
-          "aria-orientation": "vertical",
-          "aria-valuemin": DETAILS_PANEL_MIN_WIDTH_PX,
-          "aria-valuemax": resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
-          "aria-valuenow": Math.round(detailsWidthPx),
+          active: activeDetailsResize !== null,
+          ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
+          ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
+          ariaValueMax: resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
+          ariaValueNow: detailsWidthPx,
           onPointerDown: beginDetailsResize,
           onClick: expandDetailsPanelFromHidden,
           style: timelineMainSplitterStyle
@@ -4562,23 +4466,6 @@ function normalizeWheelDelta(event: WheelEvent): number {
   }
 
   return event.deltaY;
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  const tagName = target.tagName.toLowerCase();
-  if (tagName === "input" || tagName === "textarea" || tagName === "select") {
-    return true;
-  }
-
-  if (target.isContentEditable) {
-    return true;
-  }
-
-  return target.closest("[contenteditable='true']") !== null;
 }
 
 function calculateDraggedSchedule(

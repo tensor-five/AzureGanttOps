@@ -13,7 +13,7 @@ import type { TabId } from "../../shared/ui-state/tab-id.js";
 import { QuerySelector, ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
-import { TimelinePane, applyAdoptedSchedules } from "../../features/gantt-view/timeline-pane.js";
+import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
 import { createTimelineSelectionStore } from "../../features/gantt-view/selection-store.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
@@ -25,176 +25,39 @@ import {
   hydrateUserPreferences,
   persistUserPreferencesPatch
 } from "../../shared/user-preferences/user-preferences.client.js";
+import {
+  applyDependencyLinkUpdate,
+  applyScheduleUpdate,
+  applyWorkItemMetadataUpdate
+} from "./ui-client-timeline-mutations.js";
+import {
+  buildSavedQueryLabel,
+  inferSavedQueryId,
+  persistUiShellState,
+  readPersistedQueryContext,
+  readPersistedUiShellState,
+  resolvePersistedRefreshQueryInput,
+  toShortQueryName,
+  upsertSavedQueries
+} from "./ui-client-storage.js";
+import {
+  applyThemeMode,
+  iconForThemeMode,
+  labelForThemeMode,
+  nextThemeMode,
+  persistThemeMode,
+  readPersistedThemeMode,
+  type ThemeMode
+} from "./ui-client-theme.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
 const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
-const QUERY_GUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
-const QUERY_GUID_EXACT_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const HEADER_SAVED_QUERY_LIMIT = 25;
 
-type ThemeMode = "system" | "light" | "dark";
 type WorkItemSyncState = "up_to_date" | "syncing" | "error";
-
-function applyScheduleUpdate(
-  timeline: QueryIntakeResponse["timeline"],
-  targetWorkItemId: number,
-  startDate: string,
-  endDate: string
-): QueryIntakeResponse["timeline"] {
-  const adopted = applyAdoptedSchedules(timeline, {
-    [targetWorkItemId]: { startDate, endDate }
-  });
-  if (!adopted) {
-    return adopted;
-  }
-
-  return {
-    ...adopted,
-    bars: adopted.bars.map((bar) =>
-      bar.workItemId === targetWorkItemId
-        ? {
-            ...bar,
-            schedule: {
-              startDate,
-              endDate,
-              missingBoundary: null
-            }
-          }
-        : bar
-    )
-  };
-}
-
-function applyWorkItemMetadataUpdate(
-  timeline: QueryIntakeResponse["timeline"],
-  targetWorkItemId: number,
-  title: string,
-  descriptionHtml: string,
-  stateCode: string,
-  stateColor: string | null
-): QueryIntakeResponse["timeline"] {
-  if (!timeline) {
-    return timeline;
-  }
-
-  const nextState = toTimelineStateBadge(stateCode, stateColor);
-
-  return {
-    ...timeline,
-    bars: timeline.bars.map((bar) =>
-      bar.workItemId === targetWorkItemId
-        ? {
-            ...bar,
-            title,
-            state: nextState,
-            details: {
-              ...bar.details,
-              descriptionHtml
-            }
-          }
-        : bar
-    ),
-    unschedulable: timeline.unschedulable.map((item) =>
-      item.workItemId === targetWorkItemId
-        ? {
-            ...item,
-            title,
-            state: nextState,
-            details: {
-              ...item.details,
-              descriptionHtml
-            }
-          }
-        : item
-    )
-  };
-}
-
-function applyDependencyLinkUpdate(
-  timeline: QueryIntakeResponse["timeline"],
-  predecessorWorkItemId: number,
-  successorWorkItemId: number,
-  action: "add" | "remove"
-): QueryIntakeResponse["timeline"] {
-  if (!timeline) {
-    return timeline;
-  }
-
-  if (action === "remove") {
-    return {
-      ...timeline,
-      dependencies: timeline.dependencies.filter(
-        (dependency) =>
-          !(
-            dependency.predecessorWorkItemId === predecessorWorkItemId &&
-            dependency.successorWorkItemId === successorWorkItemId &&
-            dependency.dependencyType === "FS"
-          )
-      )
-    };
-  }
-
-  const alreadyExists = timeline.dependencies.some(
-    (dependency) =>
-      dependency.predecessorWorkItemId === predecessorWorkItemId &&
-      dependency.successorWorkItemId === successorWorkItemId &&
-      dependency.dependencyType === "FS"
-  );
-  if (alreadyExists) {
-    return timeline;
-  }
-
-  return {
-    ...timeline,
-    dependencies: [
-      ...timeline.dependencies,
-      {
-        predecessorWorkItemId,
-        successorWorkItemId,
-        dependencyType: "FS",
-        label: `#${predecessorWorkItemId} [end] -> #${successorWorkItemId} [start]`
-      }
-    ],
-    suppressedDependencies: timeline.suppressedDependencies.filter(
-      (dependency) =>
-        !(
-          dependency.predecessorWorkItemId === predecessorWorkItemId &&
-          dependency.successorWorkItemId === successorWorkItemId &&
-          dependency.dependencyType === "FS"
-        )
-    )
-  };
-}
-
-function toTimelineStateBadge(code: string, preferredColor: string | null): { code: string; badge: string; color: string } {
-  const normalizedCode = code.trim().length > 0 ? code.trim() : "Unknown";
-  return {
-    code: normalizedCode,
-    badge: normalizedCode.charAt(0).toUpperCase() || "?",
-    color: preferredColor && preferredColor.trim().length > 0 ? `#${preferredColor.replace(/^#/, "")}` : colorForStateCode(normalizedCode)
-  };
-}
-
-function colorForStateCode(code: string): string {
-  switch (code.toLowerCase()) {
-    case "new":
-    case "to do":
-      return "#7c3aed";
-    case "active":
-    case "in progress":
-      return "#1d4ed8";
-    case "resolved":
-      return "#15803d";
-    case "closed":
-    case "done":
-      return "#6b7280";
-    default:
-      return "#334155";
-  }
-}
 
 function resolveStatePaletteSourceWorkItemId(timeline: QueryIntakeResponse["timeline"]): number | null {
   if (!timeline) {
@@ -389,13 +252,21 @@ export function createDefaultUiShellComposition(params: Parameters<typeof create
 }
 
 function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
-  const restoredState = React.useMemo(() => readPersistedUiShellState(), []);
+  const restoredState = React.useMemo(
+    () => readPersistedUiShellState<QueryIntakeResponse, RunRequest>(UI_SHELL_STATE_KEY),
+    []
+  );
   const initialResponse = restoredState?.response ?? null;
   const initialActiveTab: TabId =
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
       : (restoredState?.activeTab ?? "query");
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
+  const persistedQueryInput = resolvePersistedRefreshQueryInput({
+    queryInputKey: QUERY_INPUT_KEY,
+    orgKey: ORG_KEY,
+    projectKey: PROJECT_KEY,
+    resolveQueryRunInput
+  });
   const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
@@ -417,7 +288,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [adoCommLogsCursor, setAdoCommLogsCursor] = React.useState(0);
   const [adoCommLogsError, setAdoCommLogsError] = React.useState<string | null>(null);
   const [adoCommLogsLoading, setAdoCommLogsLoading] = React.useState(true);
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => readPersistedThemeMode());
+  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
+    readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
+  );
   const [savedHeaderQueries, setSavedHeaderQueries] = React.useState<SavedQueryPreference[]>(
     () => getCachedUserPreferences().savedQueries ?? []
   );
@@ -667,7 +540,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         return;
       }
 
-      const persistedQueryInput = resolvePersistedRefreshQueryInput();
+      const persistedQueryInput = resolvePersistedRefreshQueryInput({
+        queryInputKey: QUERY_INPUT_KEY,
+        orgKey: ORG_KEY,
+        projectKey: PROJECT_KEY,
+        resolveQueryRunInput
+      });
       if (!persistedQueryInput) {
         setActiveTab("query");
         setControlsOpen(true);
@@ -741,7 +619,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         return;
       }
 
-      const persisted = readPersistedQueryContext();
+      const persisted = readPersistedQueryContext({
+        queryInputKey: QUERY_INPUT_KEY,
+        orgKey: ORG_KEY,
+        projectKey: PROJECT_KEY
+      });
       const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
       if (!transportQueryInput) {
         setHeaderQueryMessage("Invalid query. Provide a URL or a query ID with context.");
@@ -776,12 +658,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         id: queryId,
         name: toShortQueryName(
           azureQueryName ??
-            buildSavedQueryLabel({
-              id: queryId,
-              organization: persisted.organization,
-              project: persisted.project
-            }),
-          queryId
+            buildSavedQueryLabel(),
+            queryId
         ),
         queryInput: transportQueryInput,
         organization: persisted.organization.trim() || undefined,
@@ -861,7 +739,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
 
   React.useEffect(() => {
-    persistUiShellState({
+    persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
@@ -883,7 +761,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, []);
 
   React.useEffect(() => {
-    persistThemeMode(themeMode);
+    persistUserPreferencesPatch({
+      themeMode
+    });
+    persistThemeMode(THEME_MODE_KEY, themeMode);
     applyThemeMode(themeMode);
 
     if (themeMode !== "system" || typeof window === "undefined") {
@@ -1329,52 +1210,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   );
 }
 
-function resolvePersistedRefreshQueryInput(): string | null {
-  if (typeof localStorage === "undefined") {
-    return null;
-  }
-
-  const queryInput = localStorage.getItem(QUERY_INPUT_KEY) ?? "";
-  const organization = localStorage.getItem(ORG_KEY) ?? "";
-  const project = localStorage.getItem(PROJECT_KEY) ?? "";
-
-  return resolveQueryRunInput(queryInput, organization, project);
-}
-
-function readPersistedQueryContext(): {
-  queryInput: string;
-  organization: string;
-  project: string;
-} {
-  if (typeof localStorage === "undefined") {
-    return {
-      queryInput: "",
-      organization: "",
-      project: ""
-    };
-  }
-
-  return {
-    queryInput: localStorage.getItem(QUERY_INPUT_KEY) ?? "",
-    organization: localStorage.getItem(ORG_KEY) ?? "",
-    project: localStorage.getItem(PROJECT_KEY) ?? ""
-  };
-}
-
-function inferSavedQueryId(queryInput: string): string {
-  const match = queryInput.match(QUERY_GUID_PATTERN);
-  return match ? match[0] : queryInput;
-}
-
-function buildSavedQueryLabel(params: {
-  id: string;
-  organization: string;
-  project: string;
-}): string {
-  const _unused = params;
-  return "Unbenannte Query";
-}
-
 function findAzureSavedQueryName(response: QueryIntakeResponse | null, queryId: string): string | null {
   if (!response) {
     return null;
@@ -1388,171 +1223,6 @@ function findAzureSavedQueryName(response: QueryIntakeResponse | null, queryId: 
 
   const name = match.name.trim();
   return name.length > 0 ? name : null;
-}
-
-function toShortQueryName(name: string, id: string): string {
-  const raw = name.trim();
-  if (!raw) {
-    return "Unbenannte Query";
-  }
-
-  const trailingGuidMatch = raw.match(/^(.*)\s\(([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\)$/i);
-  const withoutTrailingGuid = trailingGuidMatch ? trailingGuidMatch[1].trim() : raw;
-
-  if (!withoutTrailingGuid || QUERY_GUID_EXACT_PATTERN.test(withoutTrailingGuid) || withoutTrailingGuid === id) {
-    return "Unbenannte Query";
-  }
-
-  const segments = withoutTrailingGuid.split("/").map((segment) => segment.trim()).filter(Boolean);
-  const shortName = segments[segments.length - 1] ?? withoutTrailingGuid;
-  return shortName || "Unbenannte Query";
-}
-
-function upsertSavedQueries(
-  queries: SavedQueryPreference[],
-  candidate: SavedQueryPreference,
-  maxEntries: number
-): SavedQueryPreference[] {
-  const withoutCurrent = queries.filter((entry) => entry.id !== candidate.id);
-  const next = [candidate, ...withoutCurrent];
-  return next.slice(0, maxEntries);
-}
-
-type PersistedUiShellState = {
-  activeTab: TabId;
-  response: QueryIntakeResponse | null;
-  lastRunRequest: RunRequest | null;
-};
-
-function readPersistedUiShellState(): PersistedUiShellState | null {
-  if (typeof localStorage === "undefined") {
-    return null;
-  }
-
-  try {
-    const raw = localStorage.getItem(UI_SHELL_STATE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw) as PersistedUiShellState;
-    if (!parsed || typeof parsed !== "object") {
-      return null;
-    }
-
-    const activeTab = parsed.activeTab;
-    if (activeTab !== "query" && activeTab !== "mapping" && activeTab !== "timeline" && activeTab !== "diagnostics") {
-      return null;
-    }
-
-    return {
-      activeTab,
-      response: parsed.response ?? null,
-      lastRunRequest: parsed.lastRunRequest ?? null
-    };
-  } catch {
-    return null;
-  }
-}
-
-function persistUiShellState(state: PersistedUiShellState): void {
-  if (typeof localStorage === "undefined") {
-    return;
-  }
-
-  localStorage.setItem(UI_SHELL_STATE_KEY, JSON.stringify(state));
-}
-
-function resolveEffectiveTheme(mode: ThemeMode): "light" | "dark" {
-  if (mode === "dark") {
-    return "dark";
-  }
-
-  if (mode === "light") {
-    return "light";
-  }
-
-  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    return "dark";
-  }
-
-  return "light";
-}
-
-function applyThemeMode(mode: ThemeMode): void {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const root = document.documentElement;
-  root.dataset.themeMode = mode;
-  root.dataset.theme = resolveEffectiveTheme(mode);
-}
-
-function readPersistedThemeMode(): ThemeMode {
-  const cachedThemeMode = getCachedUserPreferences().themeMode;
-  if (cachedThemeMode === "system" || cachedThemeMode === "dark" || cachedThemeMode === "light") {
-    return cachedThemeMode;
-  }
-
-  if (typeof localStorage === "undefined") {
-    return "system";
-  }
-
-  const mode = localStorage.getItem(THEME_MODE_KEY);
-  if (mode === "system" || mode === "dark" || mode === "light") {
-    return mode;
-  }
-
-  return "system";
-}
-
-function persistThemeMode(mode: ThemeMode): void {
-  persistUserPreferencesPatch({
-    themeMode: mode
-  });
-
-  if (typeof localStorage === "undefined") {
-    return;
-  }
-
-  localStorage.setItem(THEME_MODE_KEY, mode);
-}
-
-function iconForThemeMode(mode: ThemeMode): string {
-  if (mode === "dark") {
-    return "☾";
-  }
-
-  if (mode === "light") {
-    return "☼";
-  }
-
-  return "◩";
-}
-
-function labelForThemeMode(mode: ThemeMode): string {
-  if (mode === "dark") {
-    return "Dark";
-  }
-
-  if (mode === "light") {
-    return "Light";
-  }
-
-  return "System";
-}
-
-function nextThemeMode(mode: ThemeMode): ThemeMode {
-  if (mode === "system") {
-    return "dark";
-  }
-
-  if (mode === "dark") {
-    return "light";
-  }
-
-  return "system";
 }
 
 function renderActivePanel(params: {
