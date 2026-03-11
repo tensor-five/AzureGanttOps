@@ -8,6 +8,10 @@ export type TimelineFieldColorCodingPreference = {
 };
 
 export type TimelineLabelFieldPreference = string;
+export type TimelineSortPreference = {
+  primary?: string;
+  secondary?: string | null;
+};
 export type SavedQueryPreference = {
   id: string;
   name: string;
@@ -23,6 +27,7 @@ export type UserPreferences = {
   timelineFieldColorCoding?: TimelineFieldColorCodingPreference;
   timelineLabelFields?: TimelineLabelFieldPreference[];
   timelineSidebarFields?: TimelineLabelFieldPreference[];
+  timelineSort?: TimelineSortPreference;
   timelineSidebarWidthPx?: number;
   timelineDetailsWidthPx?: number;
   savedQueries?: SavedQueryPreference[];
@@ -98,6 +103,25 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
     next.timelineSidebarFields = normalized;
   }
 
+  if (isPlainRecord(candidate.timelineSort)) {
+    const raw = candidate.timelineSort as Record<string, unknown>;
+    const primary = sanitizeTimelineSortField(raw.primary);
+    const secondaryRaw = raw.secondary;
+    const secondary =
+      secondaryRaw === null
+        ? null
+        : typeof secondaryRaw === "undefined"
+          ? undefined
+          : sanitizeTimelineSortField(secondaryRaw);
+
+    if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      next.timelineSort = {
+        primary,
+        secondary
+      };
+    }
+  }
+
   if (typeof candidate.timelineSidebarWidthPx === "number" && Number.isFinite(candidate.timelineSidebarWidthPx)) {
     next.timelineSidebarWidthPx = clamp(Math.round(candidate.timelineSidebarWidthPx), 160, 640);
   }
@@ -170,4 +194,30 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+function sanitizeTimelineSortField(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  if (
+    normalized === "startDate" ||
+    normalized === "endDate" ||
+    normalized === "title" ||
+    normalized === "mappedId" ||
+    normalized === "state" ||
+    normalized === "assignedTo" ||
+    normalized === "parentWorkItemId"
+  ) {
+    return normalized;
+  }
+
+  if (!normalized.startsWith("field:")) {
+    return null;
+  }
+
+  const fieldRef = normalized.slice("field:".length).trim();
+  return fieldRef.length > 0 ? `field:${fieldRef}` : null;
 }

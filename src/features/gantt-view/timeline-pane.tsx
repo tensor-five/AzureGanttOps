@@ -46,8 +46,31 @@ import {
 } from "./timeline-details-width-preference.js";
 import { createTimelineSelectionStore, type TimelineSelectionStore } from "./selection-store.js";
 import { TimelineMainSplitter } from "./timeline-main-splitter.js";
+import {
+  DEPENDENCY_VIEW_MODE_OPTIONS,
+  useDependencyEditing,
+  type ActiveDependencyDrag,
+  type DependencyViewMode,
+  type SelectedDependency
+} from "./use-dependency-editing.js";
+import {
+  useScheduleDragging,
+  type ActiveScheduleDrag,
+  type ActiveUnschedulableDrag,
+  type DragMode,
+  type UnscheduledDropPreview
+} from "./use-schedule-dragging.js";
+import {
+  useTimelineFilters,
+  type OpenFilterDropdownState,
+  type TimelineFieldFilter
+} from "./use-timeline-filters.js";
 import { useTimelineOverlayDismiss } from "./use-timeline-overlay-dismiss.js";
 import { useTimelineKeyboardShortcuts } from "./use-timeline-keyboard-shortcuts.js";
+import { TimelineSortControl } from "./timeline-sort-control.js";
+import { applyTimelineSorting } from "./timeline-sorting.js";
+import { useTimelineSorting } from "./use-timeline-sorting.js";
+import { useTimelineResizing } from "./use-timeline-resizing.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -85,36 +108,6 @@ export type TimelinePaneProps = {
   onRetryRefresh?: () => void;
 };
 
-type DragMode = "move" | "resize-start" | "resize-end";
-
-type ActiveScheduleDrag = {
-  mode: DragMode;
-  pointerId: number;
-  workItemId: number;
-  originClientX: number;
-  startDate: Date;
-  endDate: Date;
-  lastDayDelta: number;
-};
-
-type ActiveUnschedulableDrag = {
-  workItemId: number;
-  fixedEndDate: Date | null;
-};
-
-type UnscheduledDropPreview = {
-  startDate: Date;
-  endDate: Date;
-};
-
-type ActiveDependencyDrag = {
-  pointerId: number;
-  sourceWorkItemId: number;
-  pointerX: number;
-  pointerY: number;
-  hoveredTargetWorkItemId: number | null;
-};
-
 type ActivePanDrag = {
   pointerId: number;
   originClientX: number;
@@ -123,43 +116,7 @@ type ActivePanDrag = {
   originScrollTop: number;
 };
 
-type ActiveDetailsResize = {
-  pointerId: number;
-  originClientX: number;
-  originWidthPx: number;
-};
-
-type ActiveSidebarResize = {
-  pointerId: number;
-  originClientX: number;
-  originWidthPx: number;
-};
-
-type DependencyViewMode = "edit" | "show" | "none" | "violations";
-
-type SelectedDependency = {
-  predecessorWorkItemId: number;
-  successorWorkItemId: number;
-  dependencyType: "FS";
-};
-
 type TimelineZoomLevel = "week" | "month";
-type TimelineFieldFilter = {
-  slotId: number;
-  fieldRef: string | null;
-  selectedValueKeys: string[];
-};
-
-type OpenFilterDropdownState =
-  | {
-      slotId: number;
-      kind: "field";
-    }
-  | {
-      slotId: number;
-      kind: "value";
-    }
-  | null;
 
 type TimelineLabelFieldOption = {
   fieldRef: string;
@@ -168,41 +125,74 @@ type TimelineLabelFieldOption = {
   searchText: string;
 };
 
-type DependencyViewModeOption = {
-  value: DependencyViewMode;
-  label: string;
-};
-
-const DEPENDENCY_VIEW_MODE_OPTIONS: readonly DependencyViewModeOption[] = [
-  { value: "show", label: "Show all" },
-  { value: "edit", label: "Edit links" },
-  { value: "violations", label: "Show conflicts only" },
-  { value: "none", label: "Hide all" }
-];
-
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(), []);
   const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(), []);
+  const scheduleDragging = useScheduleDragging();
+  const dependencyEditing = useDependencyEditing();
+  const timelineFilters = useTimelineFilters(initialTimelineFilterState);
+  const timelineSorting = useTimelineSorting();
   const internalSelectionStoreRef = React.useRef<TimelineSelectionStore | null>(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
   }
 
   const selectionStore = props.selectionStore ?? internalSelectionStoreRef.current;
-  const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = React.useState<
-    Record<number, { startDate: string | null; endDate: string | null }>
-  >({});
-  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = React.useState<
-    Record<number, { startDate: string; endDate: string }>
-  >({});
+  const {
+    adoptedSchedulesByWorkItemId,
+    setAdoptedSchedulesByWorkItemId,
+    editedBarSchedulesByWorkItemId,
+    setEditedBarSchedulesByWorkItemId,
+    adoptScheduleError,
+    setAdoptScheduleError,
+    activeScheduleDrag,
+    setActiveScheduleDrag,
+    activeUnschedulableDrag,
+    setActiveUnschedulableDrag,
+    unscheduledDropPreview,
+    setUnscheduledDropPreview
+  } = scheduleDragging;
+  const {
+    activeDependencyDrag,
+    setActiveDependencyDrag,
+    dependencyViewMode,
+    setDependencyViewMode,
+    selectedDependency,
+    setSelectedDependency
+  } = dependencyEditing;
+  const {
+    timelineFiltersOpen,
+    setTimelineFiltersOpen,
+    timelineFieldFilters,
+    setTimelineFieldFilters,
+    nextFilterSlotId,
+    setNextFilterSlotId,
+    openFilterDropdown,
+    setOpenFilterDropdown,
+    filterFieldSearchDraft,
+    setFilterFieldSearchDraft,
+    filterValueSearchDraft,
+    setFilterValueSearchDraft
+  } = timelineFilters;
+  const {
+    sortSettingsOpen,
+    setSortSettingsOpen,
+    timelineSortPreference,
+    selectPrimarySortField,
+    selectSecondarySortField
+  } = timelineSorting;
+  const [appliedTimelineSortPreference, setAppliedTimelineSortPreference] = React.useState(() => timelineSortPreference);
+  const sortedBaseTimeline = React.useMemo(
+    () => applyTimelineSorting(props.timeline, appliedTimelineSortPreference),
+    [appliedTimelineSortPreference, props.timeline]
+  );
   const effectiveTimeline = React.useMemo(() => {
-    const withAdopted = applyAdoptedSchedules(props.timeline, adoptedSchedulesByWorkItemId);
+    const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
-  }, [props.timeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
+  }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
   const [selectedWorkItemId, setSelectedWorkItemId] = React.useState<number | null>(() =>
     selectionStore.getSelectedWorkItemId()
   );
-  const [adoptScheduleError, setAdoptScheduleError] = React.useState<string | null>(null);
   const [dayWidthPx, setDayWidthPx] = React.useState<number>(() => {
     if (!initialViewportPreference) {
       return DAY_WIDTH_WEEK_PX;
@@ -210,14 +200,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
     return clamp(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
   });
-  const [activeScheduleDrag, setActiveScheduleDrag] = React.useState<ActiveScheduleDrag | null>(null);
   const [activePanDrag, setActivePanDrag] = React.useState<ActivePanDrag | null>(null);
   const [spacePanPressed, setSpacePanPressed] = React.useState(false);
-  const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
-  const [activeDependencyDrag, setActiveDependencyDrag] = React.useState<ActiveDependencyDrag | null>(null);
-  const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
-  const [dependencyViewMode, setDependencyViewMode] = React.useState<DependencyViewMode>("show");
-  const [selectedDependency, setSelectedDependency] = React.useState<SelectedDependency | null>(null);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx();
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
@@ -226,8 +210,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const preferredWidth = loadLastTimelineSidebarWidthPx();
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const [activeDetailsResize, setActiveDetailsResize] = React.useState<ActiveDetailsResize | null>(null);
-  const [activeSidebarResize, setActiveSidebarResize] = React.useState<ActiveSidebarResize | null>(null);
   const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
   const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
     loadTimelineFieldColorCodingConfig()
@@ -238,14 +220,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
   const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
   const [colorCodingSearchDraft, setColorCodingSearchDraft] = React.useState("");
-  const [timelineFiltersOpen, setTimelineFiltersOpen] = React.useState(false);
-  const [timelineFieldFilters, setTimelineFieldFilters] = React.useState<TimelineFieldFilter[]>(
-    () => initialTimelineFilterState.filters
-  );
-  const [nextFilterSlotId, setNextFilterSlotId] = React.useState(() => initialTimelineFilterState.nextSlotId);
-  const [openFilterDropdown, setOpenFilterDropdown] = React.useState<OpenFilterDropdownState>(null);
-  const [filterFieldSearchDraft, setFilterFieldSearchDraft] = React.useState("");
-  const [filterValueSearchDraft, setFilterValueSearchDraft] = React.useState("");
   const [labelSettingsOpen, setLabelSettingsOpen] = React.useState(false);
   const [labelFieldSearchDraft, setLabelFieldSearchDraft] = React.useState("");
   const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = React.useState("");
@@ -264,6 +238,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
   const filterToggleControlRef = React.useRef<HTMLDivElement | null>(null);
   const filterPanelRef = React.useRef<HTMLDivElement | null>(null);
+  const sortToggleControlRef = React.useRef<HTMLDivElement | null>(null);
+  const sortPanelRef = React.useRef<HTMLDivElement | null>(null);
   const labelToggleControlRef = React.useRef<HTMLDivElement | null>(null);
   const labelPanelRef = React.useRef<HTMLDivElement | null>(null);
   const labelMenuSidebarOptionsRef = React.useRef<HTMLDivElement | null>(null);
@@ -278,14 +254,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const labelMenuScrollSyncSourceRef = React.useRef<"sidebar" | "bar" | null>(null);
   const spacePanPressedRef = React.useRef(false);
   const initialViewportAppliedRef = React.useRef(false);
-  const detailsWidthLiveRef = React.useRef(detailsWidthPx);
-  const sidebarWidthLiveRef = React.useRef(sidebarWidthPx);
-  const sidebarEffectiveWidthLiveRef = React.useRef(
-    timelineSidebarFields.length === 0 ? TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX : sidebarWidthPx
-  );
-  const lastExpandedDetailsWidthRef = React.useRef(Math.max(detailsWidthPx, DETAILS_PANEL_CONTENT_MIN_WIDTH_PX));
-  const detailsResizeMovedRef = React.useRef(false);
-  const sidebarResizeMovedRef = React.useRef(false);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -299,9 +267,35 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const dependencyMode = dependencyViewMode === "edit";
   const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
-  const detailsContentHidden = detailsWidthPx < DETAILS_PANEL_CONTENT_MIN_WIDTH_PX;
-  const sidebarCollapsed = timelineSidebarFields.length === 0;
-  const effectiveSidebarWidthPx = sidebarCollapsed ? TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX : sidebarWidthPx;
+  const timelineResizing = useTimelineResizing({
+    timelineMainGridRef,
+    detailsWidthPx,
+    setDetailsWidthPx,
+    sidebarWidthPx,
+    setSidebarWidthPx,
+    sidebarFieldsCount: timelineSidebarFields.length,
+    detailsPanelMinWidthPx: DETAILS_PANEL_MIN_WIDTH_PX,
+    detailsPanelContentMinWidthPx: DETAILS_PANEL_CONTENT_MIN_WIDTH_PX,
+    timelineSidebarMinWidthPx: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
+    timelineSidebarCollapsedWidthPx: TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX,
+    clamp,
+    resolveTimelineDetailsMaxWidthPx,
+    resolveTimelineSidebarMaxWidthPx,
+    persistDetailsWidthPx: saveTimelineDetailsWidthPx,
+    persistSidebarWidthPx: saveTimelineSidebarWidthPx
+  });
+  const {
+    isSidebarResizing,
+    isDetailsResizing,
+    detailsContentHidden,
+    sidebarCollapsed,
+    effectiveSidebarWidthPx,
+    detailsResizeMovedRef,
+    sidebarEffectiveWidthLiveRef,
+    beginSidebarResize,
+    beginDetailsResize,
+    expandDetailsPanelFromHidden
+  } = timelineResizing;
 
   React.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
@@ -356,10 +350,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   useTimelineOverlayDismiss({
     colorCodingDropdownOpen,
     openFilterDropdown,
+    sortSettingsOpen,
     labelSettingsOpen,
     colorCodingControlRef,
     filterToggleControlRef,
     filterPanelRef,
+    sortToggleControlRef,
+    sortPanelRef,
     labelToggleControlRef,
     labelPanelRef,
     onCloseColorCodingDropdown: () => {
@@ -368,128 +365,18 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     onCloseFilterDropdown: () => {
       setOpenFilterDropdown(null);
     },
+    onCloseSortSettings: () => {
+      setSortSettingsOpen(false);
+    },
     onCloseLabelSettings: () => {
       setLabelSettingsOpen(false);
     }
   });
 
   React.useEffect(() => {
-    detailsWidthLiveRef.current = detailsWidthPx;
-    if (detailsWidthPx >= DETAILS_PANEL_CONTENT_MIN_WIDTH_PX) {
-      lastExpandedDetailsWidthRef.current = detailsWidthPx;
-    }
-  }, [detailsWidthPx]);
-
-  React.useEffect(() => {
-    sidebarWidthLiveRef.current = sidebarWidthPx;
-    sidebarEffectiveWidthLiveRef.current = effectiveSidebarWidthPx;
-  }, [effectiveSidebarWidthPx, sidebarWidthPx]);
-
-  React.useEffect(() => {
-    const clampWidthToAvailableSpace = (): void => {
-      setSidebarWidthPx((current) => {
-        const maxWidth = resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthLiveRef.current);
-        const next = clamp(current, TIMELINE_SIDEBAR_MIN_WIDTH_PX, maxWidth);
-        return Math.abs(current - next) < 1 ? current : next;
-      });
-
-      setDetailsWidthPx((current) => {
-        const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
-        const next = clamp(current, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
-        return Math.abs(current - next) < 1 ? current : next;
-      });
-    };
-
-    clampWidthToAvailableSpace();
-    window.addEventListener("resize", clampWidthToAvailableSpace);
-    return () => {
-      window.removeEventListener("resize", clampWidthToAvailableSpace);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (!activeDetailsResize) {
-      return;
-    }
-
-    const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerId !== activeDetailsResize.pointerId) {
-        return;
-      }
-
-      const deltaX = event.clientX - activeDetailsResize.originClientX;
-      if (Math.abs(deltaX) >= 2) {
-        detailsResizeMovedRef.current = true;
-      }
-      const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
-      const nextWidth = clamp(activeDetailsResize.originWidthPx - deltaX, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
-      setDetailsWidthPx(nextWidth);
-      event.preventDefault();
-    };
-
-    const finishResize = (event: PointerEvent) => {
-      if (event.pointerId !== activeDetailsResize.pointerId) {
-        return;
-      }
-
-      setActiveDetailsResize(null);
-      saveTimelineDetailsWidthPx(detailsWidthLiveRef.current);
-    };
-
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", finishResize);
-    window.addEventListener("pointercancel", finishResize);
-
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", finishResize);
-      window.removeEventListener("pointercancel", finishResize);
-    };
-  }, [activeDetailsResize]);
-
-  React.useEffect(() => {
-    if (!activeSidebarResize) {
-      return;
-    }
-
-    const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerId !== activeSidebarResize.pointerId) {
-        return;
-      }
-
-      const deltaX = event.clientX - activeSidebarResize.originClientX;
-      if (Math.abs(deltaX) >= 2) {
-        sidebarResizeMovedRef.current = true;
-      }
-      const maxWidth = resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthLiveRef.current);
-      const nextWidth = clamp(activeSidebarResize.originWidthPx + deltaX, TIMELINE_SIDEBAR_MIN_WIDTH_PX, maxWidth);
-      setSidebarWidthPx(nextWidth);
-      event.preventDefault();
-    };
-
-    const finishResize = (event: PointerEvent) => {
-      if (event.pointerId !== activeSidebarResize.pointerId) {
-        return;
-      }
-
-      setActiveSidebarResize(null);
-      saveTimelineSidebarWidthPx(sidebarWidthLiveRef.current);
-    };
-
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", finishResize);
-    window.addEventListener("pointercancel", finishResize);
-
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", finishResize);
-      window.removeEventListener("pointercancel", finishResize);
-    };
-  }, [activeSidebarResize]);
-
-  React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
+    setAppliedTimelineSortPreference(timelineSortPreference);
     setActiveScheduleDrag(null);
     setActivePanDrag(null);
     setActiveUnschedulableDrag(null);
@@ -1606,59 +1493,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     sidebar.scrollTop = bar.scrollTop;
   }, []);
 
-  const beginSidebarResize = React.useCallback(
-    (event: React.PointerEvent<HTMLButtonElement>) => {
-      if (event.button !== 0) {
-        return;
-      }
-
-      event.preventDefault();
-      if ("setPointerCapture" in event.currentTarget) {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      }
-      sidebarResizeMovedRef.current = false;
-
-      setActiveSidebarResize({
-        pointerId: event.pointerId,
-        originClientX: event.clientX,
-        originWidthPx: sidebarWidthPx
-      });
-    },
-    [sidebarWidthPx]
-  );
-
-  const beginDetailsResize = React.useCallback(
-    (event: React.PointerEvent<HTMLButtonElement>) => {
-      if (event.button !== 0) {
-        return;
-      }
-
-      event.preventDefault();
-      if ("setPointerCapture" in event.currentTarget) {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      }
-      detailsResizeMovedRef.current = false;
-
-      setActiveDetailsResize({
-        pointerId: event.pointerId,
-        originClientX: event.clientX,
-        originWidthPx: detailsWidthPx
-      });
-    },
-    [detailsWidthPx]
-  );
-
-  const expandDetailsPanelFromHidden = React.useCallback(() => {
-    if (!detailsContentHidden || detailsResizeMovedRef.current) {
-      return;
-    }
-
-    const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
-    const restoredWidth = clamp(lastExpandedDetailsWidthRef.current, DETAILS_PANEL_CONTENT_MIN_WIDTH_PX, maxWidth);
-    setDetailsWidthPx(restoredWidth);
-    saveTimelineDetailsWidthPx(restoredWidth);
-  }, [detailsContentHidden]);
-
   const openFilterSlot = React.useMemo(
     () =>
       openFilterDropdown === null
@@ -1816,6 +1650,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               type: "button",
               className: "timeline-color-coding-select timeline-color-coding-select-trigger",
               "aria-label": "Color coding",
+              title: "Choose how timeline bars are color-coded.",
               "aria-haspopup": "listbox",
               "aria-expanded": colorCodingDropdownOpen ? "true" : "false",
               onClick: () => {
@@ -1882,6 +1717,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               type: "button",
               className: "timeline-color-coding-settings-button",
               "aria-label": "Open color coding settings",
+              title: "Open color-coding settings and set colors per value.",
               onClick: () => {
                 if (colorCodingDropdownOpen && colorCodingSearchDraft.trim().length > 0) {
                   applyFirstFilteredColorCodingOption();
@@ -1901,6 +1737,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               type: "button",
               className: timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
               "aria-label": "Toggle timeline filters",
+              title: "Filter timeline rows by field values.",
               "aria-expanded": timelineFiltersOpen ? "true" : "false",
               "aria-haspopup": "dialog",
               onClick: () => {
@@ -1926,6 +1763,18 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             activeTimelineFilters.length > 0 ? React.createElement("span", { className: "timeline-filter-toggle-count" }, activeTimelineFilters.length) : null
           )
         ),
+        React.createElement(TimelineSortControl, {
+          availableFieldRefs,
+          controlRef: sortToggleControlRef,
+          panelRef: sortPanelRef,
+          sortSettingsOpen,
+          timelineSortPreference,
+          onToggleSortSettings: () => {
+            setSortSettingsOpen((current) => !current);
+          },
+          onSelectPrimarySortField: selectPrimarySortField,
+          onSelectSecondarySortField: selectSecondarySortField
+        }),
         React.createElement(
           "div",
           { className: "timeline-label-control", ref: labelToggleControlRef },
@@ -1935,6 +1784,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               type: "button",
               className: labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
               "aria-label": "Toggle timeline label fields",
+              title: "Select which fields are shown in sidebar and bar labels.",
               "aria-expanded": labelSettingsOpen ? "true" : "false",
               "aria-haspopup": "dialog",
               onClick: () => {
@@ -1951,7 +1801,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 "aria-hidden": "true"
               },
               React.createElement("path", {
-                d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
+                d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
               })
             ),
             React.createElement(
@@ -2635,7 +2485,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               ),
               !sidebarCollapsed
                 ? React.createElement(TimelineMainSplitter, {
-                    active: activeSidebarResize !== null,
+                    active: isSidebarResizing,
                     embedded: true,
                     ariaLabel: "Resize timeline sidebar",
                     ariaValueMin: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
@@ -3069,7 +2919,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       React.createElement(
         TimelineMainSplitter,
         {
-          active: activeDetailsResize !== null,
+          active: isDetailsResizing,
           ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
           ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
           ariaValueMax: resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),

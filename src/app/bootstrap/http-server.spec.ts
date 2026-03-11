@@ -211,6 +211,59 @@ describe("createHttpServer", () => {
     }
   });
 
+  it("redacts bearer/jwt and token-like key values from ado communication previews", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({
+          status: 200,
+          json: {
+            authorization: "Bearer abcdefghijklmnopqrstuvwxyz123456",
+            access_token: "tok_very_secret_value_123456",
+            nested: {
+              jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4ifQ.signaturepart"
+            }
+          },
+          headers: {}
+        })
+      }
+    });
+
+    const originalPath = process.env.PATH;
+
+    try {
+      process.env.PATH = `${path.dirname(fixture.azCliShimPath)}:${originalPath ?? ""}`;
+
+      await fetch(`${server.baseUrl}/phase2/query-intake`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({ queryInput: "11111111-1111-4111-8111-111111111114" })
+      });
+
+      const response = await fetch(`${server.baseUrl}/phase2/ado-comm-logs`);
+      const body = (await response.json()) as {
+        entries: Array<{
+          direction: "request" | "response";
+          preview: string;
+        }>;
+      };
+
+      const responseEntry = body.entries.find((entry) => entry.direction === "response");
+      expect(responseEntry).toBeDefined();
+      expect(responseEntry?.preview).toContain("[REDACTED]");
+      expect(responseEntry?.preview).not.toContain("tok_very_secret_value_123456");
+      expect(responseEntry?.preview).not.toContain("abcdefghijklmnopqrstuvwxyz123456");
+      expect(responseEntry?.preview).not.toContain("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9");
+    } finally {
+      process.env.PATH = originalPath;
+      await server.close();
+    }
+  });
+
   it("returns only newer ado communication logs after cursor", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
@@ -414,6 +467,25 @@ describe("createHttpServer", () => {
         code: "CSRF_INVALID",
         message: "Missing or invalid CSRF protection."
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("embeds a hex csrf token in root HTML", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const first = await fetchCsrfToken(server.baseUrl);
+      const second = await fetchCsrfToken(server.baseUrl);
+
+      expect(first).toMatch(/^[a-f0-9]{64}$/);
+      expect(second).toMatch(/^[a-f0-9]{64}$/);
+      expect(first).toBe(second);
     } finally {
       await server.close();
     }

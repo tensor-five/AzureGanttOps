@@ -1,0 +1,134 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
+
+:root {
+  --font-display: "Satoshi", -apple-system, blinkmacsystemfont, sans-serif;
+  --font-body: "Satoshi", -apple-system, blinkmacsystemfont, sans-serif;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-bold: 700;
+  --font-black: 900;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --text-5xl: 3.5rem;
+  --text-6xl: 4.5rem;
+
+  --tracking-tight: -0.025em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.1em;
+
+  --leading-tight: 1.1;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --color-primary: #842CC3;
+  --color-primary-dark: #5B1A8A;
+  --color-secondary: #87F3A4;
+
+  --color-bg: #ffffff;
+  --color-bg-subtle: #fdfdfd;
+  --color-bg-muted: #f8f8f8;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-text: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #a8a29e;
+  --color-border: #d6d3d1;
+  --color-border-subtle: #e7e5e4;
+  --color-border-strong: #bfbab5;
+
+  --color-tab-active-bg: #f1e7f9;
+  --color-tab-active-text: #4c1d68;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #f59e0b;
+  --color-warning-text: #92400e;
+
+  --color-timeline-grid-line: #e7e5e4;
+  --color-timeline-week-line: #b8b3ab;
+  --color-timeline-axis-label: #78716c;
+  --color-timeline-current-period: rgba(132, 44, 195, 0.1);
+  --color-timeline-today-line: #c2410c;
+  --color-timeline-today-label: #9a3412;
+  --color-timeline-row-label: #57534e;
+  --color-timeline-bar-fill: #7c3aed;
+  --color-timeline-bar-stroke: rgba(41, 37, 36, 0.36);
+  --color-timeline-bar-selected-stroke: #1c1917;
+  --color-timeline-bar-handle-fill: rgba(255, 255, 255, 0.9);
+  --color-timeline-bar-handle-stroke: rgba(28, 25, 23, 0.44);
+  --color-timeline-bar-label: #fafaf9;
+  --color-log-entry-bg: #f5f5f4;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.875rem;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.08);
+  --shadow-md: 0 10px 24px rgba(28, 25, 23, 0.1);
+  --shadow-lg: 0 20px 40px -12px rgba(132, 44, 195, 0.15);
+
+  --transition-duration-fast: 120ms;
+  --transition-duration-base: 180ms;
+  --transition-duration-slow: 260ms;
+  --transition-easing-standard: ease;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0c0a09;
+  --color-bg-subtle: #1c1917;
+  --color-bg-muted: #292524;
+  --color-surface: #1c1917;
+  --color-surface-elevated: #1f1b1a;
+  --color-text: #fafaf9;
+  --color-text-secondary: #a8a29e;
+  --color-text-muted: #78716c;
+  --color-border: #44403c;
+  --color-border-subtle: #292524;
+  --color-border-strong: #57534e;
+
+  --color-tab-active-bg: #32203f;
+  --color-tab-active-text: #f3e8ff;
+  --color-warning-bg: #3c2d0d;
+  --color-warning-border: #d79a2b;
+  --color-warning-text: #f7d696;
+
+  --color-timeline-grid-line: #292524;
+  --color-timeline-week-line: #57534e;
+  --color-timeline-axis-label: #a8a29e;
+  --color-timeline-current-period: rgba(167, 102, 213, 0.2);
+  --color-timeline-today-line: #fb923c;
+  --color-timeline-today-label: #fdba74;
+  --color-timeline-row-label: #d6d3d1;
+  --color-timeline-bar-fill: #8b5cf6;
+  --color-timeline-bar-stroke: rgba(250, 250, 249, 0.35);
+  --color-timeline-bar-selected-stroke: #fafaf9;
+  --color-timeline-bar-handle-fill: rgba(28, 25, 23, 0.85);
+  --color-timeline-bar-handle-stroke: rgba(250, 250, 249, 0.4);
+  --color-timeline-bar-label: #fafaf9;
+  --color-log-entry-bg: #1c1917;
+
+  --shadow-sm: 0 2px 8px rgba(2, 8, 20, 0.45);
+  --shadow-md: 0 18px 32px rgba(2, 8, 20, 0.5);
+  --shadow-lg: 0 24px 44px -12px rgba(132, 44, 195, 0.22);
+}
+

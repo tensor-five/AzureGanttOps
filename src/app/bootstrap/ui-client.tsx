@@ -19,6 +19,8 @@ import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
+import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
+import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
 import {
   type SavedQueryPreference,
   getCachedUserPreferences,
@@ -30,6 +32,12 @@ import {
   applyScheduleUpdate,
   applyWorkItemMetadataUpdate
 } from "./ui-client-timeline-mutations.js";
+import {
+  buildSavedHeaderQueryCandidate,
+  filterHeaderQueries,
+  findAzureSavedQueryName,
+  resolveDeletedHeaderQueries
+} from "./ui-client-header-query-service.js";
 import {
   buildSavedQueryLabel,
   inferSavedQueryId,
@@ -49,6 +57,7 @@ import {
   readPersistedThemeMode,
   type ThemeMode
 } from "./ui-client-theme.js";
+import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -58,115 +67,6 @@ const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
 
 type WorkItemSyncState = "up_to_date" | "syncing" | "error";
-
-function resolveStatePaletteSourceWorkItemId(timeline: QueryIntakeResponse["timeline"]): number | null {
-  if (!timeline) {
-    return null;
-  }
-
-  const firstBarId = timeline.bars[0]?.workItemId ?? null;
-  if (typeof firstBarId === "number") {
-    return firstBarId;
-  }
-
-  const firstUnscheduledId = timeline.unschedulable[0]?.workItemId ?? null;
-  return typeof firstUnscheduledId === "number" ? firstUnscheduledId : null;
-}
-
-function normalizeWorkItemType(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.trim().toLowerCase();
-  return normalized.length > 0 ? normalized : null;
-}
-
-function collectStatePaletteSourceWorkItemsByType(timeline: QueryIntakeResponse["timeline"]): Map<string, number> {
-  const result = new Map<string, number>();
-  if (!timeline) {
-    return result;
-  }
-
-  const register = (workItemId: number, workItemType: string | null | undefined): void => {
-    const typeKey = normalizeWorkItemType(workItemType);
-    if (!typeKey || result.has(typeKey)) {
-      return;
-    }
-
-    result.set(typeKey, workItemId);
-  };
-
-  timeline.bars.forEach((bar) => {
-    register(bar.workItemId, bar.details.workItemType);
-  });
-  timeline.unschedulable.forEach((item) => {
-    register(item.workItemId, item.details.workItemType);
-  });
-
-  return result;
-}
-
-function normalizeAdoStateColor(color: string | null): string | null {
-  if (!color) {
-    return null;
-  }
-
-  const normalized = color.trim().replace(/^#/, "");
-  return /^[0-9a-f]{6}$/i.test(normalized) ? `#${normalized}` : null;
-}
-
-function buildStateColorLookup(states: Array<{ name: string; color: string | null }>): Map<string, string> {
-  const colorByStateCode = new Map<string, string>();
-  states.forEach((state) => {
-    const name = state.name.trim().toLowerCase();
-    const color = normalizeAdoStateColor(state.color);
-    if (name.length > 0 && color) {
-      colorByStateCode.set(name, color);
-    }
-  });
-
-  return colorByStateCode;
-}
-
-function applyRuntimeStateColorsByType(
-  timeline: QueryIntakeResponse["timeline"],
-  stateColorsByType: ReadonlyMap<string, ReadonlyMap<string, string>>,
-  fallbackStateColors: ReadonlyMap<string, string>
-): QueryIntakeResponse["timeline"] {
-  if (!timeline) {
-    return timeline;
-  }
-
-  const resolveColor = (input: { stateCode: string; workItemType: string | null | undefined }): string | null => {
-    const stateKey = input.stateCode.trim().toLowerCase();
-    if (stateKey.length === 0) {
-      return null;
-    }
-
-    const typeKey = normalizeWorkItemType(input.workItemType);
-    const typeScoped = typeKey ? stateColorsByType.get(typeKey)?.get(stateKey) : null;
-    return typeScoped ?? fallbackStateColors.get(stateKey) ?? null;
-  };
-
-  return {
-    ...timeline,
-    bars: timeline.bars.map((bar) => {
-      const nextColor = resolveColor({
-        stateCode: bar.state.code,
-        workItemType: bar.details.workItemType
-      });
-      return nextColor ? { ...bar, state: { ...bar.state, color: nextColor } } : bar;
-    }),
-    unschedulable: timeline.unschedulable.map((item) => {
-      const nextColor = resolveColor({
-        stateCode: item.state.code,
-        workItemType: item.details.workItemType
-      });
-      return nextColor ? { ...item, state: { ...item.state, color: nextColor } } : item;
-    })
-  };
-}
 
 type RunRequest = {
   queryInput: string;
@@ -284,10 +184,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [mappingFixResponse, setMappingFixResponse] = React.useState<QueryIntakeResponse | null>(
     initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null
   );
-  const [adoCommLogs, setAdoCommLogs] = React.useState<AdoCommLogEntry[]>([]);
-  const [adoCommLogsCursor, setAdoCommLogsCursor] = React.useState(0);
-  const [adoCommLogsError, setAdoCommLogsError] = React.useState<string | null>(null);
-  const [adoCommLogsLoading, setAdoCommLogsLoading] = React.useState(true);
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
     readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
   );
@@ -305,12 +201,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const adoCommPollInFlightRef = React.useRef(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
   const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+  const adoCommLogPolling = useAdoCommLogPolling({
+    controller: props.composition.controller,
+    pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
+    readLimit: ADO_COMM_LOG_READ_LIMIT,
+    maxEntries: ADO_COMM_LOG_UI_MAX
+  });
 
   const fetchWorkItemStateOptionsCached = React.useCallback(
     async ({ targetWorkItemId }: { targetWorkItemId: number }) => {
@@ -326,107 +227,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     [props.composition.controller]
   );
 
-  const enrichResponseWithRuntimeStateColors = React.useCallback(
+  const enrichRuntimeStateColors = React.useCallback(
     async (incoming: QueryIntakeResponse): Promise<QueryIntakeResponse> => {
-      try {
-        const sourceByType = collectStatePaletteSourceWorkItemsByType(incoming.timeline);
-        const stateColorsByType = new Map<string, Map<string, string>>();
-        const fallbackStateColors = new Map<string, string>();
-
-        if (sourceByType.size > 0) {
-          await Promise.all(
-            [...sourceByType.entries()].map(async ([typeKey, workItemId]) => {
-              const stateOptions = await fetchWorkItemStateOptionsCached({ targetWorkItemId: workItemId });
-              const stateColors = buildStateColorLookup(stateOptions);
-              if (stateColors.size === 0) {
-                return;
-              }
-
-              stateColorsByType.set(typeKey, stateColors);
-              stateColors.forEach((color, state) => {
-                if (!fallbackStateColors.has(state)) {
-                  fallbackStateColors.set(state, color);
-                }
-              });
-            })
-          );
-        } else {
-          const fallbackSourceWorkItemId = resolveStatePaletteSourceWorkItemId(incoming.timeline);
-          if (fallbackSourceWorkItemId !== null) {
-            const stateOptions = await fetchWorkItemStateOptionsCached({ targetWorkItemId: fallbackSourceWorkItemId });
-            buildStateColorLookup(stateOptions).forEach((color, state) => {
-              fallbackStateColors.set(state, color);
-            });
-          }
-        }
-
-        return {
-          ...incoming,
-          timeline: applyRuntimeStateColorsByType(incoming.timeline, stateColorsByType, fallbackStateColors)
-        };
-      } catch {
-        return incoming;
-      }
+      return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
     },
     [fetchWorkItemStateOptionsCached]
   );
-
-  React.useEffect(() => {
-    let active = true;
-
-    const poll = async () => {
-      if (adoCommPollInFlightRef.current || !active) {
-        return;
-      }
-
-      adoCommPollInFlightRef.current = true;
-
-      try {
-        const snapshot = await props.composition.controller.fetchAdoCommLogs({
-          afterSeq: adoCommLogsCursor,
-          limit: ADO_COMM_LOG_READ_LIMIT
-        });
-
-        if (!active) {
-          return;
-        }
-
-        setAdoCommLogs((current) => {
-          const next = current.concat(snapshot.entries);
-          if (next.length > ADO_COMM_LOG_UI_MAX) {
-            return next.slice(next.length - ADO_COMM_LOG_UI_MAX);
-          }
-
-          return next;
-        });
-        setAdoCommLogsCursor(snapshot.nextSeq);
-        setAdoCommLogsError(null);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-
-        const message = error instanceof Error ? error.message : "Unable to load Azure communication logs.";
-        setAdoCommLogsError(message);
-      } finally {
-        if (active) {
-          setAdoCommLogsLoading(false);
-        }
-
-        adoCommPollInFlightRef.current = false;
-      }
-    };
-
-    void poll();
-    const intervalId = window.setInterval(() => {
-      void poll();
-    }, ADO_COMM_LOG_POLL_INTERVAL_MS);
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
-  }, [adoCommLogsCursor, props.composition.controller]);
 
   const runQuery = React.useCallback(
     async (request: {
@@ -448,7 +254,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         mappingProfileId: request.mappingProfileId,
         mappingProfileUpsert: request.mappingProfileUpsert
       });
-      const submitted = await enrichResponseWithRuntimeStateColors(result.response);
+      const submitted = await enrichRuntimeStateColors(result.response);
       setResponse(submitted);
       setUiModel(mapQueryIntakeResponseToUiModel(submitted));
       setLastRunRequest({
@@ -458,21 +264,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       });
       setBlockerMessage(null);
 
-      if (
-        submitted.preflightStatus === "READY" &&
-        submitted.statusCode === "OK" &&
-        submitted.mappingValidation.status === "invalid"
-      ) {
+      if (shouldOpenMappingFixTab(submitted)) {
         setMappingFixResponse(submitted);
-        setActiveTab("mapping");
+        setActiveTab(deriveActiveTabForQueryResponse(submitted));
       } else {
         setMappingFixResponse(null);
-        setActiveTab("timeline");
+        setActiveTab(deriveActiveTabForQueryResponse(submitted));
       }
 
       return submitted;
     },
-    [enrichResponseWithRuntimeStateColors, props.composition]
+    [enrichRuntimeStateColors, props.composition]
   );
 
   const handleNeedsFix = React.useCallback((needsFixResponse: QueryIntakeResponse) => {
@@ -521,17 +323,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     try {
       if (lastRunRequest) {
         const refreshedRaw = await props.composition.controller.submit(lastRunRequest);
-        const refreshed = await enrichResponseWithRuntimeStateColors(refreshedRaw);
+        const refreshed = await enrichRuntimeStateColors(refreshedRaw);
         setResponse(refreshed);
         setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
 
-        if (
-          refreshed.preflightStatus === "READY" &&
-          refreshed.statusCode === "OK" &&
-          refreshed.mappingValidation.status === "invalid"
-        ) {
+        if (shouldOpenMappingFixTab(refreshed)) {
           setMappingFixResponse(refreshed);
-          setActiveTab("mapping");
+          setActiveTab(deriveActiveTabForQueryResponse(refreshed));
           setControlsOpen(true);
           return;
         }
@@ -563,7 +361,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     } finally {
       setIsRefreshing(false);
     }
-  }, [enrichResponseWithRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller, runQuery]);
+  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller, runQuery]);
 
   const loadSavedHeaderQuery = React.useCallback(
     async (queryId: string) => {
@@ -571,7 +369,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         return;
       }
 
-      const selected = savedHeaderQueries.find((entry) => entry.id === queryId);
+      const selected = filterHeaderQueries(savedHeaderQueries, "").find((entry) => entry.id === queryId);
       if (!selected) {
         setHeaderQueryMessage("The selected query could not be found.");
         return;
@@ -654,17 +452,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         // Keep fallback name when query details request fails.
       }
 
-      const candidate: SavedQueryPreference = {
-        id: queryId,
-        name: toShortQueryName(
-          azureQueryName ??
-            buildSavedQueryLabel(),
-            queryId
-        ),
-        queryInput: transportQueryInput,
-        organization: persisted.organization.trim() || undefined,
-        project: persisted.project.trim() || undefined
-      };
+      const candidate: SavedQueryPreference = buildSavedHeaderQueryCandidate({
+        queryId,
+        transportQueryInput,
+        organization: persisted.organization,
+        project: persisted.project,
+        azureQueryName,
+        fallbackLabel: buildSavedQueryLabel()
+      });
 
       const nextSavedQueries = upsertSavedQueries(savedHeaderQueries, candidate, HEADER_SAVED_QUERY_LIMIT);
       setSavedHeaderQueries(nextSavedQueries);
@@ -683,34 +478,24 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
   const deleteSavedHeaderQuery = React.useCallback(
     (queryId: string) => {
-      const nextSavedQueries = savedHeaderQueries.filter((entry) => entry.id !== queryId);
-      const nextSelectedHeaderQueryId =
-        selectedHeaderQueryId === queryId
-          ? (nextSavedQueries[0]?.id ?? "")
-          : selectedHeaderQueryId;
-      setSavedHeaderQueries(nextSavedQueries);
-      if (selectedHeaderQueryId === queryId) {
-        setSelectedHeaderQueryId(nextSelectedHeaderQueryId);
-      }
+      const next = resolveDeletedHeaderQueries({
+        queries: savedHeaderQueries,
+        selectedHeaderQueryId,
+        deletedQueryId: queryId
+      });
+      setSavedHeaderQueries(next.queries);
+      setSelectedHeaderQueryId(next.selectedHeaderQueryId);
       setHeaderQueryMessage(null);
       persistUserPreferencesPatch({
-        savedQueries: nextSavedQueries,
-        selectedHeaderQueryId: nextSelectedHeaderQueryId || undefined
+        savedQueries: next.queries,
+        selectedHeaderQueryId: next.selectedHeaderQueryId || undefined
       });
     },
     [savedHeaderQueries, selectedHeaderQueryId]
   );
 
   const filteredHeaderQueries = React.useMemo(() => {
-    const search = headerQuerySearch.trim().toLowerCase();
-    if (!search) {
-      return savedHeaderQueries;
-    }
-
-    return savedHeaderQueries.filter((entry) => {
-      const shortName = toShortQueryName(entry.name, entry.id).toLowerCase();
-      return shortName.includes(search);
-    });
+    return filterHeaderQueries(savedHeaderQueries, headerQuerySearch);
   }, [headerQuerySearch, savedHeaderQueries]);
 
   const runTrackedWorkItemUpdate = React.useCallback(
@@ -800,9 +585,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     onSetAzureCliPath: props.composition.controller.setAzureCliPath,
     onApplyMappingDefaults: applyMappingDefaults,
     onRetryRefresh: retryRefresh,
-    adoCommLogs,
-    adoCommLogsLoading,
-    adoCommLogsError
+    adoCommLogs: adoCommLogPolling.logs,
+    adoCommLogsLoading: adoCommLogPolling.loading,
+    adoCommLogsError: adoCommLogPolling.error
   });
 
   return React.createElement(
@@ -1208,21 +993,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       )
     )
   );
-}
-
-function findAzureSavedQueryName(response: QueryIntakeResponse | null, queryId: string): string | null {
-  if (!response) {
-    return null;
-  }
-
-  const normalizedQueryId = queryId.trim().toLowerCase();
-  const match = response.savedQueries.find((entry) => entry.id.trim().toLowerCase() === normalizedQueryId);
-  if (!match) {
-    return null;
-  }
-
-  const name = match.name.trim();
-  return name.length > 0 ? name : null;
 }
 
 function renderActivePanel(params: {

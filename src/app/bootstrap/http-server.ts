@@ -7,8 +7,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
 import {
-  LowdbUserPreferencesAdapter,
-  type UserPreferences
+  LowdbUserPreferencesAdapter
 } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
@@ -17,6 +16,21 @@ import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
+import {
+  parseAdoptSchedulePayload,
+  parseAzCliPathPayload,
+  parseDependencyLinkPayload,
+  parseMappingProfileUpsert,
+  parsePayload,
+  parseQueryIdFromQuery,
+  parseTargetWorkItemIdFromQuery,
+  parseUpdateDetailsPayload,
+  parseUserPreferencesPatch
+} from "./http-server-request-parsing.js";
+import {
+  fetchAllowedStateCodesForWorkItem,
+  fetchQueryDetails
+} from "./http-server-query-resolvers.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -107,6 +121,10 @@ const ADO_COMM_LOG_LIMIT_MAX = 200;
 const ADO_COMM_LOG_PREVIEW_MAX = 500;
 const SENSITIVE_QUERY_PARAM_PATTERN = /token|secret|password|pat|sig|key|code|auth/i;
 const SENSITIVE_INLINE_PATTERN = /(token|secret|password|pat|authorization)[^\s]*/gi;
+const SENSITIVE_BEARER_PATTERN = /\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi;
+const SENSITIVE_JWT_PATTERN = /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.?[A-Za-z0-9_-]*\b/g;
+const SENSITIVE_KEY_VALUE_PATTERN =
+  /\b(token|secret|password|pat|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|id[_-]?token|authorization)\b(\s*[:=]\s*)(["'])?([^\s,"'}\]]{6,})\3?/gi;
 const ADO_COMM_DEFAULT_METHOD = "GET" as const;
 const ADO_COMM_EMPTY_PREVIEW = "";
 const ADO_COMM_NO_STATUS = null;
@@ -214,9 +232,13 @@ function sanitizeUrlForLog(rawUrl: string): string {
 }
 
 function sanitizePreviewForLog(input: string): string {
-  return sanitizeLogText(input)
-    .replace(SENSITIVE_INLINE_PATTERN, ADO_COMM_REDACTED)
-    .slice(0, ADO_COMM_LOG_PREVIEW_MAX);
+  const sanitized = sanitizeLogText(input)
+    .replace(SENSITIVE_BEARER_PATTERN, `Bearer ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_JWT_PATTERN, ADO_COMM_REDACTED)
+    .replace(SENSITIVE_KEY_VALUE_PATTERN, (_match, key: string, separator: string) => `${key}${separator}${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_INLINE_PATTERN, ADO_COMM_REDACTED);
+
+  return sanitized.slice(0, ADO_COMM_LOG_PREVIEW_MAX);
 }
 
 function resolveAdoCommLogRequest(url: URL): { afterSeq: number; limit: number } {
@@ -248,7 +270,7 @@ function logVerboseHttpRequest(verboseLogs: boolean, method: AdoCommMethod, url:
 
 function logVerboseHttpResponse(verboseLogs: boolean, response: { status: number; json: unknown }): void {
   if (verboseLogs) {
-    const payloadPreview = sanitizeLogText(JSON.stringify(response.json)).slice(0, ADO_COMM_LOG_PREVIEW_MAX);
+    const payloadPreview = sanitizePreviewForLog(JSON.stringify(response.json));
     console.log(`${ADO_COMM_LOG_VERBOSE_PREFIX} http response status=${response.status} payload=${payloadPreview}`);
   }
 }
@@ -744,7 +766,8 @@ async function route(
       const queryDetails = await fetchQueryDetails({
         queryId,
         contextStore,
-        httpClient
+        httpClient,
+        apiVersion: QUERY_DETAILS_API_VERSION
       });
       writeJson(res, 200, queryDetails);
       return;
@@ -903,33 +926,6 @@ async function route(
   routeNotFound(res);
 }
 
-function parsePayload(raw: string): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(raw);
-
-    if (!parsed || typeof parsed !== "object") {
-      return null;
-    }
-
-    return parsed as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
-
-function parseUserPreferencesPatch(payload: Record<string, unknown> | null): UserPreferences | null {
-  if (!payload) {
-    return null;
-  }
-
-  const raw = payload.preferences;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-    return null;
-  }
-
-  return raw as UserPreferences;
-}
-
 function resolveLocalUserId(): string {
   const fromEnv = process.env.USER ?? process.env.USERNAME;
   if (fromEnv && fromEnv.trim().length > 0) {
@@ -941,350 +937,6 @@ function resolveLocalUserId(): string {
   } catch {
     return "local-user";
   }
-}
-
-function parseTargetWorkItemIdFromQuery(url: URL): number | null {
-  const raw = url.searchParams.get("targetWorkItemId");
-  if (!raw) {
-    return null;
-  }
-
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return null;
-  }
-
-  return parsed;
-}
-
-function parseQueryIdFromQuery(url: URL): string | null {
-  const raw = url.searchParams.get("queryId");
-  if (!raw) {
-    return null;
-  }
-
-  const trimmed = raw.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-async function fetchQueryDetails(input: {
-  queryId: string;
-  contextStore: AdoContextStore;
-  httpClient: HttpClient;
-}): Promise<{ id: string; name: string; path: string }> {
-  const context = await input.contextStore.getActiveContext();
-  if (!context) {
-    throw new Error("CONTEXT_REQUIRED");
-  }
-
-  const url =
-    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
-    `/_apis/wit/queries/${encodeURIComponent(input.queryId)}?$includeDeleted=true&api-version=${QUERY_DETAILS_API_VERSION}`;
-  const response = await input.httpClient.get(url);
-
-  if (response.status === 404) {
-    throw new Error("QUERY_NOT_FOUND");
-  }
-
-  if (response.status !== 200) {
-    throw new Error(`QUERY_DETAILS_FAILED:${response.status}`);
-  }
-
-  const payload = response.json as { id?: unknown; name?: unknown; path?: unknown };
-  if (typeof payload.id !== "string" || typeof payload.name !== "string" || typeof payload.path !== "string") {
-    throw new Error("MALFORMED_PAYLOAD");
-  }
-
-  return {
-    id: payload.id,
-    name: payload.name,
-    path: payload.path
-  };
-}
-
-async function fetchAllowedStateCodesForWorkItem(input: {
-  workItemId: number;
-  contextStore: AdoContextStore;
-  httpClient: HttpClient;
-  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
-  workItemTypeCacheById: Map<string, Promise<string | null>>;
-}): Promise<WorkItemStateOption[]> {
-  const context = await input.contextStore.getActiveContext();
-  if (!context) {
-    throw new Error("ADO_CONTEXT_MISSING");
-  }
-
-  const workItemType = await getCachedWorkItemType({
-    workItemId: input.workItemId,
-    context,
-    httpClient: input.httpClient,
-    cache: input.workItemTypeCacheById
-  });
-  if (!workItemType) {
-    return [];
-  }
-
-  return getCachedWorkItemTypeStates({
-    workItemType,
-    context,
-    httpClient: input.httpClient,
-    cache: input.stateOptionsCacheByType
-  });
-}
-
-async function getCachedWorkItemType(input: {
-  workItemId: number;
-  context: { organization: string; project: string };
-  httpClient: HttpClient;
-  cache: Map<string, Promise<string | null>>;
-}): Promise<string | null> {
-  const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemId}`;
-  const existing = input.cache.get(cacheKey);
-  if (existing) {
-    return existing;
-  }
-
-  const promise = (async () => {
-    const workItemUrl =
-      `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
-      `/_apis/wit/workitems/${input.workItemId}?fields=System.WorkItemType&api-version=7.1`;
-    const workItemResponse = await input.httpClient.get(workItemUrl);
-    if (workItemResponse.status < 200 || workItemResponse.status >= 300) {
-      throw new Error("WORK_ITEM_FETCH_FAILED");
-    }
-
-    return extractWorkItemType(workItemResponse.json);
-  })();
-
-  input.cache.set(cacheKey, promise);
-  return promise;
-}
-
-async function getCachedWorkItemTypeStates(input: {
-  workItemType: string;
-  context: { organization: string; project: string };
-  httpClient: HttpClient;
-  cache: Map<string, Promise<WorkItemStateOption[]>>;
-}): Promise<WorkItemStateOption[]> {
-  const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemType.toLowerCase()}`;
-  const existing = input.cache.get(cacheKey);
-  if (existing) {
-    return existing;
-  }
-
-  const promise = (async () => {
-    const statesUrl =
-      `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
-      `/_apis/wit/workitemtypes/${encodeURIComponent(input.workItemType)}/states?api-version=7.1`;
-    const statesResponse = await input.httpClient.get(statesUrl);
-    if (statesResponse.status < 200 || statesResponse.status >= 300) {
-      throw new Error("WORK_ITEM_STATES_FETCH_FAILED");
-    }
-
-    return extractStateCodes(statesResponse.json);
-  })();
-
-  input.cache.set(cacheKey, promise);
-  return promise;
-}
-
-function extractWorkItemType(payload: unknown): string | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
-  const fields = (payload as { fields?: unknown }).fields;
-  if (!fields || typeof fields !== "object") {
-    return null;
-  }
-
-  const workItemType = (fields as Record<string, unknown>)["System.WorkItemType"];
-  if (typeof workItemType !== "string") {
-    return null;
-  }
-
-  const trimmed = workItemType.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function extractStateCodes(payload: unknown): WorkItemStateOption[] {
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const value = (payload as { value?: unknown }).value;
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") {
-        return null;
-      }
-
-      const name = (entry as Record<string, unknown>).name;
-      const color = (entry as Record<string, unknown>).color;
-      if (typeof name !== "string") {
-        return null;
-      }
-
-      const trimmed = name.trim();
-      return trimmed.length > 0 ? { name: trimmed, color: typeof color === "string" ? color : null } : null;
-    })
-    .filter((entry): entry is WorkItemStateOption => entry !== null);
-}
-
-function parseAdoptSchedulePayload(
-  input: Record<string, unknown> | null
-): { targetWorkItemId: number; startDate: string; endDate: string } | null {
-  if (!input) {
-    return null;
-  }
-
-  const targetWorkItemId = input.targetWorkItemId;
-  const startDate = input.startDate;
-  const endDate = input.endDate;
-
-  if (
-    typeof targetWorkItemId !== "number" ||
-    !Number.isFinite(targetWorkItemId) ||
-    targetWorkItemId <= 0 ||
-    typeof startDate !== "string" ||
-    startDate.trim().length === 0 ||
-    typeof endDate !== "string" ||
-    endDate.trim().length === 0
-  ) {
-    return null;
-  }
-
-  return {
-    targetWorkItemId,
-    startDate,
-    endDate
-  };
-}
-
-function parseDependencyLinkPayload(
-  input: Record<string, unknown> | null
-): { predecessorWorkItemId: number; successorWorkItemId: number; action: "add" | "remove" } | null {
-  if (!input) {
-    return null;
-  }
-
-  const predecessorWorkItemId = input.predecessorWorkItemId;
-  const successorWorkItemId = input.successorWorkItemId;
-  const action = input.action;
-
-  if (
-    typeof predecessorWorkItemId !== "number" ||
-    !Number.isFinite(predecessorWorkItemId) ||
-    predecessorWorkItemId <= 0 ||
-    typeof successorWorkItemId !== "number" ||
-    !Number.isFinite(successorWorkItemId) ||
-    successorWorkItemId <= 0 ||
-    predecessorWorkItemId === successorWorkItemId ||
-    (action !== "add" && action !== "remove")
-  ) {
-    return null;
-  }
-
-  return {
-    predecessorWorkItemId,
-    successorWorkItemId,
-    action
-  };
-}
-
-function parseUpdateDetailsPayload(
-  input: Record<string, unknown> | null
-): { targetWorkItemId: number; title: string; descriptionHtml: string; state: string } | null {
-  if (!input) {
-    return null;
-  }
-
-  const targetWorkItemId = input.targetWorkItemId;
-  const title = input.title;
-  const descriptionHtml = input.descriptionHtml;
-  const state = input.state;
-
-  if (
-    typeof targetWorkItemId !== "number" ||
-    !Number.isFinite(targetWorkItemId) ||
-    typeof title !== "string" ||
-    title.trim().length === 0 ||
-    typeof descriptionHtml !== "string" ||
-    typeof state !== "string" ||
-    state.trim().length === 0
-  ) {
-    return null;
-  }
-
-  return {
-    targetWorkItemId,
-    title: title.trim(),
-    descriptionHtml,
-    state: state.trim()
-  };
-}
-
-function parseMappingProfileUpsert(input: unknown):
-  | {
-      id: string;
-      name: string;
-      fields: {
-        id: string;
-        title: string;
-        start: string;
-        endOrTarget: string;
-      };
-    }
-  | undefined {
-  if (!input || typeof input !== "object") {
-    return undefined;
-  }
-
-  const candidate = input as {
-    id?: unknown;
-    name?: unknown;
-    fields?: {
-      id?: unknown;
-      title?: unknown;
-      start?: unknown;
-      endOrTarget?: unknown;
-    };
-  };
-
-  if (
-    typeof candidate.id !== "string" ||
-    typeof candidate.name !== "string" ||
-    !candidate.fields ||
-    typeof candidate.fields.id !== "string" ||
-    typeof candidate.fields.title !== "string" ||
-    typeof candidate.fields.start !== "string" ||
-    typeof candidate.fields.endOrTarget !== "string"
-  ) {
-    return undefined;
-  }
-
-  return {
-    id: candidate.id,
-    name: candidate.name,
-    fields: {
-      id: candidate.fields.id,
-      title: candidate.fields.title,
-      start: candidate.fields.start,
-      endOrTarget: candidate.fields.endOrTarget
-    }
-  };
-}
-
-function parseAzCliPathPayload(input: Record<string, unknown> | null): string | null {
-  if (!input || typeof input.path !== "string") {
-    return null;
-  }
-
-  return input.path.trim();
 }
 
 async function defaultAzLoginRunner(): Promise<{ message: string }> {

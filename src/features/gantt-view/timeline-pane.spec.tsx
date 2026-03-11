@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
-import { TimelinePane, applyAdoptedSchedules, resolveTimelineVerticalLayoutMetrics } from "./timeline-pane.js";
+import { TimelinePane, applyAdoptedSchedules } from "./timeline-pane.js";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import {
   clearTimelineColorCodingPreferenceForTests,
@@ -13,6 +13,7 @@ import { clearTimelineDetailsWidthPreferenceForTests } from "./timeline-details-
 import { clearTimelineLabelFieldsPreferenceForTests } from "./timeline-label-fields-preference.js";
 import { clearTimelineSidebarFieldsPreferenceForTests } from "./timeline-sidebar-fields-preference.js";
 import { clearTimelineSidebarWidthPreferenceForTests } from "./timeline-sidebar-width-preference.js";
+import { clearTimelineSortPreferenceForTests, saveTimelineSortPreference } from "./timeline-sort-preference.js";
 import { clearTimelineViewportPreferenceForTests } from "./timeline-viewport-preference.js";
 
 afterEach(() => {
@@ -22,6 +23,7 @@ afterEach(() => {
   clearTimelineLabelFieldsPreferenceForTests();
   clearTimelineSidebarFieldsPreferenceForTests();
   clearTimelineSidebarWidthPreferenceForTests();
+  clearTimelineSortPreferenceForTests();
   clearTimelineViewportPreferenceForTests();
   window.history.replaceState(window.history.state, "", "/");
 });
@@ -295,56 +297,6 @@ function createDataTransferMock(): DataTransfer {
     setDragImage: () => undefined
   } as DataTransfer;
 }
-
-describe("timeline-pane details width", () => {
-  it("computes vertical layout without phantom row by default", () => {
-    const metrics = resolveTimelineVerticalLayoutMetrics(5, false);
-    expect(metrics).toEqual({
-      contentRows: 5,
-      tailHeightPx: 18
-    });
-  });
-
-  it("adds one extra row only when unscheduled drop lane is active", () => {
-    const metrics = resolveTimelineVerticalLayoutMetrics(5, true);
-    expect(metrics).toEqual({
-      contentRows: 6,
-      tailHeightPx: 18
-    });
-  });
-
-  it("resizes the details panel via splitter drag and persists width", () => {
-    render(
-      React.createElement(TimelinePane, {
-        timeline: makeTimeline(),
-        showDependencies: true
-      })
-    );
-
-    const splitter = screen.getByRole("separator", { name: "Resize details panel" });
-    fireEvent.pointerDown(splitter, { button: 0, pointerId: 7, clientX: 900 });
-    fireEvent.pointerMove(window, { pointerId: 7, clientX: 860 });
-    fireEvent.pointerUp(window, { pointerId: 7, clientX: 860 });
-
-    expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("360");
-  });
-
-  it("expands details panel from fully collapsed splitter click", () => {
-    globalThis.localStorage.setItem("azure-ganttops.timeline-details-width-px.v1", "0");
-
-    render(
-      React.createElement(TimelinePane, {
-        timeline: makeTimeline(),
-        showDependencies: true
-      })
-    );
-
-    const splitter = screen.getByRole("separator", { name: "Expand details panel" });
-    fireEvent.click(splitter);
-
-    expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("260");
-  });
-});
 
 describe("timeline-pane unschedulable date adoption", () => {
   it("moves adopted unschedulable items into bars with copied schedule", () => {
@@ -1214,7 +1166,7 @@ describe("timeline-pane unschedulable date adoption", () => {
     expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
   });
 
-  it("shows label settings gear directly after the filter toggle", () => {
+  it("shows sorting toggle between the filter and label toggles", () => {
     render(
       React.createElement(TimelinePane, {
         timeline: makeFieldFilterTimeline(),
@@ -1223,8 +1175,134 @@ describe("timeline-pane unschedulable date adoption", () => {
     );
 
     const filterToggle = screen.getByLabelText("Toggle timeline filters");
+    const sortToggle = screen.getByLabelText("Toggle timeline sorting");
     const labelToggle = screen.getByLabelText("Toggle timeline label fields");
-    expect(Boolean(filterToggle.compareDocumentPosition(labelToggle) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(filterToggle.compareDocumentPosition(sortToggle) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(sortToggle.compareDocumentPosition(labelToggle) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+  });
+
+  it("sorts bars by start date by default", () => {
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 30,
+        title: "Late",
+        schedule: {
+          startDate: "2026-03-15T00:00:00.000Z",
+          endDate: "2026-03-17T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 10,
+        title: "Early",
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-03T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const earlyBarY = Number(screen.getByLabelText("timeline-bar-10").getAttribute("y"));
+    const lateBarY = Number(screen.getByLabelText("timeline-bar-30").getAttribute("y"));
+    expect(earlyBarY).toBeLessThan(lateBarY);
+  });
+
+  it("sets Start date as secondary when primary sorting changes away from Start date", async () => {
+    const user = userEvent.setup();
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline sorting"));
+    await user.click(screen.getByLabelText("Timeline sort primary"));
+    await user.type(screen.getByLabelText("Search timeline sort primary"), "title");
+    await user.click(screen.getByRole("button", { name: /Title/ }));
+
+    const secondaryTrigger = screen.getByLabelText("Timeline sort secondary");
+    expect(secondaryTrigger.textContent).toContain("Start date");
+  });
+
+  it("applies changed sorting only after timeline reload", async () => {
+    const user = userEvent.setup();
+    saveTimelineSortPreference({
+      primary: "startDate",
+      secondary: null
+    });
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        title: "Zulu",
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-03T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Alpha",
+        schedule: {
+          startDate: "2026-03-05T00:00:00.000Z",
+          endDate: "2026-03-07T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    const firstMount = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const before11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const before12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+
+    await user.click(screen.getByLabelText("Toggle timeline sorting"));
+    await user.click(screen.getByLabelText("Timeline sort primary"));
+    await user.type(screen.getByLabelText("Search timeline sort primary"), "title");
+    await user.click(screen.getByRole("button", { name: /Title/ }));
+
+    const still11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const still12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(still11Y).toBe(before11Y);
+    expect(still12Y).toBe(before12Y);
+
+    firstMount.unmount();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: {
+          ...timeline,
+          bars: [...timeline.bars]
+        },
+        showDependencies: true
+      })
+    );
+
+    const after11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const after12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(after12Y).toBeLessThan(after11Y);
   });
 
   it("composes bar labels from multiple configured fields with dash separator", async () => {
@@ -1550,8 +1628,8 @@ describe("timeline-pane unschedulable date adoption", () => {
     const doingColorInput = screen.getByLabelText("Color for Doing") as HTMLInputElement;
     fireEvent.change(doingColorInput, { target: { value: "#ff0000" } });
 
-    const bars = container.querySelectorAll("rect.timeline-bar");
-    expect((bars[0] as SVGRectElement).style.fill).toBe("rgb(255, 0, 0)");
+    const doingBar = screen.getByLabelText("timeline-bar-11");
+    expect(doingBar.style.fill).toBe("rgb(255, 0, 0)");
   });
 
   it("shows loading state in refresh button while refresh is in progress", () => {

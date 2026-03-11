@@ -4,7 +4,8 @@ import {
   clearTimelineColorCodingPreferenceForTests,
   loadLastTimelineColorCoding,
   loadTimelineFieldColorCodingConfig,
-  saveLastTimelineColorCoding
+  saveLastTimelineColorCoding,
+  saveTimelineFieldColorCodingConfig
 } from "./timeline-color-coding-preference.js";
 
 describe("timeline-color-coding-preference", () => {
@@ -36,6 +37,24 @@ describe("timeline-color-coding-preference", () => {
     expect(loadTimelineFieldColorCodingConfig()).toEqual({
       fieldRef: null,
       valueColors: {}
+    });
+  });
+
+  it("persists and sanitizes field color coding config", () => {
+    clearTimelineColorCodingPreferenceForTests();
+    saveTimelineFieldColorCodingConfig({
+      fieldRef: " Custom.Team ",
+      valueColors: {
+        "Custom.Team::Alpha": " #FF00AA ",
+        "Custom.Team::Beta": "blue"
+      }
+    });
+
+    expect(loadTimelineFieldColorCodingConfig()).toEqual({
+      fieldRef: "Custom.Team",
+      valueColors: {
+        "Custom.Team::Alpha": "#ff00aa"
+      }
     });
   });
 });

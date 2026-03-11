@@ -2,11 +2,43 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
+const MAX_AZ_CLI_PATH_LENGTH = 1024;
+const INVALID_CONTROL_CHAR_PATTERN = /[\u0000-\u001F\u007F]/;
+const INVALID_SHELL_META_PATTERN = /['"`|;&]/;
+
+export function normalizeConfiguredAzCliPath(candidate: string | undefined): string | null {
+  if (typeof candidate !== "string") {
+    return null;
+  }
+
+  const trimmed = candidate.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+
+  if (trimmed.length > MAX_AZ_CLI_PATH_LENGTH) {
+    return null;
+  }
+
+  if (INVALID_CONTROL_CHAR_PATTERN.test(trimmed)) {
+    return null;
+  }
+
+  if (INVALID_SHELL_META_PATTERN.test(trimmed)) {
+    return null;
+  }
+
+  return trimmed;
+}
 
 export async function resolveAzCliExecutablePath(): Promise<string> {
-  const configured = process.env.ADO_AZ_CLI_PATH?.trim();
-  if (configured && configured.length > 0) {
+  const configured = normalizeConfiguredAzCliPath(process.env.ADO_AZ_CLI_PATH);
+  if (configured) {
     return configured;
+  }
+
+  if (process.env.ADO_AZ_CLI_PATH && process.env.ADO_VERBOSE_LOGS === "1") {
+    console.warn("[ado-runtime] Ignoring invalid ADO_AZ_CLI_PATH value.");
   }
 
   if (process.platform !== "win32") {

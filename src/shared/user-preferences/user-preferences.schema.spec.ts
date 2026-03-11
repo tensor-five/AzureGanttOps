@@ -43,6 +43,29 @@ describe("user-preferences.schema", () => {
     });
   });
 
+  it("sanitizes timeline sort preferences", () => {
+    const sanitized = sanitizeUserPreferences({
+      timelineSort: {
+        primary: " title ",
+        secondary: " field:Custom.Team "
+      }
+    });
+
+    expect(sanitized.timelineSort).toEqual({
+      primary: "title",
+      secondary: "field:Custom.Team"
+    });
+
+    expect(
+      sanitizeUserPreferences({
+        timelineSort: {
+          primary: "unknown",
+          secondary: "startDate"
+        }
+      }).timelineSort
+    ).toBeUndefined();
+  });
+
   it("deduplicates saved queries by id and keeps first valid entry", () => {
     const sanitized = sanitizeUserPreferences({
       savedQueries: [

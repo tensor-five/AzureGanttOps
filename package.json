@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json && npm run build:ui-shell",
     "start:local": "node dist/src/app/bootstrap/local-server.js",
     "app:start": "node scripts/one-click-start.mjs",
+    "prepare": "husky",
     "build:ui-shell": "esbuild src/app/bootstrap/local-ui-entry.ts --bundle --format=esm --platform=browser --outfile=dist/src/app/bootstrap/local-ui-entry.browser.js",
     "dev:local": "npm run build && npm run start:local",
     "test": "vitest run",
@@ -14,6 +15,8 @@
     "test:e2e:density": "node ./src/shared/testing/run-e2e.mjs --grep \"density|timeline\"",
     "lint": "tsc --noEmit",
     "check:cycles": "node ./scripts/check-cycles.mjs",
+    "secrets:scan": "node ./scripts/secret-scan.mjs",
+    "secrets:scan:staged": "node ./scripts/secret-scan.mjs --staged",
     "quality:ui": "npm run lint && npm run typecheck && npm run check:cycles && npm test && npm run test:e2e",
     "quality:gate:phase6": "npm run lint && npm run typecheck && npm run check:cycles && npm test && npm run test:e2e",
     "quality:gate": "npm run typecheck && npm run check:cycles && npm test",
@@ -27,9 +30,14 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "esbuild": "^0.27.3",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "lint-staged": "^16.3.3",
     "typescript": "^5.9.2",
     "vitest": "^2.1.9"
+  },
+  "lint-staged": {
+    "*": "node ./scripts/secret-scan.mjs --files"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

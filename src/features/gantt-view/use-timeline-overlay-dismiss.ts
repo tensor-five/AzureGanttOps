@@ -3,20 +3,24 @@ import React from "react";
 type UseTimelineOverlayDismissParams = {
   colorCodingDropdownOpen: boolean;
   openFilterDropdown: { slotId: number; kind: "field" | "value" } | null;
+  sortSettingsOpen: boolean;
   labelSettingsOpen: boolean;
   colorCodingControlRef: React.RefObject<HTMLElement | null>;
   filterToggleControlRef: React.RefObject<HTMLElement | null>;
   filterPanelRef: React.RefObject<HTMLElement | null>;
+  sortToggleControlRef: React.RefObject<HTMLElement | null>;
+  sortPanelRef: React.RefObject<HTMLElement | null>;
   labelToggleControlRef: React.RefObject<HTMLElement | null>;
   labelPanelRef: React.RefObject<HTMLElement | null>;
   onCloseColorCodingDropdown: () => void;
   onCloseFilterDropdown: () => void;
+  onCloseSortSettings: () => void;
   onCloseLabelSettings: () => void;
 };
 
 export function useTimelineOverlayDismiss(params: UseTimelineOverlayDismissParams): void {
   React.useEffect(() => {
-    if (!params.colorCodingDropdownOpen && !params.openFilterDropdown && !params.labelSettingsOpen) {
+    if (!params.colorCodingDropdownOpen && !params.openFilterDropdown && !params.sortSettingsOpen && !params.labelSettingsOpen) {
       return;
     }
 
@@ -46,13 +50,24 @@ export function useTimelineOverlayDismiss(params: UseTimelineOverlayDismissParam
         return;
       }
 
+      const sortControl = params.sortToggleControlRef.current;
+      if (sortControl && sortControl.contains(target)) {
+        return;
+      }
+
       const labelPanel = params.labelPanelRef.current;
       if (labelPanel && labelPanel.contains(target)) {
         return;
       }
 
+      const sortPanel = params.sortPanelRef.current;
+      if (sortPanel && sortPanel.contains(target)) {
+        return;
+      }
+
       params.onCloseColorCodingDropdown();
       params.onCloseFilterDropdown();
+      params.onCloseSortSettings();
       params.onCloseLabelSettings();
     };
 
@@ -63,6 +78,7 @@ export function useTimelineOverlayDismiss(params: UseTimelineOverlayDismissParam
 
       params.onCloseColorCodingDropdown();
       params.onCloseFilterDropdown();
+      params.onCloseSortSettings();
       params.onCloseLabelSettings();
     };
 
@@ -80,9 +96,13 @@ export function useTimelineOverlayDismiss(params: UseTimelineOverlayDismissParam
     params.labelPanelRef,
     params.labelSettingsOpen,
     params.labelToggleControlRef,
+    params.onCloseSortSettings,
     params.onCloseColorCodingDropdown,
     params.onCloseFilterDropdown,
     params.onCloseLabelSettings,
-    params.openFilterDropdown
+    params.openFilterDropdown,
+    params.sortPanelRef,
+    params.sortSettingsOpen,
+    params.sortToggleControlRef
   ]);
 }

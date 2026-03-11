@@ -1,0 +1,121 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  line-height: var(--leading-normal);
+  letter-spacing: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+h1 {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-black);
+}
+
+h2 {
+  font-size: var(--text-3xl);
+}
+
+h3 {
+  font-size: var(--text-2xl);
+}
+
+h4 {
+  font-size: var(--text-xl);
+}
+
+p {
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+body,
+#app {
+  min-height: 100vh;
+}
+
+body {
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.01;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(28, 25, 23, 0.4) 0 0.5px, transparent 0.6px),
+    radial-gradient(circle at 70% 55%, rgba(28, 25, 23, 0.35) 0 0.5px, transparent 0.6px),
+    radial-gradient(circle at 40% 80%, rgba(28, 25, 23, 0.3) 0 0.5px, transparent 0.6px);
+  background-size: 10px 10px, 12px 12px, 11px 11px;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.01;
+  background:
+    radial-gradient(circle at 14% 22%, color-mix(in srgb, var(--color-primary) 22%, transparent), transparent 52%),
+    radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--color-secondary) 20%, transparent), transparent 48%);
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+.u-surface-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.u-btn {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.u-btn-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: var(--font-bold);
+}
+
+.u-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-size: var(--text-xs);
+}
+

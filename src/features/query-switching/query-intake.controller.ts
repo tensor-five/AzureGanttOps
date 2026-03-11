@@ -14,6 +14,24 @@ import type {
   DiagnosticsStatusCode
 } from "../../application/dto/diagnostics/diagnostics-event.dto.js";
 import type { PublishDiagnosticsUseCase } from "../../application/use-cases/publish-diagnostics.use-case.js";
+import {
+  buildCapabilities,
+  deriveDiagnosticsStatusCodeFromResult,
+  FLAT_ONLY_NOTE,
+  guidanceForMappingIssues,
+  guidanceForPreflight,
+  guidanceForRuntimeError,
+  guidanceForRuntimeState,
+  guidanceForSnapshot,
+  hasRenderableItems,
+  noStrictFailState,
+  strictFailMessage,
+  toDiagnosticsErrorCode,
+  toDiagnosticsStatusCode,
+  toErrorCode,
+  toTrustState,
+  toUserMessage
+} from "./query-intake.controller.mappers.js";
 
 export type QueryIntakeRequest = {
   queryInput: string;
@@ -481,220 +499,4 @@ export class QueryIntakeController {
   private toViewModel(input: QueryIntakeViewModel): QueryIntakeViewModel {
     return input;
   }
-}
-
-function guidanceForPreflight(status: QueryIntakeResponse["preflightStatus"]): string | null {
-  switch (status) {
-    case "READY":
-      return null;
-    case "SESSION_EXPIRED":
-      return "Session expired. Sign in to Azure and retry.";
-    case "MISSING_EXTENSION":
-      return "Azure DevOps extension missing. Install it and retry.";
-    case "CONTEXT_MISMATCH":
-      return "Azure defaults do not match this query. Update settings and retry.";
-    case "CLI_NOT_FOUND":
-      return "Azure CLI is not available. Install Azure CLI or set az.cmd path in Query tab, then retry.";
-    case "UNKNOWN_ERROR":
-    default:
-      return "Could not validate Azure connection. Retry in a moment.";
-  }
-}
-
-function guidanceForRuntimeError(error: unknown): string {
-  const code = toErrorCode(error);
-
-  switch (code) {
-    case "QUERY_NOT_FOUND":
-      return "Query not found. Confirm query ID and try again.";
-    case "QUERY_LIST_FAILED":
-      return "Saved query listing failed. Check project access/permissions and retry.";
-    case "QUERY_EXECUTION_FAILED":
-      return "Query failed to run. Retry or verify query permissions.";
-    case "QRY_SHAPE_UNSUPPORTED":
-      return "Only flat queries are supported in this phase. Use a flat query and retry.";
-    case "HYDRATION_REQUEST_FAILED":
-      return "Work item hydration request failed. Verify field permissions and retry.";
-    case "HYDRATION_TRANSIENT_RETRY_EXHAUSTED":
-      return "Hydration retries were exhausted. Retry shortly.";
-    case "MAP_PROFILE_NOT_FOUND":
-      return "Mapping profile not found. Select an existing profile and retry.";
-    case "MAP_VALIDATION_FAILED":
-      return "Mapping profile is invalid. Fix required mappings and retry.";
-    case "CONTEXT_REQUIRED":
-      return "Add organization and project in settings.";
-    case "MALFORMED_PAYLOAD":
-      return "Unexpected Azure response. Retry shortly.";
-    default:
-      return "Unable to load query results. Retry in a moment.";
-  }
-}
-
-function guidanceForSnapshot(snapshot: { hydration: { statusCode: string } } | null): string | null {
-  if (!snapshot) {
-    return null;
-  }
-
-  if (snapshot.hydration.statusCode === "HYDRATION_PARTIAL_FAILURE") {
-    return "Some work items could not be hydrated. Retry to improve completeness.";
-  }
-
-  return null;
-}
-
-function guidanceForRuntimeState(source: QueryReloadSource): string | null {
-  if (source === "stale_discarded") {
-    return "Stale reload was discarded after query switch.";
-  }
-
-  return null;
-}
-
-function guidanceForMappingIssues(issues: MappingValidationIssue[]): string {
-  if (issues.length === 0) {
-    return "Mapping profile is invalid. Fix required mappings and retry.";
-  }
-
-  const guidanceSteps = issues.map((issue) => `${issue.field}: ${issue.guidance}`);
-  return `Fix required mapping fields before rendering timeline: ${guidanceSteps.join(" | ")}`;
-}
-
-function toTrustState(uiState: TimelineUiState): "ready" | "needs_attention" | "partial_failure" {
-  if (uiState === "ready") {
-    return "ready";
-  }
-
-  if (uiState === "partial_failure") {
-    return "partial_failure";
-  }
-
-  return "needs_attention";
-}
-
-function hasRenderableItems(timeline: TimelineReadModel | null): boolean {
-  if (!timeline) {
-    return false;
-  }
-
-  return timeline.bars.length > 0 || timeline.unschedulable.length > 0;
-}
-
-function buildCapabilities(
-  preflightStatus: QueryIntakeResponse["preflightStatus"]
-): QueryIntakeResponse["capabilities"] {
-  const hasActiveSession = preflightStatus === "READY";
-
-  return {
-    canRefresh: hasActiveSession,
-    canSwitchQuery: hasActiveSession,
-    canChangeDensity: true,
-    canOpenDetails: true,
-    readOnlyTimeline: true
-  };
-}
-
-function noStrictFailState(dismissed: boolean | undefined): QueryIntakeResponse["strictFail"] {
-  return {
-    active: false,
-    message: null,
-    retryActionLabel: null,
-    dismissible: true,
-    dismissed: dismissed ?? false,
-    lastSuccessfulRefreshAt: null,
-    lastSuccessfulSource: null
-  };
-}
-
-function strictFailMessage(failureCode: string | null, lastSuccessfulRefreshAt: string | null): string {
-  const failureContext = failureCode ? `Refresh failed (${failureCode}).` : "Refresh failed.";
-  const freshnessContext = lastSuccessfulRefreshAt
-    ? `Showing last successful timeline from ${lastSuccessfulRefreshAt}.`
-    : "Showing last successful timeline.";
-
-  return `${failureContext} ${freshnessContext} Retry now.`;
-}
-
-const FLAT_ONLY_NOTE = "Phase 2 note: only flat queries are supported.";
-
-function toErrorCode(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "UNKNOWN";
-}
-
-function toUserMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return fallback;
-}
-
-function deriveDiagnosticsStatusCodeFromResult(input: {
-  preflightStatus: QueryIntakeResponse["preflightStatus"];
-  strictFailActive: boolean;
-  reloadSource: QueryReloadSource;
-  failureCode: string | null;
-  uiState: TimelineUiState;
-}): DiagnosticsStatusCode {
-  if (input.preflightStatus !== "READY") {
-    return input.preflightStatus;
-  }
-
-  if (input.strictFailActive) {
-    return "STRICT_FAIL_FALLBACK";
-  }
-
-  if (input.reloadSource === "stale_discarded") {
-    return "STALE_DISCARDED";
-  }
-
-  if (input.failureCode) {
-    return toDiagnosticsStatusCode(input.failureCode);
-  }
-
-  if (input.uiState === "partial_failure") {
-    return "HYDRATION_PARTIAL_FAILURE";
-  }
-
-  return "OK";
-}
-
-function toDiagnosticsErrorCode(code: string | null): DiagnosticsErrorCode | null {
-  if (!code) {
-    return null;
-  }
-
-  const statusCode = toDiagnosticsStatusCode(code);
-  return statusCode === "OK" ? null : statusCode;
-}
-
-function toDiagnosticsStatusCode(code: string): DiagnosticsStatusCode {
-  const deterministicCodes: ReadonlySet<DiagnosticsStatusCode> = new Set<DiagnosticsStatusCode>([
-    "OK",
-    "SESSION_EXPIRED",
-    "MISSING_EXTENSION",
-    "CONTEXT_MISMATCH",
-    "CLI_NOT_FOUND",
-    "UNKNOWN_ERROR",
-    "QUERY_NOT_FOUND",
-    "QUERY_LIST_FAILED",
-    "QUERY_EXECUTION_FAILED",
-    "QRY_SHAPE_UNSUPPORTED",
-    "HYDRATION_REQUEST_FAILED",
-    "HYDRATION_TRANSIENT_RETRY_EXHAUSTED",
-    "HYDRATION_PARTIAL_FAILURE",
-    "MAP_PROFILE_NOT_FOUND",
-    "MAP_VALIDATION_FAILED",
-    "CONTEXT_REQUIRED",
-    "MALFORMED_PAYLOAD",
-    "STALE_DISCARDED",
-    "STRICT_FAIL_FALLBACK"
-  ]);
-
-  return deterministicCodes.has(code as DiagnosticsStatusCode)
-    ? (code as DiagnosticsStatusCode)
-    : "UNKNOWN_ERROR";
 }
