@@ -14,10 +14,10 @@ describe("timeline-color-coding-preference", () => {
     expect(loadLastTimelineColorCoding()).toBeNull();
   });
 
-  it("persists and loads person color coding", () => {
+  it("persists and loads status color coding", () => {
     clearTimelineColorCodingPreferenceForTests();
-    saveLastTimelineColorCoding("person");
-    expect(loadLastTimelineColorCoding()).toBe("person");
+    saveLastTimelineColorCoding("status");
+    expect(loadLastTimelineColorCoding()).toBe("status");
   });
 
   it("persists and loads overdue color coding", () => {

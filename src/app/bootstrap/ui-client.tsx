@@ -10,7 +10,7 @@ import {
 } from "../composition/ui-shell.composition.js";
 import { TopTabs } from "../../features/navigation/top-tabs.js";
 import type { TabId } from "../../shared/ui-state/tab-id.js";
-import { QuerySelector, ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
+import { QuerySelector, ORG_KEY, PROJECT_KEY } from "../../features/query-switching/query-selector.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
 import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
@@ -21,32 +21,16 @@ import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
-import {
-  type SavedQueryPreference,
-  getCachedUserPreferences,
-  hydrateUserPreferences,
-  persistUserPreferencesPatch
-} from "../../shared/user-preferences/user-preferences.client.js";
+import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyDependencyLinkUpdate,
   applyScheduleUpdate,
   applyWorkItemMetadataUpdate
 } from "./ui-client-timeline-mutations.js";
 import {
-  buildSavedHeaderQueryCandidate,
-  filterHeaderQueries,
-  findAzureSavedQueryName,
-  resolveDeletedHeaderQueries
-} from "./ui-client-header-query-service.js";
-import {
-  buildSavedQueryLabel,
-  inferSavedQueryId,
   persistUiShellState,
-  readPersistedQueryContext,
   readPersistedUiShellState,
-  resolvePersistedRefreshQueryInput,
-  toShortQueryName,
-  upsertSavedQueries
+  toShortQueryName
 } from "./ui-client-storage.js";
 import {
   applyThemeMode,
@@ -58,6 +42,14 @@ import {
   type ThemeMode
 } from "./ui-client-theme.js";
 import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
+import { resolvePersistedRefreshQueryInput, runRetryRefreshFlow, type RunRequest } from "./ui-client-refresh-flow.js";
+import {
+  applyTimelineMutationToUiState,
+  runTrackedWorkItemSync,
+  toWritebackError
+} from "./ui-client-writeback-flow.js";
+import { resolveHydratedHeaderQuerySelection } from "./ui-client-header-query-flow.js";
+import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -67,21 +59,6 @@ const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
 
 type WorkItemSyncState = "up_to_date" | "syncing" | "error";
-
-type RunRequest = {
-  queryInput: string;
-  mappingProfileId?: string;
-  mappingProfileUpsert?: {
-    id: string;
-    name: string;
-    fields: {
-      id: string;
-      title: string;
-      start: string;
-      endOrTarget: string;
-    };
-  };
-};
 
 function renderAdoCommLogPanel(params: {
   logs: AdoCommLogEntry[];
@@ -161,13 +138,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
       : (restoredState?.activeTab ?? "query");
-  const persistedQueryInput = resolvePersistedRefreshQueryInput({
-    queryInputKey: QUERY_INPUT_KEY,
-    orgKey: ORG_KEY,
-    projectKey: PROJECT_KEY,
-    resolveQueryRunInput
-  });
+  const persistedQueryInput = resolvePersistedRefreshQueryInput();
   const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
+  const cachedPreferences = getCachedUserPreferences();
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
   const [controlsOpen, setControlsOpen] = React.useState(!hasInitialQuery);
@@ -187,17 +160,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
     readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
   );
-  const [savedHeaderQueries, setSavedHeaderQueries] = React.useState<SavedQueryPreference[]>(
-    () => getCachedUserPreferences().savedQueries ?? []
-  );
-  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = React.useState(
-    () => getCachedUserPreferences().selectedHeaderQueryId ?? ""
-  );
-  const [newHeaderQueryMode, setNewHeaderQueryMode] = React.useState(false);
-  const [newHeaderQueryInput, setNewHeaderQueryInput] = React.useState("");
-  const [headerQuerySearch, setHeaderQuerySearch] = React.useState("");
-  const [headerQueryLoading, setHeaderQueryLoading] = React.useState(false);
-  const [headerQueryMessage, setHeaderQueryMessage] = React.useState<string | null>(null);
+  const responseRef = React.useRef<QueryIntakeResponse | null>(initialResponse);
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -321,207 +284,62 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     setIsRefreshing(true);
 
     try {
-      if (lastRunRequest) {
-        const refreshedRaw = await props.composition.controller.submit(lastRunRequest);
-        const refreshed = await enrichRuntimeStateColors(refreshedRaw);
-        setResponse(refreshed);
-        setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
-
-        if (shouldOpenMappingFixTab(refreshed)) {
-          setMappingFixResponse(refreshed);
-          setActiveTab(deriveActiveTabForQueryResponse(refreshed));
-          setControlsOpen(true);
-          return;
-        }
-
-        setActiveTab("timeline");
-        return;
-      }
-
-      const persistedQueryInput = resolvePersistedRefreshQueryInput({
-        queryInputKey: QUERY_INPUT_KEY,
-        orgKey: ORG_KEY,
-        projectKey: PROJECT_KEY,
-        resolveQueryRunInput
+      const result = await runRetryRefreshFlow({
+        lastRunRequest,
+        submit: props.composition.controller.submit,
+        enrichRuntimeStateColors,
+        runQuery
       });
-      if (!persistedQueryInput) {
+
+      if (result.kind === "blocked_no_query") {
         setActiveTab("query");
         setControlsOpen(true);
-        setBlockerMessage({
-          tab: "query",
-          reason: "No query available to refresh.",
-          nextAction: "Open controls, enter Query ID, then run query."
-        });
+        setBlockerMessage(result.blocker);
         return;
       }
 
-      await runQuery({
-        queryId: persistedQueryInput
-      });
+      if (result.kind === "refreshed") {
+        setResponse(result.response);
+        setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        if (result.openMappingFix) {
+          setMappingFixResponse(result.response);
+          setActiveTab(result.activeTab);
+          setControlsOpen(true);
+        } else {
+          setActiveTab("timeline");
+        }
+      }
     } finally {
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller, runQuery]);
+  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller.submit, runQuery]);
 
-  const loadSavedHeaderQuery = React.useCallback(
-    async (queryId: string) => {
-      if (headerQueryLoading) {
-        return;
-      }
-
-      const selected = filterHeaderQueries(savedHeaderQueries, "").find((entry) => entry.id === queryId);
-      if (!selected) {
-        setHeaderQueryMessage("The selected query could not be found.");
-        return;
-      }
-
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(QUERY_INPUT_KEY, selected.queryInput);
-        if (selected.organization) {
-          localStorage.setItem(ORG_KEY, selected.organization);
-        }
-        if (selected.project) {
-          localStorage.setItem(PROJECT_KEY, selected.project);
-        }
-      }
-
-      try {
-        setHeaderQueryLoading(true);
-        await runQuery({
-          queryId: selected.queryInput
-        });
-        setSelectedHeaderQueryId(selected.id);
-        persistUserPreferencesPatch({
-          selectedHeaderQueryId: selected.id
-        });
-        setHeaderQueryMessage(null);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Query could not be loaded.";
-        setHeaderQueryMessage(message);
-      } finally {
-        setHeaderQueryLoading(false);
-      }
-    },
-    [headerQueryLoading, runQuery, savedHeaderQueries]
-  );
-
-  const saveCurrentHeaderQuery = React.useCallback(
-    async (rawInput: string) => {
-      if (headerQueryLoading) {
-        return;
-      }
-
-      const normalizedInput = rawInput.trim();
-      if (!normalizedInput) {
-        setHeaderQueryMessage("Invalid query. Provide a URL or a query ID with context.");
-        return;
-      }
-
-      const persisted = readPersistedQueryContext({
-        queryInputKey: QUERY_INPUT_KEY,
-        orgKey: ORG_KEY,
-        projectKey: PROJECT_KEY
-      });
-      const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
-      if (!transportQueryInput) {
-        setHeaderQueryMessage("Invalid query. Provide a URL or a query ID with context.");
-        return;
-      }
-
-      const queryId = inferSavedQueryId(transportQueryInput);
-      try {
-        setHeaderQueryLoading(true);
-        await runQuery({
-          queryId: transportQueryInput
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Query could not be loaded.";
-        setHeaderQueryMessage(message);
-        setHeaderQueryLoading(false);
-        return;
-      }
-
-      let azureQueryName = findAzureSavedQueryName(response, queryId);
-      try {
-        const queryDetails = await props.composition.controller.fetchQueryDetails({ queryId });
-        const normalizedName = queryDetails.name.trim();
-        if (normalizedName.length > 0) {
-          azureQueryName = normalizedName;
-        }
-      } catch {
-        // Keep fallback name when query details request fails.
-      }
-
-      const candidate: SavedQueryPreference = buildSavedHeaderQueryCandidate({
-        queryId,
-        transportQueryInput,
-        organization: persisted.organization,
-        project: persisted.project,
-        azureQueryName,
-        fallbackLabel: buildSavedQueryLabel()
-      });
-
-      const nextSavedQueries = upsertSavedQueries(savedHeaderQueries, candidate, HEADER_SAVED_QUERY_LIMIT);
-      setSavedHeaderQueries(nextSavedQueries);
-      setSelectedHeaderQueryId(candidate.id);
-      setNewHeaderQueryMode(false);
-      setNewHeaderQueryInput("");
-      setHeaderQueryMessage(null);
-      persistUserPreferencesPatch({
-        savedQueries: nextSavedQueries,
-        selectedHeaderQueryId: candidate.id
-      });
-      setHeaderQueryLoading(false);
-    },
-    [headerQueryLoading, props.composition.controller, response, runQuery, savedHeaderQueries]
-  );
-
-  const deleteSavedHeaderQuery = React.useCallback(
-    (queryId: string) => {
-      const next = resolveDeletedHeaderQueries({
-        queries: savedHeaderQueries,
-        selectedHeaderQueryId,
-        deletedQueryId: queryId
-      });
-      setSavedHeaderQueries(next.queries);
-      setSelectedHeaderQueryId(next.selectedHeaderQueryId);
-      setHeaderQueryMessage(null);
-      persistUserPreferencesPatch({
-        savedQueries: next.queries,
-        selectedHeaderQueryId: next.selectedHeaderQueryId || undefined
-      });
-    },
-    [savedHeaderQueries, selectedHeaderQueryId]
-  );
-
-  const filteredHeaderQueries = React.useMemo(() => {
-    return filterHeaderQueries(savedHeaderQueries, headerQuerySearch);
-  }, [headerQuerySearch, savedHeaderQueries]);
+  const headerQueryFlow = useHeaderQueryFlow({
+    initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
+    initialSelectedHeaderQueryId: cachedPreferences.selectedHeaderQueryId ?? "",
+    runQuery: async ({ queryId }) => runQuery({ queryId }),
+    fetchQueryDetails: props.composition.controller.fetchQueryDetails,
+    getResponse: () => responseRef.current,
+    headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
+  });
 
   const runTrackedWorkItemUpdate = React.useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
-      workItemSyncInFlightRef.current += 1;
-      setWorkItemSyncState("syncing");
-      setWorkItemSyncError(null);
-
-      try {
-        return await operation();
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Write failed.";
-        setWorkItemSyncState("error");
-        setWorkItemSyncError(message);
-        throw error;
-      } finally {
-        workItemSyncInFlightRef.current = Math.max(0, workItemSyncInFlightRef.current - 1);
-        if (workItemSyncInFlightRef.current === 0) {
-          setWorkItemSyncState((current) => (current === "error" ? current : "up_to_date"));
-        }
-      }
+      return runTrackedWorkItemSync({
+        operation,
+        inFlightRef: workItemSyncInFlightRef,
+        setWorkItemSyncState,
+        setWorkItemSyncError
+      });
     },
     []
   );
 
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
+
+  React.useEffect(() => {
+    responseRef.current = response;
+  }, [response]);
 
   React.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
@@ -536,14 +354,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       if (preferences.themeMode) {
         setThemeMode(preferences.themeMode);
       }
-      const hydratedSavedQueries = preferences.savedQueries ?? [];
-      const preferredSelectedQueryId = preferences.selectedHeaderQueryId ?? "";
-      const selectedExistsInSavedQueries = hydratedSavedQueries.some((entry) => entry.id === preferredSelectedQueryId);
-
-      setSavedHeaderQueries(hydratedSavedQueries);
-      setSelectedHeaderQueryId(selectedExistsInSavedQueries ? preferredSelectedQueryId : "");
+      const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
+      headerQueryFlow.hydrateSavedHeaderQueries(
+        hydratedHeaderQuerySelection.savedHeaderQueries,
+        hydratedHeaderQuerySelection.selectedHeaderQueryId
+      );
     });
-  }, []);
+  }, [headerQueryFlow.hydrateSavedHeaderQueries]);
 
   React.useEffect(() => {
     persistUserPreferencesPatch({
@@ -614,10 +431,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             React.createElement(
               "summary",
               { className: "header-query-dropdown-trigger" },
-              selectedHeaderQueryId
+              headerQueryFlow.selectedHeaderQueryId
                 ? toShortQueryName(
-                    savedHeaderQueries.find((entry) => entry.id === selectedHeaderQueryId)?.name ?? selectedHeaderQueryId,
-                    selectedHeaderQueryId
+                    headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ??
+                      headerQueryFlow.selectedHeaderQueryId,
+                    headerQueryFlow.selectedHeaderQueryId
                   )
                 : "Select query..."
             ),
@@ -628,19 +446,19 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                 className: "header-query-dropdown-search",
                 "aria-label": "Search queries",
                 placeholder: "Search...",
-                value: headerQuerySearch,
+                value: headerQueryFlow.headerQuerySearch,
                 onChange: (event) => {
-                  setHeaderQuerySearch((event.target as HTMLInputElement).value);
+                  headerQueryFlow.setHeaderQuerySearch((event.target as HTMLInputElement).value);
                 }
               }),
-              savedHeaderQueries.length === 0
+              headerQueryFlow.savedHeaderQueries.length === 0
                 ? React.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries")
                 : React.createElement(
                     "div",
                     { className: "header-query-dropdown-list" },
-                    ...(filteredHeaderQueries.length === 0
+                    ...(headerQueryFlow.filteredHeaderQueries.length === 0
                       ? [React.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")]
-                      : filteredHeaderQueries.map((entry) =>
+                      : headerQueryFlow.filteredHeaderQueries.map((entry) =>
                       React.createElement(
                         "div",
                         { key: `manage-${entry.id}`, className: "header-query-dropdown-item" },
@@ -650,11 +468,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                             type: "button",
                             className: "header-query-dropdown-item-delete",
                             "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
-                            disabled: headerQueryLoading,
+                            disabled: headerQueryFlow.headerQueryLoading,
                             onClick: (event) => {
                               event.preventDefault();
                               event.stopPropagation();
-                              deleteSavedHeaderQuery(entry.id);
+                              headerQueryFlow.deleteSavedHeaderQuery(entry.id);
                             }
                           },
                           "×"
@@ -664,9 +482,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                           {
                             type: "button",
                             className: "header-query-dropdown-item-select",
-                            disabled: headerQueryLoading,
+                            disabled: headerQueryFlow.headerQueryLoading,
                             onClick: () => {
-                              void loadSavedHeaderQuery(entry.id);
+                              void headerQueryFlow.loadSavedHeaderQuery(entry.id);
                             }
                           },
                           toShortQueryName(entry.name, entry.id)
@@ -681,48 +499,47 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             {
               type: "button",
               className: "header-query-picker-button",
-              disabled: headerQueryLoading,
+              disabled: headerQueryFlow.headerQueryLoading,
               onClick: () => {
-                setNewHeaderQueryMode((current) => !current);
-                setHeaderQueryMessage(null);
+                headerQueryFlow.toggleNewHeaderQueryMode();
               }
             },
             "Add Query"
           ),
-          newHeaderQueryMode
+          headerQueryFlow.newHeaderQueryMode
             ? React.createElement("input", {
                 className: "header-query-picker-input",
                 "aria-label": "New query URL or ID",
                 placeholder: "New query URL or ID",
-                value: newHeaderQueryInput,
-                disabled: headerQueryLoading,
+                value: headerQueryFlow.newHeaderQueryInput,
+                disabled: headerQueryFlow.headerQueryLoading,
                 onChange: (event) => {
-                  setNewHeaderQueryInput((event.target as HTMLInputElement).value);
-                  setHeaderQueryMessage(null);
+                  headerQueryFlow.setNewHeaderQueryInput((event.target as HTMLInputElement).value);
+                  headerQueryFlow.setHeaderQueryMessage(null);
                 },
                 onKeyDown: (event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
-                    void saveCurrentHeaderQuery(newHeaderQueryInput);
+                    void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
                   }
                 }
               })
             : null,
-          newHeaderQueryMode
+          headerQueryFlow.newHeaderQueryMode
             ? React.createElement(
                 "button",
                 {
                   type: "button",
                   className: "header-query-picker-button",
-                  disabled: headerQueryLoading,
+                  disabled: headerQueryFlow.headerQueryLoading,
                   onClick: () => {
-                    void saveCurrentHeaderQuery(newHeaderQueryInput);
+                    void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
                   }
                 },
-                headerQueryLoading ? "Loading..." : "Load"
+                headerQueryFlow.headerQueryLoading ? "Loading..." : "Load"
               )
             : null,
-          headerQueryLoading
+          headerQueryFlow.headerQueryLoading
             ? React.createElement(
                 "div",
                 {
@@ -734,7 +551,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                 React.createElement("div", { className: "header-query-loading-bar" })
               )
             : null,
-          headerQueryMessage
+          headerQueryFlow.headerQueryMessage
             ? React.createElement(
                 "span",
                 {
@@ -742,7 +559,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                   role: "status",
                   "aria-live": "polite"
                 },
-                headerQueryMessage
+                headerQueryFlow.headerQueryMessage
               )
             : null
         ),
@@ -813,20 +630,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               });
 
               if (!writeResult.accepted) {
-                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+                throw toWritebackError(writeResult.reasonCode);
               }
 
-              setUiModel((current) => ({
-                ...current,
-                timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-              }));
-              setResponse((current) =>
-                current
-                  ? {
-                      ...current,
-                      timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-                    }
-                  : current
+              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
+                applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate)
               );
             });
           },
@@ -839,20 +647,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               });
 
               if (!writeResult.accepted) {
-                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+                throw toWritebackError(writeResult.reasonCode);
               }
 
-              setUiModel((current) => ({
-                ...current,
-                timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-              }));
-              setResponse((current) =>
-                current
-                  ? {
-                      ...current,
-                      timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-                    }
-                  : current
+              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
+                applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate)
               );
             });
           },
@@ -865,20 +664,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               });
 
               if (!writeResult.accepted) {
-                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+                throw toWritebackError(writeResult.reasonCode);
               }
 
-              setUiModel((current) => ({
-                ...current,
-                timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "add")
-              }));
-              setResponse((current) =>
-                current
-                  ? {
-                      ...current,
-                      timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "add")
-                    }
-                  : current
+              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
+                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add")
               );
             });
           },
@@ -891,20 +681,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               });
 
               if (!writeResult.accepted) {
-                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+                throw toWritebackError(writeResult.reasonCode);
               }
 
-              setUiModel((current) => ({
-                ...current,
-                timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "remove")
-              }));
-              setResponse((current) =>
-                current
-                  ? {
-                      ...current,
-                      timeline: applyDependencyLinkUpdate(current.timeline, predecessorWorkItemId, successorWorkItemId, "remove")
-                    }
-                  : current
+              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
+                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove")
               );
             });
           },
@@ -918,20 +699,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               });
 
               if (!writeResult.accepted) {
-                throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+                throw toWritebackError(writeResult.reasonCode);
               }
 
-              setUiModel((current) => ({
-                ...current,
-                timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
-              }));
-              setResponse((current) =>
-                current
-                  ? {
-                      ...current,
-                      timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
-                    }
-                  : current
+              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
+                applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
               );
             });
           },

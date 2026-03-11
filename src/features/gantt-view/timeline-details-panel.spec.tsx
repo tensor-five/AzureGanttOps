@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -87,5 +88,40 @@ describe("timeline-details-panel keyboard shortcuts", () => {
       expect(onUpdateSelectedWorkItemDetails).not.toHaveBeenCalled();
     });
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("sanitizes unsafe description html before rendering and saving", async () => {
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    timeline.bars[0].details.descriptionHtml = '<p onclick="evil()">Safe</p><img src=x onerror=evil()><script>alert(1)</script>';
+
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    const description = container.querySelector(".timeline-details-richtext");
+    expect(description?.innerHTML).toContain("<p>Safe</p>");
+    expect(description?.innerHTML).not.toContain("onclick=");
+    expect(description?.innerHTML).not.toContain("<script");
+
+    const titleInput = screen.getByLabelText("Title");
+    fireEvent.change(titleInput, { target: { value: "Updated Source Item" } });
+
+    const event = new KeyboardEvent("keydown", { key: "s", ctrlKey: true, cancelable: true });
+    window.dispatchEvent(event);
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledTimes(1);
+    });
+
+    expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith(
+      expect.objectContaining({
+        descriptionHtml: "<p>Safe</p>"
+      })
+    );
   });
 });

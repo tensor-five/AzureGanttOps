@@ -34,13 +34,14 @@
     "jsdom": "^28.1.0",
     "lint-staged": "^16.3.3",
     "typescript": "^5.9.2",
-    "vitest": "^2.1.9"
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "*": "node ./scripts/secret-scan.mjs --files"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
+    "isomorphic-dompurify": "^3.1.0",
     "lowdb": "^7.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

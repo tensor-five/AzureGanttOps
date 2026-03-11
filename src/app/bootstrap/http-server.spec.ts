@@ -36,6 +36,9 @@ describe("createHttpServer", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("text/html");
+      expect(response.headers.get("content-security-policy")).toContain("default-src 'self'");
+      expect(response.headers.get("x-frame-options")).toBe("DENY");
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
       expect(text).toContain('<div id="app"></div>');
       expect(text).toContain('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />');
       expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
@@ -472,6 +475,95 @@ describe("createHttpServer", () => {
     }
   });
 
+  it("rejects write routes without csrf token", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const requests: Array<{ path: string; body: Record<string, unknown> }> = [
+        {
+          path: "/phase2/work-item-schedule-adopt",
+          body: {
+            targetWorkItemId: 11,
+            startDate: "2026-03-01",
+            endDate: "2026-03-03"
+          }
+        },
+        {
+          path: "/phase2/dependency-link",
+          body: {
+            predecessorWorkItemId: 10,
+            successorWorkItemId: 11,
+            action: "add"
+          }
+        },
+        {
+          path: "/phase2/work-item-details-update",
+          body: {
+            targetWorkItemId: 11,
+            title: "Item",
+            descriptionHtml: "<p>Safe</p>",
+            state: "Active"
+          }
+        }
+      ];
+
+      for (const request of requests) {
+        const response = await fetch(`${server.baseUrl}${request.path}`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            accept: "application/json"
+          },
+          body: JSON.stringify(request.body)
+        });
+        const payload = await response.json();
+        expect(response.status).toBe(403);
+        expect(payload).toEqual({
+          code: "CSRF_INVALID",
+          message: "Missing or invalid CSRF protection."
+        });
+      }
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("rejects user-preferences POST without csrf token", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/user-preferences`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          preferences: {
+            themeMode: "dark"
+          }
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(body).toEqual({
+        code: "CSRF_INVALID",
+        message: "Missing or invalid CSRF protection."
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("embeds a hex csrf token in root HTML", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
@@ -500,11 +592,13 @@ describe("createHttpServer", () => {
     });
 
     try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
       const saveResponse = await fetch(`${server.baseUrl}/phase2/user-preferences`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          accept: "application/json"
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
           preferences: {

@@ -1,6 +1,7 @@
 export type ThemeModePreference = "system" | "light" | "dark";
 export type TimelineDensityPreference = "comfortable" | "compact";
-export type TimelineColorCodingPreference = "none" | "person" | "status" | "parent" | "overdue" | "field";
+export type TimelineColorCodingPreference = "none" | "status" | "parent" | "overdue" | "field";
+export type TimelineSidebarRowJustifyPreference = "flex-start" | "flex-end";
 
 export type TimelineFieldColorCodingPreference = {
   fieldRef?: string;
@@ -30,6 +31,7 @@ export type UserPreferences = {
   timelineSort?: TimelineSortPreference;
   timelineSidebarWidthPx?: number;
   timelineDetailsWidthPx?: number;
+  timelineSidebarRowJustify?: TimelineSidebarRowJustifyPreference;
   savedQueries?: SavedQueryPreference[];
   selectedHeaderQueryId?: string;
   filters?: Record<string, unknown>;
@@ -55,7 +57,6 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
 
   if (
     candidate.timelineColorCoding === "none" ||
-    candidate.timelineColorCoding === "person" ||
     candidate.timelineColorCoding === "status" ||
     candidate.timelineColorCoding === "parent" ||
     candidate.timelineColorCoding === "overdue" ||
@@ -128,6 +129,10 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
 
   if (typeof candidate.timelineDetailsWidthPx === "number" && Number.isFinite(candidate.timelineDetailsWidthPx)) {
     next.timelineDetailsWidthPx = clamp(Math.round(candidate.timelineDetailsWidthPx), 0, 900);
+  }
+
+  if (candidate.timelineSidebarRowJustify === "flex-start" || candidate.timelineSidebarRowJustify === "flex-end") {
+    next.timelineSidebarRowJustify = candidate.timelineSidebarRowJustify;
   }
 
   if (Array.isArray(candidate.savedQueries)) {

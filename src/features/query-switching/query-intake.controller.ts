@@ -32,6 +32,8 @@ import {
   toTrustState,
   toUserMessage
 } from "./query-intake.controller.mappers.js";
+import { buildQueryIntakeDiagnosticsEvent, type QueryIntakeDiagnosticsInput } from "./query-intake.controller.diagnostics.js";
+import { buildParseErrorFailureState, buildRuntimeErrorFailureState } from "./query-intake.controller.error-paths.js";
 
 export type QueryIntakeRequest = {
   queryInput: string;
@@ -117,45 +119,12 @@ export class QueryIntakeController {
     private readonly publishDiagnostics: PublishDiagnosticsUseCase | null = null
   ) {}
 
-  private async emitDiagnostics(input: {
-    statusCode: DiagnosticsStatusCode;
-    errorCode: DiagnosticsErrorCode | null;
-    guidance: string;
-    preflightStatus: QueryIntakeResponse["preflightStatus"];
-    uiState: TimelineUiState;
-    trustState: QueryIntakeResponse["trustState"];
-    activeQueryId: string | null;
-    selectedQueryId: string | null;
-    reloadSource: QueryReloadSource | null;
-    lastRefreshAt: string | null;
-    lastSuccessfulRefreshAt: string | null;
-    metadata?: Readonly<Record<string, string | number | boolean | null>>;
-  }): Promise<void> {
+  private async emitDiagnostics(input: QueryIntakeDiagnosticsInput): Promise<void> {
     if (!this.publishDiagnostics) {
       return;
     }
 
-    await this.publishDiagnostics.execute({
-      eventName: "query-intake.outcome",
-      timestamp: new Date().toISOString(),
-      statusCode: input.statusCode,
-      errorCode: input.errorCode,
-      guidance: input.guidance,
-      source: {
-        component: "query-intake",
-        preflightStatus: input.preflightStatus,
-        uiState: input.uiState,
-        trustState: input.trustState,
-        activeQueryId: input.activeQueryId,
-        selectedQueryId: input.selectedQueryId,
-        reloadSource: input.reloadSource
-      },
-      freshness: {
-        lastRefreshAt: input.lastRefreshAt,
-        lastSuccessfulRefreshAt: input.lastSuccessfulRefreshAt
-      },
-      metadata: input.metadata
-    });
+    await this.publishDiagnostics.execute(buildQueryIntakeDiagnosticsEvent(input));
   }
 
   public async submit(request: QueryIntakeRequest): Promise<QueryIntakeResponse> {
@@ -168,24 +137,23 @@ export class QueryIntakeController {
     try {
       context = parseQueryInput(request.queryInput, defaults ?? undefined);
     } catch (error: unknown) {
-      const guidance = toUserMessage(error, "Paste a valid Azure DevOps query URL or query ID.");
-      const uiState = "query_failure" as const;
-      const trustState = "needs_attention" as const;
-      const strictFail = noStrictFailState(request.dismissStrictFailWarning);
-      const capabilities = buildCapabilities("UNKNOWN_ERROR");
+      const parseFailure = buildParseErrorFailureState({
+        error,
+        dismissStrictFailWarning: request.dismissStrictFailWarning
+      });
       const model = this.toViewModel({
         success: false,
-        guidance,
-        statusCode: "UNKNOWN_ERROR",
-        errorCode: "UNKNOWN_ERROR",
-        flatQuerySupportNote: FLAT_ONLY_NOTE,
+        guidance: parseFailure.guidance,
+        statusCode: parseFailure.statusCode,
+        errorCode: parseFailure.errorCode,
+        flatQuerySupportNote: parseFailure.flatQuerySupportNote,
         activeQueryId: null,
         lastRefreshAt: null,
         reloadSource: null,
-        uiState,
-        trustState,
-        strictFail,
-        capabilities,
+        uiState: parseFailure.uiState,
+        trustState: parseFailure.trustState,
+        strictFail: parseFailure.strictFail,
+        capabilities: parseFailure.capabilities,
         density,
         savedQueries: [],
         selectedQueryId: null,
@@ -198,18 +166,18 @@ export class QueryIntakeController {
       });
       const response: QueryIntakeResponse = {
         success: false,
-        guidance,
-        statusCode: "UNKNOWN_ERROR",
-        errorCode: "UNKNOWN_ERROR",
-        preflightStatus: "UNKNOWN_ERROR",
+        guidance: parseFailure.guidance,
+        statusCode: parseFailure.statusCode,
+        errorCode: parseFailure.errorCode,
+        preflightStatus: parseFailure.preflightStatus,
         selectedQueryId: null,
         activeQueryId: null,
         lastRefreshAt: null,
         reloadSource: null,
-        uiState,
-        trustState,
-        strictFail,
-        capabilities,
+        uiState: parseFailure.uiState,
+        trustState: parseFailure.trustState,
+        strictFail: parseFailure.strictFail,
+        capabilities: parseFailure.capabilities,
         density,
         savedQueries: [],
         workItemIds: [],
@@ -224,9 +192,9 @@ export class QueryIntakeController {
       };
 
       await this.emitDiagnostics({
-        statusCode: "UNKNOWN_ERROR",
-        errorCode: "UNKNOWN_ERROR",
-        guidance,
+        statusCode: parseFailure.statusCode,
+        errorCode: parseFailure.errorCode,
+        guidance: parseFailure.guidance,
         preflightStatus: response.preflightStatus,
         uiState: response.uiState,
         trustState: response.trustState,
@@ -409,34 +377,23 @@ export class QueryIntakeController {
 
       return response;
     } catch (error: unknown) {
-      const guidance = guidanceForRuntimeError(error);
-      const preflightStatus = "READY" as const;
-      const uiState = deriveTimelineUiState({
-        preflightStatus,
-        hasTimeline: false,
-        hasAnyItems: false,
-        hydrationStatusCode: null,
-        hasStrictFailFallback: false,
-        hasQueryFailure: true
+      const runtimeFailure = buildRuntimeErrorFailureState({
+        error,
+        dismissStrictFailWarning: request.dismissStrictFailWarning
       });
-      const trustState = toTrustState(uiState);
-      const strictFail = noStrictFailState(request.dismissStrictFailWarning);
-      const capabilities = buildCapabilities(preflightStatus);
-      const statusCode = toDiagnosticsStatusCode(toErrorCode(error));
-      const errorCode = toDiagnosticsErrorCode(toErrorCode(error));
       const model = this.toViewModel({
         success: false,
-        guidance,
-        statusCode,
-        errorCode,
-        flatQuerySupportNote: FLAT_ONLY_NOTE,
+        guidance: runtimeFailure.guidance,
+        statusCode: runtimeFailure.statusCode,
+        errorCode: runtimeFailure.errorCode,
+        flatQuerySupportNote: runtimeFailure.flatQuerySupportNote,
         activeQueryId: context.queryId.value,
         lastRefreshAt: null,
         reloadSource: "full_reload",
-        uiState,
-        trustState,
-        strictFail,
-        capabilities,
+        uiState: runtimeFailure.uiState,
+        trustState: runtimeFailure.trustState,
+        strictFail: runtimeFailure.strictFail,
+        capabilities: runtimeFailure.capabilities,
         density,
         savedQueries: [],
         selectedQueryId: context.queryId.value,
@@ -450,18 +407,18 @@ export class QueryIntakeController {
 
       const response: QueryIntakeResponse = {
         success: false,
-        guidance,
-        statusCode,
-        errorCode,
-        preflightStatus,
+        guidance: runtimeFailure.guidance,
+        statusCode: runtimeFailure.statusCode,
+        errorCode: runtimeFailure.errorCode,
+        preflightStatus: runtimeFailure.preflightStatus,
         selectedQueryId: context.queryId.value,
         activeQueryId: context.queryId.value,
         lastRefreshAt: null,
         reloadSource: "full_reload",
-        uiState,
-        trustState,
-        strictFail,
-        capabilities,
+        uiState: runtimeFailure.uiState,
+        trustState: runtimeFailure.trustState,
+        strictFail: runtimeFailure.strictFail,
+        capabilities: runtimeFailure.capabilities,
         density,
         savedQueries: [],
         workItemIds: [],
@@ -478,7 +435,7 @@ export class QueryIntakeController {
       await this.emitDiagnostics({
         statusCode: response.statusCode,
         errorCode: response.errorCode,
-        guidance,
+        guidance: runtimeFailure.guidance,
         preflightStatus: response.preflightStatus,
         uiState: response.uiState,
         trustState: response.trustState,

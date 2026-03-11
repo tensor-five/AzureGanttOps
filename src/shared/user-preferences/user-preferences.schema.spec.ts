@@ -23,6 +23,7 @@ describe("user-preferences.schema", () => {
     const sanitized = sanitizeUserPreferences({
       timelineSidebarWidthPx: 9999.2,
       timelineDetailsWidthPx: -20,
+      timelineSidebarRowJustify: "flex-end",
       timelineFieldColorCoding: {
         fieldRef: "  Custom.Team  ",
         valueColors: {
@@ -35,6 +36,7 @@ describe("user-preferences.schema", () => {
 
     expect(sanitized.timelineSidebarWidthPx).toBe(640);
     expect(sanitized.timelineDetailsWidthPx).toBe(0);
+    expect(sanitized.timelineSidebarRowJustify).toBe("flex-end");
     expect(sanitized.timelineFieldColorCoding).toEqual({
       fieldRef: "Custom.Team",
       valueColors: {

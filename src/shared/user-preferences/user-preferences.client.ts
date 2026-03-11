@@ -7,10 +7,13 @@ export type {
   TimelineDensityPreference,
   TimelineFieldColorCodingPreference,
   TimelineLabelFieldPreference,
+  TimelineSidebarRowJustifyPreference,
   UserPreferences
 } from "./user-preferences.schema.js";
 
 const USER_PREFERENCES_ENDPOINT = "/phase2/user-preferences";
+const ADO_CSRF_META_SELECTOR = 'meta[name="ado-csrf-token"]';
+const ADO_CSRF_HEADER = "x-ado-csrf-token";
 
 let cachedPreferences: UserPreferences = {};
 let hydrated = false;
@@ -80,14 +83,34 @@ async function postUserPreferencesPatch(patch: UserPreferences): Promise<void> {
     return;
   }
 
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    accept: "application/json"
+  };
+  const csrfToken = readCsrfTokenFromMeta();
+  if (csrfToken) {
+    headers[ADO_CSRF_HEADER] = csrfToken;
+  }
+
   await fetch(USER_PREFERENCES_ENDPOINT, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json"
-    },
+    headers,
     body: JSON.stringify({
       preferences: patch
     })
   });
+}
+
+function readCsrfTokenFromMeta(): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const meta = document.querySelector(ADO_CSRF_META_SELECTOR);
+  if (!(meta instanceof HTMLMetaElement)) {
+    return null;
+  }
+
+  const token = meta.content.trim();
+  return token.length > 0 ? token : null;
 }

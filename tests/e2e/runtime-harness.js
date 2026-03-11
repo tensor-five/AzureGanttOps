@@ -938,11 +938,11 @@ var require_react_development = __commonJS({
       exports.useDeferredValue = function(value, initialValue) {
         return resolveDispatcher().useDeferredValue(value, initialValue);
       };
-      exports.useEffect = function(create, deps) {
-        null == create && console.warn(
+      exports.useEffect = function(create2, deps) {
+        null == create2 && console.warn(
           "React Hook useEffect requires an effect callback. Did you forget to pass a callback to the hook?"
         );
-        return resolveDispatcher().useEffect(create, deps);
+        return resolveDispatcher().useEffect(create2, deps);
       };
       exports.useEffectEvent = function(callback) {
         return resolveDispatcher().useEffectEvent(callback);
@@ -950,23 +950,23 @@ var require_react_development = __commonJS({
       exports.useId = function() {
         return resolveDispatcher().useId();
       };
-      exports.useImperativeHandle = function(ref, create, deps) {
-        return resolveDispatcher().useImperativeHandle(ref, create, deps);
+      exports.useImperativeHandle = function(ref, create2, deps) {
+        return resolveDispatcher().useImperativeHandle(ref, create2, deps);
       };
-      exports.useInsertionEffect = function(create, deps) {
-        null == create && console.warn(
+      exports.useInsertionEffect = function(create2, deps) {
+        null == create2 && console.warn(
           "React Hook useInsertionEffect requires an effect callback. Did you forget to pass a callback to the hook?"
         );
-        return resolveDispatcher().useInsertionEffect(create, deps);
+        return resolveDispatcher().useInsertionEffect(create2, deps);
       };
-      exports.useLayoutEffect = function(create, deps) {
-        null == create && console.warn(
+      exports.useLayoutEffect = function(create2, deps) {
+        null == create2 && console.warn(
           "React Hook useLayoutEffect requires an effect callback. Did you forget to pass a callback to the hook?"
         );
-        return resolveDispatcher().useLayoutEffect(create, deps);
+        return resolveDispatcher().useLayoutEffect(create2, deps);
       };
-      exports.useMemo = function(create, deps) {
-        return resolveDispatcher().useMemo(create, deps);
+      exports.useMemo = function(create2, deps) {
+        return resolveDispatcher().useMemo(create2, deps);
       };
       exports.useOptimistic = function(passthrough, reducer) {
         return resolveDispatcher().useOptimistic(passthrough, reducer);
@@ -1222,18 +1222,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React21 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React21.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React37 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React21 = {
+      React37 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React21.react_stack_bottom_frame.bind(
-        React21,
+      var unknownOwnerDebugStack = React37.react_stack_bottom_frame.bind(
+        React37,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1597,7 +1597,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React21 = require_react(), Internals = {
+      var React37 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1615,7 +1615,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React21.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -2291,7 +2291,7 @@ var require_react_dom_client_development = __commonJS({
           }
         return "\n" + prefix + name + suffix;
       }
-      function describeNativeComponentFrame(fn, construct) {
+      function describeNativeComponentFrame(fn, construct2) {
         if (!fn || reentry) return "";
         var frame = componentFrameCache.get(fn);
         if (void 0 !== frame) return frame;
@@ -2306,7 +2306,7 @@ var require_react_dom_client_development = __commonJS({
           var RunInRootFrame = {
             DetermineComponentFrameRoot: function() {
               try {
-                if (construct) {
+                if (construct2) {
                   var Fake = function() {
                     throw Error();
                   };
@@ -3150,7 +3150,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node.ownerDocument) === node || node.defaultValue === "" + value || (node.defaultValue = "" + value);
       }
       function validateOptionProps(element, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React21.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React37.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -3255,7 +3255,7 @@ var require_react_dom_client_development = __commonJS({
       function added(indent) {
         return "+ " + "  ".repeat(indent);
       }
-      function removed(indent) {
+      function removed2(indent) {
         return "- " + "  ".repeat(indent);
       }
       function describeFiberType(fiber) {
@@ -3293,7 +3293,7 @@ var require_react_dom_client_development = __commonJS({
         if ("string" === typeof serverProps) {
           for (var firstDiff = 0; firstDiff < serverProps.length && firstDiff < clientText.length && serverProps.charCodeAt(firstDiff) === clientText.charCodeAt(firstDiff); firstDiff++) ;
           firstDiff > maxLength - 8 && 10 < firstDiff && (clientText = "..." + clientText.slice(firstDiff - 8), serverProps = "..." + serverProps.slice(firstDiff - 8));
-          return added(indent) + describeTextNode(clientText, maxLength) + "\n" + removed(indent) + describeTextNode(serverProps, maxLength) + "\n";
+          return added(indent) + describeTextNode(clientText, maxLength) + "\n" + removed2(indent) + describeTextNode(serverProps, maxLength) + "\n";
         }
         return indentation(indent) + describeTextNode(clientText, maxLength) + "\n";
       }
@@ -3362,13 +3362,13 @@ var require_react_dom_client_development = __commonJS({
           if (clientObject.hasOwnProperty(propName)) {
             delete remainingServerProperties[propName];
             var maxLength = 120 - 2 * indent - propName.length - 2, clientPropValue = describeValue(clientObject[propName], maxLength);
-            serverObject.hasOwnProperty(propName) ? (maxLength = describeValue(serverObject[propName], maxLength), properties += added(indent) + propName + ": " + clientPropValue + "\n", properties += removed(indent) + propName + ": " + maxLength + "\n") : properties += added(indent) + propName + ": " + clientPropValue + "\n";
+            serverObject.hasOwnProperty(propName) ? (maxLength = describeValue(serverObject[propName], maxLength), properties += added(indent) + propName + ": " + clientPropValue + "\n", properties += removed2(indent) + propName + ": " + maxLength + "\n") : properties += added(indent) + propName + ": " + clientPropValue + "\n";
           }
         for (var _propName in remainingServerProperties)
           remainingServerProperties.hasOwnProperty(_propName) && (clientObject = describeValue(
             remainingServerProperties[_propName],
             120 - 2 * indent - _propName.length - 2
-          ), properties += removed(indent) + _propName + ": " + clientObject + "\n");
+          ), properties += removed2(indent) + _propName + ": " + clientObject + "\n");
         return properties;
       }
       function describeElementDiff(type, clientProps, serverProps, indent) {
@@ -3404,14 +3404,14 @@ var require_react_dom_client_development = __commonJS({
                   propName$jscomp$0,
                   serverPropName,
                   indent + 2
-                ) + indentation(indent + 1) + "}}\n" : (content += added(indent + 1) + _propName2 + "=" + clientPropValue + "\n", content += removed(indent + 1) + _propName2 + "=" + maxLength$jscomp$0 + "\n");
+                ) + indentation(indent + 1) + "}}\n" : (content += added(indent + 1) + _propName2 + "=" + clientPropValue + "\n", content += removed2(indent + 1) + _propName2 + "=" + maxLength$jscomp$0 + "\n");
               } else
                 content += indentation(indent + 1) + _propName2 + "=" + describePropValue(clientProps[_propName2], maxLength$jscomp$0) + "\n";
             }
           serverPropNames.forEach(function(propName) {
             if ("children" !== propName) {
               var maxLength = 120 - 2 * (indent + 1) - propName.length - 1;
-              content += removed(indent + 1) + propName + "=" + describePropValue(serverProps[propName], maxLength) + "\n";
+              content += removed2(indent + 1) + propName + "=" + describePropValue(serverProps[propName], maxLength) + "\n";
             }
           });
           content = "" === content ? indentation(indent) + "<" + type + ">\n" : indentation(indent) + "<" + type + "\n" + content + indentation(indent) + ">\n";
@@ -3489,10 +3489,10 @@ var require_react_dom_client_development = __commonJS({
         i = node.serverTail;
         null === node.serverProps && indent--;
         for (node = 0; node < i.length; node++)
-          serverComponentName = i[node], propName = "string" === typeof serverComponentName ? propName + (removed(indent) + describeTextNode(serverComponentName, 120 - 2 * indent) + "\n") : propName + describeExpandedElement(
+          serverComponentName = i[node], propName = "string" === typeof serverComponentName ? propName + (removed2(indent) + describeTextNode(serverComponentName, 120 - 2 * indent) + "\n") : propName + describeExpandedElement(
             serverComponentName.type,
             serverComponentName.props,
-            removed(indent)
+            removed2(indent)
           );
         return skipToNode + debugInfo + propName;
       }
@@ -3717,15 +3717,15 @@ var require_react_dom_client_development = __commonJS({
         );
         return false;
       }
-      function setTextContent(node, text) {
-        if (text) {
+      function setTextContent(node, text2) {
+        if (text2) {
           var firstChild = node.firstChild;
           if (firstChild && firstChild === node.lastChild && 3 === firstChild.nodeType) {
-            firstChild.nodeValue = text;
+            firstChild.nodeValue = text2;
             return;
           }
         }
-        node.textContent = text;
+        node.textContent = text2;
       }
       function camelize(string) {
         return string.replace(hyphenPattern, function(_, character) {
@@ -4305,9 +4305,9 @@ var require_react_dom_client_development = __commonJS({
       function isEventSupported(eventNameSuffix) {
         if (!canUseDOM) return false;
         eventNameSuffix = "on" + eventNameSuffix;
-        var isSupported = eventNameSuffix in document;
-        isSupported || (isSupported = document.createElement("div"), isSupported.setAttribute(eventNameSuffix, "return;"), isSupported = "function" === typeof isSupported[eventNameSuffix]);
-        return isSupported;
+        var isSupported2 = eventNameSuffix in document;
+        isSupported2 || (isSupported2 = document.createElement("div"), isSupported2.setAttribute(eventNameSuffix, "return;"), isSupported2 = "function" === typeof isSupported2[eventNameSuffix]);
+        return isSupported2;
       }
       function createAndAccumulateChangeEvent(dispatchQueue, inst, nativeEvent, target) {
         restoreTarget ? restoreQueue ? restoreQueue.push(target) : restoreQueue = [target] : restoreTarget = target;
@@ -6862,14 +6862,14 @@ var require_react_dom_client_development = __commonJS({
           queue = queue.firstBaseUpdate;
           if (null !== queue) {
             do {
-              var clone = {
+              var clone2 = {
                 lane: queue.lane,
                 tag: queue.tag,
                 payload: queue.payload,
                 callback: null,
                 next: null
               };
-              null === newLast ? newFirst = newLast = clone : newLast = newLast.next = clone;
+              null === newLast ? newFirst = newLast = clone2 : newLast = newLast.next = clone2;
               queue = queue.next;
             } while (null !== queue);
             null === newLast ? newFirst = newLast = capturedUpdate : newLast = newLast.next = capturedUpdate;
@@ -7576,8 +7576,8 @@ var require_react_dom_client_development = __commonJS({
         ))
           hook.memoizedState = getServerSnapshot, didReceiveUpdate = true;
         hook = hook.queue;
-        var create = subscribeToStore.bind(null, fiber, hook, subscribe);
-        updateEffectImpl(2048, Passive, create, [subscribe]);
+        var create2 = subscribeToStore.bind(null, fiber, hook, subscribe);
+        updateEffectImpl(2048, Passive, create2, [subscribe]);
         if (hook.getSnapshot !== getSnapshot || cachedSnapshot || null !== workInProgressHook && workInProgressHook.memoizedState.tag & HasEffect) {
           fiber.flags |= 2048;
           pushSimpleEffect(
@@ -7913,12 +7913,12 @@ var require_react_dom_client_development = __commonJS({
         currentStateHook.memoizedState = action;
         return [stateHook, dispatch, false];
       }
-      function pushSimpleEffect(tag, inst, create, deps) {
-        tag = { tag, create, deps, inst, next: null };
+      function pushSimpleEffect(tag, inst, create2, deps) {
+        tag = { tag, create: create2, deps, inst, next: null };
         inst = currentlyRenderingFiber.updateQueue;
         null === inst && (inst = createFunctionComponentUpdateQueue(), currentlyRenderingFiber.updateQueue = inst);
-        create = inst.lastEffect;
-        null === create ? inst.lastEffect = tag.next = tag : (deps = create.next, create.next = tag, tag.next = deps, inst.lastEffect = tag);
+        create2 = inst.lastEffect;
+        null === create2 ? inst.lastEffect = tag.next = tag : (deps = create2.next, create2.next = tag, tag.next = deps, inst.lastEffect = tag);
         return tag;
       }
       function mountRef(initialValue) {
@@ -7926,29 +7926,29 @@ var require_react_dom_client_development = __commonJS({
         initialValue = { current: initialValue };
         return hook.memoizedState = initialValue;
       }
-      function mountEffectImpl(fiberFlags, hookFlags, create, deps) {
+      function mountEffectImpl(fiberFlags, hookFlags, create2, deps) {
         var hook = mountWorkInProgressHook();
         currentlyRenderingFiber.flags |= fiberFlags;
         hook.memoizedState = pushSimpleEffect(
           HasEffect | hookFlags,
           { destroy: void 0 },
-          create,
+          create2,
           void 0 === deps ? null : deps
         );
       }
-      function updateEffectImpl(fiberFlags, hookFlags, create, deps) {
+      function updateEffectImpl(fiberFlags, hookFlags, create2, deps) {
         var hook = updateWorkInProgressHook();
         deps = void 0 === deps ? null : deps;
         var inst = hook.memoizedState.inst;
-        null !== currentHook && null !== deps && areHookInputsEqual(deps, currentHook.memoizedState.deps) ? hook.memoizedState = pushSimpleEffect(hookFlags, inst, create, deps) : (currentlyRenderingFiber.flags |= fiberFlags, hook.memoizedState = pushSimpleEffect(
+        null !== currentHook && null !== deps && areHookInputsEqual(deps, currentHook.memoizedState.deps) ? hook.memoizedState = pushSimpleEffect(hookFlags, inst, create2, deps) : (currentlyRenderingFiber.flags |= fiberFlags, hook.memoizedState = pushSimpleEffect(
           HasEffect | hookFlags,
           inst,
-          create,
+          create2,
           deps
         ));
       }
-      function mountEffect(create, deps) {
-        (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode ? mountEffectImpl(276826112, Passive, create, deps) : mountEffectImpl(8390656, Passive, create, deps);
+      function mountEffect(create2, deps) {
+        (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode ? mountEffectImpl(276826112, Passive, create2, deps) : mountEffectImpl(8390656, Passive, create2, deps);
       }
       function useEffectEventImpl(payload) {
         currentlyRenderingFiber.flags |= 4;
@@ -7982,15 +7982,15 @@ var require_react_dom_client_development = __commonJS({
           return ref.impl.apply(void 0, arguments);
         };
       }
-      function mountLayoutEffect(create, deps) {
+      function mountLayoutEffect(create2, deps) {
         var fiberFlags = 4194308;
         (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode && (fiberFlags |= 134217728);
-        return mountEffectImpl(fiberFlags, Layout, create, deps);
+        return mountEffectImpl(fiberFlags, Layout, create2, deps);
       }
-      function imperativeHandleEffect(create, ref) {
+      function imperativeHandleEffect(create2, ref) {
         if ("function" === typeof ref) {
-          create = create();
-          var refCleanup = ref(create);
+          create2 = create2();
+          var refCleanup = ref(create2);
           return function() {
             "function" === typeof refCleanup ? refCleanup() : ref(null);
           };
@@ -7999,14 +7999,14 @@ var require_react_dom_client_development = __commonJS({
           return ref.hasOwnProperty("current") || console.error(
             "Expected useImperativeHandle() first argument to either be a ref callback or React.createRef() object. Instead received: %s.",
             "an object with keys {" + Object.keys(ref).join(", ") + "}"
-          ), create = create(), ref.current = create, function() {
+          ), create2 = create2(), ref.current = create2, function() {
             ref.current = null;
           };
       }
-      function mountImperativeHandle(ref, create, deps) {
-        "function" !== typeof create && console.error(
+      function mountImperativeHandle(ref, create2, deps) {
+        "function" !== typeof create2 && console.error(
           "Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.",
-          null !== create ? typeof create : "null"
+          null !== create2 ? typeof create2 : "null"
         );
         deps = null !== deps && void 0 !== deps ? deps.concat([ref]) : null;
         var fiberFlags = 4194308;
@@ -8014,20 +8014,20 @@ var require_react_dom_client_development = __commonJS({
         mountEffectImpl(
           fiberFlags,
           Layout,
-          imperativeHandleEffect.bind(null, create, ref),
+          imperativeHandleEffect.bind(null, create2, ref),
           deps
         );
       }
-      function updateImperativeHandle(ref, create, deps) {
-        "function" !== typeof create && console.error(
+      function updateImperativeHandle(ref, create2, deps) {
+        "function" !== typeof create2 && console.error(
           "Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.",
-          null !== create ? typeof create : "null"
+          null !== create2 ? typeof create2 : "null"
         );
         deps = null !== deps && void 0 !== deps ? deps.concat([ref]) : null;
         updateEffectImpl(
           4,
           Layout,
-          imperativeHandleEffect.bind(null, create, ref),
+          imperativeHandleEffect.bind(null, create2, ref),
           deps
         );
       }
@@ -15677,12 +15677,12 @@ var require_react_dom_client_development = __commonJS({
           typeof listener
         );
       }
-      function normalizeHTML(parent, html) {
+      function normalizeHTML(parent, html2) {
         parent = parent.namespaceURI === MATH_NAMESPACE || parent.namespaceURI === SVG_NAMESPACE ? parent.ownerDocument.createElementNS(
           parent.namespaceURI,
           parent.tagName
         ) : parent.ownerDocument.createElement(parent.tagName);
-        parent.innerHTML = html;
+        parent.innerHTML = html2;
         return parent.innerHTML;
       }
       function normalizeMarkupForTextOrAttribute(markup) {
@@ -17512,8 +17512,8 @@ var require_react_dom_client_development = __commonJS({
         props = void 0 !== props && null !== props && props.hasOwnProperty("display") ? props.display : null;
         instance.style.display = null == props || "boolean" === typeof props ? "" : ("" + props).trim();
       }
-      function unhideTextInstance(textInstance, text) {
-        textInstance.nodeValue = text;
+      function unhideTextInstance(textInstance, text2) {
+        textInstance.nodeValue = text2;
       }
       function clearContainerSparingly(container) {
         var nextNode = container.firstChild;
@@ -17578,8 +17578,8 @@ var require_react_dom_client_development = __commonJS({
         }
         return null;
       }
-      function canHydrateTextInstance(instance, text, inRootOrSingleton) {
-        if ("" === text) return null;
+      function canHydrateTextInstance(instance, text2, inRootOrSingleton) {
+        if ("" === text2) return null;
         for (; 3 !== instance.nodeType; ) {
           if ((1 !== instance.nodeType || "INPUT" !== instance.nodeName || "hidden" !== instance.type) && !inRootOrSingleton)
             return null;
@@ -17642,8 +17642,8 @@ var require_react_dom_client_development = __commonJS({
         }
         return 8 === instance.nodeType ? instance.data === ACTIVITY_START_DATA ? { type: "Activity", props: {} } : { type: "Suspense", props: {} } : instance.nodeValue;
       }
-      function diffHydratedTextForDevWarnings(textInstance, text, parentProps) {
-        return null === parentProps || true !== parentProps[SUPPRESS_HYDRATION_WARNING] ? (textInstance.nodeValue === text ? textInstance = null : (text = normalizeMarkupForTextOrAttribute(text), textInstance = normalizeMarkupForTextOrAttribute(textInstance.nodeValue) === text ? null : textInstance.nodeValue), textInstance) : null;
+      function diffHydratedTextForDevWarnings(textInstance, text2, parentProps) {
+        return null === parentProps || true !== parentProps[SUPPRESS_HYDRATION_WARNING] ? (textInstance.nodeValue === text2 ? textInstance = null : (text2 = normalizeMarkupForTextOrAttribute(text2), textInstance = normalizeMarkupForTextOrAttribute(textInstance.nodeValue) === text2 ? null : textInstance.nodeValue), textInstance) : null;
       }
       function getNextHydratableInstanceAfterHydrationBoundary(hydrationInstance) {
         hydrationInstance = hydrationInstance.nextSibling;
@@ -18782,14 +18782,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React21 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React37 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React21.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -20088,10 +20088,10 @@ var require_react_dom_client_development = __commonJS({
         callComponentWillUnmount
       ), callCreate = {
         react_stack_bottom_frame: function(effect) {
-          var create = effect.create;
+          var create2 = effect.create;
           effect = effect.inst;
-          create = create();
-          return effect.destroy = create;
+          create2 = create2();
+          return effect.destroy = create2;
         }
       }, callCreateInDEV = callCreate.react_stack_bottom_frame.bind(callCreate), callDestroy = {
         react_stack_bottom_frame: function(current2, nearestMountedAncestor, destroy) {
@@ -20201,38 +20201,38 @@ var require_react_dom_client_development = __commonJS({
           mountHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           mountHookTypesDev();
           checkDepsAreArrayDev(deps);
-          return mountEffect(create, deps);
+          return mountEffect(create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           mountHookTypesDev();
           checkDepsAreArrayDev(deps);
-          return mountImperativeHandle(ref, create, deps);
+          return mountImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           mountHookTypesDev();
           checkDepsAreArrayDev(deps);
-          mountEffectImpl(4, Insertion, create, deps);
+          mountEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           mountHookTypesDev();
           checkDepsAreArrayDev(deps);
-          return mountLayoutEffect(create, deps);
+          return mountLayoutEffect(create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           mountHookTypesDev();
           checkDepsAreArrayDev(deps);
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV;
           try {
-            return mountMemo(create, deps);
+            return mountMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -20336,33 +20336,33 @@ var require_react_dom_client_development = __commonJS({
           updateHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           updateHookTypesDev();
-          return mountEffect(create, deps);
+          return mountEffect(create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           updateHookTypesDev();
-          return mountImperativeHandle(ref, create, deps);
+          return mountImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           updateHookTypesDev();
-          mountEffectImpl(4, Insertion, create, deps);
+          mountEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           updateHookTypesDev();
-          return mountLayoutEffect(create, deps);
+          return mountLayoutEffect(create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           updateHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV;
           try {
-            return mountMemo(create, deps);
+            return mountMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -20466,33 +20466,33 @@ var require_react_dom_client_development = __commonJS({
           updateHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           updateHookTypesDev();
-          updateEffectImpl(2048, Passive, create, deps);
+          updateEffectImpl(2048, Passive, create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           updateHookTypesDev();
-          return updateImperativeHandle(ref, create, deps);
+          return updateImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           updateHookTypesDev();
-          return updateEffectImpl(4, Insertion, create, deps);
+          return updateEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           updateHookTypesDev();
-          return updateEffectImpl(4, Layout, create, deps);
+          return updateEffectImpl(4, Layout, create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           updateHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnUpdateInDEV;
           try {
-            return updateMemo(create, deps);
+            return updateMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -20596,33 +20596,33 @@ var require_react_dom_client_development = __commonJS({
           updateHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           updateHookTypesDev();
-          updateEffectImpl(2048, Passive, create, deps);
+          updateEffectImpl(2048, Passive, create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           updateHookTypesDev();
-          return updateImperativeHandle(ref, create, deps);
+          return updateImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           updateHookTypesDev();
-          return updateEffectImpl(4, Insertion, create, deps);
+          return updateEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           updateHookTypesDev();
-          return updateEffectImpl(4, Layout, create, deps);
+          return updateEffectImpl(4, Layout, create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           updateHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnRerenderInDEV;
           try {
-            return updateMemo(create, deps);
+            return updateMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -20732,38 +20732,38 @@ var require_react_dom_client_development = __commonJS({
           mountHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           warnInvalidHookAccess();
           mountHookTypesDev();
-          return mountEffect(create, deps);
+          return mountEffect(create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           warnInvalidHookAccess();
           mountHookTypesDev();
-          return mountImperativeHandle(ref, create, deps);
+          return mountImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           warnInvalidHookAccess();
           mountHookTypesDev();
-          mountEffectImpl(4, Insertion, create, deps);
+          mountEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           warnInvalidHookAccess();
           mountHookTypesDev();
-          return mountLayoutEffect(create, deps);
+          return mountLayoutEffect(create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           warnInvalidHookAccess();
           mountHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnMountInDEV;
           try {
-            return mountMemo(create, deps);
+            return mountMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -20887,38 +20887,38 @@ var require_react_dom_client_development = __commonJS({
           updateHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          updateEffectImpl(2048, Passive, create, deps);
+          updateEffectImpl(2048, Passive, create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateImperativeHandle(ref, create, deps);
+          return updateImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateEffectImpl(4, Insertion, create, deps);
+          return updateEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateEffectImpl(4, Layout, create, deps);
+          return updateEffectImpl(4, Layout, create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           warnInvalidHookAccess();
           updateHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnUpdateInDEV;
           try {
-            return updateMemo(create, deps);
+            return updateMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -21042,38 +21042,38 @@ var require_react_dom_client_development = __commonJS({
           updateHookTypesDev();
           return readContext(context);
         },
-        useEffect: function(create, deps) {
+        useEffect: function(create2, deps) {
           currentHookNameInDev = "useEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          updateEffectImpl(2048, Passive, create, deps);
+          updateEffectImpl(2048, Passive, create2, deps);
         },
-        useImperativeHandle: function(ref, create, deps) {
+        useImperativeHandle: function(ref, create2, deps) {
           currentHookNameInDev = "useImperativeHandle";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateImperativeHandle(ref, create, deps);
+          return updateImperativeHandle(ref, create2, deps);
         },
-        useInsertionEffect: function(create, deps) {
+        useInsertionEffect: function(create2, deps) {
           currentHookNameInDev = "useInsertionEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateEffectImpl(4, Insertion, create, deps);
+          return updateEffectImpl(4, Insertion, create2, deps);
         },
-        useLayoutEffect: function(create, deps) {
+        useLayoutEffect: function(create2, deps) {
           currentHookNameInDev = "useLayoutEffect";
           warnInvalidHookAccess();
           updateHookTypesDev();
-          return updateEffectImpl(4, Layout, create, deps);
+          return updateEffectImpl(4, Layout, create2, deps);
         },
-        useMemo: function(create, deps) {
+        useMemo: function(create2, deps) {
           currentHookNameInDev = "useMemo";
           warnInvalidHookAccess();
           updateHookTypesDev();
           var prevDispatcher = ReactSharedInternals.H;
           ReactSharedInternals.H = InvalidNestedHooksDispatcherOnUpdateInDEV;
           try {
-            return updateMemo(create, deps);
+            return updateMemo(create2, deps);
           } finally {
             ReactSharedInternals.H = prevDispatcher;
           }
@@ -21577,7 +21577,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React21.version;
+        var isomorphicReactPackageVersion = React37.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -23794,7 +23794,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react9 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs
@@ -25297,8 +25297,8 @@ var ESCAPE_LOOKUP = {
   "\u2029": "\\u2029"
 };
 var ESCAPE_REGEX = /[&><\u2028\u2029]/g;
-function escapeHtml(html) {
-  return html.replace(ESCAPE_REGEX, (match) => ESCAPE_LOOKUP[match]);
+function escapeHtml(html2) {
+  return html2.replace(ESCAPE_REGEX, (match) => ESCAPE_LOOKUP[match]);
 }
 function invariant2(value, message) {
   if (value === false || value === null || typeof value === "undefined") {
@@ -25517,8 +25517,8 @@ function usePrefetchBehavior(prefetch, theirElementProps) {
       setShouldPrefetch(true);
     }
     if (prefetch === "viewport") {
-      let callback = (entries) => {
-        entries.forEach((entry) => {
+      let callback = (entries2) => {
+        entries2.forEach((entry) => {
           setShouldPrefetch(entry.isIntersecting);
         });
       };
@@ -26581,12 +26581,18 @@ function writeMap(map) {
 var ORG_KEY = "azure-ganttops.organization";
 var PROJECT_KEY = "azure-ganttops.project";
 var QUERY_INPUT_KEY = "azure-ganttops.query-input";
+var AZ_CLI_PATH_KEY = "azure-ganttops.az-cli-path";
 var GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function QuerySelector(props) {
   const [queryInput, setQueryInput] = import_react2.default.useState(() => readLocalStorage(QUERY_INPUT_KEY));
   const [organization, setOrganization] = import_react2.default.useState(() => readLocalStorage(ORG_KEY));
   const [project, setProject] = import_react2.default.useState(() => readLocalStorage(PROJECT_KEY));
+  const [azCliPath, setAzCliPath] = import_react2.default.useState(() => readLocalStorage(AZ_CLI_PATH_KEY));
   const [queryInputError, setQueryInputError] = import_react2.default.useState(null);
+  const [authInFlight, setAuthInFlight] = import_react2.default.useState(false);
+  const [authMessage, setAuthMessage] = import_react2.default.useState(null);
+  const [pathInFlight, setPathInFlight] = import_react2.default.useState(false);
+  const [pathMessage, setPathMessage] = import_react2.default.useState(null);
   const parsedSelection = import_react2.default.useMemo(() => parseRuntimeQuerySelection(queryInput, organization, project), [queryInput, organization, project]);
   const hasContext = parsedSelection !== null && parsedSelection.queryId.length > 0 && parsedSelection.organization.length > 0 && parsedSelection.project.length > 0;
   const runQuery = import_react2.default.useCallback(async (rawInput) => {
@@ -26644,6 +26650,8 @@ function QuerySelector(props) {
       void runQuery(query.id);
     }
   }, `${query.name} (${query.id})`));
+  const showAzureLoginAction = props.authStatus === "SESSION_EXPIRED";
+  const showAzPathAction = props.authStatus === "CLI_NOT_FOUND" || props.authStatus === "UNKNOWN_ERROR";
   return import_react2.default.createElement("section", {
     "aria-label": "query-selector",
     className: "query-selector"
@@ -26687,7 +26695,74 @@ function QuerySelector(props) {
     onClick: () => {
       void runQuery(queryInput);
     }
-  }, "Run query by ID")), import_react2.default.createElement("section", { className: "query-selector-saved" }, import_react2.default.createElement("h4", null, "Saved queries"), import_react2.default.createElement("div", { className: "query-selector-list" }, ...buttons)));
+  }, "Run query by ID"), showAzureLoginAction ? import_react2.default.createElement("div", { className: "query-selector-auth-action" }, import_react2.default.createElement("button", {
+    type: "button",
+    className: "query-selector-secondary",
+    disabled: authInFlight,
+    onClick: () => {
+      setAuthMessage(null);
+      setAuthInFlight(true);
+      void props.onAuthenticateAzureCli().then((result) => {
+        setAuthMessage(result.message);
+      }).catch((error) => {
+        const message = error instanceof Error ? error.message : "Azure CLI login failed.";
+        setAuthMessage(message);
+      }).finally(() => {
+        setAuthInFlight(false);
+      });
+    }
+  }, authInFlight ? "Signing in..." : "Sign in with Azure CLI"), import_react2.default.createElement("div", { className: "query-selector-hint" }, "Starts `az login --use-device-code`. Complete sign-in, then run query again."), authMessage ? import_react2.default.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "query-selector-auth-message"
+  }, authMessage) : null) : null, showAzPathAction ? import_react2.default.createElement("div", { className: "query-selector-auth-action" }, import_react2.default.createElement("label", { className: "query-selector-field" }, "Azure CLI path (optional override)", import_react2.default.createElement("input", {
+    className: "query-selector-input",
+    "aria-label": "Azure CLI path",
+    placeholder: "Example: C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd",
+    value: azCliPath,
+    onChange: (event) => {
+      setAzCliPath(event.target.value);
+    }
+  })), import_react2.default.createElement("button", {
+    type: "button",
+    className: "query-selector-secondary",
+    disabled: pathInFlight,
+    onClick: () => {
+      setPathMessage(null);
+      setPathInFlight(true);
+      void props.onSetAzureCliPath(azCliPath).then((result) => {
+        persistLocalStorage(AZ_CLI_PATH_KEY, azCliPath);
+        setPathMessage(`Azure CLI path set to: ${result.path}`);
+      }).catch((error) => {
+        const message = error instanceof Error ? error.message : "Failed to set Azure CLI path.";
+        setPathMessage(message);
+      }).finally(() => {
+        setPathInFlight(false);
+      });
+    }
+  }, pathInFlight ? "Applying path..." : "Apply CLI path"), import_react2.default.createElement("button", {
+    type: "button",
+    className: "query-selector-secondary",
+    disabled: pathInFlight,
+    onClick: () => {
+      setPathMessage(null);
+      setPathInFlight(true);
+      void props.onSetAzureCliPath("").then((result) => {
+        setAzCliPath(result.path === "az" ? "" : result.path);
+        persistLocalStorage(AZ_CLI_PATH_KEY, result.path === "az" ? "" : result.path);
+        setPathMessage(`Auto-detected Azure CLI path: ${result.path}`);
+      }).catch((error) => {
+        const message = error instanceof Error ? error.message : "Auto-detect failed.";
+        setPathMessage(message);
+      }).finally(() => {
+        setPathInFlight(false);
+      });
+    }
+  }, pathInFlight ? "Detecting..." : "Auto-detect with Get-Command"), pathMessage ? import_react2.default.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "query-selector-auth-message"
+  }, pathMessage) : null) : null), import_react2.default.createElement("section", { className: "query-selector-saved" }, import_react2.default.createElement("h4", null, "Saved queries"), import_react2.default.createElement("div", { className: "query-selector-list" }, ...buttons)));
 }
 function resolveQueryRunInput(queryInput, organization, project) {
   const parsed = parseRuntimeQuerySelection(queryInput, organization, project);
@@ -26800,92 +26875,1542 @@ function MappingFixPanel(props) {
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
-var import_react5 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
-// dist/src/features/gantt-view/timeline-density-preference.js
-var STORAGE_KEY = "azure-ganttops.timeline-density";
-var memoryDensity = null;
-function loadLastDensity() {
-  const fromStorage = readFromLocalStorage();
-  if (fromStorage) {
-    memoryDensity = fromStorage;
-    return fromStorage;
+// dist/src/shared/user-preferences/user-preferences.schema.js
+function sanitizeUserPreferences(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
   }
-  return memoryDensity;
+  const candidate = value;
+  const next = {};
+  if (candidate.themeMode === "system" || candidate.themeMode === "light" || candidate.themeMode === "dark") {
+    next.themeMode = candidate.themeMode;
+  }
+  if (candidate.timelineDensity === "comfortable" || candidate.timelineDensity === "compact") {
+    next.timelineDensity = candidate.timelineDensity;
+  }
+  if (candidate.timelineColorCoding === "none" || candidate.timelineColorCoding === "status" || candidate.timelineColorCoding === "parent" || candidate.timelineColorCoding === "overdue" || candidate.timelineColorCoding === "field") {
+    next.timelineColorCoding = candidate.timelineColorCoding;
+  }
+  if (isPlainRecord(candidate.timelineFieldColorCoding)) {
+    const raw = candidate.timelineFieldColorCoding;
+    const fieldRef = typeof raw.fieldRef === "string" ? raw.fieldRef.trim() : "";
+    const valueColorsRaw = isPlainRecord(raw.valueColors) ? raw.valueColors : null;
+    const valueColors = {};
+    if (valueColorsRaw) {
+      Object.entries(valueColorsRaw).forEach(([key, entry]) => {
+        if (typeof entry !== "string") {
+          return;
+        }
+        const normalized = entry.trim();
+        if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+          valueColors[key] = normalized.toLowerCase();
+        }
+      });
+    }
+    next.timelineFieldColorCoding = {
+      fieldRef: fieldRef.length > 0 ? fieldRef : void 0,
+      valueColors: Object.keys(valueColors).length > 0 ? valueColors : void 0
+    };
+  }
+  if (Array.isArray(candidate.timelineLabelFields)) {
+    const normalized = [...new Set(candidate.timelineLabelFields)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+    next.timelineLabelFields = normalized;
+  }
+  if (Array.isArray(candidate.timelineSidebarFields)) {
+    const normalized = [...new Set(candidate.timelineSidebarFields)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+    next.timelineSidebarFields = normalized;
+  }
+  if (isPlainRecord(candidate.timelineSort)) {
+    const raw = candidate.timelineSort;
+    const primary = sanitizeTimelineSortField(raw.primary);
+    const secondaryRaw = raw.secondary;
+    const secondary = secondaryRaw === null ? null : typeof secondaryRaw === "undefined" ? void 0 : sanitizeTimelineSortField(secondaryRaw);
+    if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      next.timelineSort = {
+        primary,
+        secondary
+      };
+    }
+  }
+  if (typeof candidate.timelineSidebarWidthPx === "number" && Number.isFinite(candidate.timelineSidebarWidthPx)) {
+    next.timelineSidebarWidthPx = clamp(Math.round(candidate.timelineSidebarWidthPx), 160, 640);
+  }
+  if (typeof candidate.timelineDetailsWidthPx === "number" && Number.isFinite(candidate.timelineDetailsWidthPx)) {
+    next.timelineDetailsWidthPx = clamp(Math.round(candidate.timelineDetailsWidthPx), 0, 900);
+  }
+  if (candidate.timelineSidebarRowJustify === "flex-start" || candidate.timelineSidebarRowJustify === "flex-end") {
+    next.timelineSidebarRowJustify = candidate.timelineSidebarRowJustify;
+  }
+  if (Array.isArray(candidate.savedQueries)) {
+    const deduped = /* @__PURE__ */ new Map();
+    candidate.savedQueries.forEach((entry) => {
+      const normalized = sanitizeSavedQueryPreference(entry);
+      if (!normalized || deduped.has(normalized.id)) {
+        return;
+      }
+      deduped.set(normalized.id, normalized);
+    });
+    next.savedQueries = deduped.size > 0 ? [...deduped.values()] : void 0;
+  }
+  if (typeof candidate.selectedHeaderQueryId === "string") {
+    const selectedHeaderQueryId = candidate.selectedHeaderQueryId.trim();
+    next.selectedHeaderQueryId = selectedHeaderQueryId.length > 0 ? selectedHeaderQueryId : void 0;
+  }
+  if (isPlainRecord(candidate.filters)) {
+    next.filters = candidate.filters;
+  }
+  if (isPlainRecord(candidate.views)) {
+    next.views = candidate.views;
+  }
+  if (typeof candidate.updatedAt === "string") {
+    next.updatedAt = candidate.updatedAt;
+  }
+  return next;
 }
-function saveLastDensity(density) {
-  memoryDensity = density;
-  writeToLocalStorage(density);
-}
-function readFromLocalStorage() {
-  if (typeof globalThis.localStorage === "undefined") {
+function sanitizeSavedQueryPreference(value) {
+  if (!isPlainRecord(value)) {
     return null;
   }
-  const value = globalThis.localStorage.getItem(STORAGE_KEY);
-  if (value === "comfortable" || value === "compact") {
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  const queryInput = typeof value.queryInput === "string" ? value.queryInput.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const organization = typeof value.organization === "string" ? value.organization.trim() : "";
+  const project = typeof value.project === "string" ? value.project.trim() : "";
+  if (!id || !queryInput) {
+    return null;
+  }
+  return {
+    id,
+    name: name.length > 0 ? name : id,
+    queryInput,
+    organization: organization.length > 0 ? organization : void 0,
+    project: project.length > 0 ? project : void 0
+  };
+}
+function isPlainRecord(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+function sanitizeTimelineSortField(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  if (normalized === "startDate" || normalized === "endDate" || normalized === "title" || normalized === "mappedId" || normalized === "state" || normalized === "assignedTo" || normalized === "parentWorkItemId") {
+    return normalized;
+  }
+  if (!normalized.startsWith("field:")) {
+    return null;
+  }
+  const fieldRef = normalized.slice("field:".length).trim();
+  return fieldRef.length > 0 ? `field:${fieldRef}` : null;
+}
+
+// dist/src/shared/user-preferences/user-preferences.client.js
+var USER_PREFERENCES_ENDPOINT = "/phase2/user-preferences";
+var ADO_CSRF_META_SELECTOR = 'meta[name="ado-csrf-token"]';
+var ADO_CSRF_HEADER = "x-ado-csrf-token";
+var cachedPreferences = {};
+var hydrated = false;
+var hydrationInFlight = null;
+function getCachedUserPreferences() {
+  return cachedPreferences;
+}
+async function hydrateUserPreferences() {
+  if (hydrated) {
+    return cachedPreferences;
+  }
+  if (hydrationInFlight) {
+    return hydrationInFlight;
+  }
+  hydrationInFlight = loadUserPreferencesFromServer().then((next) => {
+    cachedPreferences = next;
+    hydrated = true;
+    return cachedPreferences;
+  }).catch(() => cachedPreferences).finally(() => {
+    hydrationInFlight = null;
+  });
+  return hydrationInFlight;
+}
+function persistUserPreferencesPatch(patch) {
+  const sanitizedPatch = sanitizeUserPreferences(patch);
+  cachedPreferences = {
+    ...cachedPreferences,
+    ...sanitizedPatch
+  };
+  void postUserPreferencesPatch(sanitizedPatch).catch(() => {
+  });
+}
+async function loadUserPreferencesFromServer() {
+  if (typeof fetch === "undefined") {
+    return cachedPreferences;
+  }
+  const response = await fetch(USER_PREFERENCES_ENDPOINT, {
+    method: "GET",
+    headers: {
+      accept: "application/json"
+    }
+  });
+  if (!response.ok) {
+    return cachedPreferences;
+  }
+  const payload = await response.json();
+  return sanitizeUserPreferences(payload.preferences);
+}
+async function postUserPreferencesPatch(patch) {
+  if (typeof fetch === "undefined") {
+    return;
+  }
+  const headers = {
+    "content-type": "application/json",
+    accept: "application/json"
+  };
+  const csrfToken = readCsrfTokenFromMeta();
+  if (csrfToken) {
+    headers[ADO_CSRF_HEADER] = csrfToken;
+  }
+  await fetch(USER_PREFERENCES_ENDPOINT, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      preferences: patch
+    })
+  });
+}
+function readCsrfTokenFromMeta() {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  const meta = document.querySelector(ADO_CSRF_META_SELECTOR);
+  if (!(meta instanceof HTMLMetaElement)) {
+    return null;
+  }
+  const token = meta.content.trim();
+  return token.length > 0 ? token : null;
+}
+
+// dist/src/features/gantt-view/create-user-preference-store.js
+function createUserPreferenceStore(config) {
+  let memoryValue = null;
+  let hydrationStarted = false;
+  const serialize = config.serialize ?? ((value) => JSON.stringify(value));
+  const deserialize = config.deserialize ?? ((raw) => JSON.parse(raw));
+  const readFromLocalStorage = () => {
+    if (typeof globalThis.localStorage === "undefined") {
+      return null;
+    }
+    const raw = globalThis.localStorage.getItem(config.storageKey);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return config.sanitize(deserialize(raw));
+    } catch {
+      return null;
+    }
+  };
+  const writeToLocalStorage = (value) => {
+    if (typeof globalThis.localStorage === "undefined") {
+      return;
+    }
+    globalThis.localStorage.setItem(config.storageKey, serialize(value));
+  };
+  const load = () => {
+    const fromStorage = readFromLocalStorage();
+    if (fromStorage !== null) {
+      memoryValue = fromStorage;
+      return fromStorage;
+    }
+    const fromCache = config.sanitize(config.readFromServerCache(getCachedUserPreferences()));
+    if (fromCache !== null) {
+      memoryValue = fromCache;
+      writeToLocalStorage(fromCache);
+      return fromCache;
+    }
+    return memoryValue;
+  };
+  const save = (value) => {
+    const sanitized = config.sanitize(value);
+    if (sanitized === null) {
+      return;
+    }
+    memoryValue = sanitized;
+    writeToLocalStorage(sanitized);
+    persistUserPreferencesPatch(config.buildPatch(sanitized, getCachedUserPreferences()));
+  };
+  const hydrate = (onHydrated) => {
+    if (hydrationStarted) {
+      return;
+    }
+    hydrationStarted = true;
+    void hydrateUserPreferences().then((preferences) => {
+      const value = config.sanitize(config.readFromServerCache(preferences));
+      if (value === null) {
+        return;
+      }
+      memoryValue = value;
+      writeToLocalStorage(value);
+      onHydrated?.(value);
+    });
+  };
+  const clearForTests = () => {
+    memoryValue = null;
+    hydrationStarted = false;
+    if (typeof globalThis.localStorage !== "undefined") {
+      globalThis.localStorage.removeItem(config.storageKey);
+    }
+  };
+  return {
+    load,
+    save,
+    hydrate,
+    clearForTests
+  };
+}
+
+// dist/src/features/gantt-view/timeline-color-coding-preference.js
+var STORAGE_KEY = "azure-ganttops.timeline-color-coding";
+var FIELD_STORAGE_KEY = "azure-ganttops.timeline-field-color-coding";
+var modeStore = createUserPreferenceStore({
+  storageKey: STORAGE_KEY,
+  readFromServerCache: (preferences) => preferences.timelineColorCoding,
+  sanitize: sanitizeTimelineColorCoding,
+  buildPatch: (mode) => ({
+    timelineColorCoding: mode
+  }),
+  serialize: (mode) => mode,
+  deserialize: (raw) => raw
+});
+var fieldConfigStore = createUserPreferenceStore({
+  storageKey: FIELD_STORAGE_KEY,
+  readFromServerCache: (preferences) => preferences.timelineFieldColorCoding,
+  sanitize: sanitizeFieldConfig,
+  buildPatch: (config, cachedPreferences2) => ({
+    timelineFieldColorCoding: buildTimelineFieldColorCodingPatch(config, cachedPreferences2)
+  })
+});
+function loadLastTimelineColorCoding() {
+  return modeStore.load();
+}
+function saveLastTimelineColorCoding(mode) {
+  modeStore.save(mode);
+}
+function loadTimelineFieldColorCodingConfig() {
+  return fieldConfigStore.load() ?? {
+    fieldRef: null,
+    valueColors: {}
+  };
+}
+function saveTimelineFieldColorCodingConfig(config) {
+  fieldConfigStore.save(config);
+}
+function hydrateTimelineColorCodingPreference(onHydrated) {
+  modeStore.hydrate(onHydrated);
+  fieldConfigStore.hydrate();
+}
+function sanitizeTimelineColorCoding(value) {
+  if (value === "none" || value === "status" || value === "parent" || value === "overdue" || value === "field") {
     return value;
   }
   return null;
 }
-function writeToLocalStorage(density) {
-  if (typeof globalThis.localStorage === "undefined") {
-    return;
+function buildTimelineFieldColorCodingPatch(config, _cachedPreferences) {
+  return {
+    fieldRef: config.fieldRef ?? void 0,
+    valueColors: Object.keys(config.valueColors).length > 0 ? config.valueColors : void 0
+  };
+}
+function sanitizeFieldConfig(value) {
+  if (!value || typeof value !== "object") {
+    return null;
   }
-  globalThis.localStorage.setItem(STORAGE_KEY, density);
+  const candidate = value;
+  const fieldRefRaw = candidate.fieldRef;
+  const fieldRef = typeof fieldRefRaw === "string" && fieldRefRaw.trim().length > 0 ? fieldRefRaw.trim() : null;
+  const valueColorsRaw = candidate.valueColors && typeof candidate.valueColors === "object" && !Array.isArray(candidate.valueColors) ? candidate.valueColors : {};
+  const valueColors = {};
+  Object.entries(valueColorsRaw).forEach(([key, color]) => {
+    if (typeof color !== "string") {
+      return;
+    }
+    const normalized = color.trim().toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(normalized)) {
+      valueColors[key] = normalized;
+    }
+  });
+  return {
+    fieldRef,
+    valueColors
+  };
 }
 
 // dist/src/features/gantt-view/timeline-details-panel.js
 var import_react4 = __toESM(require_react(), 1);
+
+// node_modules/dompurify/dist/purify.es.mjs
+var {
+  entries,
+  setPrototypeOf,
+  isFrozen,
+  getPrototypeOf,
+  getOwnPropertyDescriptor
+} = Object;
+var {
+  freeze,
+  seal,
+  create
+} = Object;
+var {
+  apply,
+  construct
+} = typeof Reflect !== "undefined" && Reflect;
+if (!freeze) {
+  freeze = function freeze2(x) {
+    return x;
+  };
+}
+if (!seal) {
+  seal = function seal2(x) {
+    return x;
+  };
+}
+if (!apply) {
+  apply = function apply2(func, thisArg) {
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    return func.apply(thisArg, args);
+  };
+}
+if (!construct) {
+  construct = function construct2(Func) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
+    }
+    return new Func(...args);
+  };
+}
+var arrayForEach = unapply(Array.prototype.forEach);
+var arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
+var arrayPop = unapply(Array.prototype.pop);
+var arrayPush = unapply(Array.prototype.push);
+var arraySplice = unapply(Array.prototype.splice);
+var stringToLowerCase = unapply(String.prototype.toLowerCase);
+var stringToString = unapply(String.prototype.toString);
+var stringMatch = unapply(String.prototype.match);
+var stringReplace = unapply(String.prototype.replace);
+var stringIndexOf = unapply(String.prototype.indexOf);
+var stringTrim = unapply(String.prototype.trim);
+var objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
+var regExpTest = unapply(RegExp.prototype.test);
+var typeErrorCreate = unconstruct(TypeError);
+function unapply(func) {
+  return function(thisArg) {
+    if (thisArg instanceof RegExp) {
+      thisArg.lastIndex = 0;
+    }
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
+    }
+    return apply(func, thisArg, args);
+  };
+}
+function unconstruct(Func) {
+  return function() {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return construct(Func, args);
+  };
+}
+function addToSet(set, array) {
+  let transformCaseFunc = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : stringToLowerCase;
+  if (setPrototypeOf) {
+    setPrototypeOf(set, null);
+  }
+  let l = array.length;
+  while (l--) {
+    let element = array[l];
+    if (typeof element === "string") {
+      const lcElement = transformCaseFunc(element);
+      if (lcElement !== element) {
+        if (!isFrozen(array)) {
+          array[l] = lcElement;
+        }
+        element = lcElement;
+      }
+    }
+    set[element] = true;
+  }
+  return set;
+}
+function cleanArray(array) {
+  for (let index = 0; index < array.length; index++) {
+    const isPropertyExist = objectHasOwnProperty(array, index);
+    if (!isPropertyExist) {
+      array[index] = null;
+    }
+  }
+  return array;
+}
+function clone(object) {
+  const newObject = create(null);
+  for (const [property, value] of entries(object)) {
+    const isPropertyExist = objectHasOwnProperty(object, property);
+    if (isPropertyExist) {
+      if (Array.isArray(value)) {
+        newObject[property] = cleanArray(value);
+      } else if (value && typeof value === "object" && value.constructor === Object) {
+        newObject[property] = clone(value);
+      } else {
+        newObject[property] = value;
+      }
+    }
+  }
+  return newObject;
+}
+function lookupGetter(object, prop) {
+  while (object !== null) {
+    const desc = getOwnPropertyDescriptor(object, prop);
+    if (desc) {
+      if (desc.get) {
+        return unapply(desc.get);
+      }
+      if (typeof desc.value === "function") {
+        return unapply(desc.value);
+      }
+    }
+    object = getPrototypeOf(object);
+  }
+  function fallbackValue() {
+    return null;
+  }
+  return fallbackValue;
+}
+var html$1 = freeze(["a", "abbr", "acronym", "address", "area", "article", "aside", "audio", "b", "bdi", "bdo", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "content", "data", "datalist", "dd", "decorator", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "img", "input", "ins", "kbd", "label", "legend", "li", "main", "map", "mark", "marquee", "menu", "menuitem", "meter", "nav", "nobr", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "search", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"]);
+var svg$1 = freeze(["svg", "a", "altglyph", "altglyphdef", "altglyphitem", "animatecolor", "animatemotion", "animatetransform", "circle", "clippath", "defs", "desc", "ellipse", "enterkeyhint", "exportparts", "filter", "font", "g", "glyph", "glyphref", "hkern", "image", "inputmode", "line", "lineargradient", "marker", "mask", "metadata", "mpath", "part", "path", "pattern", "polygon", "polyline", "radialgradient", "rect", "stop", "style", "switch", "symbol", "text", "textpath", "title", "tref", "tspan", "view", "vkern"]);
+var svgFilters = freeze(["feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence"]);
+var svgDisallowed = freeze(["animate", "color-profile", "cursor", "discard", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "foreignobject", "hatch", "hatchpath", "mesh", "meshgradient", "meshpatch", "meshrow", "missing-glyph", "script", "set", "solidcolor", "unknown", "use"]);
+var mathMl$1 = freeze(["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmultiscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mspace", "msqrt", "mstyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "mprescripts"]);
+var mathMlDisallowed = freeze(["maction", "maligngroup", "malignmark", "mlongdiv", "mscarries", "mscarry", "msgroup", "mstack", "msline", "msrow", "semantics", "annotation", "annotation-xml", "mprescripts", "none"]);
+var text = freeze(["#text"]);
+var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns", "slot"]);
+var svg = freeze(["accent-height", "accumulate", "additive", "alignment-baseline", "amplitude", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clippathunits", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "exponent", "fill", "fill-opacity", "fill-rule", "filter", "filterunits", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "intercept", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "mask-type", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "primitiveunits", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "slope", "specularconstant", "specularexponent", "spreadmethod", "startoffset", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "systemlanguage", "tabindex", "tablevalues", "targetx", "targety", "transform", "transform-origin", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "version", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"]);
+var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnsalign", "columnlines", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lspace", "lquote", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
+var xml = freeze(["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"]);
+var MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm);
+var ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
+var TMPLIT_EXPR = seal(/\$\{[\w\W]*/gm);
+var DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]+$/);
+var ARIA_ATTR = seal(/^aria-[\-\w]+$/);
+var IS_ALLOWED_URI = seal(
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+  // eslint-disable-line no-useless-escape
+);
+var IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
+var ATTR_WHITESPACE = seal(
+  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
+  // eslint-disable-line no-control-regex
+);
+var DOCTYPE_NAME = seal(/^html$/i);
+var CUSTOM_ELEMENT = seal(/^[a-z][.\w]*(-[.\w]+)+$/i);
+var EXPRESSIONS = /* @__PURE__ */ Object.freeze({
+  __proto__: null,
+  ARIA_ATTR,
+  ATTR_WHITESPACE,
+  CUSTOM_ELEMENT,
+  DATA_ATTR,
+  DOCTYPE_NAME,
+  ERB_EXPR,
+  IS_ALLOWED_URI,
+  IS_SCRIPT_OR_DATA,
+  MUSTACHE_EXPR,
+  TMPLIT_EXPR
+});
+var NODE_TYPE = {
+  element: 1,
+  attribute: 2,
+  text: 3,
+  cdataSection: 4,
+  entityReference: 5,
+  // Deprecated
+  entityNode: 6,
+  // Deprecated
+  progressingInstruction: 7,
+  comment: 8,
+  document: 9,
+  documentType: 10,
+  documentFragment: 11,
+  notation: 12
+  // Deprecated
+};
+var getGlobal = function getGlobal2() {
+  return typeof window === "undefined" ? null : window;
+};
+var _createTrustedTypesPolicy = function _createTrustedTypesPolicy2(trustedTypes, purifyHostElement) {
+  if (typeof trustedTypes !== "object" || typeof trustedTypes.createPolicy !== "function") {
+    return null;
+  }
+  let suffix = null;
+  const ATTR_NAME = "data-tt-policy-suffix";
+  if (purifyHostElement && purifyHostElement.hasAttribute(ATTR_NAME)) {
+    suffix = purifyHostElement.getAttribute(ATTR_NAME);
+  }
+  const policyName = "dompurify" + (suffix ? "#" + suffix : "");
+  try {
+    return trustedTypes.createPolicy(policyName, {
+      createHTML(html2) {
+        return html2;
+      },
+      createScriptURL(scriptUrl) {
+        return scriptUrl;
+      }
+    });
+  } catch (_) {
+    console.warn("TrustedTypes policy " + policyName + " could not be created.");
+    return null;
+  }
+};
+var _createHooksMap = function _createHooksMap2() {
+  return {
+    afterSanitizeAttributes: [],
+    afterSanitizeElements: [],
+    afterSanitizeShadowDOM: [],
+    beforeSanitizeAttributes: [],
+    beforeSanitizeElements: [],
+    beforeSanitizeShadowDOM: [],
+    uponSanitizeAttribute: [],
+    uponSanitizeElement: [],
+    uponSanitizeShadowNode: []
+  };
+};
+function createDOMPurify() {
+  let window2 = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : getGlobal();
+  const DOMPurify = (root) => createDOMPurify(root);
+  DOMPurify.version = "3.3.3";
+  DOMPurify.removed = [];
+  if (!window2 || !window2.document || window2.document.nodeType !== NODE_TYPE.document || !window2.Element) {
+    DOMPurify.isSupported = false;
+    return DOMPurify;
+  }
+  let {
+    document: document2
+  } = window2;
+  const originalDocument = document2;
+  const currentScript = originalDocument.currentScript;
+  const {
+    DocumentFragment,
+    HTMLTemplateElement,
+    Node,
+    Element,
+    NodeFilter,
+    NamedNodeMap = window2.NamedNodeMap || window2.MozNamedAttrMap,
+    HTMLFormElement,
+    DOMParser,
+    trustedTypes
+  } = window2;
+  const ElementPrototype = Element.prototype;
+  const cloneNode = lookupGetter(ElementPrototype, "cloneNode");
+  const remove = lookupGetter(ElementPrototype, "remove");
+  const getNextSibling = lookupGetter(ElementPrototype, "nextSibling");
+  const getChildNodes = lookupGetter(ElementPrototype, "childNodes");
+  const getParentNode = lookupGetter(ElementPrototype, "parentNode");
+  if (typeof HTMLTemplateElement === "function") {
+    const template = document2.createElement("template");
+    if (template.content && template.content.ownerDocument) {
+      document2 = template.content.ownerDocument;
+    }
+  }
+  let trustedTypesPolicy;
+  let emptyHTML = "";
+  const {
+    implementation,
+    createNodeIterator,
+    createDocumentFragment,
+    getElementsByTagName
+  } = document2;
+  const {
+    importNode
+  } = originalDocument;
+  let hooks = _createHooksMap();
+  DOMPurify.isSupported = typeof entries === "function" && typeof getParentNode === "function" && implementation && implementation.createHTMLDocument !== void 0;
+  const {
+    MUSTACHE_EXPR: MUSTACHE_EXPR2,
+    ERB_EXPR: ERB_EXPR2,
+    TMPLIT_EXPR: TMPLIT_EXPR2,
+    DATA_ATTR: DATA_ATTR2,
+    ARIA_ATTR: ARIA_ATTR2,
+    IS_SCRIPT_OR_DATA: IS_SCRIPT_OR_DATA2,
+    ATTR_WHITESPACE: ATTR_WHITESPACE2,
+    CUSTOM_ELEMENT: CUSTOM_ELEMENT2
+  } = EXPRESSIONS;
+  let {
+    IS_ALLOWED_URI: IS_ALLOWED_URI$1
+  } = EXPRESSIONS;
+  let ALLOWED_TAGS2 = null;
+  const DEFAULT_ALLOWED_TAGS = addToSet({}, [...html$1, ...svg$1, ...svgFilters, ...mathMl$1, ...text]);
+  let ALLOWED_ATTR2 = null;
+  const DEFAULT_ALLOWED_ATTR = addToSet({}, [...html, ...svg, ...mathMl, ...xml]);
+  let CUSTOM_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    allowCustomizedBuiltInElements: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: false
+    }
+  }));
+  let FORBID_TAGS = null;
+  let FORBID_ATTR = null;
+  const EXTRA_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    }
+  }));
+  let ALLOW_ARIA_ATTR = true;
+  let ALLOW_DATA_ATTR = true;
+  let ALLOW_UNKNOWN_PROTOCOLS = false;
+  let ALLOW_SELF_CLOSE_IN_ATTR = true;
+  let SAFE_FOR_TEMPLATES = false;
+  let SAFE_FOR_XML = true;
+  let WHOLE_DOCUMENT = false;
+  let SET_CONFIG = false;
+  let FORCE_BODY = false;
+  let RETURN_DOM = false;
+  let RETURN_DOM_FRAGMENT = false;
+  let RETURN_TRUSTED_TYPE = false;
+  let SANITIZE_DOM = true;
+  let SANITIZE_NAMED_PROPS = false;
+  const SANITIZE_NAMED_PROPS_PREFIX = "user-content-";
+  let KEEP_CONTENT = true;
+  let IN_PLACE = false;
+  let USE_PROFILES = {};
+  let FORBID_CONTENTS = null;
+  const DEFAULT_FORBID_CONTENTS = addToSet({}, ["annotation-xml", "audio", "colgroup", "desc", "foreignobject", "head", "iframe", "math", "mi", "mn", "mo", "ms", "mtext", "noembed", "noframes", "noscript", "plaintext", "script", "style", "svg", "template", "thead", "title", "video", "xmp"]);
+  let DATA_URI_TAGS = null;
+  const DEFAULT_DATA_URI_TAGS = addToSet({}, ["audio", "video", "img", "source", "image", "track"]);
+  let URI_SAFE_ATTRIBUTES = null;
+  const DEFAULT_URI_SAFE_ATTRIBUTES = addToSet({}, ["alt", "class", "for", "id", "label", "name", "pattern", "placeholder", "role", "summary", "title", "value", "style", "xmlns"]);
+  const MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+  const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+  let NAMESPACE = HTML_NAMESPACE;
+  let IS_EMPTY_INPUT = false;
+  let ALLOWED_NAMESPACES = null;
+  const DEFAULT_ALLOWED_NAMESPACES = addToSet({}, [MATHML_NAMESPACE, SVG_NAMESPACE, HTML_NAMESPACE], stringToString);
+  let MATHML_TEXT_INTEGRATION_POINTS = addToSet({}, ["mi", "mo", "mn", "ms", "mtext"]);
+  let HTML_INTEGRATION_POINTS = addToSet({}, ["annotation-xml"]);
+  const COMMON_SVG_AND_HTML_ELEMENTS = addToSet({}, ["title", "style", "font", "a", "script"]);
+  let PARSER_MEDIA_TYPE = null;
+  const SUPPORTED_PARSER_MEDIA_TYPES = ["application/xhtml+xml", "text/html"];
+  const DEFAULT_PARSER_MEDIA_TYPE = "text/html";
+  let transformCaseFunc = null;
+  let CONFIG = null;
+  const formElement = document2.createElement("form");
+  const isRegexOrFunction = function isRegexOrFunction2(testValue) {
+    return testValue instanceof RegExp || testValue instanceof Function;
+  };
+  const _parseConfig = function _parseConfig2() {
+    let cfg = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    if (CONFIG && CONFIG === cfg) {
+      return;
+    }
+    if (!cfg || typeof cfg !== "object") {
+      cfg = {};
+    }
+    cfg = clone(cfg);
+    PARSER_MEDIA_TYPE = // eslint-disable-next-line unicorn/prefer-includes
+    SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
+    transformCaseFunc = PARSER_MEDIA_TYPE === "application/xhtml+xml" ? stringToString : stringToLowerCase;
+    ALLOWED_TAGS2 = objectHasOwnProperty(cfg, "ALLOWED_TAGS") ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR2 = objectHasOwnProperty(cfg, "ALLOWED_ATTR") ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
+    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
+    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
+    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
+    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
+    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
+    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES : false;
+    ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false;
+    ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false;
+    ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false;
+    ALLOW_SELF_CLOSE_IN_ATTR = cfg.ALLOW_SELF_CLOSE_IN_ATTR !== false;
+    SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false;
+    SAFE_FOR_XML = cfg.SAFE_FOR_XML !== false;
+    WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false;
+    RETURN_DOM = cfg.RETURN_DOM || false;
+    RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false;
+    RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false;
+    FORCE_BODY = cfg.FORCE_BODY || false;
+    SANITIZE_DOM = cfg.SANITIZE_DOM !== false;
+    SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false;
+    KEEP_CONTENT = cfg.KEEP_CONTENT !== false;
+    IN_PLACE = cfg.IN_PLACE || false;
+    IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
+    NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
+    MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
+    HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
+    CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
+    }
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
+    }
+    if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === "boolean") {
+      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
+    }
+    if (SAFE_FOR_TEMPLATES) {
+      ALLOW_DATA_ATTR = false;
+    }
+    if (RETURN_DOM_FRAGMENT) {
+      RETURN_DOM = true;
+    }
+    if (USE_PROFILES) {
+      ALLOWED_TAGS2 = addToSet({}, text);
+      ALLOWED_ATTR2 = create(null);
+      if (USE_PROFILES.html === true) {
+        addToSet(ALLOWED_TAGS2, html$1);
+        addToSet(ALLOWED_ATTR2, html);
+      }
+      if (USE_PROFILES.svg === true) {
+        addToSet(ALLOWED_TAGS2, svg$1);
+        addToSet(ALLOWED_ATTR2, svg);
+        addToSet(ALLOWED_ATTR2, xml);
+      }
+      if (USE_PROFILES.svgFilters === true) {
+        addToSet(ALLOWED_TAGS2, svgFilters);
+        addToSet(ALLOWED_ATTR2, svg);
+        addToSet(ALLOWED_ATTR2, xml);
+      }
+      if (USE_PROFILES.mathMl === true) {
+        addToSet(ALLOWED_TAGS2, mathMl$1);
+        addToSet(ALLOWED_ATTR2, mathMl);
+        addToSet(ALLOWED_ATTR2, xml);
+      }
+    }
+    if (!objectHasOwnProperty(cfg, "ADD_TAGS")) {
+      EXTRA_ELEMENT_HANDLING.tagCheck = null;
+    }
+    if (!objectHasOwnProperty(cfg, "ADD_ATTR")) {
+      EXTRA_ELEMENT_HANDLING.attributeCheck = null;
+    }
+    if (cfg.ADD_TAGS) {
+      if (typeof cfg.ADD_TAGS === "function") {
+        EXTRA_ELEMENT_HANDLING.tagCheck = cfg.ADD_TAGS;
+      } else {
+        if (ALLOWED_TAGS2 === DEFAULT_ALLOWED_TAGS) {
+          ALLOWED_TAGS2 = clone(ALLOWED_TAGS2);
+        }
+        addToSet(ALLOWED_TAGS2, cfg.ADD_TAGS, transformCaseFunc);
+      }
+    }
+    if (cfg.ADD_ATTR) {
+      if (typeof cfg.ADD_ATTR === "function") {
+        EXTRA_ELEMENT_HANDLING.attributeCheck = cfg.ADD_ATTR;
+      } else {
+        if (ALLOWED_ATTR2 === DEFAULT_ALLOWED_ATTR) {
+          ALLOWED_ATTR2 = clone(ALLOWED_ATTR2);
+        }
+        addToSet(ALLOWED_ATTR2, cfg.ADD_ATTR, transformCaseFunc);
+      }
+    }
+    if (cfg.ADD_URI_SAFE_ATTR) {
+      addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
+    }
+    if (cfg.FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
+      }
+      addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
+    }
+    if (cfg.ADD_FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
+      }
+      addToSet(FORBID_CONTENTS, cfg.ADD_FORBID_CONTENTS, transformCaseFunc);
+    }
+    if (KEEP_CONTENT) {
+      ALLOWED_TAGS2["#text"] = true;
+    }
+    if (WHOLE_DOCUMENT) {
+      addToSet(ALLOWED_TAGS2, ["html", "head", "body"]);
+    }
+    if (ALLOWED_TAGS2.table) {
+      addToSet(ALLOWED_TAGS2, ["tbody"]);
+      delete FORBID_TAGS.tbody;
+    }
+    if (cfg.TRUSTED_TYPES_POLICY) {
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createHTML !== "function") {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
+      }
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createScriptURL !== "function") {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
+      }
+      trustedTypesPolicy = cfg.TRUSTED_TYPES_POLICY;
+      emptyHTML = trustedTypesPolicy.createHTML("");
+    } else {
+      if (trustedTypesPolicy === void 0) {
+        trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, currentScript);
+      }
+      if (trustedTypesPolicy !== null && typeof emptyHTML === "string") {
+        emptyHTML = trustedTypesPolicy.createHTML("");
+      }
+    }
+    if (freeze) {
+      freeze(cfg);
+    }
+    CONFIG = cfg;
+  };
+  const ALL_SVG_TAGS = addToSet({}, [...svg$1, ...svgFilters, ...svgDisallowed]);
+  const ALL_MATHML_TAGS = addToSet({}, [...mathMl$1, ...mathMlDisallowed]);
+  const _checkValidNamespace = function _checkValidNamespace2(element) {
+    let parent = getParentNode(element);
+    if (!parent || !parent.tagName) {
+      parent = {
+        namespaceURI: NAMESPACE,
+        tagName: "template"
+      };
+    }
+    const tagName = stringToLowerCase(element.tagName);
+    const parentTagName = stringToLowerCase(parent.tagName);
+    if (!ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return false;
+    }
+    if (element.namespaceURI === SVG_NAMESPACE) {
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === "svg";
+      }
+      if (parent.namespaceURI === MATHML_NAMESPACE) {
+        return tagName === "svg" && (parentTagName === "annotation-xml" || MATHML_TEXT_INTEGRATION_POINTS[parentTagName]);
+      }
+      return Boolean(ALL_SVG_TAGS[tagName]);
+    }
+    if (element.namespaceURI === MATHML_NAMESPACE) {
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === "math";
+      }
+      if (parent.namespaceURI === SVG_NAMESPACE) {
+        return tagName === "math" && HTML_INTEGRATION_POINTS[parentTagName];
+      }
+      return Boolean(ALL_MATHML_TAGS[tagName]);
+    }
+    if (element.namespaceURI === HTML_NAMESPACE) {
+      if (parent.namespaceURI === SVG_NAMESPACE && !HTML_INTEGRATION_POINTS[parentTagName]) {
+        return false;
+      }
+      if (parent.namespaceURI === MATHML_NAMESPACE && !MATHML_TEXT_INTEGRATION_POINTS[parentTagName]) {
+        return false;
+      }
+      return !ALL_MATHML_TAGS[tagName] && (COMMON_SVG_AND_HTML_ELEMENTS[tagName] || !ALL_SVG_TAGS[tagName]);
+    }
+    if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return true;
+    }
+    return false;
+  };
+  const _forceRemove = function _forceRemove2(node) {
+    arrayPush(DOMPurify.removed, {
+      element: node
+    });
+    try {
+      getParentNode(node).removeChild(node);
+    } catch (_) {
+      remove(node);
+    }
+  };
+  const _removeAttribute = function _removeAttribute2(name, element) {
+    try {
+      arrayPush(DOMPurify.removed, {
+        attribute: element.getAttributeNode(name),
+        from: element
+      });
+    } catch (_) {
+      arrayPush(DOMPurify.removed, {
+        attribute: null,
+        from: element
+      });
+    }
+    element.removeAttribute(name);
+    if (name === "is") {
+      if (RETURN_DOM || RETURN_DOM_FRAGMENT) {
+        try {
+          _forceRemove(element);
+        } catch (_) {
+        }
+      } else {
+        try {
+          element.setAttribute(name, "");
+        } catch (_) {
+        }
+      }
+    }
+  };
+  const _initDocument = function _initDocument2(dirty) {
+    let doc = null;
+    let leadingWhitespace = null;
+    if (FORCE_BODY) {
+      dirty = "<remove></remove>" + dirty;
+    } else {
+      const matches = stringMatch(dirty, /^[\r\n\t ]+/);
+      leadingWhitespace = matches && matches[0];
+    }
+    if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && NAMESPACE === HTML_NAMESPACE) {
+      dirty = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + dirty + "</body></html>";
+    }
+    const dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+    if (NAMESPACE === HTML_NAMESPACE) {
+      try {
+        doc = new DOMParser().parseFromString(dirtyPayload, PARSER_MEDIA_TYPE);
+      } catch (_) {
+      }
+    }
+    if (!doc || !doc.documentElement) {
+      doc = implementation.createDocument(NAMESPACE, "template", null);
+      try {
+        doc.documentElement.innerHTML = IS_EMPTY_INPUT ? emptyHTML : dirtyPayload;
+      } catch (_) {
+      }
+    }
+    const body = doc.body || doc.documentElement;
+    if (dirty && leadingWhitespace) {
+      body.insertBefore(document2.createTextNode(leadingWhitespace), body.childNodes[0] || null);
+    }
+    if (NAMESPACE === HTML_NAMESPACE) {
+      return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? "html" : "body")[0];
+    }
+    return WHOLE_DOCUMENT ? doc.documentElement : body;
+  };
+  const _createNodeIterator = function _createNodeIterator2(root) {
+    return createNodeIterator.call(
+      root.ownerDocument || root,
+      root,
+      // eslint-disable-next-line no-bitwise
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_PROCESSING_INSTRUCTION | NodeFilter.SHOW_CDATA_SECTION,
+      null
+    );
+  };
+  const _isClobbered = function _isClobbered2(element) {
+    return element instanceof HTMLFormElement && (typeof element.nodeName !== "string" || typeof element.textContent !== "string" || typeof element.removeChild !== "function" || !(element.attributes instanceof NamedNodeMap) || typeof element.removeAttribute !== "function" || typeof element.setAttribute !== "function" || typeof element.namespaceURI !== "string" || typeof element.insertBefore !== "function" || typeof element.hasChildNodes !== "function");
+  };
+  const _isNode = function _isNode2(value) {
+    return typeof Node === "function" && value instanceof Node;
+  };
+  function _executeHooks(hooks2, currentNode, data2) {
+    arrayForEach(hooks2, (hook) => {
+      hook.call(DOMPurify, currentNode, data2, CONFIG);
+    });
+  }
+  const _sanitizeElements = function _sanitizeElements2(currentNode) {
+    let content = null;
+    _executeHooks(hooks.beforeSanitizeElements, currentNode, null);
+    if (_isClobbered(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    const tagName = transformCaseFunc(currentNode.nodeName);
+    _executeHooks(hooks.uponSanitizeElement, currentNode, {
+      tagName,
+      allowedTags: ALLOWED_TAGS2
+    });
+    if (SAFE_FOR_XML && currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && regExpTest(/<[/\w!]/g, currentNode.innerHTML) && regExpTest(/<[/\w!]/g, currentNode.textContent)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (SAFE_FOR_XML && currentNode.nodeType === NODE_TYPE.comment && regExpTest(/<[/\w]/g, currentNode.data)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (!(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName])) {
+      if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
+          return false;
+        }
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)) {
+          return false;
+        }
+      }
+      if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
+        const parentNode = getParentNode(currentNode) || currentNode.parentNode;
+        const childNodes = getChildNodes(currentNode) || currentNode.childNodes;
+        if (childNodes && parentNode) {
+          const childCount = childNodes.length;
+          for (let i = childCount - 1; i >= 0; --i) {
+            const childClone = cloneNode(childNodes[i], true);
+            childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
+            parentNode.insertBefore(childClone, getNextSibling(currentNode));
+          }
+        }
+      }
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (currentNode instanceof Element && !_checkValidNamespace(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if ((tagName === "noscript" || tagName === "noembed" || tagName === "noframes") && regExpTest(/<\/no(script|embed|frames)/i, currentNode.innerHTML)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    if (SAFE_FOR_TEMPLATES && currentNode.nodeType === NODE_TYPE.text) {
+      content = currentNode.textContent;
+      arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+        content = stringReplace(content, expr, " ");
+      });
+      if (currentNode.textContent !== content) {
+        arrayPush(DOMPurify.removed, {
+          element: currentNode.cloneNode()
+        });
+        currentNode.textContent = content;
+      }
+    }
+    _executeHooks(hooks.afterSanitizeElements, currentNode, null);
+    return false;
+  };
+  const _isValidAttribute = function _isValidAttribute2(lcTag, lcName, value) {
+    if (FORBID_ATTR[lcName]) {
+      return false;
+    }
+    if (SANITIZE_DOM && (lcName === "id" || lcName === "name") && (value in document2 || value in formElement)) {
+      return false;
+    }
+    if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR2, lcName)) ;
+    else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR2, lcName)) ;
+    else if (EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag)) ;
+    else if (!ALLOWED_ATTR2[lcName] || FORBID_ATTR[lcName]) {
+      if (
+        // First condition does a very basic check if a) it's basically a valid custom element tagname AND
+        // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+        // and c) if the attribute name passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.attributeNameCheck
+        _isBasicCustomElement(lcTag) && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, lcTag) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(lcTag)) && (CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.attributeNameCheck, lcName) || CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.attributeNameCheck(lcName, lcTag)) || // Alternative, second condition checks if it's an `is`-attribute, AND
+        // the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+        lcName === "is" && CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, value) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(value))
+      ) ;
+      else {
+        return false;
+      }
+    } else if (URI_SAFE_ATTRIBUTES[lcName]) ;
+    else if (regExpTest(IS_ALLOWED_URI$1, stringReplace(value, ATTR_WHITESPACE2, ""))) ;
+    else if ((lcName === "src" || lcName === "xlink:href" || lcName === "href") && lcTag !== "script" && stringIndexOf(value, "data:") === 0 && DATA_URI_TAGS[lcTag]) ;
+    else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest(IS_SCRIPT_OR_DATA2, stringReplace(value, ATTR_WHITESPACE2, ""))) ;
+    else if (value) {
+      return false;
+    } else ;
+    return true;
+  };
+  const _isBasicCustomElement = function _isBasicCustomElement2(tagName) {
+    return tagName !== "annotation-xml" && stringMatch(tagName, CUSTOM_ELEMENT2);
+  };
+  const _sanitizeAttributes = function _sanitizeAttributes2(currentNode) {
+    _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
+    const {
+      attributes
+    } = currentNode;
+    if (!attributes || _isClobbered(currentNode)) {
+      return;
+    }
+    const hookEvent = {
+      attrName: "",
+      attrValue: "",
+      keepAttr: true,
+      allowedAttributes: ALLOWED_ATTR2,
+      forceKeepAttr: void 0
+    };
+    let l = attributes.length;
+    while (l--) {
+      const attr = attributes[l];
+      const {
+        name,
+        namespaceURI,
+        value: attrValue
+      } = attr;
+      const lcName = transformCaseFunc(name);
+      const initValue = attrValue;
+      let value = name === "value" ? initValue : stringTrim(initValue);
+      hookEvent.attrName = lcName;
+      hookEvent.attrValue = value;
+      hookEvent.keepAttr = true;
+      hookEvent.forceKeepAttr = void 0;
+      _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
+      value = hookEvent.attrValue;
+      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name")) {
+        _removeAttribute(name, currentNode);
+        value = SANITIZE_NAMED_PROPS_PREFIX + value;
+      }
+      if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|script|title|xmp|textarea|noscript|iframe|noembed|noframes)/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (lcName === "attributename" && stringMatch(value, "href")) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (hookEvent.forceKeepAttr) {
+        continue;
+      }
+      if (!hookEvent.keepAttr) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (!ALLOW_SELF_CLOSE_IN_ATTR && regExpTest(/\/>/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (SAFE_FOR_TEMPLATES) {
+        arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+          value = stringReplace(value, expr, " ");
+        });
+      }
+      const lcTag = transformCaseFunc(currentNode.nodeName);
+      if (!_isValidAttribute(lcTag, lcName, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      if (trustedTypesPolicy && typeof trustedTypes === "object" && typeof trustedTypes.getAttributeType === "function") {
+        if (namespaceURI) ;
+        else {
+          switch (trustedTypes.getAttributeType(lcTag, lcName)) {
+            case "TrustedHTML": {
+              value = trustedTypesPolicy.createHTML(value);
+              break;
+            }
+            case "TrustedScriptURL": {
+              value = trustedTypesPolicy.createScriptURL(value);
+              break;
+            }
+          }
+        }
+      }
+      if (value !== initValue) {
+        try {
+          if (namespaceURI) {
+            currentNode.setAttributeNS(namespaceURI, name, value);
+          } else {
+            currentNode.setAttribute(name, value);
+          }
+          if (_isClobbered(currentNode)) {
+            _forceRemove(currentNode);
+          } else {
+            arrayPop(DOMPurify.removed);
+          }
+        } catch (_) {
+          _removeAttribute(name, currentNode);
+        }
+      }
+    }
+    _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
+  };
+  const _sanitizeShadowDOM = function _sanitizeShadowDOM2(fragment) {
+    let shadowNode = null;
+    const shadowIterator = _createNodeIterator(fragment);
+    _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
+    while (shadowNode = shadowIterator.nextNode()) {
+      _executeHooks(hooks.uponSanitizeShadowNode, shadowNode, null);
+      _sanitizeElements(shadowNode);
+      _sanitizeAttributes(shadowNode);
+      if (shadowNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM2(shadowNode.content);
+      }
+    }
+    _executeHooks(hooks.afterSanitizeShadowDOM, fragment, null);
+  };
+  DOMPurify.sanitize = function(dirty) {
+    let cfg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
+    let body = null;
+    let importedNode = null;
+    let currentNode = null;
+    let returnNode = null;
+    IS_EMPTY_INPUT = !dirty;
+    if (IS_EMPTY_INPUT) {
+      dirty = "<!-->";
+    }
+    if (typeof dirty !== "string" && !_isNode(dirty)) {
+      if (typeof dirty.toString === "function") {
+        dirty = dirty.toString();
+        if (typeof dirty !== "string") {
+          throw typeErrorCreate("dirty is not a string, aborting");
+        }
+      } else {
+        throw typeErrorCreate("toString is not a function");
+      }
+    }
+    if (!DOMPurify.isSupported) {
+      return dirty;
+    }
+    if (!SET_CONFIG) {
+      _parseConfig(cfg);
+    }
+    DOMPurify.removed = [];
+    if (typeof dirty === "string") {
+      IN_PLACE = false;
+    }
+    if (IN_PLACE) {
+      if (dirty.nodeName) {
+        const tagName = transformCaseFunc(dirty.nodeName);
+        if (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName]) {
+          throw typeErrorCreate("root node is forbidden and cannot be sanitized in-place");
+        }
+      }
+    } else if (dirty instanceof Node) {
+      body = _initDocument("<!---->");
+      importedNode = body.ownerDocument.importNode(dirty, true);
+      if (importedNode.nodeType === NODE_TYPE.element && importedNode.nodeName === "BODY") {
+        body = importedNode;
+      } else if (importedNode.nodeName === "HTML") {
+        body = importedNode;
+      } else {
+        body.appendChild(importedNode);
+      }
+    } else {
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && // eslint-disable-next-line unicorn/prefer-includes
+      dirty.indexOf("<") === -1) {
+        return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
+      }
+      body = _initDocument(dirty);
+      if (!body) {
+        return RETURN_DOM ? null : RETURN_TRUSTED_TYPE ? emptyHTML : "";
+      }
+    }
+    if (body && FORCE_BODY) {
+      _forceRemove(body.firstChild);
+    }
+    const nodeIterator = _createNodeIterator(IN_PLACE ? dirty : body);
+    while (currentNode = nodeIterator.nextNode()) {
+      _sanitizeElements(currentNode);
+      _sanitizeAttributes(currentNode);
+      if (currentNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(currentNode.content);
+      }
+    }
+    if (IN_PLACE) {
+      return dirty;
+    }
+    if (RETURN_DOM) {
+      if (RETURN_DOM_FRAGMENT) {
+        returnNode = createDocumentFragment.call(body.ownerDocument);
+        while (body.firstChild) {
+          returnNode.appendChild(body.firstChild);
+        }
+      } else {
+        returnNode = body;
+      }
+      if (ALLOWED_ATTR2.shadowroot || ALLOWED_ATTR2.shadowrootmode) {
+        returnNode = importNode.call(originalDocument, returnNode, true);
+      }
+      return returnNode;
+    }
+    let serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
+    if (WHOLE_DOCUMENT && ALLOWED_TAGS2["!doctype"] && body.ownerDocument && body.ownerDocument.doctype && body.ownerDocument.doctype.name && regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)) {
+      serializedHTML = "<!DOCTYPE " + body.ownerDocument.doctype.name + ">\n" + serializedHTML;
+    }
+    if (SAFE_FOR_TEMPLATES) {
+      arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+        serializedHTML = stringReplace(serializedHTML, expr, " ");
+      });
+    }
+    return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
+  };
+  DOMPurify.setConfig = function() {
+    let cfg = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    _parseConfig(cfg);
+    SET_CONFIG = true;
+  };
+  DOMPurify.clearConfig = function() {
+    CONFIG = null;
+    SET_CONFIG = false;
+  };
+  DOMPurify.isValidAttribute = function(tag, attr, value) {
+    if (!CONFIG) {
+      _parseConfig({});
+    }
+    const lcTag = transformCaseFunc(tag);
+    const lcName = transformCaseFunc(attr);
+    return _isValidAttribute(lcTag, lcName, value);
+  };
+  DOMPurify.addHook = function(entryPoint, hookFunction) {
+    if (typeof hookFunction !== "function") {
+      return;
+    }
+    arrayPush(hooks[entryPoint], hookFunction);
+  };
+  DOMPurify.removeHook = function(entryPoint, hookFunction) {
+    if (hookFunction !== void 0) {
+      const index = arrayLastIndexOf(hooks[entryPoint], hookFunction);
+      return index === -1 ? void 0 : arraySplice(hooks[entryPoint], index, 1)[0];
+    }
+    return arrayPop(hooks[entryPoint]);
+  };
+  DOMPurify.removeHooks = function(entryPoint) {
+    hooks[entryPoint] = [];
+  };
+  DOMPurify.removeAllHooks = function() {
+    hooks = _createHooksMap();
+  };
+  return DOMPurify;
+}
+var purify = createDOMPurify();
+
+// node_modules/isomorphic-dompurify/dist/browser.mjs
+var browser_default = purify;
+var sanitize = purify.sanitize.bind(purify);
+var isSupported = purify.isSupported;
+var addHook = purify.addHook.bind(purify);
+var removeHook = purify.removeHook.bind(purify);
+var removeHooks = purify.removeHooks.bind(purify);
+var removeAllHooks = purify.removeAllHooks.bind(purify);
+var setConfig = purify.setConfig.bind(purify);
+var clearConfig = purify.clearConfig.bind(purify);
+var isValidAttribute = purify.isValidAttribute.bind(purify);
+var version = purify.version;
+var removed = purify.removed;
+
+// dist/src/shared/security/sanitize-html-fragment.js
+var ALLOWED_TAGS = [
+  "p",
+  "br",
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "ul",
+  "ol",
+  "li",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "blockquote",
+  "a",
+  "span",
+  "div"
+];
+var ALLOWED_ATTR = ["href", "title"];
+var ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto):|\/|#)/i;
+function sanitizeHtmlFragment(value) {
+  if (value.length === 0) {
+    return "";
+  }
+  return browser_default.sanitize(value, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    FORBID_ATTR: ["style"],
+    ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP
+  });
+}
+
+// dist/src/features/gantt-view/timeline-details-panel.js
+var KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
 function TimelineDetailsPanel(props) {
-  const collapsed = props.collapsed ?? false;
+  const contentHidden = props.contentHidden ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
   const [titleDraft, setTitleDraft] = import_react4.default.useState("");
   const [descriptionDraft, setDescriptionDraft] = import_react4.default.useState("");
+  const [stateDraft, setStateDraft] = import_react4.default.useState("");
+  const [serverStateOptions, setServerStateOptions] = import_react4.default.useState([]);
+  const [isDescriptionEditing, setIsDescriptionEditing] = import_react4.default.useState(false);
   const [saveError, setSaveError] = import_react4.default.useState(null);
   const [isSaving, setIsSaving] = import_react4.default.useState(false);
+  const descriptionFieldRef = import_react4.default.useRef(null);
   const descriptionRef = import_react4.default.useRef(null);
+  const hasFetchedInitialStateOptionsRef = import_react4.default.useRef(false);
   import_react4.default.useEffect(() => {
     if (!selected) {
       setTitleDraft("");
       setDescriptionDraft("");
+      setStateDraft("");
+      setIsDescriptionEditing(false);
       setSaveError(null);
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
       }
       return;
     }
+    const sanitizedDescription = sanitizeHtmlFragment(selected.descriptionHtml);
     setTitleDraft(selected.title);
-    setDescriptionDraft(selected.descriptionHtml);
+    setDescriptionDraft(sanitizedDescription);
+    setStateDraft(selected.state);
+    setIsDescriptionEditing(false);
     setSaveError(null);
     if (descriptionRef.current) {
-      descriptionRef.current.innerHTML = selected.descriptionHtml;
+      descriptionRef.current.innerHTML = sanitizedDescription;
     }
   }, [selected?.workItemId]);
-  const lines = buildTimelineDetailsLines(props);
-  const entries = lines.map((line, index) => {
-    const parsed = parseTimelineDetailLine(line);
-    if (!parsed) {
-      return import_react4.default.createElement("div", { key: `${index}-${line}`, className: "timeline-details-note" }, line.replace(/^- /, ""));
+  import_react4.default.useEffect(() => {
+    if (hasFetchedInitialStateOptionsRef.current || !selected || !props.onFetchWorkItemStateOptions) {
+      return;
     }
-    return import_react4.default.createElement("article", { key: `${index}-${line}`, className: "timeline-details-card" }, import_react4.default.createElement("p", { className: "timeline-details-card-label" }, parsed.label), import_react4.default.createElement("p", { className: "timeline-details-card-value" }, parsed.value));
-  });
+    let cancelled = false;
+    hasFetchedInitialStateOptionsRef.current = true;
+    void props.onFetchWorkItemStateOptions({ targetWorkItemId: selected.workItemId }).then((states) => {
+      if (cancelled) {
+        return;
+      }
+      setServerStateOptions(states.filter((state2) => state2.name.trim().length > 0));
+    }).catch(() => {
+      if (!cancelled) {
+        setServerStateOptions([]);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
+  const lines = buildTimelineDetailsLines(props);
+  const entries2 = lines.map((line) => parseTimelineDetailLine(line)).filter((entry) => entry !== null).filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase())).map((entry, index) => import_react4.default.createElement("div", { key: `${index}-${entry.label}`, className: "timeline-details-row" }, import_react4.default.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`), import_react4.default.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value))));
   const baselineTitle = selected?.title ?? "";
-  const baselineDescription = selected?.descriptionHtml ?? "";
-  const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription;
+  const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
+  const baselineState = selected?.state ?? "";
+  const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
   const azureLink = selected ? buildAzureWorkItemUrl({
     organization: props.organization,
     project: props.project,
     workItemId: selected.workItemId
   }) : null;
-  const applyDescriptionCommand = (command) => {
+  const stateOptions = import_react4.default.useMemo(() => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions), [props.timeline, selected?.state, serverStateOptions]);
+  const selectedStateColor = stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
+  const applyDescriptionCommand = (command, value) => {
     if (!descriptionRef.current) {
       return;
     }
     descriptionRef.current.focus();
-    document.execCommand(command);
+    document.execCommand(command, false, value);
+    setDescriptionDraft(sanitizeHtmlFragment(descriptionRef.current.innerHTML));
   };
   const saveDetails = async () => {
-    if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || !isDirty) {
+    if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
       return;
     }
     setSaveError(null);
@@ -26894,7 +28419,9 @@ function TimelineDetailsPanel(props) {
       await props.onUpdateSelectedWorkItemDetails({
         targetWorkItemId: selected.workItemId,
         title: titleDraft.trim(),
-        descriptionHtml: descriptionDraft
+        descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
+        state: stateDraft.trim(),
+        stateColor: selectedStateColor
       });
       setTitleDraft(titleDraft.trim());
     } catch (error) {
@@ -26903,70 +28430,110 @@ function TimelineDetailsPanel(props) {
       setIsSaving(false);
     }
   };
+  import_react4.default.useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key.toLowerCase() !== "s" || !event.ctrlKey && !event.metaKey) {
+        return;
+      }
+      event.preventDefault();
+      void saveDetails();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [saveDetails]);
   return import_react4.default.createElement("aside", {
     "aria-label": "timeline-details-panel",
-    className: collapsed ? "timeline-details-panel-surface timeline-details-panel-surface-collapsed" : "timeline-details-panel-surface"
-  }, import_react4.default.createElement("div", { className: "timeline-details-panel-head" }, import_react4.default.createElement("button", {
+    className: contentHidden ? "timeline-details-panel-surface timeline-details-panel-surface-content-hidden" : "timeline-details-panel-surface"
+  }, import_react4.default.createElement("div", { className: "timeline-details-panel-head" }, import_react4.default.createElement("div", { className: "timeline-details-panel-head-main" }, !selected || contentHidden ? null : import_react4.default.createElement("button", {
     type: "button",
-    className: "timeline-details-collapse-toggle",
-    "aria-label": collapsed ? "Expand details panel" : "Collapse details panel",
-    title: collapsed ? "Expand details panel" : "Collapse details panel",
+    className: isDirty ? "timeline-action-button timeline-details-save-button timeline-details-save-button-dirty" : "timeline-action-button timeline-details-save-button",
     onClick: () => {
-      props.onToggleCollapsed?.();
-    }
-  }, collapsed ? "\u25C0" : "\u25B6"), collapsed ? null : import_react4.default.createElement("h4", null, "Work item details"), collapsed ? null : selected ? import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`) : null), collapsed ? null : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
+      void saveDetails();
+    },
+    disabled: isSaving || !isDirty || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !props.onUpdateSelectedWorkItemDetails
+  }, isSaving ? "Saving..." : "Save")), contentHidden ? null : selected ? import_react4.default.createElement("div", { className: "timeline-details-head-actions" }, azureLink ? import_react4.default.createElement("a", {
+    className: "timeline-details-work-item-id timeline-details-work-item-link",
+    href: azureLink,
+    target: "_blank",
+    rel: "noreferrer"
+  }, `#${selected.workItemId}`) : import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)) : null), contentHidden ? import_react4.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
     type: "text",
     className: "timeline-details-input",
     value: titleDraft,
     onChange: (event) => {
       setTitleDraft(event.target.value);
     }
-  })), import_react4.default.createElement("div", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Description"), import_react4.default.createElement("div", { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" }, import_react4.default.createElement("button", {
+  })), import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "State"), import_react4.default.createElement("select", {
+    className: "timeline-details-input",
+    value: stateDraft,
+    onChange: (event) => {
+      setStateDraft(event.target.value);
+    }
+  }, ...stateOptions.map((option) => import_react4.default.createElement("option", { key: option.name, value: option.name }, option.name)))), import_react4.default.createElement("div", { className: "timeline-details-field", ref: descriptionFieldRef }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Description"), isDescriptionEditing ? import_react4.default.createElement("div", { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" }, import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("bold") }, "B"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("italic") }, "I"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("underline") }, "U"), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => applyDescriptionCommand("insertOrderedList")
+  }, "1."), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => applyDescriptionCommand("insertUnorderedList")
+  }, "\u2022"), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => applyDescriptionCommand("formatBlock", "<h2>")
+  }, "H2"), import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-richtext-button",
+    onClick: () => applyDescriptionCommand("formatBlock", "<blockquote>")
+  }, "Quote"), import_react4.default.createElement("button", {
     type: "button",
     className: "timeline-richtext-button",
     onClick: () => {
-      applyDescriptionCommand("bold");
+      const url = window.prompt("Link URL", "https://");
+      if (url && url.trim().length > 0) {
+        applyDescriptionCommand("createLink", url.trim());
+      }
     }
-  }, "Bold"), import_react4.default.createElement("button", {
-    type: "button",
-    className: "timeline-richtext-button",
-    onClick: () => {
-      applyDescriptionCommand("italic");
-    }
-  }, "Italic"), import_react4.default.createElement("button", {
-    type: "button",
-    className: "timeline-richtext-button",
-    onClick: () => {
-      applyDescriptionCommand("insertUnorderedList");
-    }
-  }, "List")), import_react4.default.createElement("div", {
+  }, "Link"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("removeFormat") }, "Clear")) : import_react4.default.createElement("p", { className: "timeline-details-muted timeline-description-edit-hint" }, "Click description to edit"), import_react4.default.createElement("div", {
     ref: descriptionRef,
-    className: "timeline-details-richtext",
-    contentEditable: true,
+    className: isDescriptionEditing ? "timeline-details-richtext timeline-details-richtext-editing" : "timeline-details-richtext timeline-details-richtext-readonly",
+    contentEditable: isDescriptionEditing,
     suppressContentEditableWarning: true,
-    onInput: (event) => {
-      setDescriptionDraft(event.target.innerHTML);
-    }
-  })), import_react4.default.createElement("div", { className: "timeline-details-actions" }, import_react4.default.createElement("button", {
-    type: "button",
-    className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
-      void saveDetails();
+      if (!isDescriptionEditing) {
+        setIsDescriptionEditing(true);
+        requestAnimationFrame(() => {
+          descriptionRef.current?.focus();
+        });
+      }
     },
-    disabled: isSaving || !isDirty || titleDraft.trim().length === 0 || !props.onUpdateSelectedWorkItemDetails
-  }, isSaving ? "Saving..." : "Save"), azureLink ? import_react4.default.createElement("a", {
-    className: "timeline-details-azure-link",
-    href: azureLink,
-    target: "_blank",
-    rel: "noreferrer"
-  }, "Open in Azure DevOps") : import_react4.default.createElement("span", { className: "timeline-details-muted" }, "Azure link unavailable (missing organization/project).")), saveError ? import_react4.default.createElement("p", {
+    onInput: (event) => {
+      const target = event.target;
+      const sanitized = sanitizeHtmlFragment(target.innerHTML);
+      if (sanitized !== target.innerHTML) {
+        target.innerHTML = sanitized;
+      }
+      setDescriptionDraft(sanitized);
+    },
+    onBlur: () => {
+      requestAnimationFrame(() => {
+        const activeElement = document.activeElement;
+        if (descriptionFieldRef.current && activeElement && descriptionFieldRef.current.contains(activeElement)) {
+          return;
+        }
+        setIsDescriptionEditing(false);
+      });
+    }
+  })), saveError ? import_react4.default.createElement("p", {
     className: "timeline-update-error",
     role: "status"
-  }, `Save failed: ${saveError}`) : null) : import_react4.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."), collapsed ? null : import_react4.default.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries), import_react4.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
+  }, `Save failed: ${saveError}`) : null) : import_react4.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."), contentHidden ? null : import_react4.default.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries2), contentHidden ? null : import_react4.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
 }
 function buildTimelineDetailsLines(input) {
   if (!input.timeline || input.selectedWorkItemId === null) {
-    return ["- selected: none"];
+    return [];
   }
   const selectedBar = input.timeline.bars.find((bar) => bar.workItemId === input.selectedWorkItemId);
   if (selectedBar) {
@@ -26979,7 +28546,6 @@ function buildTimelineDetailsLines(input) {
       `- state: ${selectedBar.state.code}`,
       `- start: ${selectedBar.schedule.startDate ?? "none"}`,
       `- end: ${selectedBar.schedule.endDate ?? "none"}`,
-      `- missing boundary: ${selectedBar.schedule.missingBoundary ?? "none"}`,
       `- predecessors: ${predecessorCount}`,
       `- successors: ${successorCount}`
     ];
@@ -26994,7 +28560,7 @@ function buildTimelineDetailsLines(input) {
       `- reason: ${selectedUnschedulable.reason}`
     ];
   }
-  return ["- selected: none"];
+  return [];
 }
 function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
   if (!timeline || selectedWorkItemId === null) {
@@ -27005,7 +28571,8 @@ function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
     return {
       workItemId: selectedBar.workItemId,
       title: selectedBar.title,
-      descriptionHtml: selectedBar.details.descriptionHtml ?? ""
+      descriptionHtml: selectedBar.details.descriptionHtml ?? "",
+      state: selectedBar.state.code
     };
   }
   const selectedUnschedulable = timeline.unschedulable.find((item) => item.workItemId === selectedWorkItemId);
@@ -27013,7 +28580,8 @@ function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
     return {
       workItemId: selectedUnschedulable.workItemId,
       title: selectedUnschedulable.title,
-      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? ""
+      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
+      state: selectedUnschedulable.state.code
     };
   }
   return null;
@@ -27035,6 +28603,265 @@ function parseTimelineDetailLine(line) {
     label: match[1],
     value: match[2]
   };
+}
+function formatTimelineDetailValue(label, value) {
+  const normalizedLabel = label.trim().toLowerCase();
+  if (normalizedLabel === "start" || normalizedLabel === "end") {
+    return formatDateForDisplay(value);
+  }
+  return value;
+}
+function formatDateForDisplay(raw) {
+  if (raw === "none") {
+    return raw;
+  }
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return raw;
+  }
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = parsed.getFullYear();
+  const hours = String(parsed.getHours()).padStart(2, "0");
+  const minutes = String(parsed.getMinutes()).padStart(2, "0");
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+function resolveStateOptions(timeline, selectedState, serverStateOptions) {
+  if (serverStateOptions.length > 0) {
+    const normalizedServerOptions = serverStateOptions.map((state2) => ({ name: state2.name.trim(), color: state2.color })).filter((state2) => state2.name.length > 0);
+    if (selectedState.trim().length > 0 && !normalizedServerOptions.some((entry) => entry.name.toLowerCase() === selectedState.trim().toLowerCase())) {
+      normalizedServerOptions.unshift({ name: selectedState.trim(), color: null });
+    }
+    return normalizedServerOptions;
+  }
+  const discovered = /* @__PURE__ */ new Set();
+  timeline?.bars.forEach((bar) => {
+    if (bar.state.code.trim().length > 0) {
+      discovered.add(bar.state.code.trim());
+    }
+  });
+  timeline?.unschedulable.forEach((item) => {
+    if (item.state.code.trim().length > 0) {
+      discovered.add(item.state.code.trim());
+    }
+  });
+  if (selectedState.trim().length > 0) {
+    discovered.add(selectedState.trim());
+  }
+  const result = [];
+  KNOWN_STATE_ORDER.forEach((state2) => {
+    result.push({ name: state2, color: null });
+    discovered.delete(state2);
+  });
+  [...discovered].sort((left, right) => left.localeCompare(right)).forEach((state2) => {
+    result.push({ name: state2, color: null });
+  });
+  return result.length > 0 ? result : [{ name: selectedState || "To Do", color: null }];
+}
+
+// dist/src/features/gantt-view/timeline-viewport-preference.js
+var STORAGE_KEY2 = "azure-ganttops.timeline-viewport";
+var VIEW_KEY = "timelineViewport";
+var store = createUserPreferenceStore({
+  storageKey: STORAGE_KEY2,
+  readFromServerCache: (preferences) => readFromViews(preferences.views),
+  sanitize: normalizeViewport,
+  buildPatch: (viewport, cachedPreferences2) => {
+    const cachedViews = cachedPreferences2.views;
+    const baseViews = isPlainRecord2(cachedViews) ? cachedViews : {};
+    return {
+      views: {
+        ...baseViews,
+        [VIEW_KEY]: viewport
+      }
+    };
+  }
+});
+function loadLastTimelineViewportPreference() {
+  return store.load();
+}
+function saveTimelineViewportPreference(viewport) {
+  store.save(viewport);
+}
+function hydrateTimelineViewportPreference(onHydrated) {
+  store.hydrate(onHydrated);
+}
+function readFromViews(views) {
+  if (!isPlainRecord2(views)) {
+    return null;
+  }
+  const candidate = views[VIEW_KEY];
+  return normalizeViewport(candidate);
+}
+function normalizeViewport(value) {
+  if (!isPlainRecord2(value)) {
+    return null;
+  }
+  const dayWidthPx = toFiniteNonNegative(value.dayWidthPx);
+  const scrollLeftPx = toFiniteNonNegative(value.scrollLeftPx);
+  const scrollTopPx = toFiniteNonNegative(value.scrollTopPx);
+  if (dayWidthPx === null || scrollLeftPx === null || scrollTopPx === null) {
+    return null;
+  }
+  return {
+    dayWidthPx,
+    scrollLeftPx,
+    scrollTopPx
+  };
+}
+function toFiniteNonNegative(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return value >= 0 ? value : 0;
+}
+function isPlainRecord2(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+// dist/src/features/gantt-view/timeline-label-fields-preference.js
+var STORAGE_KEY3 = "azure-ganttops.timeline-label-fields.v1";
+var DEFAULT_TIMELINE_LABEL_FIELDS = ["title"];
+var store2 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY3,
+  readFromServerCache: (preferences) => preferences.timelineLabelFields,
+  sanitize: sanitizeTimelineLabelFields,
+  buildPatch: (fieldRefs) => ({
+    timelineLabelFields: fieldRefs
+  })
+});
+function loadLastTimelineLabelFields() {
+  return store2.load();
+}
+function saveTimelineLabelFields(fieldRefs) {
+  store2.save(sanitizeTimelineLabelFields(fieldRefs) ?? []);
+}
+function hydrateTimelineLabelFieldsPreference(onHydrated) {
+  store2.hydrate(onHydrated);
+}
+function sanitizeTimelineLabelFields(value) {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  return [...new Set(value)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+}
+
+// dist/src/features/gantt-view/timeline-sidebar-fields-preference.js
+var STORAGE_KEY4 = "azure-ganttops.timeline-sidebar-fields.v1";
+var DEFAULT_TIMELINE_SIDEBAR_FIELDS = ["title"];
+var store3 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY4,
+  readFromServerCache: (preferences) => preferences.timelineSidebarFields,
+  sanitize: sanitizeTimelineSidebarFields,
+  buildPatch: (fieldRefs) => ({
+    timelineSidebarFields: fieldRefs
+  })
+});
+function loadLastTimelineSidebarFields() {
+  return store3.load();
+}
+function saveTimelineSidebarFields(fieldRefs) {
+  store3.save(sanitizeTimelineSidebarFields(fieldRefs) ?? []);
+}
+function hydrateTimelineSidebarFieldsPreference(onHydrated) {
+  store3.hydrate(onHydrated);
+}
+function sanitizeTimelineSidebarFields(value) {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+  return [...new Set(value)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+}
+
+// dist/src/features/gantt-view/timeline-sidebar-width-preference.js
+var STORAGE_KEY5 = "azure-ganttops.timeline-sidebar-width-px.v1";
+var MIN_WIDTH_PX = 160;
+var MAX_WIDTH_PX = 640;
+var store4 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY5,
+  readFromServerCache: (preferences) => preferences.timelineSidebarWidthPx,
+  sanitize: sanitizeWidthPx,
+  buildPatch: (widthPx) => ({
+    timelineSidebarWidthPx: widthPx
+  }),
+  serialize: (widthPx) => String(widthPx),
+  deserialize: (raw) => Number(raw)
+});
+function loadLastTimelineSidebarWidthPx() {
+  return store4.load();
+}
+function saveTimelineSidebarWidthPx(widthPx) {
+  store4.save(widthPx);
+}
+function hydrateTimelineSidebarWidthPreference(onHydrated) {
+  store4.hydrate(onHydrated);
+}
+function sanitizeWidthPx(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return clamp2(Math.round(value), MIN_WIDTH_PX, MAX_WIDTH_PX);
+}
+function clamp2(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+// dist/src/features/gantt-view/timeline-sidebar-row-justify-preference.js
+var STORAGE_KEY6 = "azure-ganttops.timeline-sidebar-row-justify.v1";
+var store5 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY6,
+  readFromServerCache: (preferences) => preferences.timelineSidebarRowJustify,
+  sanitize: sanitizeTimelineSidebarRowJustify,
+  buildPatch: (justify) => ({
+    timelineSidebarRowJustify: justify
+  }),
+  serialize: (justify) => justify,
+  deserialize: (raw) => raw
+});
+function loadLastTimelineSidebarRowJustify() {
+  return store5.load();
+}
+function saveTimelineSidebarRowJustify(justify) {
+  store5.save(justify);
+}
+function hydrateTimelineSidebarRowJustifyPreference(onHydrated) {
+  store5.hydrate(onHydrated);
+}
+function sanitizeTimelineSidebarRowJustify(value) {
+  return value === "flex-start" || value === "flex-end" ? value : null;
+}
+
+// dist/src/features/gantt-view/timeline-details-width-preference.js
+var STORAGE_KEY7 = "azure-ganttops.timeline-details-width-px.v1";
+var MIN_WIDTH_PX2 = 0;
+var MAX_WIDTH_PX2 = 900;
+var store6 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY7,
+  readFromServerCache: (preferences) => preferences.timelineDetailsWidthPx,
+  sanitize: sanitizeWidthPx2,
+  buildPatch: (widthPx) => ({
+    timelineDetailsWidthPx: widthPx
+  }),
+  serialize: (widthPx) => String(widthPx),
+  deserialize: (raw) => Number(raw)
+});
+function loadLastTimelineDetailsWidthPx() {
+  return store6.load();
+}
+function saveTimelineDetailsWidthPx(widthPx) {
+  store6.save(widthPx);
+}
+function hydrateTimelineDetailsWidthPreference(onHydrated) {
+  store6.hydrate(onHydrated);
+}
+function sanitizeWidthPx2(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return clamp3(Math.round(value), MIN_WIDTH_PX2, MAX_WIDTH_PX2);
+}
+function clamp3(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 // dist/src/features/gantt-view/selection-store.js
@@ -27061,85 +28888,1453 @@ function createTimelineSelectionStore(initialSelectedWorkItemId = null) {
   };
 }
 
+// dist/src/features/gantt-view/timeline-main-splitter.js
+var import_react5 = __toESM(require_react(), 1);
+function TimelineMainSplitter(props) {
+  const className = [
+    "timeline-main-splitter",
+    props.active ? "timeline-main-splitter-active" : "",
+    props.embedded ? "timeline-main-splitter-embedded" : ""
+  ].filter(Boolean).join(" ");
+  return import_react5.default.createElement("button", {
+    type: "button",
+    className,
+    "aria-label": props.ariaLabel,
+    role: "separator",
+    "aria-orientation": "vertical",
+    "aria-valuemin": props.ariaValueMin,
+    "aria-valuemax": props.ariaValueMax,
+    "aria-valuenow": Math.round(props.ariaValueNow),
+    onPointerDown: props.onPointerDown,
+    onClick: props.onClick,
+    style: props.style
+  }, props.children);
+}
+
+// dist/src/features/gantt-view/use-dependency-editing.js
+var import_react6 = __toESM(require_react(), 1);
+var DEPENDENCY_VIEW_MODE_OPTIONS = [
+  { value: "show", label: "Show all" },
+  { value: "edit", label: "Edit links" },
+  { value: "violations", label: "Show conflicts only" },
+  { value: "none", label: "Hide all" }
+];
+function useDependencyEditing() {
+  const [activeDependencyDrag, setActiveDependencyDrag] = import_react6.default.useState(null);
+  const [dependencyViewMode, setDependencyViewMode] = import_react6.default.useState("show");
+  const [selectedDependency, setSelectedDependency] = import_react6.default.useState(null);
+  return {
+    activeDependencyDrag,
+    setActiveDependencyDrag,
+    dependencyViewMode,
+    setDependencyViewMode,
+    selectedDependency,
+    setSelectedDependency
+  };
+}
+
+// dist/src/features/gantt-view/use-schedule-dragging.js
+var import_react7 = __toESM(require_react(), 1);
+function useScheduleDragging() {
+  const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = import_react7.default.useState({});
+  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = import_react7.default.useState({});
+  const [adoptScheduleError, setAdoptScheduleError] = import_react7.default.useState(null);
+  const [activeScheduleDrag, setActiveScheduleDrag] = import_react7.default.useState(null);
+  const [activeUnschedulableDrag, setActiveUnschedulableDrag] = import_react7.default.useState(null);
+  const [unscheduledDropPreview, setUnscheduledDropPreview] = import_react7.default.useState(null);
+  return {
+    adoptedSchedulesByWorkItemId,
+    setAdoptedSchedulesByWorkItemId,
+    editedBarSchedulesByWorkItemId,
+    setEditedBarSchedulesByWorkItemId,
+    adoptScheduleError,
+    setAdoptScheduleError,
+    activeScheduleDrag,
+    setActiveScheduleDrag,
+    activeUnschedulableDrag,
+    setActiveUnschedulableDrag,
+    unscheduledDropPreview,
+    setUnscheduledDropPreview
+  };
+}
+
+// dist/src/features/gantt-view/use-timeline-filters.js
+var import_react8 = __toESM(require_react(), 1);
+function useTimelineFilters(initialState) {
+  const [timelineFiltersOpen, setTimelineFiltersOpen] = import_react8.default.useState(false);
+  const [timelineFieldFilters, setTimelineFieldFilters] = import_react8.default.useState(() => initialState.filters);
+  const [nextFilterSlotId, setNextFilterSlotId] = import_react8.default.useState(() => initialState.nextSlotId);
+  const [openFilterDropdown, setOpenFilterDropdown] = import_react8.default.useState(null);
+  const [filterFieldSearchDraft, setFilterFieldSearchDraft] = import_react8.default.useState("");
+  const [filterValueSearchDraft, setFilterValueSearchDraft] = import_react8.default.useState("");
+  return {
+    timelineFiltersOpen,
+    setTimelineFiltersOpen,
+    timelineFieldFilters,
+    setTimelineFieldFilters,
+    nextFilterSlotId,
+    setNextFilterSlotId,
+    openFilterDropdown,
+    setOpenFilterDropdown,
+    filterFieldSearchDraft,
+    setFilterFieldSearchDraft,
+    filterValueSearchDraft,
+    setFilterValueSearchDraft
+  };
+}
+
+// dist/src/features/gantt-view/use-timeline-overlay-dismiss.js
+var import_react9 = __toESM(require_react(), 1);
+function useTimelineOverlayDismiss(params) {
+  import_react9.default.useEffect(() => {
+    if (!params.colorCodingDropdownOpen && !params.openFilterDropdown && !params.sortSettingsOpen && !params.labelSettingsOpen) {
+      return;
+    }
+    const onPointerDown = (event) => {
+      const target = event.target;
+      if (!target) {
+        return;
+      }
+      const control = params.colorCodingControlRef.current;
+      if (control && control.contains(target)) {
+        return;
+      }
+      const filterToggleControl = params.filterToggleControlRef.current;
+      if (filterToggleControl && filterToggleControl.contains(target)) {
+        return;
+      }
+      const filterPanel = params.filterPanelRef.current;
+      if (filterPanel && filterPanel.contains(target)) {
+        return;
+      }
+      const labelControl = params.labelToggleControlRef.current;
+      if (labelControl && labelControl.contains(target)) {
+        return;
+      }
+      const sortControl = params.sortToggleControlRef.current;
+      if (sortControl && sortControl.contains(target)) {
+        return;
+      }
+      const labelPanel = params.labelPanelRef.current;
+      if (labelPanel && labelPanel.contains(target)) {
+        return;
+      }
+      const sortPanel = params.sortPanelRef.current;
+      if (sortPanel && sortPanel.contains(target)) {
+        return;
+      }
+      params.onCloseColorCodingDropdown();
+      params.onCloseFilterDropdown();
+      params.onCloseSortSettings();
+      params.onCloseLabelSettings();
+    };
+    const onKeyDown = (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      params.onCloseColorCodingDropdown();
+      params.onCloseFilterDropdown();
+      params.onCloseSortSettings();
+      params.onCloseLabelSettings();
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [
+    params.colorCodingControlRef,
+    params.colorCodingDropdownOpen,
+    params.filterPanelRef,
+    params.filterToggleControlRef,
+    params.labelPanelRef,
+    params.labelSettingsOpen,
+    params.labelToggleControlRef,
+    params.onCloseSortSettings,
+    params.onCloseColorCodingDropdown,
+    params.onCloseFilterDropdown,
+    params.onCloseLabelSettings,
+    params.openFilterDropdown,
+    params.sortPanelRef,
+    params.sortSettingsOpen,
+    params.sortToggleControlRef
+  ]);
+}
+
+// dist/src/features/gantt-view/use-timeline-keyboard-shortcuts.js
+var import_react10 = __toESM(require_react(), 1);
+function useTimelineKeyboardShortcuts(params) {
+  import_react10.default.useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === " ") {
+        params.spacePanPressedRef.current = true;
+        params.setSpacePanPressed(true);
+        event.preventDefault();
+        return;
+      }
+      if ((event.key === "Delete" || event.key === "Backspace") && params.selectedDependency && params.onRemoveDependency) {
+        event.preventDefault();
+        void params.onRemoveDependency({
+          predecessorWorkItemId: params.selectedDependency.predecessorWorkItemId,
+          successorWorkItemId: params.selectedDependency.successorWorkItemId
+        }).catch((error) => {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          params.setAdoptScheduleError(message);
+        });
+        params.setSelectedDependency(null);
+        return;
+      }
+      if (event.key.toLowerCase() !== "r" || params.isRefreshing === true) {
+        return;
+      }
+      params.onRetryRefresh?.();
+    };
+    const onKeyUp = (event) => {
+      if (event.key !== " ") {
+        return;
+      }
+      params.spacePanPressedRef.current = false;
+      params.setSpacePanPressed(false);
+    };
+    const onWindowBlur = () => {
+      params.spacePanPressedRef.current = false;
+      params.setSpacePanPressed(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
+    };
+  }, [
+    params.isRefreshing,
+    params.onRemoveDependency,
+    params.onRetryRefresh,
+    params.selectedDependency,
+    params.setAdoptScheduleError,
+    params.setSelectedDependency,
+    params.setSpacePanPressed,
+    params.spacePanPressedRef
+  ]);
+}
+function isEditableTarget(target) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  const tag = target.tagName.toLowerCase();
+  if (tag === "input" || tag === "textarea" || tag === "select") {
+    return true;
+  }
+  return target.isContentEditable || Boolean(target.closest("[contenteditable='true']"));
+}
+
+// dist/src/features/gantt-view/timeline-sort-control.js
+var import_react11 = __toESM(require_react(), 1);
+
+// dist/src/features/gantt-view/timeline-sorting.js
+var BUILT_IN_SORT_OPTIONS = [
+  { value: "startDate", label: "Start date", subtitle: "Built-in" },
+  { value: "endDate", label: "End date", subtitle: "Built-in" },
+  { value: "title", label: "Title", subtitle: "Built-in" },
+  { value: "mappedId", label: "ID", subtitle: "Built-in" },
+  { value: "state", label: "State", subtitle: "Built-in" },
+  { value: "assignedTo", label: "Assigned to", subtitle: "Built-in" },
+  { value: "parentWorkItemId", label: "Parent ID", subtitle: "Built-in" }
+];
+var stringCollator = new Intl.Collator(void 0, { sensitivity: "base", numeric: true });
+function applyTimelineSorting(timeline, preference) {
+  if (!timeline) {
+    return null;
+  }
+  const comparator = buildTimelineSortComparator(preference);
+  const bars = [...timeline.bars].sort(comparator);
+  const unschedulable = [...timeline.unschedulable].sort(comparator);
+  return {
+    ...timeline,
+    bars,
+    unschedulable
+  };
+}
+function buildTimelineSortOptions(availableFieldRefs) {
+  const fieldOptions = availableFieldRefs.map((fieldRef) => ({
+    value: `field:${fieldRef}`,
+    label: getFieldDisplayName(fieldRef),
+    subtitle: fieldRef
+  }));
+  return [...BUILT_IN_SORT_OPTIONS, ...fieldOptions];
+}
+function resolveTimelineSortFieldLabel(field) {
+  const builtIn = BUILT_IN_SORT_OPTIONS.find((option) => option.value === field);
+  if (builtIn) {
+    return builtIn.label;
+  }
+  const fieldRef = field.slice("field:".length);
+  return getFieldDisplayName(fieldRef);
+}
+function buildTimelineSortComparator(preference) {
+  return (left, right) => {
+    const primaryResult = compareTimelineSortableValues(left, right, preference.primary);
+    if (primaryResult !== 0) {
+      return primaryResult;
+    }
+    if (preference.secondary) {
+      const secondaryResult = compareTimelineSortableValues(left, right, preference.secondary);
+      if (secondaryResult !== 0) {
+        return secondaryResult;
+      }
+    }
+    return left.workItemId - right.workItemId;
+  };
+}
+function compareTimelineSortableValues(left, right, field) {
+  const leftValue = extractSortValue(left, field);
+  const rightValue = extractSortValue(right, field);
+  if (leftValue === null && rightValue === null) {
+    return 0;
+  }
+  if (leftValue === null) {
+    return 1;
+  }
+  if (rightValue === null) {
+    return -1;
+  }
+  if (typeof leftValue === "number" && typeof rightValue === "number") {
+    return leftValue - rightValue;
+  }
+  return stringCollator.compare(String(leftValue), String(rightValue));
+}
+function extractSortValue(item, field) {
+  if (field === "startDate") {
+    return toTimestamp(item.schedule?.startDate);
+  }
+  if (field === "endDate") {
+    return toTimestamp(item.schedule?.endDate);
+  }
+  if (field === "title") {
+    return normalizeString(item.title);
+  }
+  if (field === "mappedId") {
+    return normalizeString(item.details.mappedId);
+  }
+  if (field === "state") {
+    return normalizeString(item.state.code);
+  }
+  if (field === "assignedTo") {
+    return normalizeString(item.details.assignedTo ?? null);
+  }
+  if (field === "parentWorkItemId") {
+    const parentWorkItemId = item.details.parentWorkItemId;
+    return typeof parentWorkItemId === "number" && Number.isFinite(parentWorkItemId) ? parentWorkItemId : null;
+  }
+  const fieldRef = field.slice("field:".length);
+  const fieldValue = item.details.fieldValues?.[fieldRef];
+  if (typeof fieldValue === "number" && Number.isFinite(fieldValue)) {
+    return fieldValue;
+  }
+  return normalizeString(fieldValue ?? null);
+}
+function normalizeString(value) {
+  if (value === null || typeof value === "undefined") {
+    return null;
+  }
+  const normalized = String(value).trim();
+  return normalized.length > 0 ? normalized : null;
+}
+function toTimestamp(value) {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return null;
+  }
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+function getFieldDisplayName(fieldRef) {
+  const trimmed = fieldRef.trim();
+  if (trimmed.length === 0) {
+    return fieldRef;
+  }
+  const parts = trimmed.split(".");
+  const lastPart = parts[parts.length - 1]?.trim();
+  return lastPart && lastPart.length > 0 ? lastPart : trimmed;
+}
+
+// dist/src/features/gantt-view/timeline-sort-control.js
+function TimelineSortControl(props) {
+  const options = import_react11.default.useMemo(() => buildTimelineSortOptions(props.availableFieldRefs), [props.availableFieldRefs]);
+  const [openDropdown, setOpenDropdown] = import_react11.default.useState(null);
+  const [searchDraft, setSearchDraft] = import_react11.default.useState("");
+  const secondaryOptions = import_react11.default.useMemo(() => options.filter((option) => option.value !== props.timelineSortPreference.primary), [options, props.timelineSortPreference.primary]);
+  const selectedSummary = import_react11.default.useMemo(() => {
+    const primaryLabel2 = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
+    const secondaryLabel2 = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
+    return `${primaryLabel2} / ${secondaryLabel2}`;
+  }, [props.timelineSortPreference.primary, props.timelineSortPreference.secondary]);
+  const filteredPrimaryOptions = import_react11.default.useMemo(() => filterSortOptionsBySearch(options, searchDraft), [options, searchDraft]);
+  const filteredSecondaryOptions = import_react11.default.useMemo(() => filterSortOptionsBySearch(secondaryOptions, searchDraft), [secondaryOptions, searchDraft]);
+  const primaryLabel = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
+  const secondaryLabel = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
+  import_react11.default.useEffect(() => {
+    if (!props.sortSettingsOpen) {
+      setOpenDropdown(null);
+      setSearchDraft("");
+    }
+  }, [props.sortSettingsOpen]);
+  return import_react11.default.createElement("div", { className: "timeline-sort-control", ref: props.controlRef }, import_react11.default.createElement("button", {
+    type: "button",
+    className: props.sortSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
+    "aria-label": "Toggle timeline sorting",
+    title: "Sort timeline rows by primary and secondary fields.",
+    "aria-expanded": props.sortSettingsOpen ? "true" : "false",
+    "aria-haspopup": "dialog",
+    onClick: props.onToggleSortSettings
+  }, import_react11.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-label-toggle-icon",
+    "aria-hidden": "true"
+  }, import_react11.default.createElement("path", {
+    d: "M7 4h14v2H7V4Zm4 7h10v2H11v-2Zm4 7h6v2h-6v-2ZM3 6l2.5 3L8 6H6v12H5V6H3Z"
+  })), import_react11.default.createElement("span", { className: "timeline-label-toggle-count" }, "2")), props.sortSettingsOpen ? import_react11.default.createElement("div", {
+    className: "timeline-label-menu timeline-sort-menu",
+    role: "group",
+    "aria-label": "Timeline sorting",
+    ref: props.panelRef
+  }, import_react11.default.createElement("h4", { className: "timeline-label-menu-title" }, "Sort work items"), import_react11.default.createElement("p", { className: "timeline-details-muted" }, `Current: ${selectedSummary}`), import_react11.default.createElement("div", { className: "timeline-sort-menu-grid" }, import_react11.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react11.default.createElement("span", null, "Primary"), import_react11.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react11.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
+    "aria-label": "Timeline sort primary",
+    "aria-haspopup": "listbox",
+    "aria-expanded": openDropdown === "primary" ? "true" : "false",
+    onClick: () => {
+      setOpenDropdown((current) => current === "primary" ? null : "primary");
+      setSearchDraft("");
+    }
+  }, primaryLabel), openDropdown === "primary" ? import_react11.default.createElement("div", {
+    className: "timeline-color-coding-dropdown",
+    role: "listbox",
+    "aria-label": "Timeline sort primary options"
+  }, import_react11.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": "Search timeline sort primary",
+    placeholder: "Search field",
+    value: searchDraft,
+    onChange: (event) => {
+      setSearchDraft(event.target.value);
+    }
+  }), import_react11.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filteredPrimaryOptions.length === 0 ? import_react11.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredPrimaryOptions.map((option) => import_react11.default.createElement("button", {
+    key: `timeline-sort-primary-${option.value}`,
+    type: "button",
+    className: option.value === props.timelineSortPreference.primary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+    onClick: () => {
+      props.onSelectPrimarySortField(option.value);
+      setOpenDropdown(null);
+    }
+  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null)), import_react11.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react11.default.createElement("span", null, "Secondary"), import_react11.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react11.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
+    "aria-label": "Timeline sort secondary",
+    "aria-haspopup": "listbox",
+    "aria-expanded": openDropdown === "secondary" ? "true" : "false",
+    onClick: () => {
+      setOpenDropdown((current) => current === "secondary" ? null : "secondary");
+      setSearchDraft("");
+    }
+  }, secondaryLabel), openDropdown === "secondary" ? import_react11.default.createElement("div", {
+    className: "timeline-color-coding-dropdown",
+    role: "listbox",
+    "aria-label": "Timeline sort secondary options"
+  }, import_react11.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": "Search timeline sort secondary",
+    placeholder: "Search field",
+    value: searchDraft,
+    onChange: (event) => {
+      setSearchDraft(event.target.value);
+    }
+  }), import_react11.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, import_react11.default.createElement("button", {
+    type: "button",
+    className: props.timelineSortPreference.secondary === null ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+    onClick: () => {
+      props.onSelectSecondarySortField(null);
+      setOpenDropdown(null);
+    }
+  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, "None"), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")), filteredSecondaryOptions.length === 0 ? import_react11.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredSecondaryOptions.map((option) => import_react11.default.createElement("button", {
+    key: `timeline-sort-secondary-${option.value}`,
+    type: "button",
+    className: option.value === props.timelineSortPreference.secondary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+    onClick: () => {
+      props.onSelectSecondarySortField(option.value);
+      setOpenDropdown(null);
+    }
+  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null)))) : null);
+}
+function filterSortOptionsBySearch(options, searchDraft) {
+  const normalizedSearch = searchDraft.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options;
+  }
+  return options.filter((option) => `${option.label} ${option.subtitle}`.toLowerCase().includes(normalizedSearch));
+}
+
+// dist/src/features/gantt-view/use-timeline-sorting.js
+var import_react12 = __toESM(require_react(), 1);
+
+// dist/src/features/gantt-view/timeline-sort-preference.js
+var DEFAULT_TIMELINE_SORT_PREFERENCE = {
+  primary: "startDate",
+  secondary: null
+};
+var STORAGE_KEY8 = "azure-ganttops.timeline-sort.v1";
+var store7 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY8,
+  readFromServerCache: (preferences) => preferences.timelineSort,
+  sanitize: sanitizeTimelineSortPreference,
+  buildPatch: (preference) => ({
+    timelineSort: {
+      primary: preference.primary,
+      secondary: preference.secondary
+    }
+  })
+});
+function loadLastTimelineSortPreference() {
+  return store7.load();
+}
+function saveTimelineSortPreference(preference) {
+  const sanitized = sanitizeTimelineSortPreference(preference) ?? DEFAULT_TIMELINE_SORT_PREFERENCE;
+  store7.save(sanitized);
+}
+function hydrateTimelineSortPreference(onHydrated) {
+  store7.hydrate(onHydrated);
+}
+function sanitizeTimelineSortPreference(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  const candidate = value;
+  const primary = sanitizeTimelineSortField2(candidate.primary);
+  if (!primary) {
+    return null;
+  }
+  const secondaryRaw = candidate.secondary;
+  const secondary = secondaryRaw === null ? null : sanitizeTimelineSortField2(secondaryRaw);
+  if (secondaryRaw !== null && typeof secondaryRaw !== "undefined" && !secondary) {
+    return null;
+  }
+  if (secondary === primary) {
+    return {
+      primary,
+      secondary: primary === "startDate" ? null : "startDate"
+    };
+  }
+  return {
+    primary,
+    secondary: secondary ?? null
+  };
+}
+function sanitizeTimelineSortField2(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  if (normalized === "startDate" || normalized === "endDate" || normalized === "title" || normalized === "mappedId" || normalized === "state" || normalized === "assignedTo" || normalized === "parentWorkItemId") {
+    return normalized;
+  }
+  if (!normalized.startsWith("field:")) {
+    return null;
+  }
+  const fieldRef = normalized.slice("field:".length).trim();
+  if (fieldRef.length === 0) {
+    return null;
+  }
+  return `field:${fieldRef}`;
+}
+
+// dist/src/features/gantt-view/use-timeline-sorting.js
+function useTimelineSorting() {
+  const [sortSettingsOpen, setSortSettingsOpen] = import_react12.default.useState(false);
+  const [timelineSortPreference, setTimelineSortPreference] = import_react12.default.useState(() => loadLastTimelineSortPreference() ?? DEFAULT_TIMELINE_SORT_PREFERENCE);
+  import_react12.default.useEffect(() => {
+    hydrateTimelineSortPreference((preference) => {
+      setTimelineSortPreference(preference);
+    });
+  }, []);
+  const setAndPersist = import_react12.default.useCallback((preference) => {
+    setTimelineSortPreference(preference);
+    saveTimelineSortPreference(preference);
+  }, []);
+  const selectPrimarySortField = import_react12.default.useCallback((field) => {
+    setAndPersist({
+      primary: field,
+      secondary: field === "startDate" ? null : "startDate"
+    });
+  }, [setAndPersist]);
+  const selectSecondarySortField = import_react12.default.useCallback((field) => {
+    setAndPersist({
+      primary: timelineSortPreference.primary,
+      secondary: field
+    });
+  }, [setAndPersist, timelineSortPreference.primary]);
+  return {
+    sortSettingsOpen,
+    setSortSettingsOpen,
+    timelineSortPreference,
+    selectPrimarySortField,
+    selectSecondarySortField
+  };
+}
+
+// dist/src/features/gantt-view/use-timeline-resizing.js
+var import_react13 = __toESM(require_react(), 1);
+function useTimelineResizing(input) {
+  const [activeDetailsResize, setActiveDetailsResize] = import_react13.default.useState(null);
+  const [activeSidebarResize, setActiveSidebarResize] = import_react13.default.useState(null);
+  const detailsWidthLiveRef = import_react13.default.useRef(input.detailsWidthPx);
+  const sidebarWidthLiveRef = import_react13.default.useRef(input.sidebarWidthPx);
+  const detailsResizeMovedRef = import_react13.default.useRef(false);
+  const sidebarResizeMovedRef = import_react13.default.useRef(false);
+  const lastExpandedDetailsWidthRef = import_react13.default.useRef(Math.max(input.detailsWidthPx, input.detailsPanelContentMinWidthPx));
+  const sidebarCollapsed = input.sidebarFieldsCount === 0;
+  const effectiveSidebarWidthPx = sidebarCollapsed ? input.timelineSidebarCollapsedWidthPx : input.sidebarWidthPx;
+  const detailsContentHidden = input.detailsWidthPx < input.detailsPanelContentMinWidthPx;
+  const sidebarEffectiveWidthLiveRef = import_react13.default.useRef(effectiveSidebarWidthPx);
+  import_react13.default.useEffect(() => {
+    detailsWidthLiveRef.current = input.detailsWidthPx;
+    if (input.detailsWidthPx >= input.detailsPanelContentMinWidthPx) {
+      lastExpandedDetailsWidthRef.current = input.detailsWidthPx;
+    }
+  }, [input.detailsPanelContentMinWidthPx, input.detailsWidthPx]);
+  import_react13.default.useEffect(() => {
+    sidebarWidthLiveRef.current = input.sidebarWidthPx;
+    sidebarEffectiveWidthLiveRef.current = effectiveSidebarWidthPx;
+  }, [effectiveSidebarWidthPx, input.sidebarWidthPx]);
+  import_react13.default.useEffect(() => {
+    const clampWidthToAvailableSpace = () => {
+      input.setSidebarWidthPx((current) => {
+        const maxWidth = input.resolveTimelineSidebarMaxWidthPx(input.timelineMainGridRef.current, detailsWidthLiveRef.current);
+        const next = input.clamp(current, input.timelineSidebarMinWidthPx, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+      input.setDetailsWidthPx((current) => {
+        const maxWidth = input.resolveTimelineDetailsMaxWidthPx(input.timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+        const next = input.clamp(current, input.detailsPanelMinWidthPx, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+    };
+    clampWidthToAvailableSpace();
+    window.addEventListener("resize", clampWidthToAvailableSpace);
+    return () => {
+      window.removeEventListener("resize", clampWidthToAvailableSpace);
+    };
+  }, [
+    input.clamp,
+    input.detailsPanelMinWidthPx,
+    input.resolveTimelineDetailsMaxWidthPx,
+    input.resolveTimelineSidebarMaxWidthPx,
+    input.setDetailsWidthPx,
+    input.setSidebarWidthPx,
+    input.timelineMainGridRef,
+    input.timelineSidebarMinWidthPx
+  ]);
+  import_react13.default.useEffect(() => {
+    if (!activeDetailsResize) {
+      return;
+    }
+    const onPointerMove = (event) => {
+      if (event.pointerId !== activeDetailsResize.pointerId) {
+        return;
+      }
+      const deltaX = event.clientX - activeDetailsResize.originClientX;
+      if (Math.abs(deltaX) >= 2) {
+        detailsResizeMovedRef.current = true;
+      }
+      const maxWidth = input.resolveTimelineDetailsMaxWidthPx(input.timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+      const nextWidth = input.clamp(activeDetailsResize.originWidthPx - deltaX, input.detailsPanelMinWidthPx, maxWidth);
+      input.setDetailsWidthPx(nextWidth);
+      event.preventDefault();
+    };
+    const finishResize = (event) => {
+      if (event.pointerId !== activeDetailsResize.pointerId) {
+        return;
+      }
+      setActiveDetailsResize(null);
+      input.persistDetailsWidthPx(detailsWidthLiveRef.current);
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+    };
+  }, [
+    activeDetailsResize,
+    input.clamp,
+    input.detailsPanelMinWidthPx,
+    input.persistDetailsWidthPx,
+    input.resolveTimelineDetailsMaxWidthPx,
+    input.setDetailsWidthPx,
+    input.timelineMainGridRef
+  ]);
+  import_react13.default.useEffect(() => {
+    if (!activeSidebarResize) {
+      return;
+    }
+    const onPointerMove = (event) => {
+      if (event.pointerId !== activeSidebarResize.pointerId) {
+        return;
+      }
+      const deltaX = event.clientX - activeSidebarResize.originClientX;
+      if (Math.abs(deltaX) >= 2) {
+        sidebarResizeMovedRef.current = true;
+      }
+      const maxWidth = input.resolveTimelineSidebarMaxWidthPx(input.timelineMainGridRef.current, detailsWidthLiveRef.current);
+      const nextWidth = input.clamp(activeSidebarResize.originWidthPx + deltaX, input.timelineSidebarMinWidthPx, maxWidth);
+      input.setSidebarWidthPx(nextWidth);
+      event.preventDefault();
+    };
+    const finishResize = (event) => {
+      if (event.pointerId !== activeSidebarResize.pointerId) {
+        return;
+      }
+      setActiveSidebarResize(null);
+      input.persistSidebarWidthPx(sidebarWidthLiveRef.current);
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+    };
+  }, [
+    activeSidebarResize,
+    input.clamp,
+    input.persistSidebarWidthPx,
+    input.resolveTimelineSidebarMaxWidthPx,
+    input.setSidebarWidthPx,
+    input.timelineMainGridRef,
+    input.timelineSidebarMinWidthPx
+  ]);
+  const beginSidebarResize = import_react13.default.useCallback((event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    if ("setPointerCapture" in event.currentTarget) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    sidebarResizeMovedRef.current = false;
+    setActiveSidebarResize({
+      pointerId: event.pointerId,
+      originClientX: event.clientX,
+      originWidthPx: input.sidebarWidthPx
+    });
+  }, [input.sidebarWidthPx]);
+  const beginDetailsResize = import_react13.default.useCallback((event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    if ("setPointerCapture" in event.currentTarget) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    detailsResizeMovedRef.current = false;
+    setActiveDetailsResize({
+      pointerId: event.pointerId,
+      originClientX: event.clientX,
+      originWidthPx: input.detailsWidthPx
+    });
+  }, [input.detailsWidthPx]);
+  const expandDetailsPanelFromHidden = import_react13.default.useCallback(() => {
+    if (!detailsContentHidden || detailsResizeMovedRef.current) {
+      return;
+    }
+    const maxWidth = input.resolveTimelineDetailsMaxWidthPx(input.timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+    const restoredWidth = input.clamp(lastExpandedDetailsWidthRef.current, input.detailsPanelContentMinWidthPx, maxWidth);
+    input.setDetailsWidthPx(restoredWidth);
+    input.persistDetailsWidthPx(restoredWidth);
+  }, [
+    detailsContentHidden,
+    input.clamp,
+    input.detailsPanelContentMinWidthPx,
+    input.persistDetailsWidthPx,
+    input.resolveTimelineDetailsMaxWidthPx,
+    input.setDetailsWidthPx,
+    input.timelineMainGridRef
+  ]);
+  return {
+    isSidebarResizing: activeSidebarResize !== null,
+    isDetailsResizing: activeDetailsResize !== null,
+    detailsContentHidden,
+    sidebarCollapsed,
+    effectiveSidebarWidthPx,
+    detailsResizeMovedRef,
+    sidebarResizeMovedRef,
+    sidebarEffectiveWidthLiveRef,
+    beginSidebarResize,
+    beginDetailsResize,
+    expandDetailsPanelFromHidden
+  };
+}
+
+// dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
+var import_react15 = __toESM(require_react(), 1);
+
+// dist/src/features/gantt-view/timeline-label-settings-panel.js
+var import_react14 = __toESM(require_react(), 1);
+function TimelineLabelSettingsPanel(props) {
+  if (!props.open) {
+    return null;
+  }
+  return import_react14.default.createElement("div", {
+    className: "timeline-label-menu",
+    role: "group",
+    "aria-label": "Timeline label fields",
+    ref: props.panelRef
+  }, import_react14.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react14.default.createElement("section", { className: "timeline-label-menu-column" }, import_react14.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react14.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react14.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-value-reset",
+    onClick: props.onClearTimelineSidebarFields
+  }, "Nothing in sidebar"), import_react14.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": "Search timeline sidebar fields",
+    placeholder: "Search field",
+    value: props.sidebarFieldSearchDraft,
+    onChange: (event) => {
+      props.onChangeSidebarFieldSearchDraft(event.target.value);
+    }
+  }), import_react14.default.createElement("div", {
+    className: "timeline-label-menu-options",
+    ref: props.labelMenuSidebarOptionsRef,
+    onScroll: props.onSyncLabelMenuScrollFromSidebar
+  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react14.default.createElement("label", {
+    key: `timeline-sidebar-field-${option.fieldRef}`,
+    className: "timeline-label-menu-option"
+  }, import_react14.default.createElement("input", {
+    type: "checkbox",
+    checked: props.timelineSidebarFields.includes(option.fieldRef),
+    "aria-label": `Show ${option.label} in timeline sidebar`,
+    onChange: () => {
+      props.onToggleTimelineSidebarField(option.fieldRef);
+    }
+  }), import_react14.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react14.default.createElement("strong", null, option.label), import_react14.default.createElement("span", null, option.subtitle)))))), import_react14.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react14.default.createElement("section", { className: "timeline-label-menu-column" }, import_react14.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react14.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react14.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-value-reset",
+    onClick: props.onClearTimelineLabelFields
+  }, "Nothing in bars"), import_react14.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": "Search timeline label fields",
+    placeholder: "Search field",
+    value: props.labelFieldSearchDraft,
+    onChange: (event) => {
+      props.onChangeLabelFieldSearchDraft(event.target.value);
+    }
+  }), import_react14.default.createElement("div", {
+    className: "timeline-label-menu-options",
+    ref: props.labelMenuBarOptionsRef,
+    onScroll: props.onSyncLabelMenuScrollFromBar
+  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react14.default.createElement("label", {
+    key: `timeline-label-field-${option.fieldRef}`,
+    className: "timeline-label-menu-option"
+  }, import_react14.default.createElement("input", {
+    type: "checkbox",
+    checked: props.timelineLabelFields.includes(option.fieldRef),
+    "aria-label": `Show ${option.label} in timeline bars`,
+    onChange: () => {
+      props.onToggleTimelineLabelField(option.fieldRef);
+    }
+  }), import_react14.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react14.default.createElement("strong", null, option.label), import_react14.default.createElement("span", null, option.subtitle))))))));
+}
+
+// dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
+function TimelinePaneActionsToolbar(props) {
+  return import_react15.default.createElement(import_react15.default.Fragment, null, import_react15.default.createElement("div", {
+    className: "timeline-pane-actions"
+  }, import_react15.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react15.default.createElement("button", {
+    type: "button",
+    className: "timeline-action-button timeline-action-button-primary",
+    disabled: props.isRefreshing,
+    "aria-busy": props.isRefreshing ? "true" : void 0,
+    onClick: props.onRetryRefresh
+  }, props.isRefreshing ? import_react15.default.createElement("span", { className: "timeline-action-button-content" }, import_react15.default.createElement("span", {
+    className: "timeline-action-button-spinner",
+    "aria-hidden": "true"
+  }), import_react15.default.createElement("span", null, "Updating...")) : "Refresh"), import_react15.default.createElement("div", {
+    className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
+    role: "group",
+    "aria-label": "Timeline zoom"
+  }, import_react15.default.createElement("button", {
+    type: "button",
+    className: props.zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": props.zoomLevel === "week",
+    "aria-label": "Zoom in to week view",
+    onClick: props.onSelectWeekZoom
+  }, "Week"), import_react15.default.createElement("button", {
+    type: "button",
+    className: props.zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": props.zoomLevel === "month",
+    "aria-label": "Zoom out to month view",
+    onClick: props.onSelectMonthZoom
+  }, "Month")), import_react15.default.createElement("div", {
+    className: "timeline-dependency-control timeline-control-cluster"
+  }, import_react15.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react15.default.createElement("select", {
+    className: "timeline-dependency-select",
+    "aria-label": "Dependency mode",
+    value: props.dependencyViewMode,
+    onChange: (event) => {
+      props.onChangeDependencyMode(event.target.value);
+    }
+  }, props.dependencyModeOptions.map((option) => import_react15.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react15.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react15.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react15.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+    "aria-label": "Color coding",
+    title: "Choose how timeline bars are color-coded.",
+    "aria-haspopup": "listbox",
+    "aria-expanded": props.colorCodingDropdownOpen ? "true" : "false",
+    onClick: props.onToggleColorCodingDropdown
+  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? import_react15.default.createElement("div", { className: "timeline-color-coding-dropdown", role: "listbox", "aria-label": "Color coding options" }, import_react15.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": "Search color coding",
+    placeholder: "Search mode or field",
+    value: props.colorCodingSearchDraft,
+    onChange: (event) => {
+      props.onChangeColorCodingSearchDraft(event.target.value);
+    },
+    onKeyDown: (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      event.preventDefault();
+      props.onApplyFirstFilteredColorCodingOption();
+    }
+  }), import_react15.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react15.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react15.default.createElement("button", {
+    key: option.key,
+    type: "button",
+    className: option.mode === props.colorCoding && (option.mode !== "field" && props.colorCoding !== "field" || option.fieldRef === props.fieldColorCoding.fieldRef) ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+    onClick: () => {
+      props.onSelectColorCodingOption(option);
+    }
+  }, import_react15.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react15.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))) : null, import_react15.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-settings-button",
+    "aria-label": "Open color coding settings",
+    title: "Open color-coding settings and set colors per value.",
+    onClick: props.onOpenColorSettings
+  }, "Settings")), import_react15.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react15.default.createElement("button", {
+    type: "button",
+    className: props.timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
+    "aria-label": "Toggle timeline filters",
+    title: "Filter timeline rows by field values.",
+    "aria-expanded": props.timelineFiltersOpen ? "true" : "false",
+    "aria-haspopup": "dialog",
+    onClick: props.onToggleTimelineFilters
+  }, import_react15.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-filter-toggle-icon",
+    "aria-hidden": "true"
+  }, import_react15.default.createElement("path", {
+    d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
+  })), props.activeTimelineFiltersCount > 0 ? import_react15.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react15.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react15.default.createElement("button", {
+    type: "button",
+    className: props.labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
+    "aria-label": "Toggle timeline label fields",
+    title: "Select which fields are shown in sidebar and bar labels.",
+    "aria-expanded": props.labelSettingsOpen ? "true" : "false",
+    "aria-haspopup": "dialog",
+    onClick: props.onToggleLabelSettings
+  }, import_react15.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-label-toggle-icon",
+    "aria-hidden": "true"
+  }, import_react15.default.createElement("path", {
+    d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
+  })), import_react15.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react15.default.createElement(TimelineLabelSettingsPanel, {
+    open: props.labelSettingsOpen,
+    panelRef: props.labelPanelRef,
+    sidebarFieldSearchDraft: props.sidebarFieldSearchDraft,
+    labelFieldSearchDraft: props.labelFieldSearchDraft,
+    filteredTimelineSidebarFieldOptions: props.filteredTimelineSidebarFieldOptions,
+    filteredTimelineLabelFieldOptions: props.filteredTimelineLabelFieldOptions,
+    timelineSidebarFields: props.timelineSidebarFields,
+    timelineLabelFields: props.timelineLabelFields,
+    labelMenuSidebarOptionsRef: props.labelMenuSidebarOptionsRef,
+    labelMenuBarOptionsRef: props.labelMenuBarOptionsRef,
+    onChangeSidebarFieldSearchDraft: props.onChangeSidebarFieldSearchDraft,
+    onChangeLabelFieldSearchDraft: props.onChangeLabelFieldSearchDraft,
+    onClearTimelineSidebarFields: props.onClearTimelineSidebarFields,
+    onClearTimelineLabelFields: props.onClearTimelineLabelFields,
+    onSyncLabelMenuScrollFromSidebar: props.onSyncLabelMenuScrollFromSidebar,
+    onSyncLabelMenuScrollFromBar: props.onSyncLabelMenuScrollFromBar,
+    onToggleTimelineSidebarField: props.onToggleTimelineSidebarField,
+    onToggleTimelineLabelField: props.onToggleTimelineLabelField
+  }))), import_react15.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react15.default.createElement("div", {
+    className: "gantt-sync-status",
+    "data-state": props.workItemSyncState,
+    role: "status",
+    "aria-live": "polite",
+    title: props.workItemSyncState === "error" ? props.workItemSyncError ?? void 0 : void 0
+  }, import_react15.default.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }), import_react15.default.createElement("span", null, props.workItemSyncState === "syncing" ? "Updating work items..." : props.workItemSyncState === "error" ? "Work item update failed" : "Work items up to date")))));
+}
+
+// dist/src/features/gantt-view/timeline-filter-panel.js
+var import_react16 = __toESM(require_react(), 1);
+function TimelineFilterPanel(props) {
+  if (!props.open) {
+    return null;
+  }
+  return import_react16.default.createElement("div", {
+    className: "timeline-filter-panel",
+    role: "group",
+    "aria-label": "Timeline filters",
+    ref: props.panelRef
+  }, props.availableFieldRefs.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react16.default.createElement("div", { className: "timeline-filter-grid" }, ...props.timelineFieldFilters.map((filter, index) => {
+    const selectedFieldDisplay = filter.fieldRef ? props.getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
+    const valueLabel = !filter.fieldRef || filter.selectedValueKeys.length === 0 ? "All values" : `${filter.selectedValueKeys.length} selected`;
+    const isFieldDropdownOpen = props.openFilterDropdown?.kind === "field" && props.openFilterDropdown.slotId === filter.slotId;
+    const isValueDropdownOpen = props.openFilterDropdown?.kind === "value" && props.openFilterDropdown.slotId === filter.slotId;
+    const filterValueOptions = isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId ? props.openFilterValueOptions : props.effectiveTimelineValueOptionsForFilter(filter.fieldRef);
+    return import_react16.default.createElement("div", {
+      key: `timeline-filter-slot-${filter.slotId}`,
+      className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
+    }, import_react16.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react16.default.createElement("button", {
+      type: "button",
+      className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+      "aria-label": `Select filter field ${index + 1}`,
+      "aria-haspopup": "listbox",
+      "aria-expanded": isFieldDropdownOpen ? "true" : "false",
+      onClick: () => {
+        props.onSetOpenFilterDropdown((current) => current?.kind === "field" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "field" });
+        props.onSetFilterFieldSearchDraft("");
+        props.onSetFilterValueSearchDraft("");
+      }
+    }, selectedFieldDisplay), isFieldDropdownOpen ? import_react16.default.createElement("div", {
+      className: "timeline-color-coding-dropdown",
+      role: "listbox",
+      "aria-label": `Filter field options ${index + 1}`
+    }, import_react16.default.createElement("input", {
+      type: "search",
+      className: "timeline-color-coding-dropdown-search",
+      "aria-label": `Search filter fields ${index + 1}`,
+      placeholder: "Search field",
+      value: props.filterFieldSearchDraft,
+      onChange: (event) => {
+        props.onSetFilterFieldSearchDraft(event.target.value);
+      },
+      onKeyDown: (event) => {
+        if (event.key !== "Enter") {
+          return;
+        }
+        event.preventDefault();
+        const firstField = props.openFilterFieldOptions[0] ?? null;
+        if (!firstField) {
+          return;
+        }
+        props.onApplyFieldFilterSelection(filter.slotId, firstField);
+        props.onSetOpenFilterDropdown(null);
+      }
+    }), import_react16.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react16.default.createElement("button", {
+      key: `${filter.slotId}-${fieldRef}`,
+      type: "button",
+      className: filter.fieldRef === fieldRef ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+      onClick: () => {
+        props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
+        props.onSetOpenFilterDropdown(null);
+      }
+    }, import_react16.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react16.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))) : null), import_react16.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react16.default.createElement("button", {
+      type: "button",
+      className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+      "aria-label": `Select filter values ${index + 1}`,
+      "aria-haspopup": "listbox",
+      "aria-expanded": isValueDropdownOpen ? "true" : "false",
+      disabled: !filter.fieldRef,
+      onClick: () => {
+        if (!filter.fieldRef) {
+          return;
+        }
+        props.onSetOpenFilterDropdown((current) => current?.kind === "value" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "value" });
+        props.onSetFilterValueSearchDraft("");
+        props.onSetFilterFieldSearchDraft("");
+      }
+    }, valueLabel), isValueDropdownOpen ? import_react16.default.createElement("div", {
+      className: "timeline-color-coding-dropdown",
+      role: "listbox",
+      "aria-label": `Filter value options ${index + 1}`
+    }, import_react16.default.createElement("input", {
+      type: "search",
+      className: "timeline-color-coding-dropdown-search",
+      "aria-label": `Search filter values ${index + 1}`,
+      placeholder: "Search value",
+      value: props.filterValueSearchDraft,
+      onChange: (event) => {
+        props.onSetFilterValueSearchDraft(event.target.value);
+      }
+    }), import_react16.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filterValueOptions.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : filterValueOptions.map((entry) => import_react16.default.createElement("label", {
+      key: `${filter.slotId}-value-${entry.key}`,
+      className: "timeline-filter-value-option"
+    }, import_react16.default.createElement("input", {
+      type: "checkbox",
+      checked: filter.selectedValueKeys.includes(entry.key),
+      "aria-label": `Include ${entry.label} in filter ${index + 1}`,
+      onChange: () => {
+        props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
+      }
+    }), import_react16.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react16.default.createElement("strong", null, entry.label), import_react16.default.createElement("span", null, `${entry.count} item(s)`)))))) : null), import_react16.default.createElement("button", {
+      type: "button",
+      className: "timeline-filter-row-clear",
+      "aria-label": props.timelineFieldFilters.length > 1 ? `Remove filter ${index + 1}` : `Clear filter ${index + 1}`,
+      onClick: () => {
+        props.onRemoveTimelineFilterSlot(filter.slotId);
+      }
+    }, props.timelineFieldFilters.length > 1 ? "Remove" : "Clear"));
+  }), import_react16.default.createElement("button", {
+    type: "button",
+    className: "timeline-filter-add",
+    "aria-label": "Add timeline filter",
+    disabled: props.timelineFieldFilters.length >= props.maxFilterSlots,
+    onClick: props.onAddTimelineFilterSlot
+  }, "+")));
+}
+
+// dist/src/features/gantt-view/timeline-color-coding-panel.js
+var import_react17 = __toESM(require_react(), 1);
+function TimelineColorCodingPanel(props) {
+  if (!props.open) {
+    return null;
+  }
+  return import_react17.default.createElement("div", {
+    className: "timeline-color-coding-modal-backdrop",
+    role: "presentation",
+    onClick: props.onClose
+  }, import_react17.default.createElement("section", {
+    className: "timeline-color-coding-modal",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Color coding settings",
+    onClick: (event) => {
+      event.stopPropagation();
+    }
+  }, import_react17.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react17.default.createElement("h4", null, "Color coding settings"), import_react17.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-settings-button",
+    onClick: props.onClose
+  }, "Close")), import_react17.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react17.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react17.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
+    const scopedKey = props.toScopedFieldValueColorKey(props.selectedFieldRef, entry.key);
+    const customColor = (scopedKey ? props.fieldColorCoding.valueColors[scopedKey] : null) ?? props.fieldColorCoding.valueColors[entry.key] ?? null;
+    const effectiveColor = customColor ?? entry.defaultColor;
+    return import_react17.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react17.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react17.default.createElement("strong", null, entry.label), import_react17.default.createElement("span", null, `${entry.count} item(s)`)), import_react17.default.createElement("input", {
+      type: "color",
+      value: effectiveColor,
+      "aria-label": `Color for ${entry.label}`,
+      onChange: (event) => {
+        props.onUpdateFieldValueColor(entry.key, event.target.value);
+      }
+    }), import_react17.default.createElement("button", {
+      type: "button",
+      className: "timeline-color-coding-value-reset",
+      onClick: () => {
+        props.onUpdateFieldValueColor(entry.key, null);
+      }
+    }, "Auto"));
+  })) : props.isReadOnlyStatusColorCodingMode ? import_react17.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react17.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
+    return import_react17.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react17.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react17.default.createElement("strong", null, entry.label), import_react17.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : import_react17.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
+}
+
 // dist/src/features/gantt-view/timeline-pane.js
+function useTimelineViewport(initialViewportPreference) {
+  const [dayWidthPx, setDayWidthPx] = import_react18.default.useState(() => {
+    if (!initialViewportPreference) {
+      return DAY_WIDTH_WEEK_PX;
+    }
+    return clamp4(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+  });
+  const [activePanDrag, setActivePanDrag] = import_react18.default.useState(null);
+  const [spacePanPressed, setSpacePanPressed] = import_react18.default.useState(false);
+  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react18.default.useState(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react18.default.useState(0);
+  const chartScrollRef = import_react18.default.useRef(null);
+  const chartSvgRef = import_react18.default.useRef(null);
+  const zoomAnchorRef = import_react18.default.useRef(null);
+  const wheelZoomFrameRef = import_react18.default.useRef(null);
+  const pendingWheelDayWidthRef = import_react18.default.useRef(null);
+  const liveDayWidthRef = import_react18.default.useRef(dayWidthPx);
+  const pendingFitRangeRef = import_react18.default.useRef(null);
+  const pendingViewportRestoreRef = import_react18.default.useRef(initialViewportPreference);
+  const viewportPersistDebounceRef = import_react18.default.useRef(null);
+  const spacePanPressedRef = import_react18.default.useRef(false);
+  const initialViewportAppliedRef = import_react18.default.useRef(false);
+  return {
+    dayWidthPx,
+    setDayWidthPx,
+    activePanDrag,
+    setActivePanDrag,
+    spacePanPressed,
+    setSpacePanPressed,
+    chartViewportWidthPx,
+    setChartViewportWidthPx,
+    chartViewportHeightPx,
+    setChartViewportHeightPx,
+    chartScrollRef,
+    chartSvgRef,
+    zoomAnchorRef,
+    wheelZoomFrameRef,
+    pendingWheelDayWidthRef,
+    liveDayWidthRef,
+    pendingFitRangeRef,
+    pendingViewportRestoreRef,
+    viewportPersistDebounceRef,
+    spacePanPressedRef,
+    initialViewportAppliedRef,
+    zoomLevel: dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month"
+  };
+}
+function useTimelineColorCoding() {
+  const [colorCoding, setColorCoding] = import_react18.default.useState(() => loadLastTimelineColorCoding() ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = import_react18.default.useState(() => loadTimelineFieldColorCodingConfig());
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react18.default.useState(() => loadTimelineFieldColorCodingConfig().fieldRef);
+  const [colorSettingsOpen, setColorSettingsOpen] = import_react18.default.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react18.default.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react18.default.useState("");
+  return {
+    colorCoding,
+    setColorCoding,
+    fieldColorCoding,
+    setFieldColorCoding,
+    lastSelectedFieldRef,
+    setLastSelectedFieldRef,
+    colorSettingsOpen,
+    setColorSettingsOpen,
+    colorCodingDropdownOpen,
+    setColorCodingDropdownOpen,
+    colorCodingSearchDraft,
+    setColorCodingSearchDraft
+  };
+}
 function TimelinePane(props) {
-  const internalSelectionStoreRef = import_react5.default.useRef(null);
+  const initialTimelineFilterState = import_react18.default.useMemo(() => resolveInitialTimelineFilterState(), []);
+  const initialViewportPreference = import_react18.default.useMemo(() => loadLastTimelineViewportPreference(), []);
+  const scheduleDragging = useScheduleDragging();
+  const dependencyEditing = useDependencyEditing();
+  const timelineFilters = useTimelineFilters(initialTimelineFilterState);
+  const timelineSorting = useTimelineSorting();
+  const internalSelectionStoreRef = import_react18.default.useRef(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
   }
   const selectionStore = props.selectionStore ?? internalSelectionStoreRef.current;
-  const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = import_react5.default.useState({});
-  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = import_react5.default.useState({});
-  const effectiveTimeline = import_react5.default.useMemo(() => {
-    const withAdopted = applyAdoptedSchedules(props.timeline, adoptedSchedulesByWorkItemId);
+  const { adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId, adoptScheduleError, setAdoptScheduleError, activeScheduleDrag, setActiveScheduleDrag, activeUnschedulableDrag, setActiveUnschedulableDrag, unscheduledDropPreview, setUnscheduledDropPreview } = scheduleDragging;
+  const { activeDependencyDrag, setActiveDependencyDrag, dependencyViewMode, setDependencyViewMode, selectedDependency, setSelectedDependency } = dependencyEditing;
+  const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFieldFilters, setTimelineFieldFilters, nextFilterSlotId, setNextFilterSlotId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
+  const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField } = timelineSorting;
+  const [appliedTimelineSortPreference, setAppliedTimelineSortPreference] = import_react18.default.useState(() => timelineSortPreference);
+  const sortedBaseTimeline = import_react18.default.useMemo(() => applyTimelineSorting(props.timeline, appliedTimelineSortPreference), [appliedTimelineSortPreference, props.timeline]);
+  const effectiveTimeline = import_react18.default.useMemo(() => {
+    const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
-  }, [props.timeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
-  const [selectedWorkItemId, setSelectedWorkItemId] = import_react5.default.useState(() => selectionStore.getSelectedWorkItemId());
-  const [adoptScheduleError, setAdoptScheduleError] = import_react5.default.useState(null);
-  const [density, setDensity] = import_react5.default.useState(() => props.density ?? loadLastDensity() ?? "comfortable");
-  const [dayWidthPx, setDayWidthPx] = import_react5.default.useState(DAY_WIDTH_WEEK_PX);
-  const [activeScheduleDrag, setActiveScheduleDrag] = import_react5.default.useState(null);
-  const [activeUnschedulableDrag, setActiveUnschedulableDrag] = import_react5.default.useState(null);
-  const [unscheduledDropPreview, setUnscheduledDropPreview] = import_react5.default.useState(null);
-  const [detailsCollapsed, setDetailsCollapsed] = import_react5.default.useState(false);
-  const [chartViewport, setChartViewport] = import_react5.default.useState({
-    scrollLeft: 0,
-    clientWidth: 0,
-    clientHeight: 0
+  }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
+  const [selectedWorkItemId, setSelectedWorkItemId] = import_react18.default.useState(() => selectionStore.getSelectedWorkItemId());
+  const { dayWidthPx, setDayWidthPx, activePanDrag, setActivePanDrag, spacePanPressed, setSpacePanPressed, chartViewportWidthPx, setChartViewportWidthPx, chartViewportHeightPx, setChartViewportHeightPx, chartScrollRef, chartSvgRef, zoomAnchorRef, wheelZoomFrameRef, pendingWheelDayWidthRef, liveDayWidthRef, pendingFitRangeRef, pendingViewportRestoreRef, viewportPersistDebounceRef, spacePanPressedRef, initialViewportAppliedRef, zoomLevel } = useTimelineViewport(initialViewportPreference);
+  const [detailsWidthPx, setDetailsWidthPx] = import_react18.default.useState(() => {
+    const preferredWidth = loadLastTimelineDetailsWidthPx();
+    return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const chartScrollRef = import_react5.default.useRef(null);
-  const chartSvgRef = import_react5.default.useRef(null);
-  const zoomAnchorRef = import_react5.default.useRef(null);
-  const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule);
-  import_react5.default.useEffect(() => {
-    if (props.density) {
-      setDensity(props.density);
+  const [sidebarWidthPx, setSidebarWidthPx] = import_react18.default.useState(() => {
+    const preferredWidth = loadLastTimelineSidebarWidthPx();
+    return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
+  });
+  const { colorCoding, setColorCoding, fieldColorCoding, setFieldColorCoding, lastSelectedFieldRef, setLastSelectedFieldRef, colorSettingsOpen, setColorSettingsOpen, colorCodingDropdownOpen, setColorCodingDropdownOpen, colorCodingSearchDraft, setColorCodingSearchDraft } = useTimelineColorCoding();
+  const [labelSettingsOpen, setLabelSettingsOpen] = import_react18.default.useState(false);
+  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react18.default.useState("");
+  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react18.default.useState("");
+  const [timelineLabelFields, setTimelineLabelFields] = import_react18.default.useState(() => loadLastTimelineLabelFields() ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
+  const [timelineSidebarFields, setTimelineSidebarFields] = import_react18.default.useState(() => loadLastTimelineSidebarFields() ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
+  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react18.default.useState(() => loadLastTimelineSidebarRowJustify() ?? "flex-start");
+  const timelineMainGridRef = import_react18.default.useRef(null);
+  const colorCodingControlRef = import_react18.default.useRef(null);
+  const filterToggleControlRef = import_react18.default.useRef(null);
+  const filterPanelRef = import_react18.default.useRef(null);
+  const sortToggleControlRef = import_react18.default.useRef(null);
+  const sortPanelRef = import_react18.default.useRef(null);
+  const labelToggleControlRef = import_react18.default.useRef(null);
+  const labelPanelRef = import_react18.default.useRef(null);
+  const labelMenuSidebarOptionsRef = import_react18.default.useRef(null);
+  const labelMenuBarOptionsRef = import_react18.default.useRef(null);
+  const labelMenuScrollSyncSourceRef = import_react18.default.useRef(null);
+  const dependencyMarkerReactId = import_react18.default.useId();
+  const dependencyMarkerId = import_react18.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const dependencyAlertMarkerId = import_react18.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const dependencyMode = dependencyViewMode === "edit";
+  const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
+  const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
+  const timelineResizing = useTimelineResizing({
+    timelineMainGridRef,
+    detailsWidthPx,
+    setDetailsWidthPx,
+    sidebarWidthPx,
+    setSidebarWidthPx,
+    sidebarFieldsCount: timelineSidebarFields.length,
+    detailsPanelMinWidthPx: DETAILS_PANEL_MIN_WIDTH_PX,
+    detailsPanelContentMinWidthPx: DETAILS_PANEL_CONTENT_MIN_WIDTH_PX,
+    timelineSidebarMinWidthPx: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
+    timelineSidebarCollapsedWidthPx: TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX,
+    clamp: clamp4,
+    resolveTimelineDetailsMaxWidthPx,
+    resolveTimelineSidebarMaxWidthPx,
+    persistDetailsWidthPx: saveTimelineDetailsWidthPx,
+    persistSidebarWidthPx: saveTimelineSidebarWidthPx
+  });
+  const { isSidebarResizing, isDetailsResizing, detailsContentHidden, sidebarCollapsed, effectiveSidebarWidthPx, detailsResizeMovedRef, sidebarEffectiveWidthLiveRef, beginSidebarResize, beginDetailsResize, expandDetailsPanelFromHidden } = timelineResizing;
+  import_react18.default.useEffect(() => {
+    hydrateTimelineViewportPreference((viewport) => {
+      pendingViewportRestoreRef.current = viewport;
+      setDayWidthPx(clamp4(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
+      initialViewportAppliedRef.current = false;
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineColorCodingPreference((mode) => {
+      setColorCoding(mode);
+      const config = loadTimelineFieldColorCodingConfig();
+      setFieldColorCoding(config);
+      if (config.fieldRef) {
+        setLastSelectedFieldRef(config.fieldRef);
+      }
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineLabelFieldsPreference((fieldRefs) => {
+      setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
+      setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineSidebarRowJustifyPreference((justify) => {
+      setTimelineSidebarRowJustify(justify);
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineSidebarWidthPreference((widthPx) => {
+      setSidebarWidthPx((current) => {
+        const next = clamp4(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+    });
+  }, []);
+  import_react18.default.useEffect(() => {
+    hydrateTimelineDetailsWidthPreference((widthPx) => {
+      setDetailsWidthPx((current) => {
+        const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+        const next = clamp4(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+    });
+  }, []);
+  useTimelineOverlayDismiss({
+    colorCodingDropdownOpen,
+    openFilterDropdown,
+    sortSettingsOpen,
+    labelSettingsOpen,
+    colorCodingControlRef,
+    filterToggleControlRef,
+    filterPanelRef,
+    sortToggleControlRef,
+    sortPanelRef,
+    labelToggleControlRef,
+    labelPanelRef,
+    onCloseColorCodingDropdown: () => {
+      setColorCodingDropdownOpen(false);
+    },
+    onCloseFilterDropdown: () => {
+      setOpenFilterDropdown(null);
+    },
+    onCloseSortSettings: () => {
+      setSortSettingsOpen(false);
+    },
+    onCloseLabelSettings: () => {
+      setLabelSettingsOpen(false);
     }
-  }, [props.density]);
-  import_react5.default.useEffect(() => {
+  });
+  import_react18.default.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
+    setAppliedTimelineSortPreference(timelineSortPreference);
     setActiveScheduleDrag(null);
+    setActivePanDrag(null);
     setActiveUnschedulableDrag(null);
+    setActiveDependencyDrag(null);
     setUnscheduledDropPreview(null);
+    setSelectedDependency(null);
+    initialViewportAppliedRef.current = false;
   }, [props.timeline]);
-  import_react5.default.useEffect(() => {
-    saveLastDensity(density);
-  }, [density]);
-  import_react5.default.useEffect(() => {
-    const scrollElement = chartScrollRef.current;
-    if (!scrollElement) {
-      return;
+  import_react18.default.useEffect(() => {
+    if (dependencyViewMode === "none") {
+      setSelectedDependency(null);
     }
-    const syncViewport = () => {
-      setChartViewport({
-        scrollLeft: scrollElement.scrollLeft,
-        clientWidth: scrollElement.clientWidth,
-        clientHeight: scrollElement.clientHeight
-      });
-    };
-    syncViewport();
-    scrollElement.addEventListener("scroll", syncViewport, { passive: true });
-    window.addEventListener("resize", syncViewport);
-    return () => {
-      scrollElement.removeEventListener("scroll", syncViewport);
-      window.removeEventListener("resize", syncViewport);
-    };
-  }, [effectiveTimeline]);
-  import_react5.default.useEffect(() => {
+  }, [dependencyViewMode]);
+  import_react18.default.useEffect(() => {
+    syncTimelineFiltersToUrl(timelineFieldFilters);
+  }, [timelineFieldFilters]);
+  import_react18.default.useEffect(() => {
+    initialViewportAppliedRef.current = false;
+    const scrollElement = chartScrollRef.current;
+    if (scrollElement) {
+      scrollElement.scrollTop = 0;
+    }
+  }, [timelineFieldFilters]);
+  const availableFieldRefs = import_react18.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const availableTimelineLabelFieldOptions = import_react18.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredTimeline = import_react18.default.useMemo(() => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters), [effectiveTimeline, timelineFieldFilters]);
+  const activeTimelineFilters = import_react18.default.useMemo(() => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)), [timelineFieldFilters]);
+  const colorCodingOptions = import_react18.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredColorCodingOptions = import_react18.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
+  const selectedFieldRef = colorCoding === "field" ? fieldColorCoding.fieldRef ?? lastSelectedFieldRef : null;
+  const selectedFieldValueStats = import_react18.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
+  const selectedModeValueStats = import_react18.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
+  const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
+  const colorByWorkItemId = import_react18.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
+  const chartModel = import_react18.default.useMemo(() => buildVisualChartModel(filteredTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane), [
+    filteredTimeline,
+    dayWidthPx,
+    zoomLevel,
+    colorByWorkItemId,
+    chartViewportWidthPx,
+    timelineLabelFields,
+    includeUnscheduledDropLane
+  ]);
+  const filteredTimelineLabelFieldOptions = import_react18.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
+  const filteredTimelineSidebarFieldOptions = import_react18.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
+  import_react18.default.useEffect(() => {
     const selectableItems = [
-      ...effectiveTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
-      ...effectiveTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
+      ...filteredTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
+      ...filteredTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
     ];
     const reconciled = selectionStore.reconcile(selectableItems);
     setSelectedWorkItemId(reconciled);
-  }, [effectiveTimeline, selectionStore]);
-  const selectWorkItem = import_react5.default.useCallback((workItemId) => {
+  }, [filteredTimeline, selectionStore]);
+  const selectWorkItem = import_react18.default.useCallback((workItemId) => {
     selectionStore.select(workItemId);
     setSelectedWorkItemId(workItemId);
   }, [selectionStore]);
-  const adoptUnschedulableSchedule = import_react5.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
-    const sourceBar = effectiveTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
+  const adoptUnschedulableSchedule = import_react18.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
+    const sourceBar = filteredTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
     if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
       return;
     }
@@ -27157,59 +30352,185 @@ function TimelinePane(props) {
         endDate: sourceBar.schedule.endDate
       }
     }));
-  }, [effectiveTimeline, props]);
-  const zoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
-  const chartModel = import_react5.default.useMemo(() => buildVisualChartModel(effectiveTimeline, dayWidthPx, zoomLevel), [effectiveTimeline, dayWidthPx, zoomLevel]);
-  const stickyTodayMarker = import_react5.default.useMemo(() => {
-    if (chartModel.todayX === null || chartViewport.clientWidth <= 0) {
-      return null;
+  }, [filteredTimeline, props]);
+  const persistTimelineViewportSoon = import_react18.default.useCallback(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
     }
-    const absoluteTodayX = CHART_LEFT_GUTTER + chartModel.todayX;
-    const viewportTodayX = absoluteTodayX - chartViewport.scrollLeft;
-    const clampedViewportX = Math.max(0, Math.min(chartViewport.clientWidth, viewportTodayX));
-    return {
-      x: clampedViewportX,
-      isPinnedToEdge: viewportTodayX < 0 || viewportTodayX > chartViewport.clientWidth
+    if (viewportPersistDebounceRef.current !== null) {
+      window.clearTimeout(viewportPersistDebounceRef.current);
+    }
+    viewportPersistDebounceRef.current = window.setTimeout(() => {
+      viewportPersistDebounceRef.current = null;
+      saveTimelineViewportPreference({
+        dayWidthPx: liveDayWidthRef.current,
+        scrollLeftPx: scrollElement.scrollLeft,
+        scrollTopPx: scrollElement.scrollTop
+      });
+    }, VIEWPORT_PERSIST_DEBOUNCE_MS);
+  }, []);
+  import_react18.default.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
+      return;
+    }
+    const alignInitialViewport = () => {
+      const clientWidth = scrollElement.clientWidth;
+      const clientHeight = scrollElement.clientHeight;
+      if (clientWidth <= 0 || clientHeight <= 0) {
+        return;
+      }
+      const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - clientWidth);
+      const maxScrollTop = Math.max(0, scrollElement.scrollHeight - clientHeight);
+      const restoredViewport = pendingViewportRestoreRef.current;
+      if (restoredViewport) {
+        const nextScrollLeft2 = clamp4(restoredViewport.scrollLeftPx, 0, maxScrollLeft);
+        const nextScrollTop2 = clamp4(restoredViewport.scrollTopPx, 0, maxScrollTop);
+        scrollElement.scrollLeft = nextScrollLeft2;
+        scrollElement.scrollTop = nextScrollTop2;
+        pendingViewportRestoreRef.current = null;
+        initialViewportAppliedRef.current = true;
+        return;
+      }
+      const todayTargetX = clientWidth * TODAY_INITIAL_VIEWPORT_RATIO;
+      const absoluteTodayX = chartModel.todayX === null ? 0 : effectiveSidebarWidthPx + CHART_LEFT_GUTTER + chartModel.todayX;
+      const nextScrollLeft = clamp4(absoluteTodayX - todayTargetX, 0, maxScrollLeft);
+      const nextScrollTop = clamp4(CHART_TOP_PADDING, 0, maxScrollTop);
+      if (typeof scrollElement.scrollTo === "function") {
+        scrollElement.scrollTo({ left: nextScrollLeft, top: nextScrollTop, behavior: "auto" });
+      } else {
+        scrollElement.scrollLeft = nextScrollLeft;
+        scrollElement.scrollTop = nextScrollTop;
+      }
+      initialViewportAppliedRef.current = true;
     };
-  }, [chartModel.todayX, chartViewport.clientWidth, chartViewport.scrollLeft]);
-  import_react5.default.useEffect(() => {
+    const frame = window.requestAnimationFrame(alignInitialViewport);
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [chartModel.bars.length, chartModel.todayX, chartModel.width, effectiveSidebarWidthPx]);
+  import_react18.default.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement || chartModel.bars.length === 0) {
+      setChartViewportWidthPx(0);
+      setChartViewportHeightPx(0);
+      return;
+    }
+    const updateViewportSize = () => {
+      setChartViewportWidthPx(scrollElement.clientWidth);
+      setChartViewportHeightPx(scrollElement.clientHeight);
+    };
+    updateViewportSize();
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(() => {
+        updateViewportSize();
+      });
+      resizeObserver.observe(scrollElement);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+    window.addEventListener("resize", updateViewportSize);
+    return () => {
+      window.removeEventListener("resize", updateViewportSize);
+    };
+  }, [chartModel.bars.length]);
+  import_react18.default.useEffect(() => {
+    liveDayWidthRef.current = dayWidthPx;
+    persistTimelineViewportSoon();
+  }, [dayWidthPx, persistTimelineViewportSoon]);
+  import_react18.default.useEffect(() => {
+    return () => {
+      if (viewportPersistDebounceRef.current !== null) {
+        window.clearTimeout(viewportPersistDebounceRef.current);
+      }
+    };
+  }, []);
+  import_react18.default.useEffect(() => {
+    return () => {
+      if (wheelZoomFrameRef.current !== null) {
+        window.cancelAnimationFrame(wheelZoomFrameRef.current);
+      }
+    };
+  }, []);
+  import_react18.default.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
       return;
     }
-    const absoluteTargetX = CHART_LEFT_GUTTER + anchor.dayOffset * chartModel.dayWidthPx;
+    const absoluteTargetX = effectiveSidebarWidthPx + CHART_LEFT_GUTTER + anchor.dayOffset * chartModel.dayWidthPx;
     const desiredScrollLeft = absoluteTargetX - anchor.pointerOffsetX;
     scrollElement.scrollLeft = Math.max(0, desiredScrollLeft);
     zoomAnchorRef.current = null;
-  }, [chartModel.dayWidthPx]);
-  const handleChartWheel = import_react5.default.useCallback((event) => {
+    persistTimelineViewportSoon();
+  }, [chartModel.dayWidthPx, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
+  import_react18.default.useEffect(() => {
+    const fitRange = pendingFitRangeRef.current;
+    const scrollElement = chartScrollRef.current;
+    if (!fitRange || !scrollElement) {
+      return;
+    }
+    const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - scrollElement.clientWidth);
+    const rangeStartWithPadding = addDays(fitRange.start, -FIT_TO_VIEW_SIDE_PADDING_DAYS);
+    const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
+    const desiredStartX = effectiveSidebarWidthPx + CHART_LEFT_GUTTER + rangeStartOffset * chartModel.dayWidthPx;
+    scrollElement.scrollLeft = clamp4(desiredStartX - FIT_TO_VIEW_INSET_PX, 0, maxScrollLeft);
+    pendingFitRangeRef.current = null;
+    persistTimelineViewportSoon();
+  }, [chartModel.dayWidthPx, chartModel.domainStart, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
+  useTimelineKeyboardShortcuts({
+    isRefreshing: props.isRefreshing,
+    onRemoveDependency: props.onRemoveDependency,
+    onRetryRefresh: props.onRetryRefresh,
+    selectedDependency,
+    setSelectedDependency,
+    setSpacePanPressed,
+    setAdoptScheduleError,
+    spacePanPressedRef
+  });
+  const handleChartWheel = import_react18.default.useCallback((event) => {
     if (!event.ctrlKey && !event.metaKey) {
       return;
     }
-    const svg = chartSvgRef.current;
+    const svg2 = chartSvgRef.current;
     const scrollElement = chartScrollRef.current;
-    if (!svg || !scrollElement) {
+    if (!svg2 || !scrollElement) {
       return;
     }
     event.preventDefault();
-    const rect = svg.getBoundingClientRect();
+    const rect = svg2.getBoundingClientRect();
     if (rect.width <= 0) {
       return;
     }
-    const horizontalScale = svg.viewBox.baseVal.width / rect.width;
+    const horizontalScale = svg2.viewBox.baseVal.width / rect.width;
     const svgX = (event.clientX - rect.left) * horizontalScale;
     const dayOffset = (svgX - CHART_LEFT_GUTTER) / chartModel.dayWidthPx;
     const pointerOffsetX = event.clientX - scrollElement.getBoundingClientRect().left;
-    const zoomMultiplier = Math.exp(-event.deltaY * 25e-4);
-    const nextDayWidth = clamp(dayWidthPx * zoomMultiplier, DAY_WIDTH_MONTH_PX, DAY_WIDTH_WEEK_PX);
+    const deltaPixels = normalizeWheelDelta(event);
+    const zoomMultiplier = Math.exp(-deltaPixels * ZOOM_WHEEL_SENSITIVITY);
+    const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
+    const nextDayWidth = quantizeDayWidth(clamp4(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
     if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
       return;
     }
     zoomAnchorRef.current = { dayOffset, pointerOffsetX };
-    setDayWidthPx(nextDayWidth);
+    pendingWheelDayWidthRef.current = nextDayWidth;
+    if (wheelZoomFrameRef.current !== null) {
+      return;
+    }
+    wheelZoomFrameRef.current = window.requestAnimationFrame(() => {
+      wheelZoomFrameRef.current = null;
+      const pendingDayWidth = pendingWheelDayWidthRef.current;
+      pendingWheelDayWidthRef.current = null;
+      if (pendingDayWidth === null) {
+        return;
+      }
+      setDayWidthPx((current) => Math.abs(current - pendingDayWidth) < 0.01 ? current : pendingDayWidth);
+    });
   }, [chartModel.dayWidthPx, dayWidthPx]);
-  import_react5.default.useEffect(() => {
+  import_react18.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -27222,16 +30543,172 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("wheel", onWheel);
     };
   }, [handleChartWheel]);
-  const geometryByWorkItemId = import_react5.default.useMemo(() => {
+  import_react18.default.useEffect(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+    const onScroll = () => {
+      persistTimelineViewportSoon();
+    };
+    scrollElement.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      scrollElement.removeEventListener("scroll", onScroll);
+    };
+  }, [persistTimelineViewportSoon]);
+  const zoomToFitTimeline = import_react18.default.useCallback(() => {
+    const scrollElement = chartScrollRef.current;
+    const visibleTimelineRange = resolveTimelineVisibleRange(filteredTimeline);
+    if (!scrollElement || !visibleTimelineRange) {
+      return;
+    }
+    const availableWidth = scrollElement.clientWidth - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX - FIT_TO_VIEW_INSET_PX * 2;
+    if (availableWidth <= 0) {
+      return;
+    }
+    const spanDays = Math.max(1, dayDiffInclusive(visibleTimelineRange.start, visibleTimelineRange.end));
+    const fittedDayWidthPx = clamp4(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+    pendingFitRangeRef.current = visibleTimelineRange;
+    setDayWidthPx(fittedDayWidthPx);
+  }, [filteredTimeline]);
+  const beginPanDrag = import_react18.default.useCallback((event) => {
+    if (!spacePanPressedRef.current || event.button !== 0) {
+      return;
+    }
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+    event.preventDefault();
+    if ("setPointerCapture" in event.currentTarget) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    setActivePanDrag({
+      pointerId: event.pointerId,
+      originClientX: event.clientX,
+      originClientY: event.clientY,
+      originScrollLeft: scrollElement.scrollLeft,
+      originScrollTop: scrollElement.scrollTop
+    });
+  }, []);
+  const updatePanDrag = import_react18.default.useCallback((event) => {
+    setActivePanDrag((current) => {
+      if (!current || current.pointerId !== event.pointerId) {
+        return current;
+      }
+      const scrollElement = chartScrollRef.current;
+      if (!scrollElement) {
+        return current;
+      }
+      const deltaX = event.clientX - current.originClientX;
+      const deltaY = event.clientY - current.originClientY;
+      scrollElement.scrollLeft = current.originScrollLeft - deltaX;
+      scrollElement.scrollTop = current.originScrollTop - deltaY;
+      return current;
+    });
+  }, []);
+  const finishPanDrag = import_react18.default.useCallback((event) => {
+    const pointerId = event.pointerId;
+    setActivePanDrag((current) => {
+      if (!current || current.pointerId !== pointerId) {
+        return current;
+      }
+      persistTimelineViewportSoon();
+      return null;
+    });
+  }, [persistTimelineViewportSoon]);
+  const geometryByWorkItemId = import_react18.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar, index) => {
-      const y = CHART_TOP_PADDING + index * CHART_ROW_HEIGHT;
+      const y = resolveTimelineBarTopY(index);
       const x = CHART_LEFT_GUTTER + bar.x;
       byId.set(bar.workItemId, { x, y, width: bar.width, midY: y + BAR_HEIGHT / 2 });
     });
     return byId;
   }, [chartModel.bars]);
-  const updateEditedSchedule = import_react5.default.useCallback((workItemId, startDate, endDate) => {
+  const chartBarByWorkItemId = import_react18.default.useMemo(() => {
+    const byId = /* @__PURE__ */ new Map();
+    chartModel.bars.forEach((bar) => {
+      byId.set(bar.workItemId, bar);
+    });
+    return byId;
+  }, [chartModel.bars]);
+  const visibleDependencies = import_react18.default.useMemo(() => {
+    if (!filteredTimeline) {
+      return [];
+    }
+    if (dependencyViewMode !== "violations") {
+      return filteredTimeline.dependencies;
+    }
+    return filteredTimeline.dependencies.filter((dependency) => {
+      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+      return isDependencyViolated(predecessorBar, successorBar);
+    });
+  }, [chartBarByWorkItemId, dependencyViewMode, filteredTimeline]);
+  const dependencyConnectors = import_react18.default.useMemo(() => {
+    if (!dependencyVisible || !filteredTimeline) {
+      return [];
+    }
+    const uniqueDependencies = deduplicateTimelineDependencies(visibleDependencies);
+    return uniqueDependencies.flatMap((dependency, index) => {
+      const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
+      const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
+      if (!from || !to) {
+        return [];
+      }
+      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+      const isViolated = isDependencyViolated(predecessorBar, successorBar);
+      const predecessorToSuccessorGapDays = predecessorBar !== void 0 && successorBar !== void 0 ? dayDiff(predecessorBar.end, successorBar.start) : null;
+      const forceNearGapDetour = predecessorToSuccessorGapDays !== null && predecessorToSuccessorGapDays >= 1 && predecessorToSuccessorGapDays <= DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR;
+      return [
+        {
+          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${index}`,
+          path: buildDependencyConnectorPath(from, to, index, { forceNearGapDetour }),
+          markerEnd: `url(#${isViolated ? dependencyAlertMarkerId : dependencyMarkerId})`,
+          predecessorWorkItemId: dependency.predecessorWorkItemId,
+          successorWorkItemId: dependency.successorWorkItemId,
+          dependencyType: dependency.dependencyType,
+          isViolated
+        }
+      ];
+    });
+  }, [
+    chartBarByWorkItemId,
+    dependencyAlertMarkerId,
+    dependencyMarkerId,
+    dependencyVisible,
+    visibleDependencies,
+    geometryByWorkItemId
+  ]);
+  import_react18.default.useEffect(() => {
+    if (!selectedDependency) {
+      return;
+    }
+    const stillVisible = dependencyConnectors.some((dependency) => dependency.predecessorWorkItemId === selectedDependency.predecessorWorkItemId && dependency.successorWorkItemId === selectedDependency.successorWorkItemId && dependency.dependencyType === selectedDependency.dependencyType);
+    if (!stillVisible) {
+      setSelectedDependency(null);
+    }
+  }, [dependencyConnectors, selectedDependency]);
+  const activeDependencyDragPreview = import_react18.default.useMemo(() => {
+    if (!activeDependencyDrag) {
+      return null;
+    }
+    const from = geometryByWorkItemId.get(activeDependencyDrag.sourceWorkItemId);
+    if (!from) {
+      return null;
+    }
+    const hoveredGeometry = activeDependencyDrag.hoveredTargetWorkItemId === null ? null : geometryByWorkItemId.get(activeDependencyDrag.hoveredTargetWorkItemId) ?? null;
+    const targetX = hoveredGeometry ? hoveredGeometry.x : activeDependencyDrag.pointerX;
+    const targetY = hoveredGeometry ? hoveredGeometry.midY : activeDependencyDrag.pointerY;
+    const hoveredTargetIsValid = hoveredGeometry !== null && activeDependencyDrag.hoveredTargetWorkItemId !== null && activeDependencyDrag.hoveredTargetWorkItemId !== activeDependencyDrag.sourceWorkItemId;
+    return {
+      path: buildDependencyConnectorToPointPath(from, targetX, targetY, activeDependencyDrag.sourceWorkItemId),
+      hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
+    };
+  }, [activeDependencyDrag, geometryByWorkItemId]);
+  const updateEditedSchedule = import_react18.default.useCallback((workItemId, startDate, endDate) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
       [workItemId]: {
@@ -27240,7 +30717,7 @@ function TimelinePane(props) {
       }
     }));
   }, []);
-  const beginBarDrag = import_react5.default.useCallback((input) => {
+  const beginBarDrag = import_react18.default.useCallback((input) => {
     if (!canEditSchedule) {
       return;
     }
@@ -27264,7 +30741,43 @@ function TimelinePane(props) {
       lastDayDelta: 0
     });
   }, [canEditSchedule, selectWorkItem]);
-  const handleChartPointerMove = import_react5.default.useCallback((event) => {
+  const beginDependencyDrag = import_react18.default.useCallback((input) => {
+    if (!dependencyMode || input.event.button !== 0) {
+      return;
+    }
+    const sourceGeometry = geometryByWorkItemId.get(input.sourceWorkItemId);
+    if (!sourceGeometry) {
+      return;
+    }
+    const svgPoint = clientPointToSvg(input.event.clientX, input.event.clientY, chartSvgRef.current);
+    input.event.preventDefault();
+    input.event.stopPropagation();
+    if ("setPointerCapture" in input.event.currentTarget) {
+      input.event.currentTarget.setPointerCapture(input.event.pointerId);
+    }
+    setAdoptScheduleError(null);
+    selectWorkItem(input.sourceWorkItemId);
+    setActiveDependencyDrag({
+      pointerId: input.event.pointerId,
+      sourceWorkItemId: input.sourceWorkItemId,
+      pointerX: svgPoint.x,
+      pointerY: svgPoint.y,
+      hoveredTargetWorkItemId: null
+    });
+  }, [dependencyMode, geometryByWorkItemId, selectWorkItem]);
+  const handleChartPointerMove = import_react18.default.useCallback((event) => {
+    const activeDependency = activeDependencyDrag;
+    if (activeDependency && event.pointerId === activeDependency.pointerId) {
+      const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
+      const hoveredTargetWorkItemId = resolveHoveredDependencyTargetWorkItemId(geometryByWorkItemId, svgPoint.x, svgPoint.y, activeDependency.sourceWorkItemId);
+      setActiveDependencyDrag((current) => current ? {
+        ...current,
+        pointerX: svgPoint.x,
+        pointerY: svgPoint.y,
+        hoveredTargetWorkItemId
+      } : current);
+      return;
+    }
     const active = activeScheduleDrag;
     if (!active || event.pointerId !== active.pointerId) {
       return;
@@ -27276,8 +30789,8 @@ function TimelinePane(props) {
     const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
     setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
     updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
-  }, [activeScheduleDrag, chartModel.dayWidthPx, updateEditedSchedule]);
-  const persistDraggedSchedule = import_react5.default.useCallback(async (drag) => {
+  }, [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateEditedSchedule]);
+  const persistDraggedSchedule = import_react18.default.useCallback(async (drag) => {
     const override = editedBarSchedulesByWorkItemId[drag.workItemId];
     if (!override || !props.onUpdateWorkItemSchedule) {
       return;
@@ -27309,15 +30822,30 @@ function TimelinePane(props) {
       });
     }
   }, [editedBarSchedulesByWorkItemId, props, props.timeline]);
-  const finishActiveDrag = import_react5.default.useCallback((event) => {
+  const finishActiveDrag = import_react18.default.useCallback((event) => {
+    const dependencyDrag = activeDependencyDrag;
+    if (dependencyDrag && event.pointerId === dependencyDrag.pointerId) {
+      setActiveDependencyDrag(null);
+      const successorWorkItemId = dependencyDrag.hoveredTargetWorkItemId;
+      if (successorWorkItemId !== null && successorWorkItemId !== dependencyDrag.sourceWorkItemId && props.onCreateDependency) {
+        void props.onCreateDependency({
+          predecessorWorkItemId: dependencyDrag.sourceWorkItemId,
+          successorWorkItemId
+        }).catch((error) => {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          setAdoptScheduleError(message);
+        });
+      }
+      return;
+    }
     const active = activeScheduleDrag;
     if (!active || event.pointerId !== active.pointerId) {
       return;
     }
     setActiveScheduleDrag(null);
     void persistDraggedSchedule(active);
-  }, [activeScheduleDrag, persistDraggedSchedule]);
-  const persistWorkItemSchedule = import_react5.default.useCallback(async (input) => {
+  }, [activeDependencyDrag, activeScheduleDrag, persistDraggedSchedule, props]);
+  const persistWorkItemSchedule = import_react18.default.useCallback(async (input) => {
     if (props.onUpdateWorkItemSchedule) {
       await props.onUpdateWorkItemSchedule(input);
       return;
@@ -27326,7 +30854,7 @@ function TimelinePane(props) {
       await props.onAdoptUnschedulableSchedule(input);
     }
   }, [props]);
-  const scheduleUnscheduledFromDrop = import_react5.default.useCallback(async (input) => {
+  const scheduleUnscheduledFromDrop = import_react18.default.useCallback(async (input) => {
     const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
     const startDate = toIsoDateUtc(range.startDate);
     const endDate = toIsoDateUtc(range.endDate);
@@ -27341,16 +30869,19 @@ function TimelinePane(props) {
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react5.default.useCallback((event, workItemId, fixedEndDate) => {
+  const startUnscheduledDrag = import_react18.default.useCallback((event, workItemId, fixedEndDate) => {
+    if (dependencyMode) {
+      return;
+    }
     event.dataTransfer.setData("text/plain", String(workItemId));
     event.dataTransfer.effectAllowed = "move";
     setActiveUnschedulableDrag({ workItemId, fixedEndDate });
-  }, []);
-  const clearUnscheduledDrag = import_react5.default.useCallback(() => {
+  }, [dependencyMode]);
+  const clearUnscheduledDrag = import_react18.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, []);
-  const handleChartDragOver = import_react5.default.useCallback((event) => {
+  const handleChartDragOver = import_react18.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -27359,7 +30890,7 @@ function TimelinePane(props) {
     const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
     setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
-  const handleChartDrop = import_react5.default.useCallback((event) => {
+  const handleChartDrop = import_react18.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -27378,149 +30909,562 @@ function TimelinePane(props) {
       setAdoptScheduleError(message);
     });
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]);
+  const updateFieldColorCoding = import_react18.default.useCallback((next) => {
+    setFieldColorCoding(next);
+    saveTimelineFieldColorCodingConfig(next);
+  }, []);
+  const selectFieldForColorCoding = import_react18.default.useCallback((fieldRef) => {
+    const normalizedFieldRef = fieldRef && fieldRef.trim().length > 0 ? fieldRef.trim() : null;
+    if (normalizedFieldRef) {
+      setLastSelectedFieldRef(normalizedFieldRef);
+    }
+    updateFieldColorCoding({
+      fieldRef: normalizedFieldRef,
+      valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {}
+    });
+  }, [fieldColorCoding.valueColors, updateFieldColorCoding]);
+  const updateFieldValueColor = import_react18.default.useCallback((valueKey, color) => {
+    const nextValueColors = { ...fieldColorCoding.valueColors };
+    const scopedKey = toScopedFieldValueColorKey(fieldColorCoding.fieldRef, valueKey);
+    if (scopedKey) {
+      if (!color) {
+        delete nextValueColors[scopedKey];
+      } else {
+        nextValueColors[scopedKey] = color;
+      }
+    }
+    if (!color) {
+      delete nextValueColors[valueKey];
+    } else {
+      nextValueColors[valueKey] = color;
+    }
+    updateFieldColorCoding({
+      fieldRef: fieldColorCoding.fieldRef,
+      valueColors: nextValueColors
+    });
+  }, [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]);
+  const selectColorCodingOption = import_react18.default.useCallback((option) => {
+    setColorCoding(option.mode);
+    saveLastTimelineColorCoding(option.mode);
+    if (option.mode === "field") {
+      selectFieldForColorCoding(option.fieldRef);
+    } else {
+      updateFieldColorCoding({
+        fieldRef: null,
+        valueColors: fieldColorCoding.valueColors
+      });
+    }
+    setColorCodingDropdownOpen(false);
+    setColorCodingSearchDraft("");
+  }, [fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]);
+  const applyFirstFilteredColorCodingOption = import_react18.default.useCallback(() => {
+    const preferredOption = pickPreferredColorCodingOption(filteredColorCodingOptions, colorCodingSearchDraft);
+    if (!preferredOption) {
+      return false;
+    }
+    selectColorCodingOption(preferredOption);
+    return true;
+  }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
+  const applyFieldFilterSelection = import_react18.default.useCallback((slotId, fieldRef) => {
+    const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
+    setTimelineFieldFilters((current) => current.map((filter) => filter.slotId === slotId ? {
+      ...filter,
+      fieldRef: normalizedFieldRef,
+      selectedValueKeys: normalizedFieldRef && filter.fieldRef === normalizedFieldRef ? filter.selectedValueKeys : []
+    } : filter));
+  }, []);
+  const toggleTimelineFieldValueSelection = import_react18.default.useCallback((slotId, valueKey) => {
+    setTimelineFieldFilters((current) => current.map((filter) => {
+      if (filter.slotId !== slotId) {
+        return filter;
+      }
+      const exists = filter.selectedValueKeys.includes(valueKey);
+      if (exists) {
+        return {
+          ...filter,
+          selectedValueKeys: filter.selectedValueKeys.filter((entry) => entry !== valueKey)
+        };
+      }
+      return {
+        ...filter,
+        selectedValueKeys: [...filter.selectedValueKeys, valueKey]
+      };
+    }));
+  }, []);
+  const addTimelineFilterSlot = import_react18.default.useCallback(() => {
+    setTimelineFieldFilters((current) => {
+      if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
+        return current;
+      }
+      return [...current, createTimelineFieldFilter(nextFilterSlotId)];
+    });
+    setNextFilterSlotId((current) => current + 1);
+  }, [nextFilterSlotId]);
+  const removeTimelineFilterSlot = import_react18.default.useCallback((slotId) => {
+    setTimelineFieldFilters((current) => {
+      if (current.length <= 1) {
+        return current.map((filter) => filter.slotId === slotId ? { ...filter, fieldRef: null, selectedValueKeys: [] } : filter);
+      }
+      return current.filter((filter) => filter.slotId !== slotId);
+    });
+    if (openFilterDropdown?.slotId === slotId) {
+      setOpenFilterDropdown(null);
+    }
+  }, [openFilterDropdown?.slotId]);
+  const toggleTimelineLabelField = import_react18.default.useCallback((fieldRef) => {
+    const normalized = fieldRef.trim();
+    if (!normalized) {
+      return;
+    }
+    setTimelineLabelFields((current) => {
+      const exists = current.includes(normalized);
+      const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
+      const sanitized = sanitizeTimelineFieldRefList(next);
+      saveTimelineLabelFields(sanitized);
+      return sanitized;
+    });
+  }, []);
+  const clearTimelineLabelFields = import_react18.default.useCallback(() => {
+    setTimelineLabelFields(() => {
+      saveTimelineLabelFields([]);
+      return [];
+    });
+  }, []);
+  const toggleTimelineSidebarField = import_react18.default.useCallback((fieldRef) => {
+    const normalized = fieldRef.trim();
+    if (!normalized) {
+      return;
+    }
+    setTimelineSidebarFields((current) => {
+      const exists = current.includes(normalized);
+      const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
+      const sanitized = sanitizeTimelineFieldRefList(next);
+      saveTimelineSidebarFields(sanitized);
+      return sanitized;
+    });
+  }, []);
+  const clearTimelineSidebarFields = import_react18.default.useCallback(() => {
+    setTimelineSidebarFields(() => {
+      saveTimelineSidebarFields([]);
+      return [];
+    });
+  }, []);
+  const openTimelineLabelSettingsFromSidebar = import_react18.default.useCallback(() => {
+    setLabelSettingsOpen(true);
+    setLabelFieldSearchDraft("");
+    setSidebarFieldSearchDraft("");
+  }, []);
+  const syncLabelMenuScrollFromSidebar = import_react18.default.useCallback(() => {
+    const sidebar = labelMenuSidebarOptionsRef.current;
+    const bar = labelMenuBarOptionsRef.current;
+    if (!sidebar || !bar) {
+      return;
+    }
+    if (labelMenuScrollSyncSourceRef.current === "bar") {
+      labelMenuScrollSyncSourceRef.current = null;
+      return;
+    }
+    if (Math.abs(bar.scrollTop - sidebar.scrollTop) <= 1) {
+      return;
+    }
+    labelMenuScrollSyncSourceRef.current = "sidebar";
+    bar.scrollTop = sidebar.scrollTop;
+  }, []);
+  const syncLabelMenuScrollFromBar = import_react18.default.useCallback(() => {
+    const sidebar = labelMenuSidebarOptionsRef.current;
+    const bar = labelMenuBarOptionsRef.current;
+    if (!sidebar || !bar) {
+      return;
+    }
+    if (labelMenuScrollSyncSourceRef.current === "sidebar") {
+      labelMenuScrollSyncSourceRef.current = null;
+      return;
+    }
+    if (Math.abs(sidebar.scrollTop - bar.scrollTop) <= 1) {
+      return;
+    }
+    labelMenuScrollSyncSourceRef.current = "bar";
+    sidebar.scrollTop = bar.scrollTop;
+  }, []);
+  const openFilterSlot = import_react18.default.useMemo(() => openFilterDropdown === null ? null : timelineFieldFilters.find((filter) => filter.slotId === openFilterDropdown.slotId) ?? null, [openFilterDropdown, timelineFieldFilters]);
+  const openFilterFieldOptions = import_react18.default.useMemo(() => {
+    if (!openFilterDropdown || openFilterDropdown.kind !== "field") {
+      return [];
+    }
+    return filterFieldRefsBySearch(availableFieldRefs, filterFieldSearchDraft);
+  }, [availableFieldRefs, filterFieldSearchDraft, openFilterDropdown]);
+  const openFilterValueOptions = import_react18.default.useMemo(() => {
+    if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
+      return [];
+    }
+    return filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef), filterValueSearchDraft);
+  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
   const detailProps = {
-    timeline: effectiveTimeline,
+    timeline: filteredTimeline,
     selectedWorkItemId,
-    collapsed: detailsCollapsed,
-    onToggleCollapsed: () => {
-      setDetailsCollapsed((current) => !current);
-    },
+    contentHidden: detailsContentHidden,
     organization: props.organization,
     project: props.project,
-    onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails
+    onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
   };
-  const selectedTitle = resolveSelectedTitle(effectiveTimeline, selectedWorkItemId);
+  const timelineMainGridStyle = {
+    ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
+    ["--timeline-details-width-px"]: `${Math.round(detailsWidthPx)}px`
+  };
+  const timelineMainSplitterStyle = chartViewportHeightPx > 0 ? {
+    height: `${chartViewportHeightPx}px`
+  } : void 0;
   const barCount = chartModel.bars.length;
-  const unscheduledCount = effectiveTimeline?.unschedulable.length ?? 0;
-  return import_react5.default.createElement("section", {
+  const unscheduledCount = filteredTimeline?.unschedulable.length ?? 0;
+  const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
+  const isFieldColorCodingMode = colorCoding === "field";
+  const isReadOnlyStatusColorCodingMode = colorCoding === "status";
+  return import_react18.default.createElement("section", {
     "aria-label": "timeline-pane",
     className: "timeline-pane"
-  }, import_react5.default.createElement("div", {
-    className: "timeline-pane-actions"
-  }, import_react5.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react5.default.createElement("button", {
-    type: "button",
-    className: "timeline-action-button timeline-action-button-primary",
-    onClick: () => {
+  }, import_react18.default.createElement(TimelinePaneActionsToolbar, {
+    isRefreshing: props.isRefreshing === true,
+    onRetryRefresh: () => {
       props.onRetryRefresh?.();
-    }
-  }, "Refresh"), import_react5.default.createElement("div", {
-    className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-density",
-    role: "group",
-    "aria-label": "Timeline density"
-  }, import_react5.default.createElement("button", {
-    type: "button",
-    className: density === "comfortable" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-    "aria-pressed": density === "comfortable",
-    "aria-label": "Density comfortable",
-    onClick: () => {
-      setDensity("comfortable");
-      props.onDensityChange?.("comfortable");
-    }
-  }, "Comfortable"), import_react5.default.createElement("button", {
-    type: "button",
-    className: density === "compact" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-    "aria-pressed": density === "compact",
-    "aria-label": "Density compact",
-    onClick: () => {
-      setDensity("compact");
-      props.onDensityChange?.("compact");
-    }
-  }, "Compact")), import_react5.default.createElement("div", {
-    className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom",
-    role: "group",
-    "aria-label": "Timeline zoom"
-  }, import_react5.default.createElement("button", {
-    type: "button",
-    className: zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-    "aria-pressed": zoomLevel === "week",
-    "aria-label": "Zoom in to week view",
-    onClick: () => {
+    },
+    zoomLevel,
+    onSelectWeekZoom: () => {
       setDayWidthPx(DAY_WIDTH_WEEK_PX);
-    }
-  }, "Week"), import_react5.default.createElement("button", {
-    type: "button",
-    className: zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-    "aria-pressed": zoomLevel === "month",
-    "aria-label": "Zoom out to month view",
-    onClick: () => {
+    },
+    onSelectMonthZoom: () => {
       setDayWidthPx(DAY_WIDTH_MONTH_PX);
-    }
-  }, "Month"))), selectedTitle ? import_react5.default.createElement("div", {
-    "aria-label": "selected-timeline-item",
-    className: "timeline-selected-item timeline-selected-item-pill"
-  }, `Selected timeline item: ${selectedTitle}`) : null), adoptScheduleError ? import_react5.default.createElement("div", {
+    },
+    dependencyViewMode,
+    dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
+    onChangeDependencyMode: (mode) => {
+      setDependencyViewMode(mode);
+      setActiveDependencyDrag(null);
+      setActiveScheduleDrag(null);
+      setActiveUnschedulableDrag(null);
+      setUnscheduledDropPreview(null);
+      setSelectedDependency(null);
+    },
+    colorCodingControlRef,
+    selectedColorCodingLabel,
+    colorCodingDropdownOpen,
+    colorCodingSearchDraft,
+    filteredColorCodingOptions,
+    colorCoding,
+    fieldColorCoding,
+    onToggleColorCodingDropdown: () => {
+      setColorCodingDropdownOpen((current) => !current);
+      setColorCodingSearchDraft("");
+    },
+    onChangeColorCodingSearchDraft: (value) => {
+      setColorCodingSearchDraft(value);
+    },
+    onApplyFirstFilteredColorCodingOption: applyFirstFilteredColorCodingOption,
+    onSelectColorCodingOption: selectColorCodingOption,
+    onOpenColorSettings: () => {
+      if (colorCodingDropdownOpen && colorCodingSearchDraft.trim().length > 0) {
+        applyFirstFilteredColorCodingOption();
+      }
+      setColorSettingsOpen(true);
+    },
+    filterToggleControlRef,
+    timelineFiltersOpen,
+    activeTimelineFiltersCount: activeTimelineFilters.length,
+    onToggleTimelineFilters: () => {
+      setTimelineFiltersOpen((current) => {
+        if (current) {
+          setOpenFilterDropdown(null);
+        }
+        return !current;
+      });
+    },
+    sortControl: import_react18.default.createElement(TimelineSortControl, {
+      availableFieldRefs,
+      controlRef: sortToggleControlRef,
+      panelRef: sortPanelRef,
+      sortSettingsOpen,
+      timelineSortPreference,
+      onToggleSortSettings: () => {
+        setSortSettingsOpen((current) => !current);
+      },
+      onSelectPrimarySortField: selectPrimarySortField,
+      onSelectSecondarySortField: selectSecondarySortField
+    }),
+    labelToggleControlRef,
+    labelSettingsOpen,
+    timelineLabelFields,
+    timelineSidebarFields,
+    labelPanelRef,
+    labelMenuSidebarOptionsRef,
+    labelMenuBarOptionsRef,
+    sidebarFieldSearchDraft,
+    labelFieldSearchDraft,
+    filteredTimelineSidebarFieldOptions,
+    filteredTimelineLabelFieldOptions,
+    onToggleLabelSettings: () => {
+      setLabelSettingsOpen((current) => !current);
+      setLabelFieldSearchDraft("");
+      setSidebarFieldSearchDraft("");
+    },
+    onChangeSidebarFieldSearchDraft: (value) => {
+      setSidebarFieldSearchDraft(value);
+    },
+    onChangeLabelFieldSearchDraft: (value) => {
+      setLabelFieldSearchDraft(value);
+    },
+    onClearTimelineSidebarFields: clearTimelineSidebarFields,
+    onClearTimelineLabelFields: clearTimelineLabelFields,
+    onSyncLabelMenuScrollFromSidebar: syncLabelMenuScrollFromSidebar,
+    onSyncLabelMenuScrollFromBar: syncLabelMenuScrollFromBar,
+    onToggleTimelineSidebarField: toggleTimelineSidebarField,
+    onToggleTimelineLabelField: toggleTimelineLabelField,
+    workItemSyncState: props.workItemSyncState ?? "up_to_date",
+    workItemSyncError: props.workItemSyncError ?? null
+  }), import_react18.default.createElement(TimelineFilterPanel, {
+    open: timelineFiltersOpen,
+    panelRef: filterPanelRef,
+    availableFieldRefs,
+    timelineFieldFilters,
+    openFilterDropdown,
+    openFilterFieldOptions,
+    openFilterValueOptions,
+    effectiveTimelineValueOptionsForFilter: (fieldRef) => filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, fieldRef), ""),
+    maxFilterSlots: MAX_TIMELINE_FILTER_SLOTS,
+    getFieldDisplayName: getFieldDisplayName2,
+    onSetOpenFilterDropdown: setOpenFilterDropdown,
+    onSetFilterFieldSearchDraft: setFilterFieldSearchDraft,
+    onSetFilterValueSearchDraft: setFilterValueSearchDraft,
+    filterFieldSearchDraft,
+    filterValueSearchDraft,
+    onApplyFieldFilterSelection: applyFieldFilterSelection,
+    onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
+    onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
+    onAddTimelineFilterSlot: addTimelineFilterSlot
+  }), adoptScheduleError ? import_react18.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
-  }, `Save failed: ${adoptScheduleError}`) : null, import_react5.default.createElement("div", { className: detailsCollapsed ? "timeline-main-grid timeline-main-grid-details-collapsed" : "timeline-main-grid" }, import_react5.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react5.default.createElement("div", { className: "timeline-empty-state" }, import_react5.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react5.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react5.default.createElement("div", {
-    className: activeScheduleDrag ? "timeline-chart-scroll timeline-chart-scroll-dragging" : "timeline-chart-scroll",
-    ref: chartScrollRef
-  }, import_react5.default.createElement("svg", {
+  }, `Save failed: ${adoptScheduleError}`) : null, import_react18.default.createElement(TimelineColorCodingPanel, {
+    open: colorSettingsOpen,
+    colorCoding,
+    selectedFieldRef,
+    fieldColorCoding,
+    selectedFieldValueStats,
+    selectedModeValueStats,
+    isFieldColorCodingMode,
+    isReadOnlyStatusColorCodingMode,
+    onClose: () => {
+      setColorSettingsOpen(false);
+    },
+    onUpdateFieldValueColor: updateFieldValueColor,
+    resolveSelectedColorCodingLabel,
+    toScopedFieldValueColorKey
+  }), import_react18.default.createElement("div", {
+    className: "timeline-main-grid",
+    ref: timelineMainGridRef,
+    style: timelineMainGridStyle
+  }, import_react18.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react18.default.createElement("div", { className: "timeline-empty-state" }, import_react18.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react18.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react18.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react18.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react18.default.createElement("button", {
+    type: "button",
+    className: "timeline-chart-fit-button",
+    "aria-label": "Zoom to fit timeline",
+    onClick: zoomToFitTimeline
+  }, "Fit")), import_react18.default.createElement("div", {
+    className: [
+      "timeline-chart-scroll",
+      activeScheduleDrag ? "timeline-chart-scroll-dragging" : "",
+      activePanDrag ? "timeline-chart-scroll-panning" : "",
+      spacePanPressed ? "timeline-chart-scroll-space-pan-ready" : ""
+    ].filter(Boolean).join(" "),
+    ref: chartScrollRef,
+    onPointerDown: beginPanDrag,
+    onPointerMove: updatePanDrag,
+    onPointerUp: finishPanDrag,
+    onPointerCancel: finishPanDrag
+  }, import_react18.default.createElement("div", {
+    className: sidebarCollapsed ? "timeline-left-sidebar timeline-left-sidebar-collapsed timeline-left-sidebar-embedded" : "timeline-left-sidebar timeline-left-sidebar-embedded",
+    "aria-label": "Timeline left sidebar",
+    style: { width: `${Math.round(effectiveSidebarWidthPx)}px`, height: `${chartModel.height}px` }
+  }, sidebarCollapsed ? import_react18.default.createElement("div", {
+    className: "timeline-left-sidebar-collapsed-body",
+    style: { height: `${chartModel.height}px` }
+  }, import_react18.default.createElement("button", {
+    type: "button",
+    className: "timeline-left-sidebar-settings-button",
+    "aria-label": "Configure timeline sidebar fields",
+    onClick: openTimelineLabelSettingsFromSidebar
+  }, import_react18.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-left-sidebar-settings-icon",
+    "aria-hidden": "true"
+  }, import_react18.default.createElement("path", {
+    d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
+  })))) : [
+    import_react18.default.createElement("div", {
+      className: "timeline-left-sidebar-header",
+      style: { height: `${CHART_TOP_PADDING}px` },
+      key: "header"
+    }, import_react18.default.createElement("button", {
+      type: "button",
+      className: "timeline-left-sidebar-align-toggle",
+      "aria-label": "Toggle timeline sidebar row alignment",
+      title: timelineSidebarRowJustify === "flex-end" ? "Align sidebar rows left" : "Align sidebar rows right",
+      "aria-pressed": timelineSidebarRowJustify === "flex-end",
+      onClick: () => {
+        const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
+        setTimelineSidebarRowJustify(next);
+        saveTimelineSidebarRowJustify(next);
+      }
+    }, import_react18.default.createElement("svg", {
+      viewBox: "0 0 24 24",
+      className: "timeline-left-sidebar-align-icon",
+      "aria-hidden": "true"
+    }, timelineSidebarRowJustify === "flex-end" ? [
+      import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+      import_react18.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
+      import_react18.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
+    ] : [
+      import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+      import_react18.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
+      import_react18.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
+    ]))),
+    import_react18.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react18.default.createElement("button", {
+      key: `timeline-sidebar-row-${bar.workItemId}`,
+      type: "button",
+      className: selectedWorkItemId === bar.workItemId ? "timeline-left-sidebar-row timeline-left-sidebar-row-selected" : "timeline-left-sidebar-row",
+      "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
+      style: {
+        height: `${CHART_ROW_HEIGHT}px`,
+        justifyContent: timelineSidebarRowJustify
+      },
+      onClick: () => {
+        selectWorkItem(bar.workItemId);
+      }
+    }, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react18.default.createElement("div", {
+      className: "timeline-left-sidebar-tail-spacer",
+      "aria-hidden": "true",
+      style: { height: `${chartModel.tailHeightPx}px` }
+    }))
+  ]), !sidebarCollapsed ? import_react18.default.createElement(TimelineMainSplitter, {
+    active: isSidebarResizing,
+    embedded: true,
+    ariaLabel: "Resize timeline sidebar",
+    ariaValueMin: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
+    ariaValueMax: resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthPx),
+    ariaValueNow: sidebarWidthPx,
+    onPointerDown: beginSidebarResize,
+    style: { height: `${chartModel.height}px`, left: `${Math.round(effectiveSidebarWidthPx)}px` }
+  }) : null, import_react18.default.createElement("svg", {
+    className: "timeline-shared-row-guides",
+    viewBox: `0 0 ${effectiveSidebarWidthPx + chartModel.width} ${chartModel.height}`,
+    style: { width: `${effectiveSidebarWidthPx + chartModel.width}px`, height: `${chartModel.height}px` },
+    "aria-hidden": "true"
+  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index) => import_react18.default.createElement("line", {
+    key: `shared-row-guide-${index}`,
+    x1: 0,
+    y1: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+    x2: effectiveSidebarWidthPx + chartModel.width,
+    y2: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+    className: "timeline-row-guide-line"
+  }))), import_react18.default.createElement("div", {
+    className: "timeline-chart-main-lane",
+    style: { width: `${chartModel.width}px` }
+  }, import_react18.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react18.default.createElement("svg", {
+    className: "timeline-chart-axis",
+    viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
+    style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
+  }, chartModel.monthMarkers.map((month) => import_react18.default.createElement("text", {
+    key: `sticky-month-label-${month.x}-${month.label}`,
+    x: CHART_LEFT_GUTTER + month.x,
+    y: CHART_AXIS_MONTH_LABEL_Y,
+    className: "timeline-axis-month-label"
+  }, month.label)), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react18.default.createElement("text", {
+    key: `sticky-tick-label-${tick.x}-${tick.label}`,
+    x: CHART_LEFT_GUTTER + tick.x,
+    y: CHART_AXIS_TICK_LABEL_Y,
+    className: "timeline-axis-label"
+  }, tick.label)), chartModel.todayX !== null ? import_react18.default.createElement("text", {
+    x: CHART_LEFT_GUTTER + chartModel.todayX,
+    y: CHART_AXIS_TODAY_LABEL_Y,
+    className: "timeline-today-label"
+  }, "Today") : null)), import_react18.default.createElement("svg", {
     className: activeUnschedulableDrag && !activeScheduleDrag ? "timeline-chart timeline-chart-unscheduled-drop-active" : "timeline-chart",
     viewBox: `0 0 ${chartModel.width} ${chartModel.height}`,
     role: "img",
     "aria-label": "gantt-chart",
-    style: { width: `${chartModel.width}px` },
+    style: { width: `${chartModel.width}px`, height: `${chartModel.height}px` },
     ref: chartSvgRef,
     onPointerMove: handleChartPointerMove,
     onPointerUp: finishActiveDrag,
     onPointerCancel: finishActiveDrag,
     onDragOver: handleChartDragOver,
     onDrop: handleChartDrop
-  }, chartModel.currentPeriod ? import_react5.default.createElement("rect", {
+  }, import_react18.default.createElement("defs", null, import_react18.default.createElement("marker", {
+    id: dependencyMarkerId,
+    viewBox: "0 0 6 8",
+    refX: 5.6,
+    refY: 4,
+    markerWidth: 6,
+    markerHeight: 6,
+    markerUnits: "strokeWidth",
+    orient: "auto"
+  }, import_react18.default.createElement("path", {
+    d: "M 0 0 L 6 4 L 0 8",
+    className: "timeline-dependency-arrowhead"
+  })), import_react18.default.createElement("marker", {
+    id: dependencyAlertMarkerId,
+    viewBox: "0 0 6 8",
+    refX: 5.6,
+    refY: 4,
+    markerWidth: 6,
+    markerHeight: 6,
+    markerUnits: "strokeWidth",
+    orient: "auto"
+  }, import_react18.default.createElement("path", {
+    d: "M 0 0 L 6 4 L 0 8",
+    className: "timeline-dependency-arrowhead-alert"
+  }))), chartModel.currentPeriod ? import_react18.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
     y: CHART_GRID_START_Y,
     width: chartModel.currentPeriod.width,
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-current-period-highlight"
-  }) : null, chartModel.dailyGridLines.map((dayX) => import_react5.default.createElement("line", {
+  }) : null, chartModel.dailyGridLines.map((dayX) => import_react18.default.createElement("line", {
     key: `day-grid-${dayX}`,
     x1: CHART_LEFT_GUTTER + dayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + dayX,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-day"
-  })), chartModel.monthBoundaries.map((boundaryX) => import_react5.default.createElement("line", {
-    key: `month-boundary-${boundaryX}`,
-    x1: CHART_LEFT_GUTTER + boundaryX,
+  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react18.default.createElement("line", {
+    key: `month-week-grid-${week.x}`,
+    x1: CHART_LEFT_GUTTER + week.x,
     y1: CHART_GRID_START_Y,
-    x2: CHART_LEFT_GUTTER + boundaryX,
+    x2: CHART_LEFT_GUTTER + week.x,
+    y2: chartModel.height - CHART_BOTTOM_PADDING,
+    className: "timeline-grid-line-weekly"
+  })), chartModel.monthMarkers.map((month) => import_react18.default.createElement("line", {
+    key: `month-boundary-${month.x}`,
+    x1: CHART_LEFT_GUTTER + month.x,
+    y1: CHART_GRID_START_Y,
+    x2: CHART_LEFT_GUTTER + month.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-month-boundary-line"
-  })), chartModel.monthLabels.map((month) => import_react5.default.createElement("text", {
-    key: `month-label-${month.x}-${month.label}`,
-    x: CHART_LEFT_GUTTER + month.x,
-    y: CHART_AXIS_MONTH_LABEL_Y,
-    className: "timeline-axis-month-label"
-  }, month.label)), chartModel.ticks.map((tick) => import_react5.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react5.default.createElement("line", {
+  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react18.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react18.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + tick.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + tick.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line"
-  }), import_react5.default.createElement("text", {
-    x: CHART_LEFT_GUTTER + tick.x + 4,
-    y: CHART_AXIS_TICK_LABEL_Y,
-    className: "timeline-axis-label"
-  }, tick.label))), props.showDependencies ? effectiveTimeline?.dependencies.map((dependency, index) => {
-    const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
-    const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
-    if (!from || !to) {
-      return null;
-    }
-    const startX = from.x + from.width;
-    const endX = to.x;
-    const bendX = startX + Math.max(10, (endX - startX) / 2);
-    const path = `M ${startX} ${from.midY} L ${bendX} ${from.midY} L ${bendX} ${to.midY} L ${endX} ${to.midY}`;
-    return import_react5.default.createElement("path", {
-      key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${index}`,
-      d: path,
-      className: "timeline-dependency-line"
-    });
-  }) : null, chartModel.bars.map((bar, index) => {
-    const y = CHART_TOP_PADDING + index * CHART_ROW_HEIGHT;
+  }))), chartModel.todayX !== null ? import_react18.default.createElement("g", null, import_react18.default.createElement("line", {
+    x1: CHART_LEFT_GUTTER + chartModel.todayX,
+    y1: CHART_GRID_START_Y,
+    x2: CHART_LEFT_GUTTER + chartModel.todayX,
+    y2: chartModel.height - CHART_BOTTOM_PADDING,
+    className: "timeline-today-line"
+  })) : null, chartModel.bars.map((bar, index) => {
+    const y = resolveTimelineBarTopY(index);
     const isSelected = selectedWorkItemId === bar.workItemId;
     const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : ""].filter(Boolean).join(" ");
-    return import_react5.default.createElement("g", { key: bar.workItemId }, import_react5.default.createElement("rect", {
+    return import_react18.default.createElement("g", { key: bar.workItemId }, import_react18.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x,
       y,
       width: bar.width,
@@ -27542,9 +31486,16 @@ function TimelinePane(props) {
         }
       },
       onPointerDown: (event) => {
+        if (spacePanPressedRef.current) {
+          return;
+        }
+        if (dependencyMode) {
+          beginDependencyDrag({ event, sourceWorkItemId: bar.workItemId });
+          return;
+        }
         void beginBarDrag({ event, mode: "move", bar });
       }
-    }), canEditSchedule ? import_react5.default.createElement("rect", {
+    }), canEditSchedule ? import_react18.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -27553,9 +31504,12 @@ function TimelinePane(props) {
       className: "timeline-bar-handle timeline-bar-handle-start",
       "aria-label": `timeline-bar-start-handle-${bar.workItemId}`,
       onPointerDown: (event) => {
+        if (spacePanPressedRef.current) {
+          return;
+        }
         void beginBarDrag({ event, mode: "resize-start", bar });
       }
-    }) : null, canEditSchedule ? import_react5.default.createElement("rect", {
+    }) : null, canEditSchedule ? import_react18.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x + bar.width - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -27564,102 +31518,202 @@ function TimelinePane(props) {
       className: "timeline-bar-handle timeline-bar-handle-end",
       "aria-label": `timeline-bar-end-handle-${bar.workItemId}`,
       onPointerDown: (event) => {
+        if (spacePanPressedRef.current) {
+          return;
+        }
         void beginBarDrag({ event, mode: "resize-end", bar });
       }
-    }) : null, import_react5.default.createElement("text", {
-      x: CHART_LEFT_GUTTER + bar.x + 8,
+    }) : null, bar.displayLabel.trim().length > 0 ? import_react18.default.createElement("text", {
+      x: CHART_LEFT_GUTTER + bar.x + 18,
       y: y + 16,
-      className: "timeline-bar-label"
-    }, truncateTitleToBarWidth(bar.title, bar.width)));
-  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react5.default.createElement("g", {
+      className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
+    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react18.default.createElement("circle", {
+      cx: CHART_LEFT_GUTTER + bar.x + 10,
+      cy: y + BAR_HEIGHT / 2,
+      r: 4.5,
+      className: "timeline-bar-state-dot",
+      style: { fill: bar.stateColor }
+    }));
+  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react18.default.createElement("g", {
     className: "timeline-unscheduled-drop-preview"
-  }, import_react5.default.createElement("rect", {
+  }, import_react18.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 8,
     width: dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate) * chartModel.dayWidthPx,
     height: BAR_HEIGHT,
     rx: 6,
     className: "timeline-unscheduled-drop-preview-bar"
-  }), import_react5.default.createElement("text", {
+  }), import_react18.default.createElement("text", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx + 8,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 24,
     className: "timeline-unscheduled-drop-preview-label"
-  }, `${formatTickDate(unscheduledDropPreview.startDate)} \u2192 ${formatTickDate(unscheduledDropPreview.endDate)} (${dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate)}d)`)) : null), stickyTodayMarker && chartViewport.clientHeight > 0 ? import_react5.default.createElement("svg", {
-    className: stickyTodayMarker.isPinnedToEdge ? "timeline-today-sticky-overlay timeline-today-sticky-overlay-pinned" : "timeline-today-sticky-overlay",
-    viewBox: `0 0 ${Math.max(1, chartViewport.clientWidth)} ${Math.max(1, chartViewport.clientHeight)}`,
-    preserveAspectRatio: "none",
-    style: {
-      width: `${chartViewport.clientWidth}px`,
-      height: `${chartViewport.clientHeight}px`
-    },
-    "aria-hidden": "true"
-  }, import_react5.default.createElement("line", {
-    x1: stickyTodayMarker.x,
-    y1: 0,
-    x2: stickyTodayMarker.x,
-    y2: chartViewport.clientHeight,
-    className: "timeline-today-line"
-  }), import_react5.default.createElement("text", {
-    x: stickyTodayMarker.x + 6,
-    y: CHART_AXIS_TODAY_LABEL_Y,
-    className: "timeline-today-label"
-  }, "Today")) : null), import_react5.default.createElement("div", { className: "timeline-unschedulable-list" }, import_react5.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react5.default.createElement("h4", null, "Unscheduled"), import_react5.default.createElement("p", null, "Select one item and assign a schedule from chart or selected bar.")), effectiveTimeline?.unschedulable.length ? import_react5.default.createElement("ul", null, ...effectiveTimeline.unschedulable.map((item) => import_react5.default.createElement("li", { key: item.workItemId }, import_react5.default.createElement("button", {
-    type: "button",
-    className: "timeline-unschedulable-button",
-    "aria-label": `#${item.details.mappedId} ${item.title} (${item.reason})`,
-    "aria-pressed": selectedWorkItemId === item.workItemId,
-    draggable: true,
-    onDragStart: (event) => {
-      startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
-    },
-    onDragEnd: () => {
-      clearUnscheduledDrag();
-    },
-    onClick: () => {
-      setAdoptScheduleError(null);
-      if (selectedWorkItemId !== null) {
-        void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
-          const message = error instanceof Error ? error.message : "Unknown error";
-          setAdoptScheduleError(message);
+  }, `${formatTickDate(unscheduledDropPreview.startDate)} \u2192 ${formatTickDate(unscheduledDropPreview.endDate)} (${dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate)}d)`)) : null, dependencyConnectors.map((connector) => {
+    const isSelected = selectedDependency?.predecessorWorkItemId === connector.predecessorWorkItemId && selectedDependency?.successorWorkItemId === connector.successorWorkItemId && selectedDependency?.dependencyType === connector.dependencyType;
+    const className = [
+      "timeline-dependency-line",
+      connector.isViolated ? "timeline-dependency-line-violated" : "",
+      isSelected ? "timeline-dependency-line-selected" : ""
+    ].filter(Boolean).join(" ");
+    return import_react18.default.createElement("path", {
+      key: connector.key,
+      d: connector.path,
+      className,
+      markerEnd: connector.markerEnd,
+      "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
+      onClick: () => {
+        setSelectedDependency({
+          predecessorWorkItemId: connector.predecessorWorkItemId,
+          successorWorkItemId: connector.successorWorkItemId,
+          dependencyType: connector.dependencyType
         });
       }
-      selectWorkItem(item.workItemId);
-    }
-  }, import_react5.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react5.default.createElement("span", { className: "timeline-unschedulable-item-title" }, `#${item.details.mappedId} ${truncateTitleToBarWidth(item.title, 220)}`), import_react5.default.createElement("span", { className: "timeline-unschedulable-item-reason" }, item.reason)), import_react5.default.createElement("span", { className: "timeline-unschedulable-button-state" }, import_react5.default.createElement("span", {
-    className: "timeline-unschedulable-state-dot",
-    style: { backgroundColor: item.state.color }
-  }), import_react5.default.createElement("span", { className: "timeline-unschedulable-button-badge" }, item.state.badge)))))) : import_react5.default.createElement("div", null, "None")), import_react5.default.createElement("p", { className: "timeline-unschedulable-fyi" }, `${barCount} bars`, " \xB7 ", `${unscheduledCount} unscheduled`)), import_react5.default.createElement(TimelineDetailsPanel, detailProps)));
+    });
+  }), activeDependencyDragPreview ? import_react18.default.createElement("path", {
+    d: activeDependencyDragPreview.path,
+    className: "timeline-dependency-line timeline-dependency-line-draft",
+    markerEnd: `url(#${dependencyMarkerId})`,
+    "aria-label": "dependency-draft"
+  }) : null)))), import_react18.default.createElement("div", { className: "timeline-unschedulable-list" }, import_react18.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react18.default.createElement("h4", null, "Unscheduled")), filteredTimeline?.unschedulable.length ? import_react18.default.createElement("ul", null, ...filteredTimeline.unschedulable.map((item) => import_react18.default.createElement("li", { key: item.workItemId }, (() => {
+    const label = `#${item.details.mappedId} ${item.title}`;
+    const minWidthPx = Math.round(dayWidthPx * 14);
+    const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
+    const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
+    return import_react18.default.createElement("button", {
+      type: "button",
+      className: "timeline-unschedulable-button",
+      style: {
+        backgroundColor: colorByWorkItemId.get(item.workItemId) ?? item.state.color,
+        width: `${buttonWidthPx}px`,
+        maxWidth: "100%"
+      },
+      "aria-label": label,
+      "aria-pressed": selectedWorkItemId === item.workItemId,
+      draggable: !dependencyMode,
+      onDragStart: (event) => {
+        startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
+      },
+      onDragEnd: () => {
+        clearUnscheduledDrag();
+      },
+      onClick: () => {
+        setAdoptScheduleError(null);
+        if (!dependencyMode && selectedWorkItemId !== null) {
+          void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
+            const message = error instanceof Error ? error.message : "Unknown error";
+            setAdoptScheduleError(message);
+          });
+        }
+        selectWorkItem(item.workItemId);
+      }
+    }, import_react18.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react18.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label)));
+  })()))) : import_react18.default.createElement("div", null, "None"))), import_react18.default.createElement(TimelineMainSplitter, {
+    active: isDetailsResizing,
+    ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
+    ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
+    ariaValueMax: resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
+    ariaValueNow: detailsWidthPx,
+    onPointerDown: beginDetailsResize,
+    onClick: expandDetailsPanelFromHidden,
+    style: timelineMainSplitterStyle
+  }, detailsContentHidden ? import_react18.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react18.default.createElement("svg", {
+    className: "timeline-main-splitter-expand-icon",
+    viewBox: "0 0 16 16",
+    "aria-hidden": "true"
+  }, import_react18.default.createElement("path", {
+    d: "M10.5 3.5 6 8l4.5 4.5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }))) : null), import_react18.default.createElement(TimelineDetailsPanel, detailProps)));
 }
-var CHART_ROW_HEIGHT = 40;
+var BAR_HEIGHT = 24;
+var BAR_ROW_GAP = 2;
+var CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
+var BAR_ROW_TOP_INSET_PX = Math.max(0, Math.floor((CHART_ROW_HEIGHT - BAR_HEIGHT) / 2));
 var CHART_TOP_PADDING = 56;
 var CHART_BOTTOM_PADDING = 18;
 var CHART_LEFT_GUTTER = 24;
-var CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 42;
+var CHART_RIGHT_PADDING_PX = 80;
+var CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 46;
 var CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 var CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
 var CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
-var BAR_HEIGHT = 24;
+var TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 var DAY_WIDTH_WEEK_PX = 22;
 var DAY_WIDTH_MONTH_PX = 8;
+var DAY_WIDTH_MAX_PX = 40;
+var DAY_WIDTH_MIN_PX = 4;
+var ZOOM_WHEEL_SENSITIVITY = 18e-4;
+var ZOOM_DAY_WIDTH_STEP_PX = 0.25;
 var DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+var FIT_TO_VIEW_INSET_PX = 20;
+var FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
+var VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
+var DETAILS_PANEL_DEFAULT_WIDTH_PX = 320;
+var DETAILS_PANEL_MIN_WIDTH_PX = 0;
+var DETAILS_PANEL_MAX_WIDTH_PX = 820;
+var DETAILS_PANEL_SPLITTER_WIDTH_PX = 10;
+var DETAILS_PANEL_MIN_CHART_WIDTH_PX = 360;
+var DETAILS_PANEL_CONTENT_MIN_WIDTH_PX = 260;
+var TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX = 260;
+var TIMELINE_SIDEBAR_MIN_WIDTH_PX = 160;
+var TIMELINE_SIDEBAR_MAX_WIDTH_PX = 640;
+var TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX = 56;
 var MIN_BAR_WIDTH_PX = 10;
 var HANDLE_WIDTH = 8;
 var DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 var BAR_LABEL_HORIZONTAL_PADDING = 8;
 var APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
-function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
+var DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
+var OVERDUE_TIMELINE_COLOR = "#b91c1c";
+var OVERDUE_OK_TIMELINE_COLOR = "#475569";
+var DEPENDENCY_ENDPOINT_GAP_PX = 6;
+var DEPENDENCY_LEFT_APPROACH_PX = 16;
+var DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
+var DEPENDENCY_LANE_GAP_PX = 6;
+var DEPENDENCY_LANE_TOP_OFFSET_PX = 6;
+var DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
+var DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX = 4;
+var DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR = 2;
+var DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX = 9;
+var MAX_TIMELINE_FILTER_SLOTS = 5;
+var TIMELINE_FILTERS_QUERY_PARAM = "tf";
+var LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
+var TIMELINE_LABEL_SPECIAL_FIELD_REFS = {
+  title: "title",
+  mappedId: "mappedId",
+  state: "state"
+};
+var TIMELINE_CATEGORY_COLORS = [
+  "#1d4ed8",
+  "#0f766e",
+  "#7c3aed",
+  "#be123c",
+  "#b45309",
+  "#0369a1",
+  "#166534",
+  "#7e22ce",
+  "#c2410c",
+  "#365314",
+  "#334155",
+  "#0f766e"
+];
+function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane) {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc2 = /* @__PURE__ */ new Date();
     const normalizedTodayUtc2 = new Date(Date.UTC(todayUtc2.getUTCFullYear(), todayUtc2.getUTCMonth(), todayUtc2.getUTCDate()));
     return {
       width: 900,
       height: 180,
+      contentRows: 0,
+      tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
-      ticks: [],
+      weekMarkers: [],
       dailyGridLines: [],
-      monthBoundaries: [],
-      monthLabels: [],
+      monthMarkers: [],
       domainStart: addDays(normalizedTodayUtc2, -1),
       currentPeriod: null,
       todayX: null
@@ -27671,7 +31725,7 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
     if (!start && !end) {
       return null;
     }
-    const normalizedStart = start ?? addDays(end, -2);
+    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
     const normalizedEnd = end ?? addDays(start, 2);
     const rangeStart = normalizedStart.getTime() <= normalizedEnd.getTime() ? normalizedStart : normalizedEnd;
     const rangeEnd = normalizedEnd.getTime() >= normalizedStart.getTime() ? normalizedEnd : normalizedStart;
@@ -27687,12 +31741,13 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
     return {
       width: 900,
       height: 180,
+      contentRows: 0,
+      tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
-      ticks: [],
+      weekMarkers: [],
       dailyGridLines: [],
-      monthBoundaries: [],
-      monthLabels: [],
+      monthMarkers: [],
       domainStart: addDays(normalizedTodayUtc2, -1),
       currentPeriod: null,
       todayX: null
@@ -27702,7 +31757,9 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
   const maxEnd = new Date(Math.max(...normalizedBars.map((bar) => bar.end.getTime())));
   const domainStart = addDays(minStart, -1);
   const domainEnd = addDays(maxEnd, 1);
-  const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd));
+  const timelineCanvasMinWidthPx = Math.max(0, viewportWidthPx - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX);
+  const minDaysForViewport = Math.ceil(timelineCanvasMinWidthPx / dayWidthPx);
+  const totalDays = Math.max(1, dayDiffInclusive(domainStart, domainEnd), minDaysForViewport);
   const todayUtc = /* @__PURE__ */ new Date();
   const normalizedTodayUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
   const todayOffset = dayDiff(domainStart, normalizedTodayUtc);
@@ -27725,31 +31782,615 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel) {
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
       title: bar.source.title,
-      color: bar.source.state.color,
+      displayLabel: buildTimelineBarLabel(bar.source, timelineLabelFields),
+      stateCode: bar.source.state.code,
+      color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
+      stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
+      fieldValues: bar.source.details.fieldValues ?? {},
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
       width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx)
     };
   });
-  const ticks = buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx);
+  const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
-  const { monthBoundaries, monthLabels } = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const monthMarkers = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
   const timelineWidth = totalDays * dayWidthPx;
+  const verticalLayout = resolveTimelineVerticalLayoutMetrics(bars.length, includeUnscheduledDropLane);
   return {
-    width: Math.max(900, CHART_LEFT_GUTTER + timelineWidth + 80),
-    height: CHART_TOP_PADDING + (bars.length + 1) * CHART_ROW_HEIGHT + CHART_BOTTOM_PADDING,
+    width: Math.max(900, CHART_LEFT_GUTTER + timelineWidth + CHART_RIGHT_PADDING_PX),
+    height: CHART_TOP_PADDING + verticalLayout.contentRows * CHART_ROW_HEIGHT + verticalLayout.tailHeightPx,
+    contentRows: verticalLayout.contentRows,
+    tailHeightPx: verticalLayout.tailHeightPx,
     dayWidthPx,
     bars,
-    ticks,
+    weekMarkers,
     dailyGridLines,
-    monthBoundaries,
-    monthLabels,
+    monthMarkers,
     domainStart,
     currentPeriod,
     todayX
   };
+}
+function buildColorByWorkItemId(timeline, mode, fieldConfig) {
+  const map = /* @__PURE__ */ new Map();
+  if (!timeline) {
+    return map;
+  }
+  const items = [
+    ...timeline.bars.map((bar) => ({
+      workItemId: bar.workItemId,
+      stateCode: bar.state.code,
+      endDate: bar.schedule.endDate,
+      parentWorkItemId: bar.details.parentWorkItemId ?? null,
+      fieldValues: bar.details.fieldValues ?? {},
+      fallbackColor: bar.state.color
+    })),
+    ...timeline.unschedulable.map((item) => ({
+      workItemId: item.workItemId,
+      stateCode: item.state.code,
+      endDate: item.schedule?.endDate ?? null,
+      parentWorkItemId: item.details.parentWorkItemId ?? null,
+      fieldValues: item.details.fieldValues ?? {},
+      fallbackColor: item.state.color
+    }))
+  ];
+  if (mode === "none") {
+    items.forEach((item) => {
+      map.set(item.workItemId, DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    });
+    return map;
+  }
+  if (mode === "overdue") {
+    items.forEach((item) => {
+      map.set(item.workItemId, isOverdueTimelineItem(item.endDate, item.stateCode) ? OVERDUE_TIMELINE_COLOR : OVERDUE_OK_TIMELINE_COLOR);
+    });
+    return map;
+  }
+  if (mode === "status") {
+    items.forEach((item) => {
+      const valueKey = fieldValueToStorageKey(item.stateCode);
+      const scopedKey = toScopedModeValueColorKey(mode, valueKey);
+      const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+      map.set(item.workItemId, customColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+    });
+    return map;
+  }
+  if (mode === "field") {
+    const fieldRef = fieldConfig.fieldRef?.trim() ?? "";
+    if (fieldRef.length === 0) {
+      items.forEach((item) => {
+        map.set(item.workItemId, DEFAULT_NEUTRAL_TIMELINE_COLOR);
+      });
+      return map;
+    }
+    const categoryByWorkItemId2 = /* @__PURE__ */ new Map();
+    items.forEach((item) => {
+      categoryByWorkItemId2.set(item.workItemId, fieldValueToCategoryLabel(item.fieldValues[fieldRef]));
+    });
+    const categoryColorMap2 = buildCategoricalColorMap([...categoryByWorkItemId2.values()]);
+    items.forEach((item) => {
+      const category = categoryByWorkItemId2.get(item.workItemId) ?? "Empty";
+      const valueKey = fieldValueToStorageKey(item.fieldValues[fieldRef]);
+      const scopedKey = toScopedFieldValueColorKey(fieldRef, valueKey);
+      const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+      const categoryColor = categoryColorMap2.get(category) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR;
+      map.set(item.workItemId, customColor ?? categoryColor);
+    });
+    return map;
+  }
+  const categoryByWorkItemId = /* @__PURE__ */ new Map();
+  items.forEach((item) => {
+    const category = item.parentWorkItemId === null ? "No parent" : `Parent #${item.parentWorkItemId}`;
+    categoryByWorkItemId.set(item.workItemId, category);
+  });
+  const categoryColorMap = buildCategoricalColorMap([...categoryByWorkItemId.values()]);
+  items.forEach((item) => {
+    const category = categoryByWorkItemId.get(item.workItemId);
+    const categoryColor = category ? categoryColorMap.get(category) : null;
+    const valueKey = fieldValueToStorageKey(category);
+    const scopedKey = toScopedModeValueColorKey(mode, valueKey);
+    const customColor = (scopedKey ? fieldConfig.valueColors[scopedKey] : null) ?? fieldConfig.valueColors[valueKey] ?? null;
+    map.set(item.workItemId, customColor ?? categoryColor ?? item.fallbackColor ?? DEFAULT_NEUTRAL_TIMELINE_COLOR);
+  });
+  return map;
+}
+function resolveTimelineVisibleRange(timeline) {
+  if (!timeline || timeline.bars.length === 0) {
+    return null;
+  }
+  const normalizedRanges = timeline.bars.map((bar) => {
+    const start = parseIso(bar.schedule.startDate);
+    const end = parseIso(bar.schedule.endDate);
+    if (!start && !end) {
+      return null;
+    }
+    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
+    const normalizedEnd = end ?? addDays(start, 2);
+    return normalizedStart.getTime() <= normalizedEnd.getTime() ? { start: normalizedStart, end: normalizedEnd } : { start: normalizedEnd, end: normalizedStart };
+  }).filter((value) => value !== null);
+  if (normalizedRanges.length === 0) {
+    return null;
+  }
+  return {
+    start: new Date(Math.min(...normalizedRanges.map((range) => range.start.getTime()))),
+    end: new Date(Math.max(...normalizedRanges.map((range) => range.end.getTime())))
+  };
+}
+function createInitialTimelineFieldFilters() {
+  return [createTimelineFieldFilter(0)];
+}
+function createTimelineFieldFilter(slotId) {
+  return {
+    slotId,
+    fieldRef: null,
+    selectedValueKeys: []
+  };
+}
+function resolveInitialTimelineFilterState() {
+  if (typeof globalThis.location === "undefined") {
+    return {
+      filters: createInitialTimelineFieldFilters(),
+      nextSlotId: 1
+    };
+  }
+  const parsed = parseTimelineFiltersFromSearch(globalThis.location.search);
+  if (parsed.length === 0) {
+    return {
+      filters: createInitialTimelineFieldFilters(),
+      nextSlotId: 1
+    };
+  }
+  const filters = parsed.map((entry, index) => ({
+    slotId: index,
+    fieldRef: entry.fieldRef,
+    selectedValueKeys: entry.selectedValueKeys
+  }));
+  return {
+    filters,
+    nextSlotId: filters.length
+  };
+}
+function parseTimelineFiltersFromSearch(search) {
+  try {
+    const params = new URLSearchParams(search);
+    const compactEntries = params.getAll(TIMELINE_FILTERS_QUERY_PARAM);
+    if (compactEntries.length > 0) {
+      return compactEntries.map((entry) => parseCompactTimelineFilterParam(entry)).filter((entry) => entry !== null).slice(0, MAX_TIMELINE_FILTER_SLOTS);
+    }
+    const legacyRaw = params.get(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+    if (!legacyRaw) {
+      return [];
+    }
+    const parsed = JSON.parse(legacyRaw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+      const maybeFieldRef = "fieldRef" in entry ? entry.fieldRef : null;
+      const maybeValues = "selectedValueKeys" in entry ? entry.selectedValueKeys : [];
+      const fieldRef = typeof maybeFieldRef === "string" && maybeFieldRef.trim().length > 0 ? maybeFieldRef.trim() : null;
+      const selectedValueKeys = Array.isArray(maybeValues) ? [...new Set(maybeValues.filter((value) => typeof value === "string"))] : [];
+      if (!fieldRef) {
+        return null;
+      }
+      return {
+        fieldRef,
+        selectedValueKeys
+      };
+    }).filter((entry) => entry !== null).slice(0, MAX_TIMELINE_FILTER_SLOTS);
+  } catch {
+    return [];
+  }
+}
+function serializeTimelineFiltersForUrl(filters) {
+  return filters.map((filter) => ({
+    fieldRef: filter.fieldRef?.trim() ? filter.fieldRef.trim() : null,
+    selectedValueKeys: [...new Set(filter.selectedValueKeys)]
+  })).filter((entry) => entry.fieldRef !== null);
+}
+function toCompactTimelineFilterParam(entry) {
+  const fieldRef = entry.fieldRef?.trim();
+  if (!fieldRef) {
+    return null;
+  }
+  const encodedFieldRef = encodeTimelineFilterToken(fieldRef);
+  const valuePart = entry.selectedValueKeys.length > 0 ? entry.selectedValueKeys.map((value) => encodeTimelineFilterToken(value)).join(",") : "";
+  return `${encodedFieldRef}~${valuePart}`;
+}
+function parseCompactTimelineFilterParam(value) {
+  try {
+    const [rawFieldRef, rawValues = ""] = value.split("~", 2);
+    if (!rawFieldRef) {
+      return null;
+    }
+    const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
+    if (fieldRef.length === 0) {
+      return null;
+    }
+    const selectedValueKeys = rawValues.split(",").map((entry) => decodeTimelineFilterToken(entry).trim()).filter((entry) => entry.length > 0);
+    return {
+      fieldRef,
+      selectedValueKeys: [...new Set(selectedValueKeys)]
+    };
+  } catch {
+    return null;
+  }
+}
+function decodeTimelineFilterToken(token) {
+  try {
+    return decodeURIComponent(token);
+  } catch {
+    return token;
+  }
+}
+function encodeTimelineFilterToken(token) {
+  return encodeURIComponent(token).replace(/~/g, "%7E");
+}
+function syncTimelineFiltersToUrl(filters) {
+  if (typeof globalThis.window === "undefined") {
+    return;
+  }
+  const params = new URLSearchParams(globalThis.window.location.search);
+  params.delete(TIMELINE_FILTERS_QUERY_PARAM);
+  params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+  serializeTimelineFiltersForUrl(filters).map((entry) => toCompactTimelineFilterParam(entry)).filter((entry) => entry !== null).forEach((entry) => {
+    params.append(TIMELINE_FILTERS_QUERY_PARAM, entry);
+  });
+  const nextSearch = params.toString();
+  const normalizedCurrentSearch = globalThis.window.location.search.startsWith("?") ? globalThis.window.location.search.slice(1) : globalThis.window.location.search;
+  if (nextSearch === normalizedCurrentSearch) {
+    return;
+  }
+  const nextUrl = `${globalThis.window.location.pathname}${nextSearch.length > 0 ? `?${nextSearch}` : ""}${globalThis.window.location.hash}`;
+  globalThis.window.history.replaceState(globalThis.window.history.state, "", nextUrl);
+}
+function isActiveTimelineFieldFilter(filter) {
+  return Boolean(filter.fieldRef && filter.selectedValueKeys.length > 0);
+}
+function applyTimelineFieldFilters(timeline, filters) {
+  if (!timeline) {
+    return null;
+  }
+  const activeFilters = filters.filter((filter) => isActiveTimelineFieldFilter(filter));
+  if (activeFilters.length === 0) {
+    return timeline;
+  }
+  const matchesAll = (fieldValues) => {
+    return activeFilters.every((filter) => {
+      const normalizedFieldRef = filter.fieldRef?.trim();
+      if (!normalizedFieldRef || filter.selectedValueKeys.length === 0) {
+        return true;
+      }
+      const valueKey = fieldValueToStorageKey(fieldValues?.[normalizedFieldRef]);
+      return filter.selectedValueKeys.includes(valueKey);
+    });
+  };
+  const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
+  const unschedulable = timeline.unschedulable.filter((item) => matchesAll(item.details.fieldValues));
+  const visibleWorkItemIds = /* @__PURE__ */ new Set([
+    ...bars.map((bar) => bar.workItemId),
+    ...unschedulable.map((item) => item.workItemId)
+  ]);
+  const dependencies = timeline.dependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
+  const suppressedDependencies = timeline.suppressedDependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
+  return {
+    ...timeline,
+    bars,
+    unschedulable,
+    dependencies,
+    suppressedDependencies
+  };
+}
+function filterFieldRefsBySearch(fieldRefs, search) {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return fieldRefs;
+  }
+  return fieldRefs.filter((fieldRef) => {
+    const displayName = getFieldDisplayName2(fieldRef);
+    return fieldRef.toLowerCase().includes(normalizedSearch) || displayName.toLowerCase().includes(normalizedSearch);
+  });
+}
+function filterFieldValueStatsBySearch(stats, search) {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return stats;
+  }
+  return stats.filter((entry) => entry.label.toLowerCase().includes(normalizedSearch));
+}
+function sanitizeTimelineFieldRefList(fieldRefs) {
+  return [...new Set(fieldRefs)].map((entry) => entry.trim()).filter((entry) => entry.length > 0);
+}
+function buildTimelineLabelFieldOptions(fieldRefs) {
+  const options = [
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.title,
+      label: "Title",
+      subtitle: "Built-in",
+      searchText: "title built in"
+    },
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId,
+      label: "ID",
+      subtitle: "Built-in",
+      searchText: "id mappedid built in"
+    },
+    {
+      fieldRef: TIMELINE_LABEL_SPECIAL_FIELD_REFS.state,
+      label: "State",
+      subtitle: "Built-in",
+      searchText: "state status built in"
+    }
+  ];
+  fieldRefs.forEach((fieldRef) => {
+    const displayName = getFieldDisplayName2(fieldRef);
+    options.push({
+      fieldRef,
+      label: displayName,
+      subtitle: fieldRef,
+      searchText: `${displayName} ${fieldRef}`.toLowerCase()
+    });
+  });
+  return options;
+}
+function filterTimelineLabelFieldOptions(options, search) {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options;
+  }
+  return options.filter((option) => option.searchText.includes(normalizedSearch));
+}
+var COLOR_CODING_MODE_OPTIONS = [
+  { key: "mode:none", mode: "none", fieldRef: null, label: "None", subtitle: "Mode", searchText: "none mode" },
+  { key: "mode:status", mode: "status", fieldRef: null, label: "Status", subtitle: "Mode", searchText: "status mode state" },
+  { key: "mode:parent", mode: "parent", fieldRef: null, label: "Parent", subtitle: "Mode", searchText: "parent mode hierarchy" },
+  { key: "mode:overdue", mode: "overdue", fieldRef: null, label: "Overdue", subtitle: "Mode", searchText: "overdue mode late due date" }
+];
+var COLOR_CODING_RESERVED_FIELD_REFS = /* @__PURE__ */ new Set(["state", "system.state"]);
+function buildColorCodingOptions(fieldRefs) {
+  const fieldOptions = fieldRefs.filter((fieldRef) => !isReservedColorCodingFieldRef(fieldRef)).map((fieldRef) => {
+    const fieldDisplayName = getFieldDisplayName2(fieldRef);
+    return {
+      key: `field:${fieldRef}`,
+      mode: "field",
+      fieldRef,
+      label: fieldDisplayName,
+      subtitle: fieldRef,
+      searchText: `field ${fieldDisplayName} ${fieldRef}`.toLowerCase()
+    };
+  });
+  return [...COLOR_CODING_MODE_OPTIONS, ...fieldOptions];
+}
+function isReservedColorCodingFieldRef(fieldRef) {
+  return COLOR_CODING_RESERVED_FIELD_REFS.has(fieldRef.trim().toLowerCase());
+}
+function filterColorCodingOptions(options, search) {
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options;
+  }
+  return options.filter((option) => option.searchText.includes(normalizedSearch)).sort((left, right) => {
+    if (left.mode === "field" && right.mode !== "field") {
+      return -1;
+    }
+    if (left.mode !== "field" && right.mode === "field") {
+      return 1;
+    }
+    return left.label.localeCompare(right.label);
+  });
+}
+function pickPreferredColorCodingOption(options, search) {
+  if (options.length === 0) {
+    return null;
+  }
+  const normalizedSearch = search.trim().toLowerCase();
+  if (normalizedSearch.length === 0) {
+    return options[0];
+  }
+  const firstField = options.find((option) => option.mode === "field");
+  return firstField ?? options[0];
+}
+function resolveSelectedColorCodingLabel(mode, fieldRef) {
+  if (mode === "field") {
+    return fieldRef ? `Field: ${getFieldDisplayName2(fieldRef)}` : "Field";
+  }
+  if (mode === "none") {
+    return "None";
+  }
+  if (mode === "status") {
+    return "Status";
+  }
+  if (mode === "parent") {
+    return "Parent";
+  }
+  return "Overdue";
+}
+function getFieldDisplayName2(fieldRef) {
+  const trimmed = fieldRef.trim();
+  if (trimmed.length === 0) {
+    return fieldRef;
+  }
+  const parts = trimmed.split(".");
+  const lastPart = parts[parts.length - 1]?.trim();
+  return lastPart && lastPart.length > 0 ? lastPart : trimmed;
+}
+function buildTimelineBarLabel(bar, fieldRefs) {
+  const parts = sanitizeTimelineFieldRefList(fieldRefs).map((fieldRef) => timelineBarLabelValueForFieldRef(bar, fieldRef)).filter((value) => value !== null && value.length > 0);
+  if (parts.length === 0) {
+    return "";
+  }
+  return parts.join(" - ");
+}
+function buildTimelineSidebarLabel(bar, fieldRefs) {
+  const parts = sanitizeTimelineFieldRefList(fieldRefs).map((fieldRef) => timelineSidebarLabelValueForFieldRef(bar, fieldRef)).filter((value) => value !== null && value.length > 0);
+  if (parts.length === 0) {
+    return "";
+  }
+  return parts.join(" - ");
+}
+function timelineSidebarLabelValueForFieldRef(bar, fieldRef) {
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.title) {
+    return normalizeTimelineLabelValue(bar.title);
+  }
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId) {
+    return normalizeTimelineLabelValue(bar.mappedId);
+  }
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.state) {
+    return normalizeTimelineLabelValue(bar.stateCode);
+  }
+  return normalizeTimelineLabelValue(bar.fieldValues[fieldRef]);
+}
+function timelineBarLabelValueForFieldRef(bar, fieldRef) {
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.title) {
+    return normalizeTimelineLabelValue(bar.title);
+  }
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId) {
+    return normalizeTimelineLabelValue(bar.details.mappedId);
+  }
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.state) {
+    return normalizeTimelineLabelValue(bar.state.code);
+  }
+  return normalizeTimelineLabelValue(bar.details.fieldValues?.[fieldRef]);
+}
+function normalizeTimelineLabelValue(value) {
+  if (value === null || typeof value === "undefined") {
+    return null;
+  }
+  const normalized = String(value).trim();
+  return normalized.length > 0 ? normalized : null;
+}
+function listAvailableColorCodingFields(timeline) {
+  if (!timeline) {
+    return [];
+  }
+  const set = /* @__PURE__ */ new Set();
+  const register = (fieldValues) => {
+    if (!fieldValues) {
+      return;
+    }
+    Object.keys(fieldValues).forEach((fieldRef) => {
+      if (fieldRef.trim().length > 0) {
+        set.add(fieldRef);
+      }
+    });
+  };
+  timeline.bars.forEach((bar) => register(bar.details.fieldValues));
+  timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+function listFieldValueStats(timeline, fieldRef) {
+  if (!timeline || !fieldRef) {
+    return [];
+  }
+  const trimmedFieldRef = fieldRef.trim();
+  if (trimmedFieldRef.length === 0) {
+    return [];
+  }
+  const counts = /* @__PURE__ */ new Map();
+  const register = (value) => {
+    const key = fieldValueToStorageKey(value);
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+    counts.set(key, {
+      label: fieldValueToCategoryLabel(value),
+      count: 1
+    });
+  };
+  timeline.bars.forEach((bar) => register(bar.details.fieldValues?.[trimmedFieldRef]));
+  timeline.unschedulable.forEach((item) => register(item.details.fieldValues?.[trimmedFieldRef]));
+  const categoryColorMap = buildCategoricalColorMap([...counts.values()].map((entry) => entry.label));
+  return [...counts.entries()].map(([key, entry]) => ({
+    key,
+    label: entry.label,
+    count: entry.count,
+    defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
+  })).sort((left, right) => left.label.localeCompare(right.label, void 0, { sensitivity: "base", numeric: true }));
+}
+function listModeValueStats(timeline, mode) {
+  if (!timeline || mode !== "status") {
+    return [];
+  }
+  const counts = /* @__PURE__ */ new Map();
+  const register = (value) => {
+    const key = fieldValueToStorageKey(value);
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+    counts.set(key, {
+      label: value,
+      count: 1
+    });
+  };
+  timeline.bars.forEach((bar) => register(bar.state.code));
+  timeline.unschedulable.forEach((item) => register(item.state.code));
+  const categoryColorMap = buildCategoricalColorMap([...counts.values()].map((entry) => entry.label));
+  return [...counts.entries()].map(([key, entry]) => ({
+    key,
+    label: entry.label,
+    count: entry.count,
+    defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
+  })).sort((left, right) => left.label.localeCompare(right.label, void 0, { sensitivity: "base", numeric: true }));
+}
+function fieldValueToStorageKey(value) {
+  if (value === null || typeof value === "undefined") {
+    return "__null__";
+  }
+  return String(value);
+}
+function toScopedFieldValueColorKey(fieldRef, valueKey) {
+  const normalizedFieldRef = fieldRef?.trim();
+  if (!normalizedFieldRef) {
+    return null;
+  }
+  return `${normalizedFieldRef}::${valueKey}`;
+}
+function toScopedModeValueColorKey(mode, valueKey) {
+  if (mode !== "parent" && mode !== "status") {
+    return null;
+  }
+  return `mode:${mode}::${valueKey}`;
+}
+function fieldValueToCategoryLabel(value) {
+  if (value === null || typeof value === "undefined") {
+    return "Empty";
+  }
+  const text2 = String(value).trim();
+  return text2.length > 0 ? text2 : "Empty";
+}
+function buildCategoricalColorMap(categories) {
+  const unique = Array.from(new Set(categories.map((entry) => entry.trim()).filter((entry) => entry.length > 0))).sort((a, b) => a.localeCompare(b));
+  const map = /* @__PURE__ */ new Map();
+  unique.forEach((category, index) => {
+    map.set(category, TIMELINE_CATEGORY_COLORS[index % TIMELINE_CATEGORY_COLORS.length]);
+  });
+  return map;
+}
+function isOverdueTimelineItem(endDateIso, stateCode) {
+  if (!endDateIso) {
+    return false;
+  }
+  const endDate = parseIso(endDateIso);
+  if (!endDate) {
+    return false;
+  }
+  const todayUtc = /* @__PURE__ */ new Date();
+  const todayStartUtc = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate()));
+  if (endDate.getTime() >= todayStartUtc.getTime()) {
+    return false;
+  }
+  const normalizedState = stateCode.trim().toLowerCase();
+  return !["closed", "done", "resolved", "removed", "completed"].includes(normalizedState);
 }
 function parseIso(value) {
   if (!value) {
@@ -27800,37 +32441,22 @@ function dayDiff(from, to) {
 function dayDiffInclusive(from, to) {
   return dayDiff(from, to) + 1;
 }
-function buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx) {
-  const ticks = [];
+function buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx) {
+  const markers = [];
   const domainEnd = addDays(domainStart, totalDays);
-  if (zoomLevel === "week") {
-    let cursor = startOfIsoWeekUtc(domainStart);
-    if (cursor.getTime() < domainStart.getTime()) {
-      cursor = addDays(cursor, 7);
-    }
-    while (cursor.getTime() <= domainEnd.getTime()) {
-      const offset = dayDiff(domainStart, cursor);
-      ticks.push({
-        x: offset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 10)
-      });
-      cursor = addDays(cursor, 7);
-    }
-  } else {
-    let cursor = startOfMonthUtc(domainStart);
-    if (cursor.getTime() < domainStart.getTime()) {
-      cursor = addMonthsUtc(cursor, 1);
-    }
-    while (cursor.getTime() <= domainEnd.getTime()) {
-      const offset = dayDiff(domainStart, cursor);
-      ticks.push({
-        x: offset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 7)
-      });
-      cursor = addMonthsUtc(cursor, 1);
-    }
+  let cursor = startOfIsoWeekUtc(domainStart);
+  if (cursor.getTime() < domainStart.getTime()) {
+    cursor = addDays(cursor, 7);
   }
-  return ticks.length ? ticks : [{ x: 0, label: zoomLevel === "week" ? domainStart.toISOString().slice(0, 10) : domainStart.toISOString().slice(0, 7) }];
+  while (cursor.getTime() <= domainEnd.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    markers.push({
+      x: offset * dayWidthPx,
+      label: formatDayMonthLabel(cursor)
+    });
+    cursor = addDays(cursor, 7);
+  }
+  return markers.length ? markers : [{ x: 0, label: formatDayMonthLabel(domainStart) }];
 }
 function buildDailyGridLines(totalDays, dayWidthPx) {
   const lines = [];
@@ -27842,58 +32468,127 @@ function buildDailyGridLines(totalDays, dayWidthPx) {
 function buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx) {
   const domainEndExclusive = addDays(domainStart, totalDays + 1);
   let cursor = startOfMonthUtc(domainStart);
-  const monthBoundaries = [];
-  const monthLabels = [];
+  const markers = [];
+  const seenX = /* @__PURE__ */ new Set();
   while (cursor.getTime() < domainEndExclusive.getTime()) {
     const monthStartOffset = dayDiff(domainStart, cursor);
-    const nextMonth = addMonthsUtc(cursor, 1);
-    const monthEndOffsetExclusive = dayDiff(domainStart, nextMonth);
-    if (monthStartOffset >= 0 && monthStartOffset <= totalDays) {
-      monthBoundaries.push(monthStartOffset * dayWidthPx);
+    if (monthStartOffset <= totalDays) {
+      const markerOffsetDays = clamp4(monthStartOffset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        markers.push({
+          x,
+          label: formatMonthYearLabel(cursor)
+        });
+      }
     }
-    const visibleStartOffset = Math.max(0, monthStartOffset);
-    const visibleEndOffsetExclusive = Math.min(totalDays + 1, monthEndOffsetExclusive);
-    if (visibleEndOffsetExclusive > visibleStartOffset) {
-      const centerOffset = visibleStartOffset + (visibleEndOffsetExclusive - visibleStartOffset) / 2;
-      monthLabels.push({
-        x: centerOffset * dayWidthPx,
-        label: cursor.toISOString().slice(0, 7)
-      });
-    }
-    cursor = nextMonth;
+    cursor = addMonthsUtc(cursor, 1);
   }
-  return { monthBoundaries, monthLabels };
+  return markers;
 }
 function formatTickDate(value) {
   return value.toISOString().slice(0, 10);
 }
-function clientDeltaToDays(deltaClientX, svg, dayWidthPx) {
-  if (!svg) {
+function formatDayMonthLabel(value) {
+  const day = String(value.getUTCDate()).padStart(2, "0");
+  const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+  return `${day}.${month}.`;
+}
+function formatMonthYearLabel(value) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(value);
+}
+function clientDeltaToDays(deltaClientX, svg2, dayWidthPx) {
+  if (!svg2) {
     return Math.round(deltaClientX / dayWidthPx);
   }
-  const rect = svg.getBoundingClientRect();
-  const horizontalScale = rect.width > 0 ? svg.viewBox.baseVal.width / rect.width : 1;
+  const rect = svg2.getBoundingClientRect();
+  const horizontalScale = rect.width > 0 ? svg2.viewBox.baseVal.width / rect.width : 1;
   const svgDeltaX = deltaClientX * horizontalScale;
   return Math.round(svgDeltaX / dayWidthPx);
 }
-function clientXToDate(clientX, svg, domainStart, dayWidthPx) {
+function clientXToDate(clientX, svg2, domainStart, dayWidthPx) {
   const safeClientX = Number.isFinite(clientX) ? clientX : CHART_LEFT_GUTTER;
   let svgX = safeClientX;
-  if (svg) {
-    const rect = svg.getBoundingClientRect();
+  if (svg2) {
+    const rect = svg2.getBoundingClientRect();
     if (rect.width > 0) {
-      const horizontalScale = svg.viewBox.baseVal.width / rect.width;
+      const horizontalScale = svg2.viewBox.baseVal.width / rect.width;
       svgX = (clientX - rect.left) * horizontalScale;
     }
   }
   const dayIndex = Math.max(0, Math.round((svgX - CHART_LEFT_GUTTER) / dayWidthPx));
   return addDays(domainStart, dayIndex);
 }
+function clientPointToSvg(clientX, clientY, svg2) {
+  if (!svg2) {
+    return {
+      x: Number.isFinite(clientX) ? clientX : 0,
+      y: Number.isFinite(clientY) ? clientY : 0
+    };
+  }
+  const rect = svg2.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return {
+      x: Number.isFinite(clientX) ? clientX : 0,
+      y: Number.isFinite(clientY) ? clientY : 0
+    };
+  }
+  const horizontalScale = svg2.viewBox.baseVal.width / rect.width;
+  const verticalScale = svg2.viewBox.baseVal.height / rect.height;
+  return {
+    x: (clientX - rect.left) * horizontalScale,
+    y: (clientY - rect.top) * verticalScale
+  };
+}
 function toIsoDateUtc(value) {
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
 }
-function clamp(value, min, max) {
+function resolveTimelineDetailsMaxWidthPx(container, sidebarWidthPx) {
+  if (!container || container.clientWidth <= 0) {
+    return DETAILS_PANEL_MAX_WIDTH_PX;
+  }
+  const normalizedSidebarWidth = clamp4(Math.round(sidebarWidthPx), TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+  const available = Math.floor(container.clientWidth - normalizedSidebarWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX - DETAILS_PANEL_MIN_CHART_WIDTH_PX);
+  return clamp4(available, DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+}
+function resolveTimelineSidebarMaxWidthPx(container, detailsWidthPx) {
+  if (!container || container.clientWidth <= 0) {
+    return TIMELINE_SIDEBAR_MAX_WIDTH_PX;
+  }
+  const normalizedDetailsWidth = clamp4(Math.round(detailsWidthPx), DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+  const available = Math.floor(container.clientWidth - normalizedDetailsWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX - DETAILS_PANEL_MIN_CHART_WIDTH_PX);
+  return clamp4(available, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+}
+function resolveTimelineVerticalLayoutMetrics(barCount, includeUnscheduledDropLane) {
+  const normalizedBarCount = Math.max(0, Math.trunc(barCount));
+  return {
+    contentRows: normalizedBarCount + (includeUnscheduledDropLane ? 1 : 0),
+    tailHeightPx: CHART_BOTTOM_PADDING
+  };
+}
+function resolveTimelineBarTopY(rowIndex) {
+  return CHART_TOP_PADDING + rowIndex * CHART_ROW_HEIGHT + BAR_ROW_TOP_INSET_PX;
+}
+function clamp4(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+function quantizeDayWidth(value) {
+  return Math.round(value / ZOOM_DAY_WIDTH_STEP_PX) * ZOOM_DAY_WIDTH_STEP_PX;
+}
+function normalizeWheelDelta(event) {
+  if (event.deltaMode === 1) {
+    return event.deltaY * 16;
+  }
+  if (event.deltaMode === 2) {
+    const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 900;
+    return event.deltaY * Math.max(200, viewportHeight);
+  }
+  return event.deltaY;
 }
 function calculateDraggedSchedule(mode, sourceStart, sourceEnd, dayDelta) {
   if (mode === "move") {
@@ -27915,6 +32610,121 @@ function calculateDraggedSchedule(mode, sourceStart, sourceEnd, dayDelta) {
   }
   return { startDate: sourceStart, endDate: candidateEnd };
 }
+function buildDependencyConnectorPath(from, to, laneSeed, options) {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
+  const horizontalDistance = endX - startX;
+  const minDirectDistance = options?.forceNearGapDetour ? 20 : 10;
+  const directLaneX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+  if (horizontalDistance >= minDirectDistance) {
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: directLaneX, y: from.midY },
+      { x: directLaneX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+  const laneY = resolveDependencyLaneY(laneSeed, {
+    fromTopY: from.y,
+    fromMidY: from.midY,
+    fromBottomY: from.y + BAR_HEIGHT,
+    toTopY: to.y,
+    toMidY: to.midY
+  });
+  const detourX = Math.max(startX, endX) + DEPENDENCY_LEFT_APPROACH_PX;
+  const approachX = endX - Math.max(4, options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 6);
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: detourX, y: from.midY },
+    { x: detourX, y: laneY },
+    { x: approachX, y: laneY },
+    { x: approachX, y: to.midY },
+    { x: endX, y: to.midY }
+  ]);
+}
+function buildDependencyConnectorToPointPath(from, targetX, targetY, laneSeed) {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const safeTargetX = Number.isFinite(targetX) ? targetX : startX + DEPENDENCY_POINTER_SEGMENT_MIN_PX;
+  const safeTargetY = Number.isFinite(targetY) ? targetY : from.midY;
+  const horizontalDistance = safeTargetX - startX;
+  if (horizontalDistance >= 10) {
+    const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: safeTargetY },
+      { x: safeTargetX, y: safeTargetY }
+    ]);
+  }
+  const estimatedTargetTopY = safeTargetY - BAR_HEIGHT / 2;
+  const laneY = resolveDependencyLaneY(laneSeed, {
+    fromTopY: from.y,
+    fromMidY: from.midY,
+    fromBottomY: from.y + BAR_HEIGHT,
+    toTopY: estimatedTargetTopY,
+    toMidY: safeTargetY
+  });
+  const detourX = Math.max(startX, safeTargetX) + DEPENDENCY_LEFT_APPROACH_PX;
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: detourX, y: from.midY },
+    { x: detourX, y: laneY },
+    { x: safeTargetX, y: laneY },
+    { x: safeTargetX, y: safeTargetY }
+  ]);
+}
+function toDependencyPathString(points) {
+  if (points.length === 0) {
+    return "";
+  }
+  const [first, ...rest] = points;
+  return `M ${first.x} ${first.y}${rest.map((point) => ` L ${point.x} ${point.y}`).join("")}`;
+}
+function resolveDependencyLaneY(seed, input) {
+  const normalizedSeed = Number.isFinite(seed) ? Math.abs(Math.trunc(seed)) : 0;
+  const laneOffset = DEPENDENCY_LANE_GAP_PX * (normalizedSeed % 3 + 1);
+  if (input.toMidY > input.fromMidY) {
+    const lowerLaneY = input.fromBottomY + DEPENDENCY_LANE_TOP_OFFSET_PX;
+    const upperLaneY = input.toTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
+    if (upperLaneY > lowerLaneY) {
+      return Math.min(upperLaneY, lowerLaneY + laneOffset);
+    }
+    return input.fromMidY + (input.toMidY - input.fromMidY) / 2;
+  }
+  const upperBarTopY = Math.min(input.fromTopY, input.toTopY);
+  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX - laneOffset;
+  const minLaneY = CHART_GRID_START_Y + DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX;
+  return Math.max(minLaneY, topLaneY);
+}
+function deduplicateTimelineDependencies(dependencies) {
+  const unique = [];
+  const seen = /* @__PURE__ */ new Set();
+  dependencies.forEach((dependency) => {
+    const key = `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}`;
+    if (seen.has(key)) {
+      return;
+    }
+    seen.add(key);
+    unique.push(dependency);
+  });
+  return unique;
+}
+function isDependencyViolated(predecessorBar, successorBar) {
+  return predecessorBar !== void 0 && successorBar !== void 0 && predecessorBar.end.getTime() > successorBar.start.getTime();
+}
+function resolveHoveredDependencyTargetWorkItemId(geometryByWorkItemId, svgX, svgY, sourceWorkItemId) {
+  for (const [workItemId, geometry] of geometryByWorkItemId.entries()) {
+    if (workItemId === sourceWorkItemId) {
+      continue;
+    }
+    const withinX = svgX >= geometry.x && svgX <= geometry.x + geometry.width;
+    const withinY = svgY >= geometry.y && svgY <= geometry.y + BAR_HEIGHT;
+    if (withinX && withinY) {
+      return workItemId;
+    }
+  }
+  return null;
+}
 function truncateTitleToBarWidth(title, barWidth) {
   const availableWidth = Math.max(0, barWidth - BAR_LABEL_HORIZONTAL_PADDING * 2);
   const maxCharacters = Math.floor(availableWidth / APPROX_BAR_LABEL_CHAR_WIDTH_PX);
@@ -27928,17 +32738,6 @@ function truncateTitleToBarWidth(title, barWidth) {
     return title.slice(0, 1);
   }
   return `${title.slice(0, maxCharacters - 1)}\u2026`;
-}
-function resolveSelectedTitle(timeline, selectedWorkItemId) {
-  if (!timeline || selectedWorkItemId === null) {
-    return null;
-  }
-  const bar = timeline.bars.find((entry) => entry.workItemId === selectedWorkItemId);
-  if (bar) {
-    return bar.title;
-  }
-  const unschedulable = timeline.unschedulable.find((entry) => entry.workItemId === selectedWorkItemId);
-  return unschedulable ? unschedulable.title : null;
 }
 function applyAdoptedSchedules(timeline, adoptedSchedulesByWorkItemId) {
   if (!timeline) {
@@ -27981,11 +32780,11 @@ function applyEditedBarSchedules(timeline, editedBarSchedulesByWorkItemId) {
   if (!timeline) {
     return null;
   }
-  const entries = Object.entries(editedBarSchedulesByWorkItemId);
-  if (entries.length === 0) {
+  const entries2 = Object.entries(editedBarSchedulesByWorkItemId);
+  if (entries2.length === 0) {
     return timeline;
   }
-  const overrides = new Map(entries.map(([workItemIdText, schedule]) => [Number(workItemIdText), schedule]));
+  const overrides = new Map(entries2.map(([workItemIdText, schedule]) => [Number(workItemIdText), schedule]));
   let changed = false;
   const bars = timeline.bars.map((bar) => {
     const override = overrides.get(bar.workItemId);
@@ -28006,7 +32805,7 @@ function applyEditedBarSchedules(timeline, editedBarSchedulesByWorkItemId) {
 }
 
 // dist/src/features/diagnostics/warning-banner.js
-var import_react6 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 function WarningBanner(props) {
   const lines = buildWarningBannerLines(props);
   if (lines.length === 0) {
@@ -28015,10 +32814,10 @@ function WarningBanner(props) {
   const title = lines[0] ?? "[WARN]";
   const detail = (lines[1] ?? "").replace(/^- /, "");
   const actionLine = (lines[2] ?? "").replace(/^- /, "");
-  return import_react6.default.createElement("section", {
+  return import_react19.default.createElement("section", {
     "aria-label": "timeline-warning-banner",
     className: "warning-banner-card"
-  }, import_react6.default.createElement("div", { className: "warning-banner-copy" }, import_react6.default.createElement("p", { className: "warning-banner-title" }, title), import_react6.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react6.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react6.default.createElement("button", {
+  }, import_react19.default.createElement("div", { className: "warning-banner-copy" }, import_react19.default.createElement("p", { className: "warning-banner-title" }, title), import_react19.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react19.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -28045,29 +32844,29 @@ function buildWarningBannerLines(model) {
 }
 
 // dist/src/features/diagnostics/trust-badge.js
-var import_react7 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 function TrustBadge(props) {
   const label = props.trustState === "ready" ? "Ready" : props.trustState === "partial_failure" ? "Partial failure" : "Needs attention";
   const isHealthy = props.trustState === "ready";
   const pillLabel = isHealthy ? "OK" : "Trust Attention";
   const pillIcon = isHealthy ? "\u2713" : "!";
   const statusLine = `[${props.statusCode}] ${label}`;
-  return import_react7.default.createElement("details", {
+  return import_react20.default.createElement("details", {
     "aria-label": "global-trust-badge",
     className: "trust-badge-details",
     "data-trust-state": isHealthy ? "healthy" : "unhealthy"
-  }, import_react7.default.createElement("summary", { className: "trust-badge-trigger" }, import_react7.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react7.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react7.default.createElement("div", { className: "trust-badge-panel" }, import_react7.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react7.default.createElement("dl", { className: "trust-badge-meta" }, import_react7.default.createElement("dt", null, "last-updated"), import_react7.default.createElement("dd", null, props.lastRefreshAt ?? "none"))));
+  }, import_react20.default.createElement("summary", { className: "trust-badge-trigger" }, import_react20.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react20.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react20.default.createElement("div", { className: "trust-badge-panel" }, import_react20.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react20.default.createElement("dl", { className: "trust-badge-meta" }, import_react20.default.createElement("dt", null, "last-updated"), import_react20.default.createElement("dd", null, props.lastRefreshAt ?? "none"))));
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js
-var import_react8 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 function DiagnosticsTab(props) {
   const lines = buildDiagnosticsTabLines(props).slice(1);
-  const rows = lines.map((line, index) => import_react8.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
-  return import_react8.default.createElement("section", {
+  const rows = lines.map((line, index) => import_react21.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
+  return import_react21.default.createElement("section", {
     "aria-label": "diagnostics-tab",
     className: "diagnostics-card"
-  }, import_react8.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react8.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react8.default.createElement("button", {
+  }, import_react21.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react21.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react21.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -28089,12 +32888,140 @@ function buildDiagnosticsTabLines(model) {
   ];
 }
 
-// dist/src/app/bootstrap/ui-client.js
-var ADO_COMM_LOG_POLL_INTERVAL_MS = 1e3;
-var ADO_COMM_LOG_READ_LIMIT = 200;
-var ADO_COMM_LOG_UI_MAX = 1e3;
-var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
-var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
+// dist/src/shared/ui-state/timeline-runtime-state-colors.js
+function normalizeWorkItemType(value) {
+  if (!value) {
+    return null;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+function resolveStatePaletteSourceWorkItemId(timeline) {
+  if (!timeline) {
+    return null;
+  }
+  const firstBarId = timeline.bars[0]?.workItemId ?? null;
+  if (typeof firstBarId === "number") {
+    return firstBarId;
+  }
+  const firstUnscheduledId = timeline.unschedulable[0]?.workItemId ?? null;
+  return typeof firstUnscheduledId === "number" ? firstUnscheduledId : null;
+}
+function collectStatePaletteSourceWorkItemsByType(timeline) {
+  const result = /* @__PURE__ */ new Map();
+  if (!timeline) {
+    return result;
+  }
+  const register = (workItemId, workItemType) => {
+    const typeKey = normalizeWorkItemType(workItemType);
+    if (!typeKey || result.has(typeKey)) {
+      return;
+    }
+    result.set(typeKey, workItemId);
+  };
+  timeline.bars.forEach((bar) => {
+    register(bar.workItemId, bar.details.workItemType);
+  });
+  timeline.unschedulable.forEach((item) => {
+    register(item.workItemId, item.details.workItemType);
+  });
+  return result;
+}
+function normalizeAdoStateColor(color) {
+  if (!color) {
+    return null;
+  }
+  const normalized = color.trim().replace(/^#/, "");
+  return /^[0-9a-f]{6}$/i.test(normalized) ? `#${normalized}` : null;
+}
+function buildStateColorLookup(states) {
+  const colorByStateCode = /* @__PURE__ */ new Map();
+  states.forEach((state2) => {
+    const name = state2.name.trim().toLowerCase();
+    const color = normalizeAdoStateColor(state2.color);
+    if (name.length > 0 && color) {
+      colorByStateCode.set(name, color);
+    }
+  });
+  return colorByStateCode;
+}
+function applyRuntimeStateColorsByType(timeline, stateColorsByType, fallbackStateColors) {
+  if (!timeline) {
+    return timeline;
+  }
+  const resolveColor = (input) => {
+    const stateKey = input.stateCode.trim().toLowerCase();
+    if (stateKey.length === 0) {
+      return null;
+    }
+    const typeKey = normalizeWorkItemType(input.workItemType);
+    const typeScoped = typeKey ? stateColorsByType.get(typeKey)?.get(stateKey) : null;
+    return typeScoped ?? fallbackStateColors.get(stateKey) ?? null;
+  };
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) => {
+      const nextColor = resolveColor({
+        stateCode: bar.state.code,
+        workItemType: bar.details.workItemType
+      });
+      return nextColor ? { ...bar, state: { ...bar.state, color: nextColor } } : bar;
+    }),
+    unschedulable: timeline.unschedulable.map((item) => {
+      const nextColor = resolveColor({
+        stateCode: item.state.code,
+        workItemType: item.details.workItemType
+      });
+      return nextColor ? { ...item, state: { ...item.state, color: nextColor } } : item;
+    })
+  };
+}
+async function enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptions) {
+  try {
+    const sourceByType = collectStatePaletteSourceWorkItemsByType(incoming.timeline);
+    const stateColorsByType = /* @__PURE__ */ new Map();
+    const fallbackStateColors = /* @__PURE__ */ new Map();
+    if (sourceByType.size > 0) {
+      await Promise.all([...sourceByType.entries()].map(async ([typeKey, workItemId]) => {
+        const stateOptions = await fetchWorkItemStateOptions({ targetWorkItemId: workItemId });
+        const stateColors = buildStateColorLookup(stateOptions);
+        if (stateColors.size === 0) {
+          return;
+        }
+        stateColorsByType.set(typeKey, stateColors);
+        stateColors.forEach((color, state2) => {
+          if (!fallbackStateColors.has(state2)) {
+            fallbackStateColors.set(state2, color);
+          }
+        });
+      }));
+    } else {
+      const fallbackSourceWorkItemId = resolveStatePaletteSourceWorkItemId(incoming.timeline);
+      if (fallbackSourceWorkItemId !== null) {
+        const stateOptions = await fetchWorkItemStateOptions({ targetWorkItemId: fallbackSourceWorkItemId });
+        buildStateColorLookup(stateOptions).forEach((color, state2) => {
+          fallbackStateColors.set(state2, color);
+        });
+      }
+    }
+    return {
+      ...incoming,
+      timeline: applyRuntimeStateColorsByType(incoming.timeline, stateColorsByType, fallbackStateColors)
+    };
+  } catch {
+    return incoming;
+  }
+}
+
+// dist/src/shared/ui-state/query-intake-flow-state.js
+function shouldOpenMappingFixTab(response) {
+  return response.preflightStatus === "READY" && response.statusCode === "OK" && response.mappingValidation.status === "invalid";
+}
+function deriveActiveTabForQueryResponse(response) {
+  return shouldOpenMappingFixTab(response) ? "mapping" : "timeline";
+}
+
+// dist/src/app/bootstrap/ui-client-timeline-mutations.js
 function applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate) {
   const adopted = applyAdoptedSchedules(timeline, {
     [targetWorkItemId]: { startDate, endDate }
@@ -28114,15 +33041,17 @@ function applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate) {
     } : bar)
   };
 }
-function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml) {
+function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, stateCode, stateColor) {
   if (!timeline) {
     return timeline;
   }
+  const nextState = toTimelineStateBadge(stateCode, stateColor);
   return {
     ...timeline,
     bars: timeline.bars.map((bar) => bar.workItemId === targetWorkItemId ? {
       ...bar,
       title,
+      state: nextState,
       details: {
         ...bar.details,
         descriptionHtml
@@ -28131,6 +33060,7 @@ function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descript
     unschedulable: timeline.unschedulable.map((item) => item.workItemId === targetWorkItemId ? {
       ...item,
       title,
+      state: nextState,
       details: {
         ...item.details,
         descriptionHtml
@@ -28138,369 +33068,109 @@ function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descript
     } : item)
   };
 }
-function renderAdoCommLogPanel(params) {
-  return import_react9.default.createElement("details", {
-    "aria-label": "ado-communication-log-panel",
-    className: "ado-communication-log-panel",
-    open: true
-  }, import_react9.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react9.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react9.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react9.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react9.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react9.default.createElement("pre", {
-    key: `${entry.seq}-${entry.direction}`,
-    "aria-label": "ado-log-entry",
-    className: "ado-communication-log-entry"
-  }, `[${entry.seq}] ${entry.timestamp} ${entry.direction.toUpperCase()} ${entry.method} ${entry.url} status=${entry.status ?? "-"} durationMs=${entry.durationMs ?? "-"} ${entry.preview}`))));
-}
-function bootstrapUiClient(options) {
-  const root = (0, import_client.createRoot)(options.container);
-  root.render(import_react9.default.createElement(import_react9.default.StrictMode, null, import_react9.default.createElement(QueryClientProvider, {
-    client: options.composition.queryClient
-  }, import_react9.default.createElement(BrowserRouter, null, import_react9.default.createElement(UiShellApp, {
-    composition: options.composition
-  })))));
-}
-function UiShellApp(props) {
-  const restoredState = import_react9.default.useMemo(() => readPersistedUiShellState(), []);
-  const initialResponse = restoredState?.response ?? null;
-  const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
-  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
-  const [activeTab, setActiveTab] = import_react9.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react9.default.useState(!hasInitialQuery);
-  const [response, setResponse] = import_react9.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react9.default.useState(restoredState?.lastRunRequest ?? null);
-  const [uiModel, setUiModel] = import_react9.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react9.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react9.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [adoCommLogs, setAdoCommLogs] = import_react9.default.useState([]);
-  const [adoCommLogsCursor, setAdoCommLogsCursor] = import_react9.default.useState(0);
-  const [adoCommLogsError, setAdoCommLogsError] = import_react9.default.useState(null);
-  const [adoCommLogsLoading, setAdoCommLogsLoading] = import_react9.default.useState(true);
-  const [themeMode, setThemeMode] = import_react9.default.useState(() => readPersistedThemeMode());
-  const [workItemSyncState, setWorkItemSyncState] = import_react9.default.useState("up_to_date");
-  const [workItemSyncError, setWorkItemSyncError] = import_react9.default.useState(null);
-  const adoCommPollInFlightRef = import_react9.default.useRef(false);
-  const workItemSyncInFlightRef = import_react9.default.useRef(0);
-  const timelineSelectionStoreRef = import_react9.default.useRef(createTimelineSelectionStore());
-  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
-  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
-  import_react9.default.useEffect(() => {
-    let active = true;
-    const poll = async () => {
-      if (adoCommPollInFlightRef.current || !active) {
-        return;
-      }
-      adoCommPollInFlightRef.current = true;
-      try {
-        const snapshot = await props.composition.controller.fetchAdoCommLogs({
-          afterSeq: adoCommLogsCursor,
-          limit: ADO_COMM_LOG_READ_LIMIT
-        });
-        if (!active) {
-          return;
-        }
-        setAdoCommLogs((current) => {
-          const next = current.concat(snapshot.entries);
-          if (next.length > ADO_COMM_LOG_UI_MAX) {
-            return next.slice(next.length - ADO_COMM_LOG_UI_MAX);
-          }
-          return next;
-        });
-        setAdoCommLogsCursor(snapshot.nextSeq);
-        setAdoCommLogsError(null);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        const message = error instanceof Error ? error.message : "Unable to load Azure communication logs.";
-        setAdoCommLogsError(message);
-      } finally {
-        if (active) {
-          setAdoCommLogsLoading(false);
-        }
-        adoCommPollInFlightRef.current = false;
-      }
-    };
-    void poll();
-    const intervalId = window.setInterval(() => {
-      void poll();
-    }, ADO_COMM_LOG_POLL_INTERVAL_MS);
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
-  }, [adoCommLogsCursor, props.composition.controller]);
-  const runQuery = import_react9.default.useCallback(async (request) => {
-    const result = await props.composition.runQuerySelectionFlow({
-      queryId: request.queryId,
-      mappingProfileId: request.mappingProfileId,
-      mappingProfileUpsert: request.mappingProfileUpsert
-    });
-    const submitted = result.response;
-    setResponse(submitted);
-    setUiModel(result.uiModel);
-    setLastRunRequest({
-      queryInput: request.queryId,
-      mappingProfileId: request.mappingProfileId,
-      mappingProfileUpsert: request.mappingProfileUpsert
-    });
-    setBlockerMessage(null);
-    if (submitted.preflightStatus === "READY" && submitted.statusCode === "OK" && submitted.mappingValidation.status === "invalid") {
-      setMappingFixResponse(submitted);
-      setActiveTab("mapping");
-    } else {
-      setMappingFixResponse(null);
-      setActiveTab("timeline");
-    }
-    return submitted;
-  }, [props.composition]);
-  const handleNeedsFix = import_react9.default.useCallback((needsFixResponse) => {
-    setMappingFixResponse(needsFixResponse);
-    setActiveTab("mapping");
-  }, []);
-  const applyMappingDefaults = import_react9.default.useCallback(async (selection) => {
-    const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
-    if (!nextQueryId) {
-      return;
-    }
-    const next = await runQuery({
-      queryId: nextQueryId,
-      mappingProfileUpsert: {
-        id: "auto-required-defaults",
-        name: "Required defaults",
-        fields: selection
-      }
-    });
-    if (next.mappingValidation.status === "valid") {
-      setMappingFixResponse(null);
-      setActiveTab("timeline");
-    } else {
-      setMappingFixResponse(next);
-    }
-  }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const retryRefresh = import_react9.default.useCallback(async () => {
-    if (lastRunRequest) {
-      const refreshed = await props.composition.controller.submit(lastRunRequest);
-      setResponse(refreshed);
-      setUiModel(mapQueryIntakeResponseToUiModel(refreshed));
-      if (refreshed.preflightStatus === "READY" && refreshed.statusCode === "OK" && refreshed.mappingValidation.status === "invalid") {
-        setMappingFixResponse(refreshed);
-        setActiveTab("mapping");
-        setControlsOpen(true);
-        return;
-      }
-      setActiveTab("timeline");
-      return;
-    }
-    const persistedQueryInput2 = resolvePersistedRefreshQueryInput();
-    if (!persistedQueryInput2) {
-      setActiveTab("query");
-      setControlsOpen(true);
-      setBlockerMessage({
-        tab: "query",
-        reason: "No query available to refresh.",
-        nextAction: "Open controls, enter Query ID, then run query."
-      });
-      return;
-    }
-    await runQuery({
-      queryId: persistedQueryInput2
-    });
-  }, [lastRunRequest, props.composition.controller, runQuery]);
-  const runTrackedWorkItemUpdate = import_react9.default.useCallback(async (operation) => {
-    workItemSyncInFlightRef.current += 1;
-    setWorkItemSyncState("syncing");
-    setWorkItemSyncError(null);
-    try {
-      return await operation();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Write failed.";
-      setWorkItemSyncState("error");
-      setWorkItemSyncError(message);
-      throw error;
-    } finally {
-      workItemSyncInFlightRef.current = Math.max(0, workItemSyncInFlightRef.current - 1);
-      if (workItemSyncInFlightRef.current === 0) {
-        setWorkItemSyncState((current) => current === "error" ? current : "up_to_date");
-      }
-    }
-  }, []);
-  import_react9.default.useEffect(() => {
-    persistUiShellState({
-      activeTab,
-      response,
-      lastRunRequest
-    });
-  }, [activeTab, lastRunRequest, response]);
-  import_react9.default.useEffect(() => {
-    persistThemeMode(themeMode);
-    applyThemeMode(themeMode);
-    if (themeMode !== "system" || typeof window === "undefined") {
-      return;
-    }
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      applyThemeMode("system");
-    };
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", handleSystemThemeChange);
-      return () => {
-        mediaQuery.removeEventListener("change", handleSystemThemeChange);
-      };
-    }
-    mediaQuery.addListener(handleSystemThemeChange);
-    return () => {
-      mediaQuery.removeListener(handleSystemThemeChange);
-    };
-  }, [themeMode]);
-  const mainPanel = renderActivePanel({
-    activeTab,
-    uiModel,
-    response,
-    mappingFixResponse,
-    onRun: runQuery,
-    onNeedsFix: handleNeedsFix,
-    onApplyMappingDefaults: applyMappingDefaults,
-    onRetryRefresh: retryRefresh,
-    adoCommLogs,
-    adoCommLogsLoading,
-    adoCommLogsError
-  });
-  return import_react9.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react9.default.createElement("section", { className: "ui-shell-header" }, import_react9.default.createElement("div", { className: "ui-shell-brand" }, import_react9.default.createElement("h1", null, "Azure GanttOps")), import_react9.default.createElement("div", { className: "ui-shell-header-actions" }, import_react9.default.createElement("div", { className: "theme-menu" }, import_react9.default.createElement("button", {
-    type: "button",
-    className: "theme-menu-trigger",
-    "aria-label": `Theme wechseln (aktuell: ${labelForThemeMode(themeMode)})`,
-    title: `Theme: ${labelForThemeMode(themeMode)} (klicken zum Wechseln)`,
-    onClick: () => {
-      setThemeMode(nextThemeMode(themeMode));
-    }
-  }, import_react9.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react9.default.createElement(TrustBadge, {
-    statusCode: uiModel.statusCode,
-    trustState: uiModel.trustState,
-    lastRefreshAt: uiModel.freshness.lastRefreshAt,
-    readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
-  }), import_react9.default.createElement("button", {
-    type: "button",
-    className: "controls-toggle-button",
-    "aria-expanded": controlsOpen,
-    "aria-controls": "ui-controls-drawer",
-    onClick: () => {
-      setControlsOpen((current) => !current);
-    }
-  }, controlsOpen ? "Close controls" : "Open controls"))), import_react9.default.createElement("section", { className: "ui-shell-content" }, import_react9.default.createElement("section", { className: "gantt-primary-card" }, import_react9.default.createElement("div", { className: "gantt-primary-head" }, import_react9.default.createElement("h2", null, "Gantt Chart"), import_react9.default.createElement("div", {
-    className: "gantt-sync-status",
-    "data-state": workItemSyncState,
-    role: "status",
-    "aria-live": "polite",
-    title: workItemSyncState === "error" ? workItemSyncError ?? void 0 : void 0
-  }, import_react9.default.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }), import_react9.default.createElement("span", null, workItemSyncState === "syncing" ? "Updating work items..." : workItemSyncState === "error" ? "Work item update failed" : "Work items up to date"))), import_react9.default.createElement(WarningBanner, {
-    uiState: uiModel.uiState,
-    guidance: uiModel.guidance,
-    retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
-    hasStrictFailFallback: uiModel.strictFail.active,
-    onRetryRefresh: () => {
-      void retryRefresh();
-    }
-  }), import_react9.default.createElement(TimelinePane, {
-    timeline: uiModel.timeline,
-    showDependencies: true,
-    organization,
-    project,
-    selectionStore: timelineSelectionStoreRef.current,
-    onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-          targetWorkItemId,
-          startDate,
-          endDate
-        });
-        if (!writeResult.accepted) {
-          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
-        }
-        setUiModel((current) => ({
-          ...current,
-          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-        }));
-        setResponse((current) => current ? {
-          ...current,
-          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-        } : current);
-      });
-    },
-    onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-          targetWorkItemId,
-          startDate,
-          endDate
-        });
-        if (!writeResult.accepted) {
-          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
-        }
-        setUiModel((current) => ({
-          ...current,
-          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-        }));
-        setResponse((current) => current ? {
-          ...current,
-          timeline: applyScheduleUpdate(current.timeline, targetWorkItemId, startDate, endDate)
-        } : current);
-      });
-    },
-    onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.updateWorkItemDetails({
-          targetWorkItemId,
-          title,
-          descriptionHtml
-        });
-        if (!writeResult.accepted) {
-          throw new Error(writeResult.reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
-        }
-        setUiModel((current) => ({
-          ...current,
-          timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
-        }));
-        setResponse((current) => current ? {
-          ...current,
-          timeline: applyWorkItemMetadataUpdate(current.timeline, targetWorkItemId, title, descriptionHtml)
-        } : current);
-      });
-    },
-    onRetryRefresh: () => {
-      void retryRefresh();
-    }
-  })), import_react9.default.createElement("section", {
-    id: "ui-controls-drawer",
-    className: controlsOpen ? "ui-shell-workspace ui-shell-workspace-open" : "ui-shell-workspace",
-    "aria-hidden": controlsOpen ? "false" : "true"
-  }, import_react9.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react9.default.createElement(TopTabs, {
-    activeTab,
-    model: uiModel,
-    onTabChange: (tab) => {
-      setActiveTab(tab);
-    },
-    onBlockedAttempt: (payload) => {
-      setBlockerMessage(payload);
-    }
-  }), blockerMessage ? import_react9.default.createElement("section", {
-    "aria-label": "tab-blocker-guidance",
-    className: "tab-blocker-guidance"
-  }, import_react9.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react9.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react9.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel)));
-}
-function resolvePersistedRefreshQueryInput() {
-  if (typeof localStorage === "undefined") {
-    return null;
+function applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, action) {
+  if (!timeline) {
+    return timeline;
   }
-  const queryInput = localStorage.getItem(QUERY_INPUT_KEY) ?? "";
-  const organization = localStorage.getItem(ORG_KEY) ?? "";
-  const project = localStorage.getItem(PROJECT_KEY) ?? "";
-  return resolveQueryRunInput(queryInput, organization, project);
+  if (action === "remove") {
+    return {
+      ...timeline,
+      dependencies: timeline.dependencies.filter((dependency) => !(dependency.predecessorWorkItemId === predecessorWorkItemId && dependency.successorWorkItemId === successorWorkItemId && dependency.dependencyType === "FS"))
+    };
+  }
+  const alreadyExists = timeline.dependencies.some((dependency) => dependency.predecessorWorkItemId === predecessorWorkItemId && dependency.successorWorkItemId === successorWorkItemId && dependency.dependencyType === "FS");
+  if (alreadyExists) {
+    return timeline;
+  }
+  return {
+    ...timeline,
+    dependencies: [
+      ...timeline.dependencies,
+      {
+        predecessorWorkItemId,
+        successorWorkItemId,
+        dependencyType: "FS",
+        label: `#${predecessorWorkItemId} [end] -> #${successorWorkItemId} [start]`
+      }
+    ],
+    suppressedDependencies: timeline.suppressedDependencies.filter((dependency) => !(dependency.predecessorWorkItemId === predecessorWorkItemId && dependency.successorWorkItemId === successorWorkItemId && dependency.dependencyType === "FS"))
+  };
 }
-function readPersistedUiShellState() {
+function toTimelineStateBadge(code, preferredColor) {
+  const normalizedCode = code.trim().length > 0 ? code.trim() : "Unknown";
+  return {
+    code: normalizedCode,
+    badge: normalizedCode.charAt(0).toUpperCase() || "?",
+    color: preferredColor && preferredColor.trim().length > 0 ? `#${preferredColor.replace(/^#/, "")}` : colorForStateCode(normalizedCode)
+  };
+}
+function colorForStateCode(code) {
+  switch (code.toLowerCase()) {
+    case "new":
+    case "to do":
+      return "#7c3aed";
+    case "active":
+    case "in progress":
+      return "#1d4ed8";
+    case "resolved":
+      return "#15803d";
+    case "closed":
+    case "done":
+      return "#6b7280";
+    default:
+      return "#334155";
+  }
+}
+
+// dist/src/app/bootstrap/ui-client-storage.js
+var QUERY_GUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+var QUERY_GUID_EXACT_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function readPersistedQueryContext(params) {
+  if (typeof localStorage === "undefined") {
+    return {
+      queryInput: "",
+      organization: "",
+      project: ""
+    };
+  }
+  return {
+    queryInput: localStorage.getItem(params.queryInputKey) ?? "",
+    organization: localStorage.getItem(params.orgKey) ?? "",
+    project: localStorage.getItem(params.projectKey) ?? ""
+  };
+}
+function inferSavedQueryId(queryInput) {
+  const match = queryInput.match(QUERY_GUID_PATTERN);
+  return match ? match[0] : queryInput;
+}
+function buildSavedQueryLabel() {
+  return "Unbenannte Query";
+}
+function toShortQueryName(name, id) {
+  const raw = name.trim();
+  if (!raw) {
+    return "Unbenannte Query";
+  }
+  const trailingGuidMatch = raw.match(/^(.*)\s\(([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\)$/i);
+  const withoutTrailingGuid = trailingGuidMatch ? trailingGuidMatch[1].trim() : raw;
+  if (!withoutTrailingGuid || QUERY_GUID_EXACT_PATTERN.test(withoutTrailingGuid) || withoutTrailingGuid === id) {
+    return "Unbenannte Query";
+  }
+  const segments = withoutTrailingGuid.split("/").map((segment) => segment.trim()).filter(Boolean);
+  const shortName = segments[segments.length - 1] ?? withoutTrailingGuid;
+  return shortName || "Unbenannte Query";
+}
+function upsertSavedQueries(queries, candidate, maxEntries) {
+  const withoutCurrent = queries.filter((entry) => entry.id !== candidate.id);
+  const next = [candidate, ...withoutCurrent];
+  return next.slice(0, maxEntries);
+}
+function readPersistedUiShellState(storageKey) {
   if (typeof localStorage === "undefined") {
     return null;
   }
   try {
-    const raw = localStorage.getItem(UI_SHELL_STATE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (!raw) {
       return null;
     }
@@ -28521,12 +33191,14 @@ function readPersistedUiShellState() {
     return null;
   }
 }
-function persistUiShellState(state2) {
+function persistUiShellState(storageKey, state2) {
   if (typeof localStorage === "undefined") {
     return;
   }
-  localStorage.setItem(UI_SHELL_STATE_KEY, JSON.stringify(state2));
+  localStorage.setItem(storageKey, JSON.stringify(state2));
 }
+
+// dist/src/app/bootstrap/ui-client-theme.js
 function resolveEffectiveTheme(mode) {
   if (mode === "dark") {
     return "dark";
@@ -28547,21 +33219,24 @@ function applyThemeMode(mode) {
   root.dataset.themeMode = mode;
   root.dataset.theme = resolveEffectiveTheme(mode);
 }
-function readPersistedThemeMode() {
+function readPersistedThemeMode(storageKey, cachedThemeMode) {
+  if (cachedThemeMode === "system" || cachedThemeMode === "dark" || cachedThemeMode === "light") {
+    return cachedThemeMode;
+  }
   if (typeof localStorage === "undefined") {
     return "system";
   }
-  const mode = localStorage.getItem(THEME_MODE_KEY);
+  const mode = localStorage.getItem(storageKey);
   if (mode === "system" || mode === "dark" || mode === "light") {
     return mode;
   }
   return "system";
 }
-function persistThemeMode(mode) {
+function persistThemeMode(storageKey, mode) {
   if (typeof localStorage === "undefined") {
     return;
   }
-  localStorage.setItem(THEME_MODE_KEY, mode);
+  localStorage.setItem(storageKey, mode);
 }
 function iconForThemeMode(mode) {
   if (mode === "dark") {
@@ -28590,10 +33265,861 @@ function nextThemeMode(mode) {
   }
   return "system";
 }
+
+// dist/src/app/bootstrap/use-ado-comm-log-polling.js
+var import_react22 = __toESM(require_react(), 1);
+function useAdoCommLogPolling(input) {
+  const [logs, setLogs] = import_react22.default.useState([]);
+  const [cursor, setCursor] = import_react22.default.useState(0);
+  const [error, setError] = import_react22.default.useState(null);
+  const [loading, setLoading] = import_react22.default.useState(true);
+  const inFlightRef = import_react22.default.useRef(false);
+  import_react22.default.useEffect(() => {
+    let active = true;
+    const poll = async () => {
+      if (!active || inFlightRef.current) {
+        return;
+      }
+      inFlightRef.current = true;
+      try {
+        const snapshot = await input.controller.fetchAdoCommLogs({
+          afterSeq: cursor,
+          limit: input.readLimit
+        });
+        if (!active) {
+          return;
+        }
+        setLogs((current) => {
+          const next = current.concat(snapshot.entries);
+          if (next.length > input.maxEntries) {
+            return next.slice(next.length - input.maxEntries);
+          }
+          return next;
+        });
+        setCursor(snapshot.nextSeq);
+        setError(null);
+      } catch (pollError) {
+        if (!active) {
+          return;
+        }
+        const message = pollError instanceof Error ? pollError.message : "Unable to load Azure communication logs.";
+        setError(message);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+        inFlightRef.current = false;
+      }
+    };
+    void poll();
+    const intervalId = window.setInterval(() => {
+      void poll();
+    }, input.pollIntervalMs);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [cursor, input.controller, input.maxEntries, input.pollIntervalMs, input.readLimit]);
+  return {
+    logs,
+    loading,
+    error
+  };
+}
+
+// dist/src/app/bootstrap/ui-client-refresh-flow.js
+async function runRetryRefreshFlow(params) {
+  if (params.lastRunRequest) {
+    const refreshedRaw = await params.submit(params.lastRunRequest);
+    const refreshed = await params.enrichRuntimeStateColors(refreshedRaw);
+    return {
+      kind: "refreshed",
+      response: refreshed,
+      openMappingFix: shouldOpenMappingFixTab(refreshed),
+      activeTab: deriveActiveTabForQueryResponse(refreshed)
+    };
+  }
+  const persistedQueryInput = resolvePersistedRefreshQueryInput();
+  if (!persistedQueryInput) {
+    return {
+      kind: "blocked_no_query",
+      blocker: {
+        tab: "query",
+        reason: "No query available to refresh.",
+        nextAction: "Open controls, enter Query ID, then run query."
+      }
+    };
+  }
+  await params.runQuery({
+    queryId: persistedQueryInput
+  });
+  return {
+    kind: "query_triggered"
+  };
+}
+function resolvePersistedRefreshQueryInput() {
+  if (typeof localStorage === "undefined") {
+    return null;
+  }
+  const rawQueryInput = localStorage.getItem(QUERY_INPUT_KEY)?.trim() ?? "";
+  if (!rawQueryInput) {
+    return null;
+  }
+  const organization = localStorage.getItem(ORG_KEY) ?? "";
+  const project = localStorage.getItem(PROJECT_KEY) ?? "";
+  return resolveQueryRunInput(rawQueryInput, organization, project);
+}
+
+// dist/src/app/bootstrap/ui-client-writeback-flow.js
+function toWritebackError(reasonCode) {
+  return new Error(reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+}
+function applyTimelineMutationToUiState(setUiModel, setResponse, mutation) {
+  setUiModel((current) => ({
+    ...current,
+    timeline: mutation(current.timeline)
+  }));
+  setResponse((current) => current ? {
+    ...current,
+    timeline: mutation(current.timeline)
+  } : current);
+}
+async function runTrackedWorkItemSync(params) {
+  params.inFlightRef.current += 1;
+  params.setWorkItemSyncState("syncing");
+  params.setWorkItemSyncError(null);
+  try {
+    return await params.operation();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Write failed.";
+    params.setWorkItemSyncState("error");
+    params.setWorkItemSyncError(message);
+    throw error;
+  } finally {
+    params.inFlightRef.current = Math.max(0, params.inFlightRef.current - 1);
+    if (params.inFlightRef.current === 0) {
+      params.setWorkItemSyncState((current) => current === "error" ? current : "up_to_date");
+    }
+  }
+}
+
+// dist/src/app/bootstrap/ui-client-header-query-service.js
+function findAzureSavedQueryName(response, queryId) {
+  if (!response) {
+    return null;
+  }
+  const normalizedQueryId = queryId.trim().toLowerCase();
+  const match = response.savedQueries.find((entry) => entry.id.trim().toLowerCase() === normalizedQueryId);
+  if (!match) {
+    return null;
+  }
+  const name = match.name.trim();
+  return name.length > 0 ? name : null;
+}
+function filterHeaderQueries(queries, searchDraft) {
+  const search = searchDraft.trim().toLowerCase();
+  if (!search) {
+    return queries;
+  }
+  return queries.filter((entry) => {
+    const shortName = toShortQueryName(entry.name, entry.id).toLowerCase();
+    return shortName.includes(search);
+  });
+}
+function resolveDeletedHeaderQueries(params) {
+  const nextSavedQueries = params.queries.filter((entry) => entry.id !== params.deletedQueryId);
+  const nextSelectedHeaderQueryId = params.selectedHeaderQueryId === params.deletedQueryId ? nextSavedQueries[0]?.id ?? "" : params.selectedHeaderQueryId;
+  return {
+    queries: nextSavedQueries,
+    selectedHeaderQueryId: nextSelectedHeaderQueryId
+  };
+}
+function buildSavedHeaderQueryCandidate(params) {
+  return {
+    id: params.queryId,
+    name: toShortQueryName(params.azureQueryName ?? params.fallbackLabel, params.queryId),
+    queryInput: params.transportQueryInput,
+    organization: params.organization.trim() || void 0,
+    project: params.project.trim() || void 0
+  };
+}
+
+// dist/src/app/bootstrap/ui-client-header-query-flow.js
+var INVALID_QUERY_MESSAGE = "Invalid query. Provide a URL or a query ID with context.";
+var QUERY_LOAD_FAILED_MESSAGE = "Query could not be loaded.";
+function createInitialHeaderQueryFlowState(preferences) {
+  return {
+    savedHeaderQueries: preferences.savedQueries ?? [],
+    selectedHeaderQueryId: preferences.selectedHeaderQueryId ?? "",
+    newHeaderQueryMode: false,
+    newHeaderQueryInput: "",
+    headerQuerySearch: "",
+    headerQueryLoading: false,
+    headerQueryMessage: null
+  };
+}
+function resolveHydratedHeaderQuerySelection(preferences) {
+  const hydratedSavedQueries = preferences.savedQueries ?? [];
+  const preferredSelectedQueryId = preferences.selectedHeaderQueryId ?? "";
+  const selectedExistsInSavedQueries = hydratedSavedQueries.some((entry) => entry.id === preferredSelectedQueryId);
+  return {
+    savedHeaderQueries: hydratedSavedQueries,
+    selectedHeaderQueryId: selectedExistsInSavedQueries ? preferredSelectedQueryId : ""
+  };
+}
+function resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch) {
+  return filterHeaderQueries(savedHeaderQueries, headerQuerySearch);
+}
+async function loadSavedHeaderQueryFlow(params) {
+  if (params.state.headerQueryLoading) {
+    return {
+      kind: "ignored_loading"
+    };
+  }
+  const selected = filterHeaderQueries(params.state.savedHeaderQueries, "").find((entry) => entry.id === params.queryId);
+  if (!selected) {
+    return {
+      kind: "error",
+      message: "The selected query could not be found."
+    };
+  }
+  const storage = params.storage ?? (typeof localStorage !== "undefined" ? localStorage : void 0);
+  if (storage) {
+    storage.setItem(QUERY_INPUT_KEY, selected.queryInput);
+    if (selected.organization) {
+      storage.setItem(ORG_KEY, selected.organization);
+    }
+    if (selected.project) {
+      storage.setItem(PROJECT_KEY, selected.project);
+    }
+  }
+  try {
+    await params.runQuery({
+      queryId: selected.queryInput
+    });
+    (params.persistPatch ?? persistUserPreferencesPatch)({
+      selectedHeaderQueryId: selected.id
+    });
+    return {
+      kind: "loaded",
+      selectedHeaderQueryId: selected.id
+    };
+  } catch (error) {
+    return {
+      kind: "error",
+      message: error instanceof Error ? error.message : QUERY_LOAD_FAILED_MESSAGE
+    };
+  }
+}
+async function saveCurrentHeaderQueryFlow(params) {
+  if (params.state.headerQueryLoading) {
+    return {
+      kind: "ignored_loading"
+    };
+  }
+  const normalizedInput = params.rawInput.trim();
+  if (!normalizedInput) {
+    return {
+      kind: "error",
+      message: INVALID_QUERY_MESSAGE
+    };
+  }
+  const persisted = readPersistedQueryContext({
+    queryInputKey: QUERY_INPUT_KEY,
+    orgKey: ORG_KEY,
+    projectKey: PROJECT_KEY
+  });
+  const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
+  if (!transportQueryInput) {
+    return {
+      kind: "error",
+      message: INVALID_QUERY_MESSAGE
+    };
+  }
+  const queryId = inferSavedQueryId(transportQueryInput);
+  try {
+    await params.runQuery({
+      queryId: transportQueryInput
+    });
+  } catch (error) {
+    return {
+      kind: "error",
+      message: error instanceof Error ? error.message : QUERY_LOAD_FAILED_MESSAGE
+    };
+  }
+  let azureQueryName = findAzureSavedQueryName(params.response, queryId);
+  try {
+    const queryDetails = await params.fetchQueryDetails({ queryId });
+    const normalizedName = queryDetails.name.trim();
+    if (normalizedName.length > 0) {
+      azureQueryName = normalizedName;
+    }
+  } catch {
+  }
+  const candidate = buildSavedHeaderQueryCandidate({
+    queryId,
+    transportQueryInput,
+    organization: persisted.organization,
+    project: persisted.project,
+    azureQueryName,
+    fallbackLabel: buildSavedQueryLabel()
+  });
+  const nextSavedQueries = upsertSavedQueries(params.state.savedHeaderQueries, candidate, params.headerSavedQueryLimit);
+  (params.persistPatch ?? persistUserPreferencesPatch)({
+    savedQueries: nextSavedQueries,
+    selectedHeaderQueryId: candidate.id
+  });
+  return {
+    kind: "saved",
+    savedHeaderQueries: nextSavedQueries,
+    selectedHeaderQueryId: candidate.id
+  };
+}
+function deleteSavedHeaderQueryFlow(params) {
+  const next = resolveDeletedHeaderQueries({
+    queries: params.state.savedHeaderQueries,
+    selectedHeaderQueryId: params.state.selectedHeaderQueryId,
+    deletedQueryId: params.queryId
+  });
+  (params.persistPatch ?? persistUserPreferencesPatch)({
+    savedQueries: next.queries,
+    selectedHeaderQueryId: next.selectedHeaderQueryId || void 0
+  });
+  return {
+    savedHeaderQueries: next.queries,
+    selectedHeaderQueryId: next.selectedHeaderQueryId
+  };
+}
+
+// dist/src/app/bootstrap/use-header-query-flow.js
+var import_react23 = __toESM(require_react(), 1);
+function useHeaderQueryFlow(params) {
+  const initialState = import_react23.default.useMemo(() => createInitialHeaderQueryFlowState({
+    savedQueries: params.initialSavedHeaderQueries,
+    selectedHeaderQueryId: params.initialSelectedHeaderQueryId
+  }), [params.initialSavedHeaderQueries, params.initialSelectedHeaderQueryId]);
+  const [savedHeaderQueries, setSavedHeaderQueries] = import_react23.default.useState(initialState.savedHeaderQueries);
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react23.default.useState(initialState.selectedHeaderQueryId);
+  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react23.default.useState(initialState.newHeaderQueryMode);
+  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react23.default.useState(initialState.newHeaderQueryInput);
+  const [headerQuerySearch, setHeaderQuerySearch] = import_react23.default.useState(initialState.headerQuerySearch);
+  const [headerQueryLoading, setHeaderQueryLoading] = import_react23.default.useState(initialState.headerQueryLoading);
+  const [headerQueryMessage, setHeaderQueryMessage] = import_react23.default.useState(initialState.headerQueryMessage);
+  const filteredHeaderQueries = import_react23.default.useMemo(() => {
+    return resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch);
+  }, [headerQuerySearch, savedHeaderQueries]);
+  const toggleNewHeaderQueryMode = import_react23.default.useCallback(() => {
+    setNewHeaderQueryMode((current) => !current);
+    setHeaderQueryMessage(null);
+  }, []);
+  const loadSavedHeaderQuery = import_react23.default.useCallback(async (queryId) => {
+    if (headerQueryLoading) {
+      return;
+    }
+    setHeaderQueryLoading(true);
+    const result = await loadSavedHeaderQueryFlow({
+      queryId,
+      state: {
+        savedHeaderQueries,
+        headerQueryLoading
+      },
+      runQuery: params.runQuery
+    });
+    if (result.kind === "loaded") {
+      setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+      setHeaderQueryMessage(null);
+    }
+    if (result.kind === "error") {
+      setHeaderQueryMessage(result.message);
+    }
+    setHeaderQueryLoading(false);
+  }, [headerQueryLoading, params.runQuery, savedHeaderQueries]);
+  const saveCurrentHeaderQuery = import_react23.default.useCallback(async (rawInput) => {
+    if (headerQueryLoading) {
+      return;
+    }
+    setHeaderQueryLoading(true);
+    const result = await saveCurrentHeaderQueryFlow({
+      rawInput,
+      state: {
+        savedHeaderQueries,
+        headerQueryLoading
+      },
+      response: params.getResponse(),
+      runQuery: params.runQuery,
+      fetchQueryDetails: params.fetchQueryDetails,
+      headerSavedQueryLimit: params.headerSavedQueryLimit
+    });
+    if (result.kind === "saved") {
+      setSavedHeaderQueries(result.savedHeaderQueries);
+      setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+      setNewHeaderQueryMode(false);
+      setNewHeaderQueryInput("");
+      setHeaderQueryMessage(null);
+    }
+    if (result.kind === "error") {
+      setHeaderQueryMessage(result.message);
+    }
+    setHeaderQueryLoading(false);
+  }, [headerQueryLoading, params, savedHeaderQueries]);
+  const deleteSavedHeaderQuery = import_react23.default.useCallback((queryId) => {
+    const result = deleteSavedHeaderQueryFlow({
+      queryId,
+      state: {
+        savedHeaderQueries,
+        selectedHeaderQueryId
+      }
+    });
+    setSavedHeaderQueries(result.savedHeaderQueries);
+    setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+    setHeaderQueryMessage(null);
+  }, [savedHeaderQueries, selectedHeaderQueryId]);
+  const hydrateSavedHeaderQueries = import_react23.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
+    setSavedHeaderQueries(nextSavedHeaderQueries);
+    setSelectedHeaderQueryId(nextSelectedId);
+  }, []);
+  return {
+    savedHeaderQueries,
+    selectedHeaderQueryId,
+    newHeaderQueryMode,
+    newHeaderQueryInput,
+    headerQuerySearch,
+    headerQueryLoading,
+    headerQueryMessage,
+    setNewHeaderQueryInput,
+    setHeaderQuerySearch,
+    setHeaderQueryMessage,
+    filteredHeaderQueries,
+    toggleNewHeaderQueryMode,
+    loadSavedHeaderQuery,
+    saveCurrentHeaderQuery,
+    deleteSavedHeaderQuery,
+    hydrateSavedHeaderQueries
+  };
+}
+
+// dist/src/app/bootstrap/ui-client.js
+var ADO_COMM_LOG_POLL_INTERVAL_MS = 3e3;
+var ADO_COMM_LOG_READ_LIMIT = 200;
+var ADO_COMM_LOG_UI_MAX = 1e3;
+var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
+var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
+var HEADER_SAVED_QUERY_LIMIT = 25;
+function renderAdoCommLogPanel(params) {
+  return import_react24.default.createElement("details", {
+    "aria-label": "ado-communication-log-panel",
+    className: "ado-communication-log-panel",
+    open: true
+  }, import_react24.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react24.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react24.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react24.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react24.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react24.default.createElement("pre", {
+    key: `${entry.seq}-${entry.direction}`,
+    "aria-label": "ado-log-entry",
+    className: "ado-communication-log-entry"
+  }, `[${entry.seq}] ${entry.timestamp} ${entry.direction.toUpperCase()} ${entry.method} ${entry.url} status=${entry.status ?? "-"} durationMs=${entry.durationMs ?? "-"} ${entry.preview}`))));
+}
+function bootstrapUiClient(options) {
+  const root = (0, import_client.createRoot)(options.container);
+  root.render(import_react24.default.createElement(import_react24.default.StrictMode, null, import_react24.default.createElement(QueryClientProvider, {
+    client: options.composition.queryClient
+  }, import_react24.default.createElement(BrowserRouter, null, import_react24.default.createElement(UiShellApp, {
+    composition: options.composition
+  })))));
+}
+function UiShellApp(props) {
+  const restoredState = import_react24.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const initialResponse = restoredState?.response ?? null;
+  const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
+  const persistedQueryInput = resolvePersistedRefreshQueryInput();
+  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
+  const cachedPreferences2 = getCachedUserPreferences();
+  const [activeTab, setActiveTab] = import_react24.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react24.default.useState(!hasInitialQuery);
+  const [response, setResponse] = import_react24.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react24.default.useState(restoredState?.lastRunRequest ?? null);
+  const [uiModel, setUiModel] = import_react24.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react24.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react24.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react24.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const responseRef = import_react24.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react24.default.useState("up_to_date");
+  const [workItemSyncError, setWorkItemSyncError] = import_react24.default.useState(null);
+  const [isRefreshing, setIsRefreshing] = import_react24.default.useState(false);
+  const workItemSyncInFlightRef = import_react24.default.useRef(0);
+  const timelineSelectionStoreRef = import_react24.default.useRef(createTimelineSelectionStore());
+  const workItemStateOptionsCacheRef = import_react24.default.useRef(/* @__PURE__ */ new Map());
+  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
+  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+  const adoCommLogPolling = useAdoCommLogPolling({
+    controller: props.composition.controller,
+    pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
+    readLimit: ADO_COMM_LOG_READ_LIMIT,
+    maxEntries: ADO_COMM_LOG_UI_MAX
+  });
+  const fetchWorkItemStateOptionsCached = import_react24.default.useCallback(async ({ targetWorkItemId }) => {
+    const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
+    if (cached) {
+      return cached;
+    }
+    const response2 = await props.composition.controller.fetchWorkItemStateOptions({ targetWorkItemId });
+    workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
+    return response2.states;
+  }, [props.composition.controller]);
+  const enrichRuntimeStateColors = import_react24.default.useCallback(async (incoming) => {
+    return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
+  }, [fetchWorkItemStateOptionsCached]);
+  const runQuery = import_react24.default.useCallback(async (request) => {
+    const result = await props.composition.runQuerySelectionFlow({
+      queryId: request.queryId,
+      mappingProfileId: request.mappingProfileId,
+      mappingProfileUpsert: request.mappingProfileUpsert
+    });
+    const submitted = await enrichRuntimeStateColors(result.response);
+    setResponse(submitted);
+    setUiModel(mapQueryIntakeResponseToUiModel(submitted));
+    setLastRunRequest({
+      queryInput: request.queryId,
+      mappingProfileId: request.mappingProfileId,
+      mappingProfileUpsert: request.mappingProfileUpsert
+    });
+    setBlockerMessage(null);
+    if (shouldOpenMappingFixTab(submitted)) {
+      setMappingFixResponse(submitted);
+      setActiveTab(deriveActiveTabForQueryResponse(submitted));
+    } else {
+      setMappingFixResponse(null);
+      setActiveTab(deriveActiveTabForQueryResponse(submitted));
+    }
+    return submitted;
+  }, [enrichRuntimeStateColors, props.composition]);
+  const handleNeedsFix = import_react24.default.useCallback((needsFixResponse) => {
+    setMappingFixResponse(needsFixResponse);
+    setActiveTab("mapping");
+  }, []);
+  const applyMappingDefaults = import_react24.default.useCallback(async (selection) => {
+    const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
+    if (!nextQueryId) {
+      return;
+    }
+    const next = await runQuery({
+      queryId: nextQueryId,
+      mappingProfileUpsert: {
+        id: "auto-required-defaults",
+        name: "Required defaults",
+        fields: selection
+      }
+    });
+    if (next.mappingValidation.status === "valid") {
+      setMappingFixResponse(null);
+      setActiveTab("timeline");
+    } else {
+      setMappingFixResponse(next);
+    }
+  }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
+  const retryRefresh = import_react24.default.useCallback(async () => {
+    if (isRefreshing) {
+      return;
+    }
+    setIsRefreshing(true);
+    try {
+      const result = await runRetryRefreshFlow({
+        lastRunRequest,
+        submit: props.composition.controller.submit,
+        enrichRuntimeStateColors,
+        runQuery
+      });
+      if (result.kind === "blocked_no_query") {
+        setActiveTab("query");
+        setControlsOpen(true);
+        setBlockerMessage(result.blocker);
+        return;
+      }
+      if (result.kind === "refreshed") {
+        setResponse(result.response);
+        setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        if (result.openMappingFix) {
+          setMappingFixResponse(result.response);
+          setActiveTab(result.activeTab);
+          setControlsOpen(true);
+        } else {
+          setActiveTab("timeline");
+        }
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller.submit, runQuery]);
+  const headerQueryFlow = useHeaderQueryFlow({
+    initialSavedHeaderQueries: cachedPreferences2.savedQueries ?? [],
+    initialSelectedHeaderQueryId: cachedPreferences2.selectedHeaderQueryId ?? "",
+    runQuery: async ({ queryId }) => runQuery({ queryId }),
+    fetchQueryDetails: props.composition.controller.fetchQueryDetails,
+    getResponse: () => responseRef.current,
+    headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
+  });
+  const runTrackedWorkItemUpdate = import_react24.default.useCallback(async (operation) => {
+    return runTrackedWorkItemSync({
+      operation,
+      inFlightRef: workItemSyncInFlightRef,
+      setWorkItemSyncState,
+      setWorkItemSyncError
+    });
+  }, []);
+  const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
+  import_react24.default.useEffect(() => {
+    responseRef.current = response;
+  }, [response]);
+  import_react24.default.useEffect(() => {
+    persistUiShellState(UI_SHELL_STATE_KEY, {
+      activeTab,
+      response,
+      lastRunRequest
+    });
+  }, [activeTab, lastRunRequest, response]);
+  import_react24.default.useEffect(() => {
+    void hydrateUserPreferences().then((preferences) => {
+      if (preferences.themeMode) {
+        setThemeMode(preferences.themeMode);
+      }
+      const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
+      headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
+    });
+  }, [headerQueryFlow.hydrateSavedHeaderQueries]);
+  import_react24.default.useEffect(() => {
+    persistUserPreferencesPatch({
+      themeMode
+    });
+    persistThemeMode(THEME_MODE_KEY, themeMode);
+    applyThemeMode(themeMode);
+    if (themeMode !== "system" || typeof window === "undefined") {
+      return;
+    }
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      applyThemeMode("system");
+    };
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleSystemThemeChange);
+      return () => {
+        mediaQuery.removeEventListener("change", handleSystemThemeChange);
+      };
+    }
+    mediaQuery.addListener(handleSystemThemeChange);
+    return () => {
+      mediaQuery.removeListener(handleSystemThemeChange);
+    };
+  }, [themeMode]);
+  const mainPanel = renderActivePanel({
+    activeTab,
+    uiModel,
+    response,
+    mappingFixResponse,
+    onRun: runQuery,
+    onNeedsFix: handleNeedsFix,
+    onAuthenticateAzureCli: props.composition.controller.authenticateAzureCli,
+    onSetAzureCliPath: props.composition.controller.setAzureCliPath,
+    onApplyMappingDefaults: applyMappingDefaults,
+    onRetryRefresh: retryRefresh,
+    adoCommLogs: adoCommLogPolling.logs,
+    adoCommLogsLoading: adoCommLogPolling.loading,
+    adoCommLogsError: adoCommLogPolling.error
+  });
+  return import_react24.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react24.default.createElement("section", { className: "ui-shell-header" }, import_react24.default.createElement("div", { className: "ui-shell-brand" }, import_react24.default.createElement("h1", null, "Azure GanttOps")), import_react24.default.createElement("div", { className: "ui-shell-header-actions" }, import_react24.default.createElement("div", { className: "header-query-picker" }, import_react24.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react24.default.createElement("details", { className: "header-query-dropdown" }, import_react24.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react24.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react24.default.createElement("input", {
+    className: "header-query-dropdown-search",
+    "aria-label": "Search queries",
+    placeholder: "Search...",
+    value: headerQueryFlow.headerQuerySearch,
+    onChange: (event) => {
+      headerQueryFlow.setHeaderQuerySearch(event.target.value);
+    }
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react24.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react24.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react24.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react24.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react24.default.createElement("button", {
+    type: "button",
+    className: "header-query-dropdown-item-delete",
+    "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
+    disabled: headerQueryFlow.headerQueryLoading,
+    onClick: (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      headerQueryFlow.deleteSavedHeaderQuery(entry.id);
+    }
+  }, "\xD7"), import_react24.default.createElement("button", {
+    type: "button",
+    className: "header-query-dropdown-item-select",
+    disabled: headerQueryFlow.headerQueryLoading,
+    onClick: () => {
+      void headerQueryFlow.loadSavedHeaderQuery(entry.id);
+    }
+  }, toShortQueryName(entry.name, entry.id))))))), import_react24.default.createElement("button", {
+    type: "button",
+    className: "header-query-picker-button",
+    disabled: headerQueryFlow.headerQueryLoading,
+    onClick: () => {
+      headerQueryFlow.toggleNewHeaderQueryMode();
+    }
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react24.default.createElement("input", {
+    className: "header-query-picker-input",
+    "aria-label": "New query URL or ID",
+    placeholder: "New query URL or ID",
+    value: headerQueryFlow.newHeaderQueryInput,
+    disabled: headerQueryFlow.headerQueryLoading,
+    onChange: (event) => {
+      headerQueryFlow.setNewHeaderQueryInput(event.target.value);
+      headerQueryFlow.setHeaderQueryMessage(null);
+    },
+    onKeyDown: (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
+      }
+    }
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react24.default.createElement("button", {
+    type: "button",
+    className: "header-query-picker-button",
+    disabled: headerQueryFlow.headerQueryLoading,
+    onClick: () => {
+      void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
+    }
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react24.default.createElement("div", {
+    className: "header-query-loading",
+    role: "status",
+    "aria-live": "polite",
+    "aria-label": "Query is loading"
+  }, import_react24.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react24.default.createElement("span", {
+    className: "header-query-picker-message",
+    role: "status",
+    "aria-live": "polite"
+  }, headerQueryFlow.headerQueryMessage) : null), import_react24.default.createElement("div", { className: "theme-menu" }, import_react24.default.createElement("button", {
+    type: "button",
+    className: "theme-menu-trigger",
+    "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
+    title: `Theme: ${labelForThemeMode(themeMode)} (click to switch)`,
+    onClick: () => {
+      setThemeMode(nextThemeMode(themeMode));
+    }
+  }, import_react24.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react24.default.createElement(TrustBadge, {
+    statusCode: uiModel.statusCode,
+    trustState: uiModel.trustState,
+    lastRefreshAt: uiModel.freshness.lastRefreshAt,
+    readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
+  }), import_react24.default.createElement("button", {
+    type: "button",
+    className: "controls-toggle-button",
+    "aria-expanded": controlsOpen,
+    "aria-controls": "ui-controls-drawer",
+    onClick: () => {
+      setControlsOpen((current) => !current);
+    }
+  }, controlsOpen ? "Close controls" : "Open controls"))), import_react24.default.createElement("section", { className: "ui-shell-content" }, import_react24.default.createElement("section", { className: "gantt-primary-card" }, import_react24.default.createElement(WarningBanner, {
+    uiState: uiModel.uiState,
+    guidance: uiModel.guidance,
+    retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
+    hasStrictFailFallback: uiModel.strictFail.active,
+    onRetryRefresh: () => {
+      void retryRefresh();
+    }
+  }), import_react24.default.createElement(TimelinePane, {
+    timeline: uiModel.timeline,
+    showDependencies: true,
+    isRefreshing,
+    workItemSyncState,
+    workItemSyncError,
+    organization,
+    project,
+    selectionStore: timelineSelectionStoreRef.current,
+    onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+          targetWorkItemId,
+          startDate,
+          endDate
+        });
+        if (!writeResult.accepted) {
+          throw toWritebackError(writeResult.reasonCode);
+        }
+        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate));
+      });
+    },
+    onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+          targetWorkItemId,
+          startDate,
+          endDate
+        });
+        if (!writeResult.accepted) {
+          throw toWritebackError(writeResult.reasonCode);
+        }
+        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate));
+      });
+    },
+    onCreateDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.linkDependency({
+          predecessorWorkItemId,
+          successorWorkItemId,
+          action: "add"
+        });
+        if (!writeResult.accepted) {
+          throw toWritebackError(writeResult.reasonCode);
+        }
+        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add"));
+      });
+    },
+    onRemoveDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.linkDependency({
+          predecessorWorkItemId,
+          successorWorkItemId,
+          action: "remove"
+        });
+        if (!writeResult.accepted) {
+          throw toWritebackError(writeResult.reasonCode);
+        }
+        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove"));
+      });
+    },
+    onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state: state2, stateColor }) => {
+      await runTrackedWorkItemUpdate(async () => {
+        const writeResult = await props.composition.controller.updateWorkItemDetails({
+          targetWorkItemId,
+          title,
+          descriptionHtml,
+          state: state2
+        });
+        if (!writeResult.accepted) {
+          throw toWritebackError(writeResult.reasonCode);
+        }
+        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state2, stateColor));
+      });
+    },
+    onFetchWorkItemStateOptions: fetchWorkItemStateOptions,
+    onRetryRefresh: () => {
+      void retryRefresh();
+    }
+  })), import_react24.default.createElement("section", {
+    id: "ui-controls-drawer",
+    className: controlsOpen ? "ui-shell-workspace ui-shell-workspace-open" : "ui-shell-workspace",
+    "aria-hidden": controlsOpen ? "false" : "true"
+  }, import_react24.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react24.default.createElement(TopTabs, {
+    activeTab,
+    model: uiModel,
+    onTabChange: (tab) => {
+      setActiveTab(tab);
+    },
+    onBlockedAttempt: (payload) => {
+      setBlockerMessage(payload);
+    }
+  }), blockerMessage ? import_react24.default.createElement("section", {
+    "aria-label": "tab-blocker-guidance",
+    className: "tab-blocker-guidance"
+  }, import_react24.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react24.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react24.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel)), import_react24.default.createElement("footer", { className: "ui-shell-footer" }, import_react24.default.createElement("span", null, "An Open Source Project by Christian Betz @ "), import_react24.default.createElement("a", {
+    href: "https://tensorfive.com",
+    target: "_blank",
+    rel: "noreferrer"
+  }, "TensorFive GmbH")));
+}
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react9.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react9.default.createElement(QuerySelector, {
+    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react24.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       availableFieldRefs: [
         "System.Id",
@@ -28602,22 +34128,25 @@ function renderActivePanel(params) {
         "Microsoft.VSTS.Scheduling.TargetDate"
       ],
       onRun: params.onRun,
-      onNeedsFix: params.onNeedsFix
+      onNeedsFix: params.onNeedsFix,
+      authStatus: params.response?.preflightStatus ?? null,
+      onAuthenticateAzureCli: params.onAuthenticateAzureCli,
+      onSetAzureCliPath: params.onSetAzureCliPath
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react9.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react9.default.createElement(MappingFixPanel, {
+    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react24.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react9.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react24.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react9.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react9.default.createElement("p", { className: "timeline-focus-note" }, "Gantt-Fokus ist aktiv. Nutze Query und Mapping Tabs nur, um Datenquelle und Feldzuordnung anzupassen."));
+    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react24.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react9.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react9.default.createElement(DiagnosticsTab, {
+  return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react24.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
@@ -28732,10 +34261,10 @@ function appendAdoResponseLog(queryInput) {
 }
 function readAdoEntries(afterSeq, limit) {
   const boundedLimit = Math.min(Math.max(limit, 1), 200);
-  const entries = state.adoEntries.filter((entry) => entry.seq > afterSeq).slice(0, boundedLimit);
+  const entries2 = state.adoEntries.filter((entry) => entry.seq > afterSeq).slice(0, boundedLimit);
   return {
-    entries,
-    nextSeq: entries.length > 0 ? entries[entries.length - 1].seq : afterSeq
+    entries: entries2,
+    nextSeq: entries2.length > 0 ? entries2[entries2.length - 1].seq : afterSeq
   };
 }
 window.__phase6Mount = () => {
@@ -28862,4 +34391,7 @@ react-router/dist/development/index.mjs:
    *
    * @license MIT
    *)
+
+dompurify/dist/purify.es.mjs:
+  (*! @license DOMPurify 3.3.3 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.3/LICENSE *)
 */

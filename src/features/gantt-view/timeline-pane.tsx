@@ -40,6 +40,12 @@ import {
   saveTimelineSidebarWidthPx
 } from "./timeline-sidebar-width-preference.js";
 import {
+  hydrateTimelineSidebarRowJustifyPreference,
+  loadLastTimelineSidebarRowJustify,
+  saveTimelineSidebarRowJustify,
+  type TimelineSidebarRowJustify
+} from "./timeline-sidebar-row-justify-preference.js";
+import {
   hydrateTimelineDetailsWidthPreference,
   loadLastTimelineDetailsWidthPx,
   saveTimelineDetailsWidthPx
@@ -71,6 +77,9 @@ import { TimelineSortControl } from "./timeline-sort-control.js";
 import { applyTimelineSorting } from "./timeline-sorting.js";
 import { useTimelineSorting } from "./use-timeline-sorting.js";
 import { useTimelineResizing } from "./use-timeline-resizing.js";
+import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
+import { TimelineFilterPanel } from "./timeline-filter-panel.js";
+import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -124,6 +133,124 @@ type TimelineLabelFieldOption = {
   subtitle: string;
   searchText: string;
 };
+
+type TimelineViewportState = {
+  dayWidthPx: number;
+  setDayWidthPx: React.Dispatch<React.SetStateAction<number>>;
+  activePanDrag: ActivePanDrag | null;
+  setActivePanDrag: React.Dispatch<React.SetStateAction<ActivePanDrag | null>>;
+  spacePanPressed: boolean;
+  setSpacePanPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  chartViewportWidthPx: number;
+  setChartViewportWidthPx: React.Dispatch<React.SetStateAction<number>>;
+  chartViewportHeightPx: number;
+  setChartViewportHeightPx: React.Dispatch<React.SetStateAction<number>>;
+  chartScrollRef: React.RefObject<HTMLDivElement | null>;
+  chartSvgRef: React.RefObject<SVGSVGElement | null>;
+  zoomAnchorRef: React.RefObject<{ dayOffset: number; pointerOffsetX: number } | null>;
+  wheelZoomFrameRef: React.RefObject<number | null>;
+  pendingWheelDayWidthRef: React.RefObject<number | null>;
+  liveDayWidthRef: React.RefObject<number>;
+  pendingFitRangeRef: React.RefObject<{ start: Date; end: Date } | null>;
+  pendingViewportRestoreRef: React.RefObject<TimelineViewportPreference | null>;
+  viewportPersistDebounceRef: React.RefObject<number | null>;
+  spacePanPressedRef: React.RefObject<boolean>;
+  initialViewportAppliedRef: React.RefObject<boolean>;
+  zoomLevel: TimelineZoomLevel;
+};
+
+function useTimelineViewport(initialViewportPreference: TimelineViewportPreference | null): TimelineViewportState {
+  const [dayWidthPx, setDayWidthPx] = React.useState<number>(() => {
+    if (!initialViewportPreference) {
+      return DAY_WIDTH_WEEK_PX;
+    }
+
+    return clamp(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+  });
+  const [activePanDrag, setActivePanDrag] = React.useState<ActivePanDrag | null>(null);
+  const [spacePanPressed, setSpacePanPressed] = React.useState(false);
+  const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = React.useState<number>(0);
+  const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
+  const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
+  const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
+  const wheelZoomFrameRef = React.useRef<number | null>(null);
+  const pendingWheelDayWidthRef = React.useRef<number | null>(null);
+  const liveDayWidthRef = React.useRef(dayWidthPx);
+  const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
+  const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
+  const viewportPersistDebounceRef = React.useRef<number | null>(null);
+  const spacePanPressedRef = React.useRef(false);
+  const initialViewportAppliedRef = React.useRef(false);
+
+  return {
+    dayWidthPx,
+    setDayWidthPx,
+    activePanDrag,
+    setActivePanDrag,
+    spacePanPressed,
+    setSpacePanPressed,
+    chartViewportWidthPx,
+    setChartViewportWidthPx,
+    chartViewportHeightPx,
+    setChartViewportHeightPx,
+    chartScrollRef,
+    chartSvgRef,
+    zoomAnchorRef,
+    wheelZoomFrameRef,
+    pendingWheelDayWidthRef,
+    liveDayWidthRef,
+    pendingFitRangeRef,
+    pendingViewportRestoreRef,
+    viewportPersistDebounceRef,
+    spacePanPressedRef,
+    initialViewportAppliedRef,
+    zoomLevel: dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month"
+  };
+}
+
+type TimelineColorCodingState = {
+  colorCoding: TimelineColorCoding;
+  setColorCoding: React.Dispatch<React.SetStateAction<TimelineColorCoding>>;
+  fieldColorCoding: TimelineFieldColorCodingConfig;
+  setFieldColorCoding: React.Dispatch<React.SetStateAction<TimelineFieldColorCodingConfig>>;
+  lastSelectedFieldRef: string | null;
+  setLastSelectedFieldRef: React.Dispatch<React.SetStateAction<string | null>>;
+  colorSettingsOpen: boolean;
+  setColorSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  colorCodingDropdownOpen: boolean;
+  setColorCodingDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  colorCodingSearchDraft: string;
+  setColorCodingSearchDraft: React.Dispatch<React.SetStateAction<string>>;
+};
+
+function useTimelineColorCoding(): TimelineColorCodingState {
+  const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
+    loadTimelineFieldColorCodingConfig()
+  );
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = React.useState<string | null>(() =>
+    loadTimelineFieldColorCodingConfig().fieldRef
+  );
+  const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = React.useState("");
+
+  return {
+    colorCoding,
+    setColorCoding,
+    fieldColorCoding,
+    setFieldColorCoding,
+    lastSelectedFieldRef,
+    setLastSelectedFieldRef,
+    colorSettingsOpen,
+    setColorSettingsOpen,
+    colorCodingDropdownOpen,
+    setColorCodingDropdownOpen,
+    colorCodingSearchDraft,
+    setColorCodingSearchDraft
+  };
+}
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(), []);
@@ -193,15 +320,30 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [selectedWorkItemId, setSelectedWorkItemId] = React.useState<number | null>(() =>
     selectionStore.getSelectedWorkItemId()
   );
-  const [dayWidthPx, setDayWidthPx] = React.useState<number>(() => {
-    if (!initialViewportPreference) {
-      return DAY_WIDTH_WEEK_PX;
-    }
-
-    return clamp(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
-  });
-  const [activePanDrag, setActivePanDrag] = React.useState<ActivePanDrag | null>(null);
-  const [spacePanPressed, setSpacePanPressed] = React.useState(false);
+  const {
+    dayWidthPx,
+    setDayWidthPx,
+    activePanDrag,
+    setActivePanDrag,
+    spacePanPressed,
+    setSpacePanPressed,
+    chartViewportWidthPx,
+    setChartViewportWidthPx,
+    chartViewportHeightPx,
+    setChartViewportHeightPx,
+    chartScrollRef,
+    chartSvgRef,
+    zoomAnchorRef,
+    wheelZoomFrameRef,
+    pendingWheelDayWidthRef,
+    liveDayWidthRef,
+    pendingFitRangeRef,
+    pendingViewportRestoreRef,
+    viewportPersistDebounceRef,
+    spacePanPressedRef,
+    initialViewportAppliedRef,
+    zoomLevel
+  } = useTimelineViewport(initialViewportPreference);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx();
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
@@ -210,16 +352,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const preferredWidth = loadLastTimelineSidebarWidthPx();
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
-  const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
-    loadTimelineFieldColorCodingConfig()
-  );
-  const [lastSelectedFieldRef, setLastSelectedFieldRef] = React.useState<string | null>(() =>
-    loadTimelineFieldColorCodingConfig().fieldRef
-  );
-  const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
-  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
-  const [colorCodingSearchDraft, setColorCodingSearchDraft] = React.useState("");
+  const {
+    colorCoding,
+    setColorCoding,
+    fieldColorCoding,
+    setFieldColorCoding,
+    lastSelectedFieldRef,
+    setLastSelectedFieldRef,
+    colorSettingsOpen,
+    setColorSettingsOpen,
+    colorCodingDropdownOpen,
+    setColorCodingDropdownOpen,
+    colorCodingSearchDraft,
+    setColorCodingSearchDraft
+  } = useTimelineColorCoding();
   const [labelSettingsOpen, setLabelSettingsOpen] = React.useState(false);
   const [labelFieldSearchDraft, setLabelFieldSearchDraft] = React.useState("");
   const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = React.useState("");
@@ -229,11 +375,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [timelineSidebarFields, setTimelineSidebarFields] = React.useState<string[]>(
     () => loadLastTimelineSidebarFields() ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]
   );
-  const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
-  const [chartViewportHeightPx, setChartViewportHeightPx] = React.useState<number>(0);
-
-  const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
-  const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
+  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = React.useState<TimelineSidebarRowJustify>(
+    () => loadLastTimelineSidebarRowJustify() ?? "flex-start"
+  );
   const timelineMainGridRef = React.useRef<HTMLDivElement | null>(null);
   const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
   const filterToggleControlRef = React.useRef<HTMLDivElement | null>(null);
@@ -244,16 +388,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const labelPanelRef = React.useRef<HTMLDivElement | null>(null);
   const labelMenuSidebarOptionsRef = React.useRef<HTMLDivElement | null>(null);
   const labelMenuBarOptionsRef = React.useRef<HTMLDivElement | null>(null);
-  const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
-  const wheelZoomFrameRef = React.useRef<number | null>(null);
-  const pendingWheelDayWidthRef = React.useRef<number | null>(null);
-  const liveDayWidthRef = React.useRef(dayWidthPx);
-  const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
-  const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
-  const viewportPersistDebounceRef = React.useRef<number | null>(null);
   const labelMenuScrollSyncSourceRef = React.useRef<"sidebar" | "bar" | null>(null);
-  const spacePanPressedRef = React.useRef(false);
-  const initialViewportAppliedRef = React.useRef(false);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -325,6 +460,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   React.useEffect(() => {
     hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
       setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
+    });
+  }, []);
+
+  React.useEffect(() => {
+    hydrateTimelineSidebarRowJustifyPreference((justify) => {
+      setTimelineSidebarRowJustify(justify);
     });
   }, []);
 
@@ -404,7 +545,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     }
   }, [timelineFieldFilters]);
 
-  const zoomLevel: TimelineZoomLevel = dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month";
   const availableFieldRefs = React.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
   const availableTimelineLabelFieldOptions = React.useMemo(
     () => buildTimelineLabelFieldOptions(availableFieldRefs),
@@ -1285,29 +1425,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]
   );
 
-  const updateModeValueColor = React.useCallback(
-    (mode: TimelineColorCoding, valueKey: string, color: string | null) => {
-      const scopedKey = toScopedModeValueColorKey(mode, valueKey);
-      if (!scopedKey) {
-        return;
-      }
-
-      const nextValueColors = { ...fieldColorCoding.valueColors };
-      if (!color) {
-        delete nextValueColors[scopedKey];
-        delete nextValueColors[valueKey];
-      } else {
-        nextValueColors[scopedKey] = color;
-      }
-
-      updateFieldColorCoding({
-        fieldRef: fieldColorCoding.fieldRef,
-        valueColors: nextValueColors
-      });
-    },
-    [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]
-  );
-
   const selectColorCodingOption = React.useCallback(
     (option: ColorCodingOption) => {
       setColorCoding(option.mode);
@@ -1540,7 +1657,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const unscheduledCount = filteredTimeline?.unschedulable.length ?? 0;
   const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
   const isFieldColorCodingMode = colorCoding === "field";
-  const isConfigurableModeColorCoding = colorCoding === "person" || colorCoding === "status";
+  const isReadOnlyStatusColorCodingMode = colorCoding === "status";
 
   return React.createElement(
     "section",
@@ -1548,654 +1665,126 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       "aria-label": "timeline-pane",
       className: "timeline-pane"
     },
-    React.createElement(
-      "div",
-      {
-        className: "timeline-pane-actions"
+    React.createElement(TimelinePaneActionsToolbar, {
+      isRefreshing: props.isRefreshing === true,
+      onRetryRefresh: () => {
+        props.onRetryRefresh?.();
       },
-      React.createElement(
-        "div",
-        { className: "timeline-pane-actions-group" },
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            className: "timeline-action-button timeline-action-button-primary",
-            disabled: props.isRefreshing === true,
-            "aria-busy": props.isRefreshing === true ? "true" : undefined,
-            onClick: () => {
-              props.onRetryRefresh?.();
-            }
-          },
-          props.isRefreshing
-            ? React.createElement(
-                "span",
-                { className: "timeline-action-button-content" },
-                React.createElement("span", {
-                  className: "timeline-action-button-spinner",
-                  "aria-hidden": "true"
-                }),
-                React.createElement("span", null, "Updating...")
-              )
-            : "Refresh"
-        ),
-        React.createElement(
-          "div",
-          {
-            className:
-              "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
-            role: "group",
-            "aria-label": "Timeline zoom"
-          },
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-              "aria-pressed": zoomLevel === "week",
-              "aria-label": "Zoom in to week view",
-              onClick: () => {
-                setDayWidthPx(DAY_WIDTH_WEEK_PX);
-              }
-            },
-            "Week"
-          ),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
-              "aria-pressed": zoomLevel === "month",
-              "aria-label": "Zoom out to month view",
-              onClick: () => {
-                setDayWidthPx(DAY_WIDTH_MONTH_PX);
-              }
-            },
-            "Month"
-          )
-        ),
-        React.createElement(
-          "div",
-          {
-            className: "timeline-dependency-control timeline-control-cluster"
-          },
-          React.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"),
-          React.createElement(
-            "select",
-            {
-              className: "timeline-dependency-select",
-              "aria-label": "Dependency mode",
-              value: dependencyViewMode,
-              onChange: (event) => {
-                setDependencyViewMode((event.target as HTMLSelectElement).value as DependencyViewMode);
-                setActiveDependencyDrag(null);
-                setActiveScheduleDrag(null);
-                setActiveUnschedulableDrag(null);
-                setUnscheduledDropPreview(null);
-                setSelectedDependency(null);
-              }
-            },
-            DEPENDENCY_VIEW_MODE_OPTIONS.map((option) =>
-              React.createElement("option", { key: option.value, value: option.value }, option.label)
-            )
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "timeline-color-coding-control timeline-control-cluster", ref: colorCodingControlRef },
-          React.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "timeline-color-coding-select timeline-color-coding-select-trigger",
-              "aria-label": "Color coding",
-              title: "Choose how timeline bars are color-coded.",
-              "aria-haspopup": "listbox",
-              "aria-expanded": colorCodingDropdownOpen ? "true" : "false",
-              onClick: () => {
-                setColorCodingDropdownOpen((current) => !current);
-                setColorCodingSearchDraft("");
-              }
-            },
-            selectedColorCodingLabel
-          ),
-          colorCodingDropdownOpen
-            ? React.createElement(
-                "div",
-                { className: "timeline-color-coding-dropdown", role: "listbox", "aria-label": "Color coding options" },
-                React.createElement("input", {
-                  type: "search",
-                  className: "timeline-color-coding-dropdown-search",
-                  "aria-label": "Search color coding",
-                  placeholder: "Search mode or field",
-                  value: colorCodingSearchDraft,
-                  onChange: (event) => {
-                    setColorCodingSearchDraft((event.target as HTMLInputElement).value);
-                  },
-                  onKeyDown: (event) => {
-                    if (event.key !== "Enter") {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    applyFirstFilteredColorCodingOption();
-                  }
-                }),
-                React.createElement(
-                  "div",
-                  { className: "timeline-color-coding-dropdown-options" },
-                  filteredColorCodingOptions.length === 0
-                    ? React.createElement("p", { className: "timeline-details-muted" }, "No matching option.")
-                    : filteredColorCodingOptions.map((option) =>
-                        React.createElement(
-                          "button",
-                          {
-                            key: option.key,
-                            type: "button",
-                            className:
-                              option.mode === colorCoding &&
-                              ((option.mode !== "field" && colorCoding !== "field") || option.fieldRef === fieldColorCoding.fieldRef)
-                                ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                : "timeline-color-coding-option",
-                            onClick: () => {
-                              selectColorCodingOption(option);
-                            }
-                          },
-                          React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
-                          option.subtitle
-                            ? React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
-                            : null
-                        )
-                      )
-                )
-              )
-            : null,
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "timeline-color-coding-settings-button",
-              "aria-label": "Open color coding settings",
-              title: "Open color-coding settings and set colors per value.",
-              onClick: () => {
-                if (colorCodingDropdownOpen && colorCodingSearchDraft.trim().length > 0) {
-                  applyFirstFilteredColorCodingOption();
-                }
-                setColorSettingsOpen(true);
-              }
-            },
-            "Settings"
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "timeline-filter-control", ref: filterToggleControlRef },
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
-              "aria-label": "Toggle timeline filters",
-              title: "Filter timeline rows by field values.",
-              "aria-expanded": timelineFiltersOpen ? "true" : "false",
-              "aria-haspopup": "dialog",
-              onClick: () => {
-                setTimelineFiltersOpen((current) => {
-                  if (current) {
-                    setOpenFilterDropdown(null);
-                  }
-                  return !current;
-                });
-              }
-            },
-            React.createElement(
-              "svg",
-              {
-                viewBox: "0 0 24 24",
-                className: "timeline-filter-toggle-icon",
-                "aria-hidden": "true"
-              },
-              React.createElement("path", {
-                d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
-              })
-            ),
-            activeTimelineFilters.length > 0 ? React.createElement("span", { className: "timeline-filter-toggle-count" }, activeTimelineFilters.length) : null
-          )
-        ),
-        React.createElement(TimelineSortControl, {
-          availableFieldRefs,
-          controlRef: sortToggleControlRef,
-          panelRef: sortPanelRef,
-          sortSettingsOpen,
-          timelineSortPreference,
-          onToggleSortSettings: () => {
-            setSortSettingsOpen((current) => !current);
-          },
-          onSelectPrimarySortField: selectPrimarySortField,
-          onSelectSecondarySortField: selectSecondarySortField
-        }),
-        React.createElement(
-          "div",
-          { className: "timeline-label-control", ref: labelToggleControlRef },
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
-              "aria-label": "Toggle timeline label fields",
-              title: "Select which fields are shown in sidebar and bar labels.",
-              "aria-expanded": labelSettingsOpen ? "true" : "false",
-              "aria-haspopup": "dialog",
-              onClick: () => {
-                setLabelSettingsOpen((current) => !current);
-                setLabelFieldSearchDraft("");
-                setSidebarFieldSearchDraft("");
-              }
-            },
-            React.createElement(
-              "svg",
-              {
-                viewBox: "0 0 24 24",
-                className: "timeline-label-toggle-icon",
-                "aria-hidden": "true"
-              },
-              React.createElement("path", {
-                d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
-              })
-            ),
-            React.createElement(
-              "span",
-              { className: "timeline-label-toggle-count" },
-              `${timelineLabelFields.length}/${timelineSidebarFields.length}`
-            )
-          ),
-          labelSettingsOpen
-            ? React.createElement(
-                "div",
-                {
-                  className: "timeline-label-menu",
-                  role: "group",
-                  "aria-label": "Timeline label fields",
-                  ref: labelPanelRef
-                },
-                React.createElement(
-                  "div",
-                  { className: "timeline-label-menu-grid" },
-                  React.createElement(
-                    "section",
-                    { className: "timeline-label-menu-column" },
-                    React.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"),
-                    React.createElement(
-                      "p",
-                      { className: "timeline-details-muted" },
-                      "Selected fields are shown per row in the sticky sidebar."
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-color-coding-value-reset",
-                        onClick: clearTimelineSidebarFields
-                      },
-                      "Nothing in sidebar"
-                    ),
-                    React.createElement("input", {
-                      type: "search",
-                      className: "timeline-color-coding-dropdown-search",
-                      "aria-label": "Search timeline sidebar fields",
-                      placeholder: "Search field",
-                      value: sidebarFieldSearchDraft,
-                      onChange: (event) => {
-                        setSidebarFieldSearchDraft((event.target as HTMLInputElement).value);
-                      }
-                    }),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "timeline-label-menu-options",
-                        ref: labelMenuSidebarOptionsRef,
-                        onScroll: syncLabelMenuScrollFromSidebar
-                      },
-                      filteredTimelineSidebarFieldOptions.length === 0
-                        ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                        : filteredTimelineSidebarFieldOptions.map((option) =>
-                            React.createElement(
-                              "label",
-                              {
-                                key: `timeline-sidebar-field-${option.fieldRef}`,
-                                className: "timeline-label-menu-option"
-                              },
-                              React.createElement("input", {
-                                type: "checkbox",
-                                checked: timelineSidebarFields.includes(option.fieldRef),
-                                "aria-label": `Show ${option.label} in timeline sidebar`,
-                                onChange: () => {
-                                  toggleTimelineSidebarField(option.fieldRef);
-                                }
-                              }),
-                              React.createElement(
-                                "span",
-                                { className: "timeline-label-menu-option-meta" },
-                                React.createElement("strong", null, option.label),
-                                React.createElement("span", null, option.subtitle)
-                              )
-                            )
-                          )
-                    )
-                  ),
-                  React.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }),
-                  React.createElement(
-                    "section",
-                    { className: "timeline-label-menu-column" },
-                    React.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"),
-                    React.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown as \" - \" joined text."),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-color-coding-value-reset",
-                        onClick: clearTimelineLabelFields
-                      },
-                      "Nothing in bars"
-                    ),
-                    React.createElement("input", {
-                      type: "search",
-                      className: "timeline-color-coding-dropdown-search",
-                      "aria-label": "Search timeline label fields",
-                      placeholder: "Search field",
-                      value: labelFieldSearchDraft,
-                      onChange: (event) => {
-                        setLabelFieldSearchDraft((event.target as HTMLInputElement).value);
-                      }
-                    }),
-                    React.createElement(
-                      "div",
-                      {
-                        className: "timeline-label-menu-options",
-                        ref: labelMenuBarOptionsRef,
-                        onScroll: syncLabelMenuScrollFromBar
-                      },
-                      filteredTimelineLabelFieldOptions.length === 0
-                        ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                        : filteredTimelineLabelFieldOptions.map((option) =>
-                            React.createElement(
-                              "label",
-                              {
-                                key: `timeline-label-field-${option.fieldRef}`,
-                                className: "timeline-label-menu-option"
-                              },
-                              React.createElement("input", {
-                                type: "checkbox",
-                                checked: timelineLabelFields.includes(option.fieldRef),
-                                "aria-label": `Show ${option.label} in timeline bars`,
-                                onChange: () => {
-                                  toggleTimelineLabelField(option.fieldRef);
-                                }
-                              }),
-                              React.createElement(
-                                "span",
-                                { className: "timeline-label-menu-option-meta" },
-                                React.createElement("strong", null, option.label),
-                                React.createElement("span", null, option.subtitle)
-                              )
-                            )
-                          )
-                    )
-                  )
-                )
-              )
-            : null
-        )
-      ),
-      React.createElement(
-        "div",
-        { className: "timeline-pane-actions-status" },
-        React.createElement(
-          "div",
-          {
-            className: "gantt-sync-status",
-            "data-state": props.workItemSyncState ?? "up_to_date",
-            role: "status",
-            "aria-live": "polite",
-            title: props.workItemSyncState === "error" ? props.workItemSyncError ?? undefined : undefined
-          },
-          React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
-          React.createElement(
-            "span",
-            null,
-            props.workItemSyncState === "syncing"
-              ? "Updating work items..."
-              : props.workItemSyncState === "error"
-                ? "Work item update failed"
-                : "Work items up to date"
-          )
-        )
-      ),
-    ),
-    timelineFiltersOpen
-      ? React.createElement(
-          "div",
-          {
-            className: "timeline-filter-panel",
-            role: "group",
-            "aria-label": "Timeline filters",
-            ref: filterPanelRef
-          },
-          availableFieldRefs.length === 0
-            ? React.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.")
-            : React.createElement(
-                "div",
-                { className: "timeline-filter-grid" },
-                ...timelineFieldFilters.map((filter, index) => {
-                  const selectedFieldDisplay = filter.fieldRef ? getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
-                  const valueLabel =
-                    !filter.fieldRef || filter.selectedValueKeys.length === 0
-                      ? "All values"
-                      : `${filter.selectedValueKeys.length} selected`;
-                  const isFieldDropdownOpen = openFilterDropdown?.kind === "field" && openFilterDropdown.slotId === filter.slotId;
-                  const isValueDropdownOpen = openFilterDropdown?.kind === "value" && openFilterDropdown.slotId === filter.slotId;
-                  const filterValueOptions =
-                    isValueDropdownOpen && openFilterDropdown?.slotId === filter.slotId
-                      ? openFilterValueOptions
-                      : filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, filter.fieldRef), "");
-
-                  return React.createElement(
-                    "div",
-                    {
-                      key: `timeline-filter-slot-${filter.slotId}`,
-                      className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
-                    },
-                    React.createElement(
-                      "div",
-                      { className: "timeline-filter-dropdown-anchor" },
-                      React.createElement(
-                        "button",
-                        {
-                          type: "button",
-                          className: "timeline-color-coding-select timeline-color-coding-select-trigger",
-                          "aria-label": `Select filter field ${index + 1}`,
-                          "aria-haspopup": "listbox",
-                          "aria-expanded": isFieldDropdownOpen ? "true" : "false",
-                          onClick: () => {
-                            setOpenFilterDropdown((current) =>
-                              current?.kind === "field" && current.slotId === filter.slotId
-                                ? null
-                                : { slotId: filter.slotId, kind: "field" }
-                            );
-                            setFilterFieldSearchDraft("");
-                            setFilterValueSearchDraft("");
-                          }
-                        },
-                        selectedFieldDisplay
-                      ),
-                      isFieldDropdownOpen
-                        ? React.createElement(
-                            "div",
-                            {
-                              className: "timeline-color-coding-dropdown",
-                              role: "listbox",
-                              "aria-label": `Filter field options ${index + 1}`
-                            },
-                            React.createElement("input", {
-                              type: "search",
-                              className: "timeline-color-coding-dropdown-search",
-                              "aria-label": `Search filter fields ${index + 1}`,
-                              placeholder: "Search field",
-                              value: filterFieldSearchDraft,
-                              onChange: (event) => {
-                                setFilterFieldSearchDraft((event.target as HTMLInputElement).value);
-                              },
-                              onKeyDown: (event) => {
-                                if (event.key !== "Enter") {
-                                  return;
-                                }
-
-                                event.preventDefault();
-                                const firstField = openFilterFieldOptions[0] ?? null;
-                                if (!firstField) {
-                                  return;
-                                }
-                                applyFieldFilterSelection(filter.slotId, firstField);
-                                setOpenFilterDropdown(null);
-                              }
-                            }),
-                            React.createElement(
-                              "div",
-                              { className: "timeline-color-coding-dropdown-options" },
-                              openFilterFieldOptions.length === 0
-                                ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                                : openFilterFieldOptions.map((fieldRef) =>
-                                    React.createElement(
-                                      "button",
-                                      {
-                                        key: `${filter.slotId}-${fieldRef}`,
-                                        type: "button",
-                                        className:
-                                          filter.fieldRef === fieldRef
-                                            ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                            : "timeline-color-coding-option",
-                                        onClick: () => {
-                                          applyFieldFilterSelection(filter.slotId, fieldRef);
-                                          setOpenFilterDropdown(null);
-                                        }
-                                      },
-                                      React.createElement("span", { className: "timeline-color-coding-option-label" }, getFieldDisplayName(fieldRef)),
-                                      React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef)
-                                    )
-                                  )
-                            )
-                          )
-                        : null
-                    ),
-                    React.createElement(
-                      "div",
-                      { className: "timeline-filter-dropdown-anchor" },
-                      React.createElement(
-                        "button",
-                        {
-                          type: "button",
-                          className: "timeline-color-coding-select timeline-color-coding-select-trigger",
-                          "aria-label": `Select filter values ${index + 1}`,
-                          "aria-haspopup": "listbox",
-                          "aria-expanded": isValueDropdownOpen ? "true" : "false",
-                          disabled: !filter.fieldRef,
-                          onClick: () => {
-                            if (!filter.fieldRef) {
-                              return;
-                            }
-
-                            setOpenFilterDropdown((current) =>
-                              current?.kind === "value" && current.slotId === filter.slotId
-                                ? null
-                                : { slotId: filter.slotId, kind: "value" }
-                            );
-                            setFilterValueSearchDraft("");
-                            setFilterFieldSearchDraft("");
-                          }
-                        },
-                        valueLabel
-                      ),
-                      isValueDropdownOpen
-                        ? React.createElement(
-                            "div",
-                            {
-                              className: "timeline-color-coding-dropdown",
-                              role: "listbox",
-                              "aria-label": `Filter value options ${index + 1}`
-                            },
-                            React.createElement("input", {
-                              type: "search",
-                              className: "timeline-color-coding-dropdown-search",
-                              "aria-label": `Search filter values ${index + 1}`,
-                              placeholder: "Search value",
-                              value: filterValueSearchDraft,
-                              onChange: (event) => {
-                                setFilterValueSearchDraft((event.target as HTMLInputElement).value);
-                              }
-                            }),
-                            React.createElement(
-                              "div",
-                              { className: "timeline-color-coding-dropdown-options" },
-                              filterValueOptions.length === 0
-                                ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
-                                : filterValueOptions.map((entry) =>
-                                    React.createElement(
-                                      "label",
-                                      {
-                                        key: `${filter.slotId}-value-${entry.key}`,
-                                        className: "timeline-filter-value-option"
-                                      },
-                                      React.createElement("input", {
-                                        type: "checkbox",
-                                        checked: filter.selectedValueKeys.includes(entry.key),
-                                        "aria-label": `Include ${entry.label} in filter ${index + 1}`,
-                                        onChange: () => {
-                                          toggleTimelineFieldValueSelection(filter.slotId, entry.key);
-                                        }
-                                      }),
-                                      React.createElement(
-                                        "span",
-                                        { className: "timeline-filter-value-option-meta" },
-                                        React.createElement("strong", null, entry.label),
-                                        React.createElement("span", null, `${entry.count} item(s)`)
-                                      )
-                                    )
-                                  )
-                            )
-                          )
-                        : null
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-filter-row-clear",
-                        "aria-label": timelineFieldFilters.length > 1 ? `Remove filter ${index + 1}` : `Clear filter ${index + 1}`,
-                        onClick: () => {
-                          removeTimelineFilterSlot(filter.slotId);
-                        }
-                      },
-                      timelineFieldFilters.length > 1 ? "Remove" : "Clear"
-                    )
-                  );
-                }),
-                React.createElement(
-                  "button",
-                  {
-                    type: "button",
-                    className: "timeline-filter-add",
-                    "aria-label": "Add timeline filter",
-                    disabled: timelineFieldFilters.length >= MAX_TIMELINE_FILTER_SLOTS,
-                    onClick: () => {
-                      addTimelineFilterSlot();
-                    }
-                  },
-                  "+"
-                )
-              )
-        )
-      : null,
+      zoomLevel,
+      onSelectWeekZoom: () => {
+        setDayWidthPx(DAY_WIDTH_WEEK_PX);
+      },
+      onSelectMonthZoom: () => {
+        setDayWidthPx(DAY_WIDTH_MONTH_PX);
+      },
+      dependencyViewMode,
+      dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
+      onChangeDependencyMode: (mode) => {
+        setDependencyViewMode(mode);
+        setActiveDependencyDrag(null);
+        setActiveScheduleDrag(null);
+        setActiveUnschedulableDrag(null);
+        setUnscheduledDropPreview(null);
+        setSelectedDependency(null);
+      },
+      colorCodingControlRef,
+      selectedColorCodingLabel,
+      colorCodingDropdownOpen,
+      colorCodingSearchDraft,
+      filteredColorCodingOptions,
+      colorCoding,
+      fieldColorCoding,
+      onToggleColorCodingDropdown: () => {
+        setColorCodingDropdownOpen((current) => !current);
+        setColorCodingSearchDraft("");
+      },
+      onChangeColorCodingSearchDraft: (value) => {
+        setColorCodingSearchDraft(value);
+      },
+      onApplyFirstFilteredColorCodingOption: applyFirstFilteredColorCodingOption,
+      onSelectColorCodingOption: selectColorCodingOption,
+      onOpenColorSettings: () => {
+        if (colorCodingDropdownOpen && colorCodingSearchDraft.trim().length > 0) {
+          applyFirstFilteredColorCodingOption();
+        }
+        setColorSettingsOpen(true);
+      },
+      filterToggleControlRef,
+      timelineFiltersOpen,
+      activeTimelineFiltersCount: activeTimelineFilters.length,
+      onToggleTimelineFilters: () => {
+        setTimelineFiltersOpen((current) => {
+          if (current) {
+            setOpenFilterDropdown(null);
+          }
+          return !current;
+        });
+      },
+      sortControl: React.createElement(TimelineSortControl, {
+        availableFieldRefs,
+        controlRef: sortToggleControlRef,
+        panelRef: sortPanelRef,
+        sortSettingsOpen,
+        timelineSortPreference,
+        onToggleSortSettings: () => {
+          setSortSettingsOpen((current) => !current);
+        },
+        onSelectPrimarySortField: selectPrimarySortField,
+        onSelectSecondarySortField: selectSecondarySortField
+      }),
+      labelToggleControlRef,
+      labelSettingsOpen,
+      timelineLabelFields,
+      timelineSidebarFields,
+      labelPanelRef,
+      labelMenuSidebarOptionsRef,
+      labelMenuBarOptionsRef,
+      sidebarFieldSearchDraft,
+      labelFieldSearchDraft,
+      filteredTimelineSidebarFieldOptions,
+      filteredTimelineLabelFieldOptions,
+      onToggleLabelSettings: () => {
+        setLabelSettingsOpen((current) => !current);
+        setLabelFieldSearchDraft("");
+        setSidebarFieldSearchDraft("");
+      },
+      onChangeSidebarFieldSearchDraft: (value) => {
+        setSidebarFieldSearchDraft(value);
+      },
+      onChangeLabelFieldSearchDraft: (value) => {
+        setLabelFieldSearchDraft(value);
+      },
+      onClearTimelineSidebarFields: clearTimelineSidebarFields,
+      onClearTimelineLabelFields: clearTimelineLabelFields,
+      onSyncLabelMenuScrollFromSidebar: syncLabelMenuScrollFromSidebar,
+      onSyncLabelMenuScrollFromBar: syncLabelMenuScrollFromBar,
+      onToggleTimelineSidebarField: toggleTimelineSidebarField,
+      onToggleTimelineLabelField: toggleTimelineLabelField,
+      workItemSyncState: props.workItemSyncState ?? "up_to_date",
+      workItemSyncError: props.workItemSyncError ?? null
+    }),
+    React.createElement(TimelineFilterPanel, {
+      open: timelineFiltersOpen,
+      panelRef: filterPanelRef,
+      availableFieldRefs,
+      timelineFieldFilters,
+      openFilterDropdown,
+      openFilterFieldOptions,
+      openFilterValueOptions,
+      effectiveTimelineValueOptionsForFilter: (fieldRef) =>
+        filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, fieldRef), ""),
+      maxFilterSlots: MAX_TIMELINE_FILTER_SLOTS,
+      getFieldDisplayName,
+      onSetOpenFilterDropdown: setOpenFilterDropdown,
+      onSetFilterFieldSearchDraft: setFilterFieldSearchDraft,
+      onSetFilterValueSearchDraft: setFilterValueSearchDraft,
+      filterFieldSearchDraft,
+      filterValueSearchDraft,
+      onApplyFieldFilterSelection: applyFieldFilterSelection,
+      onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
+      onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
+      onAddTimelineFilterSlot: addTimelineFilterSlot
+    }),
     adoptScheduleError
       ? React.createElement(
           "div",
@@ -2206,154 +1795,22 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           `Save failed: ${adoptScheduleError}`
         )
       : null,
-    colorSettingsOpen
-      ? React.createElement(
-          "div",
-          {
-            className: "timeline-color-coding-modal-backdrop",
-            role: "presentation",
-            onClick: () => {
-              setColorSettingsOpen(false);
-            }
-          },
-          React.createElement(
-            "section",
-            {
-              className: "timeline-color-coding-modal",
-              role: "dialog",
-              "aria-modal": "true",
-              "aria-label": "Color coding settings",
-              onClick: (event) => {
-                event.stopPropagation();
-              }
-            },
-            React.createElement(
-              "header",
-              { className: "timeline-color-coding-modal-header" },
-              React.createElement("h4", null, "Color coding settings"),
-              React.createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "timeline-color-coding-settings-button",
-                  onClick: () => {
-                    setColorSettingsOpen(false);
-                  }
-                },
-                "Close"
-              )
-            ),
-            React.createElement(
-              "p",
-              { className: "timeline-color-coding-active-selection" },
-              `Active selection: ${resolveSelectedColorCodingLabel(colorCoding, selectedFieldRef)}`
-            ),
-            React.createElement(
-              "p",
-              { className: "timeline-color-coding-modal-field" },
-              isFieldColorCodingMode
-                ? selectedFieldRef
-                  ? `Field: ${selectedFieldRef}`
-                  : "Field: Select a field from the Color coding dropdown first."
-                : `Mode: ${resolveSelectedColorCodingLabel(colorCoding, selectedFieldRef)}`
-            ),
-            isFieldColorCodingMode && selectedFieldRef
-              ? React.createElement(
-                  "div",
-                  { className: "timeline-color-coding-value-grid", key: `field-values-${selectedFieldRef}` },
-                  selectedFieldValueStats.length === 0
-                    ? React.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.")
-                    : selectedFieldValueStats.map((entry) => {
-                        const scopedKey = toScopedFieldValueColorKey(selectedFieldRef, entry.key);
-                        const customColor =
-                          (scopedKey ? fieldColorCoding.valueColors[scopedKey] : null) ?? fieldColorCoding.valueColors[entry.key] ?? null;
-                        const effectiveColor = customColor ?? entry.defaultColor;
-                        return React.createElement(
-                          "div",
-                          { key: entry.key, className: "timeline-color-coding-value-row" },
-                          React.createElement(
-                            "div",
-                            { className: "timeline-color-coding-value-meta" },
-                            React.createElement("strong", null, entry.label),
-                            React.createElement("span", null, `${entry.count} item(s)`)
-                          ),
-                          React.createElement("input", {
-                            type: "color",
-                            value: effectiveColor,
-                            "aria-label": `Color for ${entry.label}`,
-                            onChange: (event) => {
-                              updateFieldValueColor(entry.key, (event.target as HTMLInputElement).value);
-                            }
-                          }),
-                          React.createElement(
-                            "button",
-                            {
-                              type: "button",
-                              className: "timeline-color-coding-value-reset",
-                              onClick: () => {
-                                updateFieldValueColor(entry.key, null);
-                              }
-                            },
-                            "Auto"
-                          )
-                        );
-                      })
-                )
-              : isConfigurableModeColorCoding
-                ? React.createElement(
-                    "div",
-                    { className: "timeline-color-coding-value-grid", key: `mode-values-${colorCoding}` },
-                    selectedModeValueStats.length === 0
-                      ? React.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.")
-                      : selectedModeValueStats.map((entry) => {
-                          const scopedKey = toScopedModeValueColorKey(colorCoding, entry.key);
-                          const customColor =
-                            (scopedKey ? fieldColorCoding.valueColors[scopedKey] : null) ??
-                            fieldColorCoding.valueColors[entry.key] ??
-                            null;
-                          const effectiveColor = customColor ?? entry.defaultColor;
-
-                          return React.createElement(
-                            "div",
-                            { key: entry.key, className: "timeline-color-coding-value-row" },
-                            React.createElement(
-                              "div",
-                              { className: "timeline-color-coding-value-meta" },
-                              React.createElement("strong", null, entry.label),
-                              React.createElement("span", null, `${entry.count} item(s)`)
-                            ),
-                            React.createElement("input", {
-                              type: "color",
-                              value: effectiveColor,
-                              "aria-label": `Color for ${entry.label}`,
-                              onChange: (event) => {
-                                updateModeValueColor(colorCoding, entry.key, (event.target as HTMLInputElement).value);
-                              }
-                            }),
-                            React.createElement(
-                              "button",
-                              {
-                                type: "button",
-                                className: "timeline-color-coding-value-reset",
-                                onClick: () => {
-                                  updateModeValueColor(colorCoding, entry.key, null);
-                                }
-                              },
-                              "Auto"
-                            )
-                          );
-                        })
-                  )
-              : React.createElement(
-                  "p",
-                  { className: "timeline-details-muted" },
-                  isFieldColorCodingMode
-                    ? "Select a field to configure value-to-color mapping."
-                    : "This mode does not require field selection."
-                )
-          )
-        )
-      : null,
+    React.createElement(TimelineColorCodingPanel, {
+      open: colorSettingsOpen,
+      colorCoding,
+      selectedFieldRef,
+      fieldColorCoding,
+      selectedFieldValueStats,
+      selectedModeValueStats,
+      isFieldColorCodingMode,
+      isReadOnlyStatusColorCodingMode,
+      onClose: () => {
+        setColorSettingsOpen(false);
+      },
+      onUpdateFieldValueColor: updateFieldValueColor,
+      resolveSelectedColorCodingLabel,
+      toScopedFieldValueColorKey
+    }),
     React.createElement(
       "div",
       {
@@ -2447,12 +1904,51 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       )
                     )
                   : [
-                      React.createElement("div", {
-                        className: "timeline-left-sidebar-header",
-                        style: { height: `${CHART_TOP_PADDING}px` },
-                        key: "header",
-                        "aria-hidden": "true"
-                      }),
+                      React.createElement(
+                        "div",
+                        {
+                          className: "timeline-left-sidebar-header",
+                          style: { height: `${CHART_TOP_PADDING}px` },
+                          key: "header"
+                        },
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "timeline-left-sidebar-align-toggle",
+                            "aria-label": "Toggle timeline sidebar row alignment",
+                            title:
+                              timelineSidebarRowJustify === "flex-end"
+                                ? "Align sidebar rows left"
+                                : "Align sidebar rows right",
+                            "aria-pressed": timelineSidebarRowJustify === "flex-end",
+                            onClick: () => {
+                              const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
+                              setTimelineSidebarRowJustify(next);
+                              saveTimelineSidebarRowJustify(next);
+                            }
+                          },
+                          React.createElement(
+                            "svg",
+                            {
+                              viewBox: "0 0 24 24",
+                              className: "timeline-left-sidebar-align-icon",
+                              "aria-hidden": "true"
+                            },
+                            timelineSidebarRowJustify === "flex-end"
+                              ? [
+                                  React.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+                                  React.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
+                                  React.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
+                                ]
+                              : [
+                                  React.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+                                  React.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
+                                  React.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
+                                ]
+                          )
+                        )
+                      ),
                       React.createElement(
                         "div",
                         { className: "timeline-left-sidebar-body", key: "body" },
@@ -2467,7 +1963,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                                   ? "timeline-left-sidebar-row timeline-left-sidebar-row-selected"
                                   : "timeline-left-sidebar-row",
                               "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
-                              style: { height: `${CHART_ROW_HEIGHT}px` },
+                              style: {
+                                height: `${CHART_ROW_HEIGHT}px`,
+                                justifyContent: timelineSidebarRowJustify
+                              },
                               onClick: () => {
                                 selectWorkItem(bar.workItemId);
                               }
@@ -2527,10 +2026,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   "svg",
                   {
                     className: "timeline-chart-axis",
+                    width: chartModel.width,
+                    height: CHART_TOP_PADDING,
                     viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
+                    preserveAspectRatio: "none",
                     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
                   },
-                  chartModel.monthLabels.map((month) =>
+                  chartModel.monthMarkers.map((month) =>
                     React.createElement(
                       "text",
                       {
@@ -2542,12 +2044,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       month.label
                     )
                   ),
-                  chartModel.ticks.map((tick) =>
+                  (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) =>
                     React.createElement(
                       "text",
                       {
                         key: `sticky-tick-label-${tick.x}-${tick.label}`,
-                        x: CHART_LEFT_GUTTER + tick.x + 4,
+                        x: CHART_LEFT_GUTTER + tick.x + CHART_AXIS_TICK_LABEL_X_OFFSET,
                         y: CHART_AXIS_TICK_LABEL_Y,
                         className: "timeline-axis-label"
                       },
@@ -2574,7 +2076,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     activeUnschedulableDrag && !activeScheduleDrag
                       ? "timeline-chart timeline-chart-unscheduled-drop-active"
                       : "timeline-chart",
+                  width: chartModel.width,
+                  height: chartModel.height,
                   viewBox: `0 0 ${chartModel.width} ${chartModel.height}`,
+                  preserveAspectRatio: "none",
                   role: "img",
                   "aria-label": "gantt-chart",
                   style: { width: `${chartModel.width}px`, height: `${chartModel.height}px` },
@@ -2642,27 +2147,27 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     className: "timeline-grid-line-day"
                   })
                 ),
-                chartModel.monthWeekLines.map((weekX) =>
+                (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) =>
                   React.createElement("line", {
-                    key: `month-week-grid-${weekX}`,
-                    x1: CHART_LEFT_GUTTER + weekX,
+                    key: `month-week-grid-${week.x}`,
+                    x1: CHART_LEFT_GUTTER + week.x,
                     y1: CHART_GRID_START_Y,
-                    x2: CHART_LEFT_GUTTER + weekX,
+                    x2: CHART_LEFT_GUTTER + week.x,
                     y2: chartModel.height - CHART_BOTTOM_PADDING,
                     className: "timeline-grid-line-weekly"
                   })
                 ),
-                chartModel.monthBoundaries.map((boundaryX) =>
+                chartModel.monthMarkers.map((month) =>
                   React.createElement("line", {
-                    key: `month-boundary-${boundaryX}`,
-                    x1: CHART_LEFT_GUTTER + boundaryX,
+                    key: `month-boundary-${month.x}`,
+                    x1: CHART_LEFT_GUTTER + month.x,
                     y1: CHART_GRID_START_Y,
-                    x2: CHART_LEFT_GUTTER + boundaryX,
+                    x2: CHART_LEFT_GUTTER + month.x,
                     y2: chartModel.height - CHART_BOTTOM_PADDING,
                     className: "timeline-month-boundary-line"
                   })
                 ),
-                chartModel.ticks.map((tick) =>
+                (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) =>
                   React.createElement(
                     "g",
                     { key: `${tick.x}-${tick.label}` },
@@ -2967,6 +2472,7 @@ const CHART_RIGHT_PADDING_PX = 80;
 const CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 46;
 const CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 const CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
+const CHART_AXIS_TICK_LABEL_X_OFFSET = 0;
 const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 const TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 const DAY_WIDTH_WEEK_PX = 22;
@@ -3081,11 +2587,9 @@ type VisualChartModel = {
   tailHeightPx: number;
   dayWidthPx: number;
   bars: VisualTimelineBar[];
-  ticks: { x: number; label: string }[];
-  monthWeekLines: number[];
+  weekMarkers: { x: number; label: string }[];
   dailyGridLines: number[];
-  monthBoundaries: number[];
-  monthLabels: { x: number; label: string }[];
+  monthMarkers: { x: number; label: string }[];
   domainStart: Date;
   currentPeriod: { x: number; width: number } | null;
   todayX: number | null;
@@ -3112,11 +2616,9 @@ function buildVisualChartModel(
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
-      ticks: [],
-      monthWeekLines: [],
+      weekMarkers: [],
       dailyGridLines: [],
-      monthBoundaries: [],
-      monthLabels: [],
+      monthMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
@@ -3156,11 +2658,9 @@ function buildVisualChartModel(
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
-      ticks: [],
-      monthWeekLines: [],
+      weekMarkers: [],
       dailyGridLines: [],
-      monthBoundaries: [],
-      monthLabels: [],
+      monthMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
@@ -3216,10 +2716,9 @@ function buildVisualChartModel(
     };
   });
 
-  const ticks = buildAdaptiveTicks(domainStart, totalDays, zoomLevel, dayWidthPx);
-  const monthWeekLines = zoomLevel === "month" ? buildWeeklyGridLines(domainStart, totalDays, dayWidthPx) : [];
+  const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
-  const { monthBoundaries, monthLabels } = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const monthMarkers = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
 
   const timelineWidth = totalDays * dayWidthPx;
   const verticalLayout = resolveTimelineVerticalLayoutMetrics(bars.length, includeUnscheduledDropLane);
@@ -3231,11 +2730,9 @@ function buildVisualChartModel(
     tailHeightPx: verticalLayout.tailHeightPx,
     dayWidthPx,
     bars,
-    ticks,
-    monthWeekLines,
+    weekMarkers,
     dailyGridLines,
-    monthBoundaries,
-    monthLabels,
+    monthMarkers,
     domainStart,
     currentPeriod,
     todayX
@@ -3257,7 +2754,6 @@ function buildColorByWorkItemId(
       workItemId: bar.workItemId,
       stateCode: bar.state.code,
       endDate: bar.schedule.endDate,
-      assignedTo: bar.details.assignedTo ?? null,
       parentWorkItemId: bar.details.parentWorkItemId ?? null,
       fieldValues: bar.details.fieldValues ?? {},
       fallbackColor: bar.state.color
@@ -3266,7 +2762,6 @@ function buildColorByWorkItemId(
       workItemId: item.workItemId,
       stateCode: item.state.code,
       endDate: item.schedule?.endDate ?? null,
-      assignedTo: item.details.assignedTo ?? null,
       parentWorkItemId: item.details.parentWorkItemId ?? null,
       fieldValues: item.details.fieldValues ?? {},
       fallbackColor: item.state.color
@@ -3325,13 +2820,7 @@ function buildColorByWorkItemId(
 
   const categoryByWorkItemId = new Map<number, string>();
   items.forEach((item) => {
-    let category = "Unknown";
-
-    if (mode === "person") {
-      category = item.assignedTo?.trim() || "Unassigned";
-    } else if (mode === "parent") {
-      category = item.parentWorkItemId === null ? "No parent" : `Parent #${item.parentWorkItemId}`;
-    }
+    const category = item.parentWorkItemId === null ? "No parent" : `Parent #${item.parentWorkItemId}`;
 
     categoryByWorkItemId.set(item.workItemId, category);
   });
@@ -3703,28 +3192,35 @@ type ColorCodingOption = {
   searchText: string;
 };
 
+const COLOR_CODING_MODE_OPTIONS: ColorCodingOption[] = [
+  { key: "mode:none", mode: "none", fieldRef: null, label: "None", subtitle: "Mode", searchText: "none mode" },
+  { key: "mode:status", mode: "status", fieldRef: null, label: "Status", subtitle: "Mode", searchText: "status mode state" },
+  { key: "mode:parent", mode: "parent", fieldRef: null, label: "Parent", subtitle: "Mode", searchText: "parent mode hierarchy" },
+  { key: "mode:overdue", mode: "overdue", fieldRef: null, label: "Overdue", subtitle: "Mode", searchText: "overdue mode late due date" }
+];
+
+const COLOR_CODING_RESERVED_FIELD_REFS = new Set(["state", "system.state"]);
+
 function buildColorCodingOptions(fieldRefs: string[]): ColorCodingOption[] {
-  const modeOptions: ColorCodingOption[] = [
-    { key: "mode:none", mode: "none", fieldRef: null, label: "None", subtitle: "Mode", searchText: "none mode" },
-    { key: "mode:person", mode: "person", fieldRef: null, label: "Person", subtitle: "Mode", searchText: "person mode assignee assignedto" },
-    { key: "mode:status", mode: "status", fieldRef: null, label: "Status", subtitle: "Mode", searchText: "status mode state" },
-    { key: "mode:parent", mode: "parent", fieldRef: null, label: "Parent", subtitle: "Mode", searchText: "parent mode hierarchy" },
-    { key: "mode:overdue", mode: "overdue", fieldRef: null, label: "Overdue", subtitle: "Mode", searchText: "overdue mode late due date" }
-  ];
+  const fieldOptions = fieldRefs
+    .filter((fieldRef) => !isReservedColorCodingFieldRef(fieldRef))
+    .map((fieldRef) => {
+      const fieldDisplayName = getFieldDisplayName(fieldRef);
+      return {
+        key: `field:${fieldRef}`,
+        mode: "field" as const,
+        fieldRef,
+        label: fieldDisplayName,
+        subtitle: fieldRef,
+        searchText: `field ${fieldDisplayName} ${fieldRef}`.toLowerCase()
+      };
+    });
 
-  const fieldOptions = fieldRefs.map((fieldRef) => {
-    const fieldDisplayName = getFieldDisplayName(fieldRef);
-    return {
-      key: `field:${fieldRef}`,
-      mode: "field" as const,
-      fieldRef,
-      label: fieldDisplayName,
-      subtitle: fieldRef,
-      searchText: `field ${fieldDisplayName} ${fieldRef}`.toLowerCase()
-    };
-  });
+  return [...COLOR_CODING_MODE_OPTIONS, ...fieldOptions];
+}
 
-  return [...modeOptions, ...fieldOptions];
+function isReservedColorCodingFieldRef(fieldRef: string): boolean {
+  return COLOR_CODING_RESERVED_FIELD_REFS.has(fieldRef.trim().toLowerCase());
 }
 
 function filterColorCodingOptions(options: ColorCodingOption[], search: string): ColorCodingOption[] {
@@ -3771,9 +3267,6 @@ function resolveSelectedColorCodingLabel(mode: TimelineColorCoding, fieldRef: st
 
   if (mode === "none") {
     return "None";
-  }
-  if (mode === "person") {
-    return "Person";
   }
   if (mode === "status") {
     return "Status";
@@ -3927,7 +3420,7 @@ function listFieldValueStats(timeline: TimelineReadModel | null, fieldRef: strin
 }
 
 function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineColorCoding): FieldValueStat[] {
-  if (!timeline || (mode !== "person" && mode !== "status")) {
+  if (!timeline || mode !== "status") {
     return [];
   }
 
@@ -3946,13 +3439,8 @@ function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineCo
     });
   };
 
-  if (mode === "person") {
-    timeline.bars.forEach((bar) => register(bar.details.assignedTo?.trim() || "Unassigned"));
-    timeline.unschedulable.forEach((item) => register(item.details.assignedTo?.trim() || "Unassigned"));
-  } else if (mode === "status") {
-    timeline.bars.forEach((bar) => register(bar.state.code));
-    timeline.unschedulable.forEach((item) => register(item.state.code));
-  }
+  timeline.bars.forEach((bar) => register(bar.state.code));
+  timeline.unschedulable.forEach((item) => register(item.state.code));
 
   const categoryColorMap = buildCategoricalColorMap([...counts.values()].map((entry) => entry.label));
   return [...counts.entries()]
@@ -3983,7 +3471,7 @@ function toScopedFieldValueColorKey(fieldRef: string | null, valueKey: string): 
 }
 
 function toScopedModeValueColorKey(mode: TimelineColorCoding, valueKey: string): string | null {
-  if (mode !== "person" && mode !== "parent" && mode !== "status") {
+  if (mode !== "parent" && mode !== "status") {
     return null;
   }
 
@@ -4094,17 +3582,8 @@ function dayDiffInclusive(from: Date, to: Date): number {
   return dayDiff(from, to) + 1;
 }
 
-function buildAdaptiveTicks(
-  domainStart: Date,
-  totalDays: number,
-  zoomLevel: TimelineZoomLevel,
-  dayWidthPx: number
-): { x: number; label: string }[] {
-  const ticks: { x: number; label: string }[] = [];
-  if (zoomLevel !== "week") {
-    return ticks;
-  }
-
+function buildWeeklyAxisMarkers(domainStart: Date, totalDays: number, dayWidthPx: number): { x: number; label: string }[] {
+  const markers: { x: number; label: string }[] = [];
   const domainEnd = addDays(domainStart, totalDays);
   let cursor = startOfIsoWeekUtc(domainStart);
   if (cursor.getTime() < domainStart.getTime()) {
@@ -4112,14 +3591,14 @@ function buildAdaptiveTicks(
   }
   while (cursor.getTime() <= domainEnd.getTime()) {
     const offset = dayDiff(domainStart, cursor);
-    ticks.push({
+    markers.push({
       x: offset * dayWidthPx,
       label: formatDayMonthLabel(cursor)
     });
     cursor = addDays(cursor, 7);
   }
 
-  return ticks.length ? ticks : [{ x: 0, label: formatDayMonthLabel(domainStart) }];
+  return markers.length ? markers : [{ x: 0, label: formatDayMonthLabel(domainStart) }];
 }
 
 function buildDailyGridLines(totalDays: number, dayWidthPx: number): number[] {
@@ -4130,56 +3609,34 @@ function buildDailyGridLines(totalDays: number, dayWidthPx: number): number[] {
   return lines;
 }
 
-function buildWeeklyGridLines(domainStart: Date, totalDays: number, dayWidthPx: number): number[] {
-  const lines: number[] = [];
-  const domainEnd = addDays(domainStart, totalDays);
-  let cursor = startOfIsoWeekUtc(domainStart);
-  if (cursor.getTime() < domainStart.getTime()) {
-    cursor = addDays(cursor, 7);
-  }
-
-  while (cursor.getTime() <= domainEnd.getTime()) {
-    lines.push(dayDiff(domainStart, cursor) * dayWidthPx);
-    cursor = addDays(cursor, 7);
-  }
-
-  return lines;
-}
-
 function buildMonthAxisMarkers(
   domainStart: Date,
   totalDays: number,
   dayWidthPx: number
-): { monthBoundaries: number[]; monthLabels: { x: number; label: string }[] } {
+): { x: number; label: string }[] {
   const domainEndExclusive = addDays(domainStart, totalDays + 1);
   let cursor = startOfMonthUtc(domainStart);
-
-  const monthBoundaries: number[] = [];
-  const monthLabels: { x: number; label: string }[] = [];
+  const markers: { x: number; label: string }[] = [];
+  const seenX = new Set<number>();
 
   while (cursor.getTime() < domainEndExclusive.getTime()) {
     const monthStartOffset = dayDiff(domainStart, cursor);
-    const nextMonth = addMonthsUtc(cursor, 1);
-    const monthEndOffsetExclusive = dayDiff(domainStart, nextMonth);
-
-    if (monthStartOffset >= 0 && monthStartOffset <= totalDays) {
-      monthBoundaries.push(monthStartOffset * dayWidthPx);
+    if (monthStartOffset <= totalDays) {
+      const markerOffsetDays = clamp(monthStartOffset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        markers.push({
+          x,
+          label: formatMonthYearLabel(cursor)
+        });
+      }
     }
 
-    const visibleStartOffset = Math.max(0, monthStartOffset);
-    const visibleEndOffsetExclusive = Math.min(totalDays + 1, monthEndOffsetExclusive);
-    if (visibleEndOffsetExclusive > visibleStartOffset) {
-      const centerOffset = visibleStartOffset + (visibleEndOffsetExclusive - visibleStartOffset) / 2;
-      monthLabels.push({
-        x: centerOffset * dayWidthPx,
-        label: formatMonthYearLabel(cursor)
-      });
-    }
-
-    cursor = nextMonth;
+    cursor = addMonthsUtc(cursor, 1);
   }
 
-  return { monthBoundaries, monthLabels };
+  return markers;
 }
 
 function formatTickDate(value: Date): string {
@@ -4189,7 +3646,16 @@ function formatTickDate(value: Date): string {
 function formatDayMonthLabel(value: Date): string {
   const day = String(value.getUTCDate()).padStart(2, "0");
   const month = String(value.getUTCMonth() + 1).padStart(2, "0");
-  return `${day}.${month}.`;
+  const weekNumber = String(resolveIsoWeekNumberUtc(value)).padStart(2, "0");
+  return `${day}.${month}. (KW${weekNumber})`;
+}
+
+function resolveIsoWeekNumberUtc(value: Date): number {
+  const normalized = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+  const weekday = normalized.getUTCDay() || 7;
+  normalized.setUTCDate(normalized.getUTCDate() + 4 - weekday);
+  const yearStart = new Date(Date.UTC(normalized.getUTCFullYear(), 0, 1));
+  return Math.ceil(((normalized.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
 }
 
 function formatMonthYearLabel(value: Date): string {

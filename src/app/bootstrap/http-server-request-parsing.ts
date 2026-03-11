@@ -1,4 +1,5 @@
 import type { UserPreferences } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
+import { sanitizeHtmlFragment } from "../../shared/security/sanitize-html-fragment.js";
 
 export function parsePayload(raw: string): Record<string, unknown> | null {
   try {
@@ -139,7 +140,7 @@ export function parseUpdateDetailsPayload(
   return {
     targetWorkItemId,
     title: title.trim(),
-    descriptionHtml,
+    descriptionHtml: sanitizeHtmlFragment(descriptionHtml),
     state: state.trim()
   };
 }

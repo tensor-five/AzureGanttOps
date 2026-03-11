@@ -3,7 +3,7 @@ import {
 } from "../../shared/user-preferences/user-preferences.client.js";
 import { createUserPreferenceStore } from "./create-user-preference-store.js";
 
-export type TimelineColorCoding = "none" | "person" | "status" | "parent" | "overdue" | "field";
+export type TimelineColorCoding = "none" | "status" | "parent" | "overdue" | "field";
 export type TimelineFieldColorCodingConfig = {
   fieldRef: string | null;
   valueColors: Record<string, string>;
@@ -62,7 +62,7 @@ export function clearTimelineColorCodingPreferenceForTests(): void {
 }
 
 function sanitizeTimelineColorCoding(value: unknown): TimelineColorCoding | null {
-  if (value === "none" || value === "person" || value === "status" || value === "parent" || value === "overdue" || value === "field") {
+  if (value === "none" || value === "status" || value === "parent" || value === "overdue" || value === "field") {
     return value;
   }
 

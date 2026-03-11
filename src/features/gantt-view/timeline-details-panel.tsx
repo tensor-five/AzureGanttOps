@@ -1,6 +1,7 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import { sanitizeHtmlFragment } from "../../shared/security/sanitize-html-fragment.js";
 
 export type TimelineDetailsPanelProps = {
   timeline: TimelineReadModel | null;
@@ -47,13 +48,14 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       return;
     }
 
+    const sanitizedDescription = sanitizeHtmlFragment(selected.descriptionHtml);
     setTitleDraft(selected.title);
-    setDescriptionDraft(selected.descriptionHtml);
+    setDescriptionDraft(sanitizedDescription);
     setStateDraft(selected.state);
     setIsDescriptionEditing(false);
     setSaveError(null);
     if (descriptionRef.current) {
-      descriptionRef.current.innerHTML = selected.descriptionHtml;
+      descriptionRef.current.innerHTML = sanitizedDescription;
     }
   }, [selected?.workItemId]);
 
@@ -98,7 +100,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     );
 
   const baselineTitle = selected?.title ?? "";
-  const baselineDescription = selected?.descriptionHtml ?? "";
+  const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
   const baselineState = selected?.state ?? "";
   const isDirty =
     titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
@@ -125,7 +127,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
 
     descriptionRef.current.focus();
     document.execCommand(command, false, value);
-    setDescriptionDraft(descriptionRef.current.innerHTML);
+    setDescriptionDraft(sanitizeHtmlFragment(descriptionRef.current.innerHTML));
   };
 
   const saveDetails = async () => {
@@ -146,7 +148,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       await props.onUpdateSelectedWorkItemDetails({
         targetWorkItemId: selected.workItemId,
         title: titleDraft.trim(),
-        descriptionHtml: descriptionDraft,
+        descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
         state: stateDraft.trim(),
         stateColor: selectedStateColor
       });
@@ -370,7 +372,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                   }
                 },
                 onInput: (event) => {
-                  setDescriptionDraft((event.target as HTMLDivElement).innerHTML);
+                  const target = event.target as HTMLDivElement;
+                  const sanitized = sanitizeHtmlFragment(target.innerHTML);
+                  if (sanitized !== target.innerHTML) {
+                    target.innerHTML = sanitized;
+                  }
+                  setDescriptionDraft(sanitized);
                 },
                 onBlur: () => {
                   requestAnimationFrame(() => {

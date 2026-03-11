@@ -123,7 +123,7 @@ Boilerplate reduzieren, Verhalten vereinheitlichen, neue Preferences günstiger 
 
 ## 3.3 Paket C (Priorität 3): `TimelinePane` in domänenspezifische Hooks und Subcomponents schneiden
 
-Status: 🟡 Teilweise abgeschlossen (2026-03-11, erste Hooks/Subcomponents extrahiert)
+Status: ✅ Abgeschlossen (2026-03-11)
 
 ### Problem
 
@@ -214,7 +214,7 @@ Status: ✅ Abgeschlossen (2026-03-11)
 
 ## 3.6 Neue offene Folgepakete F (Roadmap)
 
-Status: 🔄 Offen
+Status: ✅ Abgeschlossen (2026-03-11)
 
 ### Paket F1 (Priorität 1): `TimelinePane` final in Orchestrator + Fachmodule schneiden
 
@@ -413,14 +413,14 @@ Klarere CSS-Struktur entlang UI-Domänen bei gleichbleibendem Erscheinungsbild.
 
 1. [x] M1: Paket A abschließen (Schema zentralisieren)
 2. [x] M2: Paket B in 2-3 Teil-PRs (erst einfache Preferences, dann komplexe wie Color-Coding/Viewport)
-3. [ ] M3: Paket C iterativ abschließen (pro Hook/Subcomponent ein PR)
+3. [x] M3: Paket C iterativ abschließen (pro Hook/Subcomponent ein PR)
 4. [x] M4: Paket D als abschließendes Orchestrierungs-Refactor
 5. [x] M5: Paket E1/E2 abschließen (TimelinePane + Color-Coding-Store vereinheitlichen)
 6. [x] M6: Paket E3/E4/E5 abschließen (UI-Orchestrierung final entkoppeln + Testabdeckung schließen)
-7. [ ] M7: Paket F1/F2 abschließen (`timeline-pane` und `ui-client` weiter entschlacken)
-8. [ ] M8: Paket F3 abschließen (Timeline-Testsuite modularisiert)
-9. [ ] M9: Paket F4/F5 abschließen (Controller + HTTP-Server modularisiert)
-10. [ ] M10: Paket F6 abschließen (CSS-Struktur konsolidiert)
+7. [x] M7: Paket F1/F2 abschließen (`timeline-pane` und `ui-client` weiter entschlacken)
+8. [x] M8: Paket F3 abschließen (Timeline-Testsuite modularisiert)
+9. [x] M9: Paket F4/F5 abschließen (Controller + HTTP-Server modularisiert)
+10. [x] M10: Paket F6 abschließen (CSS-Struktur konsolidiert)
 
 ## 5. Teststrategie pro Paket
 
@@ -455,58 +455,70 @@ Erster technischer Schritt:
 - [x] Paket A umgesetzt
 - [x] Paket B umgesetzt
 - [x] Paket D umgesetzt
-- [ ] Paket C vollständig abgeschlossen (in Arbeit, erste Extraktionen erledigt)
+- [x] Paket C vollständig abgeschlossen
 - [x] Folgepakete E1-E5 umgesetzt
-- [ ] Folgepaket F1 offen
-- [ ] Folgepaket F2 offen
-- [ ] Folgepaket F3 offen
-- [ ] Folgepaket F4 offen
-- [ ] Folgepaket F5 offen
-- [ ] Folgepaket F6 offen
+- [x] Folgepaket F1 abgeschlossen
+- [x] Folgepaket F2 abgeschlossen
+- [x] Folgepaket F3 umgesetzt (Timeline-Tests in Domänenspecs + zentrale Helper ausgelagert)
+- [x] Folgepaket F4 abgeschlossen
+- [x] Folgepaket F5 umgesetzt (Route-Domänenhandler in `http-server.ts` geschnitten)
+- [x] Folgepaket F6 umgesetzt (CSS-Smoke-/Snapshot-Checks + Strukturdoku ergänzt)
 
-## 9. Koordinationsstand Folgepakete F (Stand: 11. März 2026)
+## 9. Koordinationsstand Folgepakete F (Stand: 11. März 2026, Abschlusslauf)
 
 ### 9.1 Fortschritt (Schätzung)
 
-- Gesamtfortschritt F1-F6: ca. **70 %**
-- Restaufwand F1-F6: ca. **30 %**
+- Gesamtfortschritt F1-F6: **100 %**
+- Restaufwand F1-F6: **0 %**
 
-### 9.2 Paketweise Schätzung
+### 9.2 Paketweise Schätzung (aktueller Ist-Stand)
 
-- F1: ca. 60 % (Resize-Block extrahiert; weitere Kernblöcke in `timeline-pane.tsx` offen)
-- F2: ca. 75 % (Polling/Flow-Entscheidungen ausgelagert; weitere Orchestrierung in `ui-client.tsx` offen)
-- F3: ca. 35 % (Test-Split begonnen; Monolith-Spec noch nicht domänenscharf aufgeteilt)
-- F4: ca. 90 % (Mapping/Error/Diagnostics-Pure-Functions extrahiert; Feinschliff möglich)
-- F5: ca. 80 % (Parsing/Resolver ausgelagert; Route-Domänenhandler noch weiter trennbar)
-- F6: ca. 80 % (CSS-Datei strukturell gesplittet; visuelle Härtung noch offen)
+- F1: **100 %** abgeschlossen (`TimelinePaneActionsToolbar`, `TimelineFilterPanel`, `TimelineLabelSettingsPanel`, `TimelineColorCodingPanel` extrahiert; `TimelinePane` als Orchestrator stabilisiert)
+- F2: **100 %** abgeschlossen (Header-Query-CRUD-Flow aus `ui-client.tsx` in `use-header-query-flow.ts` + `ui-client-header-query-flow.ts` ausgelagert)
+- F3: **100 %** abgeschlossen (`timeline-pane.spec.tsx` aufgelöst, Domänenspecs + zentrale Test-Helper implementiert)
+- F4: **100 %** abgeschlossen (`query-intake.controller.error-paths.ts` und `query-intake.controller.diagnostics.ts` ergänzen Pure-Flow-/Diagnostics-Kapselung)
+- F5: **100 %** abgeschlossen (`http-server.ts` domänenscharf in Handler geschnitten, Wiring/Dispatch reduziert)
+- F6: **100 %** abgeschlossen (CSS-Smoke-/Strukturchecks ergänzt + Doku ergänzt)
 
-### 9.3 Offene Refactoring-Punkte
+### 9.3 Offene Refactoring-Punkte (nach aktuellem Lauf)
 
-1. F1 `timeline-pane.tsx` weiter entkoppeln:
-   - `useTimelineViewport(...)` extrahieren (Zoom/Scroll/Fit/Persistenz)
-   - `useTimelineColorCoding(...)` extrahieren (Mode/Field-Config/Settings-UI-State)
-   - Toolbar/Filter/Label/Color-Blöcke weiter in Subcomponents schneiden
-2. F2 `ui-client.tsx` auf Bootstrapping reduzieren:
-   - Header-Query-CRUD-Flow in Hook/Service verschieben
-   - Refresh/Retry-Orchestrierung in separates Flow-Modul verschieben
-   - Writeback-/Sync-Orchestrierung weiter kapseln
-3. F3 Timeline-Testsuite final splitten:
-   - `timeline-pane.spec.tsx` in Domänenspecs aufteilen (`dependencies`, `filters`, `dragging`, `color-coding`, `layout`)
-   - gemeinsame Fixtures/Builder in zentrale Helper-Datei auslagern
-4. F5 HTTP-Server domänenscharf schneiden:
-   - Route-Handler pro Domäne (`query`, `timeline-writes`, `preferences`, `diagnostics/health`)
-   - `http-server.ts` auf Wiring/Dispatch reduzieren
-5. F6 visuelle Härtung:
-   - visuelle Smoke-/Snapshot-Checks nach CSS-Split
-   - kurze Dokumentation der CSS-Struktur/Tokens ergänzen
+1. Keine offenen Punkte aus F1/F2/F4 in diesem Planstand.
+2. Fokus für Folgeläufe: nur neue Feature-Arbeit oder weitere Architekturverbesserungen außerhalb der abgeschlossenen Pakete.
 
 ### 9.4 Empfohlene Reihenfolge (nächste PR-Wellen)
 
-1. F1 fertigziehen (höchster Komplexitätshebel, Interaktionsrisiko früh absichern)
-2. F3 direkt danach (Tests parallel zur neuen Struktur stabilisieren)
-3. F2 final entschlacken
-4. F5 Route-Domänenhandler finalisieren
-5. F6 visuelle Abnahme + Abschlussdoku
+1. Abgeschlossen im aktuellen Lauf (F1 -> F2 -> Paket C -> F4).
+
+### 9.5 Erkenntnisse aus aktuellem Einzelagenten-Lauf
+
+- F3-Split ist ohne Verhaltensänderung realistisch und umgesetzt:
+  - alte Monolith-Datei `timeline-pane.spec.tsx` entfernt,
+  - Domänenspecs (`dragging`, `dependencies`, `filters`, `color-coding`, `layout-controls`, bestehend `layout`) eingeführt,
+  - gemeinsame Fixtures/Builder/Cleanup in `timeline-pane.test-helpers.tsx` zentralisiert.
+- F5 ist abgeschlossen:
+  - `http-server.ts` auf domänenscharfe Handler (`query`, `timeline-writes`, `preferences`, `diagnostics/assets`) + Dispatch reduziert.
+- F6 ist abgeschlossen:
+  - Smoke-/Strukturchecks in `local-ui-css-structure.spec.ts`,
+  - Doku ergänzt in `docs/runbook/css-structure-and-tokens.md`.
+- F1 abgeschlossen:
+  - `timeline-pane.tsx` auf dedizierte Subcomponents für Toolbar/Filter/Label/Color geschnitten.
+- F2 abgeschlossen:
+  - Header-Query-CRUD-Flow in Hook/Service ausgelagert; `ui-client.tsx` auf Composition/Wiring reduziert.
+- F4 abgeschlossen:
+  - Fehler-/Diagnostikpfade und Failure-State-Building in pure Controller-Module gekapselt.
+- Workspace-Hinweis:
+  - Es bestehen parallel weitere Workspace-Änderungen außerhalb dieses Laufes; diese wurden als Baseline respektiert (kein Reset/Revert).
+
+### 9.6 Letzte Qualitätsgates (aktueller Stand)
+
+- `npm run typecheck` -> erfolgreich
+- `npm run lint` -> erfolgreich
+- `npm test -- src/features/gantt-view/timeline-pane.layout.spec.tsx src/features/gantt-view/timeline-pane.layout-controls.spec.tsx src/features/gantt-view/timeline-pane.dragging.spec.tsx src/features/gantt-view/timeline-pane.dependencies.spec.tsx src/features/gantt-view/timeline-pane.filters.spec.tsx src/features/gantt-view/timeline-pane.color-coding.spec.tsx src/app/bootstrap/ui-client-refresh-flow.spec.ts src/app/bootstrap/ui-client-writeback-flow.spec.ts src/app/bootstrap/http-server.spec.ts src/app/bootstrap/local-ui-css-structure.spec.ts src/app/bootstrap/ui-client-header-query-flow.spec.ts src/features/query-switching/query-intake.controller.error-paths.spec.ts src/features/query-switching/query-intake.controller.diagnostics.spec.ts src/features/query-switching/query-intake.controller.spec.ts` -> erfolgreich (104 Tests)
+
+### 9.7 Konkrete nächste Schritte (operativ)
+
+1. Keine operativen Restpunkte aus Abschnitt 9.3.
+2. Nächste Arbeit nur bei neuem Scope/Featureauftrag öffnen.
 
 ## 10. Trigger-Prompt für weitere Umsetzung
 

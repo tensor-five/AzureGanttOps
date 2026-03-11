@@ -158,6 +158,9 @@ const ADO_COMM_PREVIEW_FALLBACK = "{}";
 const ADO_COMM_EMPTY_RESULT_SEQ = (afterSeq: number) => afterSeq;
 const ADO_COMM_NEXT_SEQ_FROM_ENTRY = (entry: AdoCommLogEntry) => entry.seq;
 const ADO_COMM_DEFAULT_JSON_PREVIEW = (value: unknown) => JSON.stringify(value ?? ADO_COMM_PREVIEW_FALLBACK);
+const CONTENT_SECURITY_POLICY =
+  "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
+  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
 const ADO_COMM_ROUTE_QUERY_AFTER_SEQ = "afterSeq";
 const ADO_COMM_ROUTE_QUERY_LIMIT = "limit";
 const ADO_COMM_LOG_VERBOSE_PREFIX = "[ado-runtime]";
@@ -391,6 +394,17 @@ function isUserPreferencesPostRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === USER_PREFERENCES_ROUTE_PATH;
 }
 
+function isCsrfProtectedRoute(method: string, pathname: string): boolean {
+  return (
+    isAzLoginRoute(method, pathname) ||
+    isAzCliPathRoute(method, pathname) ||
+    isUserPreferencesPostRoute(method, pathname) ||
+    isAdoptScheduleRoute(method, pathname) ||
+    isDependencyLinkRoute(method, pathname) ||
+    isUpdateDetailsRoute(method, pathname)
+  );
+}
+
 function writeAdoCommLogsResponse(res: ServerResponse, store: AdoCommLogStore, url: URL): void {
   const request = resolveAdoCommLogRequest(url);
   const snapshot = store.read(request.afterSeq, request.limit);
@@ -550,11 +564,67 @@ async function route(
 
   logVerboseRoute(verboseLogs, method, url.pathname);
 
-  if ((isAzLoginRoute(method, url.pathname) || isAzCliPathRoute(method, url.pathname)) && !isValidCsrfRequest(req, csrfToken)) {
+  if (isCsrfProtectedRoute(method, url.pathname) && !isValidCsrfRequest(req, csrfToken)) {
     writeJson(res, 403, ADO_CSRF_MISSING_OR_INVALID);
     return;
   }
 
+  if (
+    await handleQueryDomainRoute(req, res, method, url, {
+      controller,
+      contextStore,
+      httpClient,
+      stateOptionsCacheByType,
+      workItemTypeCacheById,
+      verboseLogs
+    })
+  ) {
+    return;
+  }
+
+  if (await handleTimelineWritesRoute(req, res, method, url.pathname, { submitWriteCommand, writeEnabled })) {
+    return;
+  }
+
+  if (
+    await handlePreferencesRoute(req, res, method, url.pathname, {
+      userPreferences,
+      azLoginRunner,
+      azCliPathResolver
+    })
+  ) {
+    return;
+  }
+
+  if (
+    await handleDiagnosticsAndAssetsRoute(req, res, method, url, {
+      adoCommLogStore,
+      distRootPath,
+      csrfToken
+    })
+  ) {
+    return;
+  }
+
+  routeNotFound(res);
+}
+
+type QueryDomainDeps = {
+  controller: QueryIntakeController;
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
+  workItemTypeCacheById: Map<string, Promise<string | null>>;
+  verboseLogs: boolean;
+};
+
+async function handleQueryDomainRoute(
+  req: IncomingMessage,
+  res: ServerResponse,
+  method: string,
+  url: URL,
+  deps: QueryDomainDeps
+): Promise<boolean> {
   if (isQueryIntakeRoute(method, url.pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
@@ -564,16 +634,16 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide queryInput as a string."
       });
-      return;
+      return true;
     }
 
-    const result = await controller.submit({
+    const result = await deps.controller.submit({
       queryInput: payload.queryInput,
       mappingProfileId: typeof payload.mappingProfileId === "string" ? payload.mappingProfileId : undefined,
       mappingProfileUpsert: parseMappingProfileUpsert(payload.mappingProfileUpsert)
     });
 
-    logVerboseIntake(verboseLogs, {
+    logVerboseIntake(deps.verboseLogs, {
       statusCode: result.statusCode,
       preflightStatus: result.preflightStatus,
       uiState: result.uiState,
@@ -582,10 +652,98 @@ async function route(
     });
 
     writeJson(res, 200, result);
-    return;
+    return true;
   }
 
-  if (isAdoptScheduleRoute(method, url.pathname)) {
+  if (isWorkItemStateOptionsRoute(method, url.pathname)) {
+    const targetWorkItemId = parseTargetWorkItemIdFromQuery(url);
+    if (!targetWorkItemId) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId query param."
+      });
+      return true;
+    }
+
+    try {
+      const states = await fetchAllowedStateCodesForWorkItem({
+        workItemId: targetWorkItemId,
+        contextStore: deps.contextStore,
+        httpClient: deps.httpClient,
+        stateOptionsCacheByType: deps.stateOptionsCacheByType,
+        workItemTypeCacheById: deps.workItemTypeCacheById
+      });
+      writeJson(res, 200, { states });
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "STATE_OPTIONS_FAILED",
+        message: error instanceof Error ? error.message : "Unable to fetch allowed work item states."
+      });
+      return true;
+    }
+  }
+
+  if (isQueryDetailsRoute(method, url.pathname)) {
+    const queryId = parseQueryIdFromQuery(url);
+    if (!queryId) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide queryId query param."
+      });
+      return true;
+    }
+
+    try {
+      const queryDetails = await fetchQueryDetails({
+        queryId,
+        contextStore: deps.contextStore,
+        httpClient: deps.httpClient,
+        apiVersion: QUERY_DETAILS_API_VERSION
+      });
+      writeJson(res, 200, queryDetails);
+      return true;
+    } catch (error) {
+      if (error instanceof Error && error.message === "CONTEXT_REQUIRED") {
+        writeJson(res, 400, {
+          code: "CONTEXT_REQUIRED",
+          message: "Set Azure DevOps organization and project first."
+        });
+        return true;
+      }
+
+      if (error instanceof Error && error.message === "QUERY_NOT_FOUND") {
+        writeJson(res, 404, {
+          code: "QUERY_NOT_FOUND",
+          message: "Query not found."
+        });
+        return true;
+      }
+
+      writeJson(res, 500, {
+        code: "QUERY_DETAILS_FAILED",
+        message: error instanceof Error ? error.message : "Unable to fetch query details."
+      });
+      return true;
+    }
+  }
+
+  return false;
+}
+
+type TimelineWritesDeps = {
+  submitWriteCommand: SubmitWriteCommandUseCase;
+  writeEnabled: boolean;
+};
+
+async function handleTimelineWritesRoute(
+  req: IncomingMessage,
+  res: ServerResponse,
+  method: string,
+  pathname: string,
+  deps: TimelineWritesDeps
+): Promise<boolean> {
+  if (isAdoptScheduleRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
     const adopt = parseAdoptSchedulePayload(payload);
@@ -595,12 +753,12 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide targetWorkItemId/startDate/endDate."
       });
-      return;
+      return true;
     }
 
     try {
-      const writeResult = await submitWriteCommand.execute({
-        writeEnabled,
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
         command: {
           kind: "WORK_ITEM_PATCH",
           workItemId: adopt.targetWorkItemId,
@@ -617,21 +775,21 @@ async function route(
           message: "Writeback is disabled.",
           result: writeResult
         });
-        return;
+        return true;
       }
 
       writeJson(res, 200, writeResult);
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to patch work item."
       });
-      return;
+      return true;
     }
   }
 
-  if (isDependencyLinkRoute(method, url.pathname)) {
+  if (isDependencyLinkRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
     const link = parseDependencyLinkPayload(payload);
@@ -641,12 +799,12 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide predecessorWorkItemId/successorWorkItemId/action."
       });
-      return;
+      return true;
     }
 
     try {
-      const writeResult = await submitWriteCommand.execute({
-        writeEnabled,
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
         command: {
           kind: "DEPENDENCY_LINK",
           sourceId: link.predecessorWorkItemId,
@@ -662,21 +820,21 @@ async function route(
           message: "Writeback is disabled.",
           result: writeResult
         });
-        return;
+        return true;
       }
 
       writeJson(res, 200, writeResult);
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to update dependency link."
       });
-      return;
+      return true;
     }
   }
 
-  if (isUpdateDetailsRoute(method, url.pathname)) {
+  if (isUpdateDetailsRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
     const update = parseUpdateDetailsPayload(payload);
@@ -686,12 +844,12 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide targetWorkItemId/title/descriptionHtml/state."
       });
-      return;
+      return true;
     }
 
     try {
-      const writeResult = await submitWriteCommand.execute({
-        writeEnabled,
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
         command: {
           kind: "WORK_ITEM_PATCH",
           workItemId: update.targetWorkItemId,
@@ -709,111 +867,54 @@ async function route(
           message: "Writeback is disabled.",
           result: writeResult
         });
-        return;
+        return true;
       }
 
       writeJson(res, 200, writeResult);
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to patch work item."
       });
-      return;
+      return true;
     }
   }
 
-  if (isWorkItemStateOptionsRoute(method, url.pathname)) {
-    const targetWorkItemId = parseTargetWorkItemIdFromQuery(url);
-    if (!targetWorkItemId) {
-      writeJson(res, 400, {
-        code: "INVALID_INPUT",
-        message: "Provide targetWorkItemId query param."
-      });
-      return;
-    }
+  return false;
+}
 
+type PreferencesDeps = {
+  userPreferences: LowdbUserPreferencesAdapter;
+  azLoginRunner: AzLoginRunner;
+  azCliPathResolver: AzCliPathResolver;
+};
+
+async function handlePreferencesRoute(
+  req: IncomingMessage,
+  res: ServerResponse,
+  method: string,
+  pathname: string,
+  deps: PreferencesDeps
+): Promise<boolean> {
+  if (isAzLoginRoute(method, pathname)) {
     try {
-      const states = await fetchAllowedStateCodesForWorkItem({
-        workItemId: targetWorkItemId,
-        contextStore,
-        httpClient,
-        stateOptionsCacheByType,
-        workItemTypeCacheById
-      });
-      writeJson(res, 200, { states });
-      return;
-    } catch (error) {
-      writeJson(res, 500, {
-        code: "STATE_OPTIONS_FAILED",
-        message: error instanceof Error ? error.message : "Unable to fetch allowed work item states."
-      });
-      return;
-    }
-  }
-
-  if (isQueryDetailsRoute(method, url.pathname)) {
-    const queryId = parseQueryIdFromQuery(url);
-    if (!queryId) {
-      writeJson(res, 400, {
-        code: "INVALID_INPUT",
-        message: "Provide queryId query param."
-      });
-      return;
-    }
-
-    try {
-      const queryDetails = await fetchQueryDetails({
-        queryId,
-        contextStore,
-        httpClient,
-        apiVersion: QUERY_DETAILS_API_VERSION
-      });
-      writeJson(res, 200, queryDetails);
-      return;
-    } catch (error) {
-      if (error instanceof Error && error.message === "CONTEXT_REQUIRED") {
-        writeJson(res, 400, {
-          code: "CONTEXT_REQUIRED",
-          message: "Set Azure DevOps organization and project first."
-        });
-        return;
-      }
-
-      if (error instanceof Error && error.message === "QUERY_NOT_FOUND") {
-        writeJson(res, 404, {
-          code: "QUERY_NOT_FOUND",
-          message: "Query not found."
-        });
-        return;
-      }
-
-      writeJson(res, 500, {
-        code: "QUERY_DETAILS_FAILED",
-        message: error instanceof Error ? error.message : "Unable to fetch query details."
-      });
-      return;
-    }
-  }
-
-  if (isAzLoginRoute(method, url.pathname)) {
-    try {
-      const result = await azLoginRunner();
+      const result = await deps.azLoginRunner();
       writeJson(res, 200, {
         status: "OK",
         message: result.message
       });
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "AZ_LOGIN_FAILED",
         message: error instanceof Error ? error.message : "Azure CLI login failed."
       });
-      return;
+      return true;
     }
   }
 
-  if (isAzCliPathRoute(method, url.pathname)) {
+  if (isAzCliPathRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
     const azCliPath = parseAzCliPathPayload(payload);
@@ -823,7 +924,7 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide path as a string."
       });
-      return;
+      return true;
     }
 
     if (azCliPath.length > 0) {
@@ -831,10 +932,10 @@ async function route(
         code: "FORBIDDEN",
         message: "Manual Azure CLI path override is disabled for security reasons."
       });
-      return;
+      return true;
     }
 
-    const autoDetectedPath = await azCliPathResolver();
+    const autoDetectedPath = await deps.azCliPathResolver();
     if (autoDetectedPath && autoDetectedPath !== "az") {
       process.env.ADO_AZ_CLI_PATH = autoDetectedPath;
     } else {
@@ -845,26 +946,26 @@ async function route(
       status: "OK",
       path: process.env.ADO_AZ_CLI_PATH ?? "az"
     });
-    return;
+    return true;
   }
 
-  if (isUserPreferencesGetRoute(method, url.pathname)) {
+  if (isUserPreferencesGetRoute(method, pathname)) {
     try {
-      const preferences = await userPreferences.getPreferences();
+      const preferences = await deps.userPreferences.getPreferences();
       writeJson(res, 200, {
         preferences
       });
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "PREFERENCES_READ_FAILED",
         message: error instanceof Error ? error.message : "Unable to read user preferences."
       });
-      return;
+      return true;
     }
   }
 
-  if (isUserPreferencesPostRoute(method, url.pathname)) {
+  if (isUserPreferencesPostRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
     const patch = parseUserPreferencesPatch(payload);
@@ -874,56 +975,72 @@ async function route(
         code: "INVALID_INPUT",
         message: "Provide preferences as an object."
       });
-      return;
+      return true;
     }
 
     try {
-      const preferences = await userPreferences.mergePreferences(patch);
+      const preferences = await deps.userPreferences.mergePreferences(patch);
       writeJson(res, 200, {
         status: "OK",
         preferences
       });
-      return;
+      return true;
     } catch (error) {
       writeJson(res, 500, {
         code: "PREFERENCES_WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to persist user preferences."
       });
-      return;
+      return true;
     }
   }
 
+  return false;
+}
+
+type DiagnosticsRouteDeps = {
+  adoCommLogStore: AdoCommLogStore;
+  distRootPath: string;
+  csrfToken: string;
+};
+
+async function handleDiagnosticsAndAssetsRoute(
+  _req: IncomingMessage,
+  res: ServerResponse,
+  method: string,
+  url: URL,
+  deps: DiagnosticsRouteDeps
+): Promise<boolean> {
   if (isAdoCommLogRoute(method, url.pathname)) {
-    writeAdoCommLogsResponse(res, adoCommLogStore, url);
-    return;
+    writeAdoCommLogsResponse(res, deps.adoCommLogStore, url);
+    return true;
   }
 
   if (isHealthRoute(method, url.pathname)) {
     writeJson(res, 200, { status: "ok" });
-    return;
+    return true;
   }
 
   if (isRootRoute(method, url.pathname)) {
-    writeHtml(res, 200, renderRootHtml(csrfToken));
-    return;
+    writeHtml(res, 200, renderRootHtml(deps.csrfToken));
+    return true;
   }
 
   if (isFaviconRoute(method, url.pathname)) {
     writeFavicon(res);
-    return;
+    return true;
   }
 
   if (isFaviconSvgRoute(method, url.pathname)) {
     writeFaviconSvg(res);
-    return;
+    return true;
   }
 
   if (isDistRoute(method, url.pathname)) {
-    await serveDistAsset(url.pathname, distRootPath, res);
-    return;
+    await serveDistAsset(url.pathname, deps.distRootPath, res);
+    return true;
   }
 
-  routeNotFound(res);
+  return false;
 }
 
 function resolveLocalUserId(): string {
@@ -1027,6 +1144,7 @@ async function serveDistAsset(pathname: string, distRootPath: string, res: Serve
 
     const content = await readFile(assetPath);
     res.statusCode = 200;
+    applySecurityHeaders(res);
     res.setHeader("content-type", contentTypeFor(assetPath));
     res.end(content);
   } catch {
@@ -1099,26 +1217,38 @@ function readBody(req: IncomingMessage): Promise<string> {
 
 function writeHtml(res: ServerResponse, statusCode: number, payload: string): void {
   res.statusCode = statusCode;
+  applySecurityHeaders(res);
   res.setHeader("content-type", "text/html; charset=utf-8");
   res.end(payload);
 }
 
 function writeJson(res: ServerResponse, statusCode: number, payload: unknown): void {
   res.statusCode = statusCode;
+  applySecurityHeaders(res);
   res.setHeader("content-type", "application/json; charset=utf-8");
   res.end(`${JSON.stringify(payload)}\n`);
 }
 
 function writeFavicon(res: ServerResponse): void {
   res.statusCode = 200;
+  applySecurityHeaders(res);
   res.setHeader("content-type", "image/x-icon");
   res.end(FAVICON_ICO_BUFFER);
 }
 
 function writeFaviconSvg(res: ServerResponse): void {
   res.statusCode = 200;
+  applySecurityHeaders(res);
   res.setHeader("content-type", "image/svg+xml; charset=utf-8");
   res.end(FAVICON_SVG_BUFFER);
+}
+
+function applySecurityHeaders(res: ServerResponse): void {
+  res.setHeader("content-security-policy", CONTENT_SECURITY_POLICY);
+  res.setHeader("x-frame-options", "DENY");
+  res.setHeader("x-content-type-options", "nosniff");
+  res.setHeader("referrer-policy", "no-referrer");
+  res.setHeader("permissions-policy", "camera=(), microphone=(), geolocation=()");
 }
 
 function sanitizeLogText(input: string): string {

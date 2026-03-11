@@ -1,0 +1,184 @@
+// @vitest-environment jsdom
+import React from "react";
+import { describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
+
+import { TimelinePane } from "./timeline-pane.js";
+import { makeFieldFilterTimeline, registerTimelinePaneSpecCleanup } from "./timeline-pane.test-helpers.js";
+
+registerTimelinePaneSpecCleanup();
+
+describe("timeline-pane filters", () => {
+  it("starts with one filter slot and adds another on plus click", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    expect(screen.getByLabelText("Timeline filters")).toBeTruthy();
+    expect(screen.getByLabelText("Select filter field 1")).toBeTruthy();
+    expect(screen.queryByLabelText("Select filter field 2")).toBeNull();
+    await user.click(screen.getByLabelText("Add timeline filter"));
+    expect(screen.getByLabelText("Select filter field 2")).toBeTruthy();
+  });
+
+  it("filters by one field with multi-select values", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByRole("button", { name: /#22 Unsched Beta/ })).toBeNull();
+
+    await user.click(screen.getByLabelText("Include Beta in filter 1"));
+    expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /#22 Unsched Beta/ })).toBeTruthy();
+  });
+
+  it("applies multiple field filters in parallel", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    await user.click(screen.getByLabelText("Add timeline filter"));
+    await user.click(screen.getByLabelText("Select filter field 2"));
+    await user.type(screen.getByLabelText("Search filter fields 2"), "stream");
+    await user.click(screen.getByRole("button", { name: /Stream/ }));
+    await user.click(screen.getByLabelText("Select filter values 2"));
+    await user.click(screen.getByLabelText("Include Platform in filter 2"));
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+  });
+
+  it("hydrates timeline filters from URL query params", async () => {
+    const params = new URLSearchParams();
+    params.append("tf", "Custom.Team~Alpha");
+    window.history.replaceState(window.history.state, "", `/?${params.toString()}`);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+  });
+
+  it("writes selected filters to URL query params", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      const all = params.getAll("tf");
+      expect(all.length).toBeGreaterThan(0);
+      expect(all[0]).toContain("Custom.Team");
+      expect(all[0]).toContain("Alpha");
+    });
+  });
+
+  it("keeps timeline filter selections stable across reloads when values contain special characters", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    const specialValue = "Alpha,Beta~Ops/QA + 50%";
+    timeline.bars[0] = {
+      ...timeline.bars[0],
+      details: {
+        ...timeline.bars[0].details,
+        fieldValues: {
+          ...timeline.bars[0].details.fieldValues,
+          "Custom.Team": specialValue
+        }
+      }
+    };
+
+    const firstMount = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText(`Include ${specialValue} in filter 1`));
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      const all = params.getAll("tf");
+      expect(all).toHaveLength(1);
+      expect(all[0]).toContain("%2C");
+      expect(all[0]).toContain("%25");
+    });
+
+    firstMount.unmount();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+  });
+
+});
