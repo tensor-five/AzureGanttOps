@@ -1213,6 +1213,7 @@ button {
   width: fit-content;
   max-width: 100%;
   text-align: left;
+  cursor: pointer;
 }
 
 .timeline-color-coding-dropdown {
@@ -1264,6 +1265,7 @@ button {
   padding: 8px 10px;
   display: grid;
   gap: 2px;
+  cursor: pointer;
 }
 
 .timeline-color-coding-option:hover {
@@ -1294,6 +1296,7 @@ button {
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   padding: 0 12px;
+  cursor: pointer;
 }
 
 .timeline-color-coding-select:focus,
@@ -1334,6 +1337,7 @@ button {
   justify-content: center;
   gap: 4px;
   padding: 0 8px;
+  cursor: pointer;
 }
 
 .timeline-filter-toggle-active {
@@ -1366,6 +1370,7 @@ button {
   justify-content: center;
   gap: 4px;
   padding: 0 8px;
+  cursor: pointer;
 }
 
 .timeline-label-toggle-active {
@@ -1470,6 +1475,7 @@ button {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
+  cursor: pointer;
 }
 
 .timeline-label-menu-option input[type="checkbox"] {

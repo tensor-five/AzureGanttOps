@@ -58,6 +58,7 @@ export function TimelineSortControl(props: TimelineSortControlProps): React.Reac
         type: "button",
         className: props.sortSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
         "aria-label": "Toggle timeline sorting",
+        title: "Sort timeline rows by primary and secondary fields.",
         "aria-expanded": props.sortSettingsOpen ? "true" : "false",
         "aria-haspopup": "dialog",
         onClick: props.onToggleSortSettings
