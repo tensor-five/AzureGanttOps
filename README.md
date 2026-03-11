@@ -28,6 +28,29 @@ npm run dev:local
 
 The local server listens on `http://127.0.0.1:8080` by default.
 
+## One-click local start (Mac + Windows)
+
+Prerequisites on the user machine:
+- Node.js 20+
+- Azure CLI (`az`)
+
+Then use one of these launchers from the project root:
+- macOS: `Start Azure GanttOps.command` (double-click)
+- Windows: `Start Azure GanttOps.cmd` (double-click)
+
+What the launcher does:
+- checks `node` and `az`
+- installs `azure-devops` CLI extension if missing
+- runs `npm install` once when `node_modules` is missing
+- runs `npm run build` if build artifacts are missing
+- starts the app server and opens the browser at `http://127.0.0.1:8080`
+
+CLI alternative:
+
+```bash
+npm run app:start
+```
+
 ## Configuration
 
 Copy `.env.example` values into your environment as needed.

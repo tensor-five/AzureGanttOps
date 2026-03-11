@@ -306,10 +306,12 @@ describe("createHttpServer", () => {
     });
 
     try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
       const response = await fetch(`${server.baseUrl}/phase2/az-login`, {
         method: "POST",
         headers: {
-          accept: "application/json"
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
         }
       });
       const body = await response.json();
@@ -324,7 +326,7 @@ describe("createHttpServer", () => {
     }
   });
 
-  it("stores manual Azure CLI path via POST /phase2/az-cli-path", async () => {
+  it("rejects manual Azure CLI path via POST /phase2/az-cli-path", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
       distRootPath: fixture.distRootPath,
@@ -332,11 +334,13 @@ describe("createHttpServer", () => {
     });
 
     try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
       const response = await fetch(`${server.baseUrl}/phase2/az-cli-path`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          accept: "application/json"
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
           path: "C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"
@@ -344,10 +348,10 @@ describe("createHttpServer", () => {
       });
       const body = await response.json();
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(403);
       expect(body).toEqual({
-        status: "OK",
-        path: "C:\\Program Files\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"
+        code: "FORBIDDEN",
+        message: "Manual Azure CLI path override is disabled for security reasons."
       });
     } finally {
       await server.close();
@@ -364,11 +368,13 @@ describe("createHttpServer", () => {
     });
 
     try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
       const response = await fetch(`${server.baseUrl}/phase2/az-cli-path`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          accept: "application/json"
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
           path: ""
@@ -384,6 +390,32 @@ describe("createHttpServer", () => {
     } finally {
       await server.close();
       delete process.env.ADO_AZ_CLI_PATH;
+    }
+  });
+
+  it("rejects az-login without csrf token", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/az-login`, {
+        method: "POST",
+        headers: {
+          accept: "application/json"
+        }
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(body).toEqual({
+        code: "CSRF_INVALID",
+        message: "Missing or invalid CSRF protection."
+      });
+    } finally {
+      await server.close();
     }
   });
 
@@ -558,6 +590,22 @@ function startServer(params: {
     baseUrl: `http://127.0.0.1:${port}`,
     close: () => server.close()
   };
+}
+
+async function fetchCsrfToken(baseUrl: string): Promise<string> {
+  const response = await fetch(baseUrl, {
+    method: "GET",
+    headers: {
+      accept: "text/html"
+    }
+  });
+  const html = await response.text();
+  const match = html.match(/<meta name="ado-csrf-token" content="([^"]+)"/);
+  if (!match) {
+    throw new Error("CSRF token meta tag missing in root HTML.");
+  }
+
+  return match[1];
 }
 
 async function createFixtureDir(tempDirs: string[]): Promise<{

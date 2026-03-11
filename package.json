@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run build:ui-shell",
     "start:local": "node dist/src/app/bootstrap/local-server.js",
+    "app:start": "node scripts/one-click-start.mjs",
     "build:ui-shell": "esbuild src/app/bootstrap/local-ui-entry.ts --bundle --format=esm --platform=browser --outfile=dist/src/app/bootstrap/local-ui-entry.browser.js",
     "dev:local": "npm run build && npm run start:local",
     "test": "vitest run",

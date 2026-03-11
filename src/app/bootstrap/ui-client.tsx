@@ -425,6 +425,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [newHeaderQueryMode, setNewHeaderQueryMode] = React.useState(false);
   const [newHeaderQueryInput, setNewHeaderQueryInput] = React.useState("");
   const [headerQuerySearch, setHeaderQuerySearch] = React.useState("");
+  const [headerQueryLoading, setHeaderQueryLoading] = React.useState(false);
   const [headerQueryMessage, setHeaderQueryMessage] = React.useState<string | null>(null);
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
@@ -686,9 +687,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
   const loadSavedHeaderQuery = React.useCallback(
     async (queryId: string) => {
+      if (headerQueryLoading) {
+        return;
+      }
+
       const selected = savedHeaderQueries.find((entry) => entry.id === queryId);
       if (!selected) {
-        setHeaderQueryMessage("Die ausgewählte Query wurde nicht gefunden.");
+        setHeaderQueryMessage("The selected query could not be found.");
         return;
       }
 
@@ -703,42 +708,51 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
 
       try {
+        setHeaderQueryLoading(true);
         await runQuery({
           queryId: selected.queryInput
         });
         setSelectedHeaderQueryId(selected.id);
         setHeaderQueryMessage(null);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+        const message = error instanceof Error ? error.message : "Query could not be loaded.";
         setHeaderQueryMessage(message);
+      } finally {
+        setHeaderQueryLoading(false);
       }
     },
-    [runQuery, savedHeaderQueries]
+    [headerQueryLoading, runQuery, savedHeaderQueries]
   );
 
   const saveCurrentHeaderQuery = React.useCallback(
     async (rawInput: string) => {
+      if (headerQueryLoading) {
+        return;
+      }
+
       const normalizedInput = rawInput.trim();
       if (!normalizedInput) {
-        setHeaderQueryMessage("Ungültige Query. Bitte URL oder Query-ID mit Kontext angeben.");
+        setHeaderQueryMessage("Invalid query. Provide a URL or a query ID with context.");
         return;
       }
 
       const persisted = readPersistedQueryContext();
       const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
       if (!transportQueryInput) {
-        setHeaderQueryMessage("Ungültige Query. Bitte URL oder Query-ID mit Kontext angeben.");
+        setHeaderQueryMessage("Invalid query. Provide a URL or a query ID with context.");
         return;
       }
 
       const queryId = inferSavedQueryId(transportQueryInput);
       try {
+        setHeaderQueryLoading(true);
         await runQuery({
           queryId: transportQueryInput
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+        const message = error instanceof Error ? error.message : "Query could not be loaded.";
         setHeaderQueryMessage(message);
+        setHeaderQueryLoading(false);
         return;
       }
 
@@ -778,8 +792,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       persistUserPreferencesPatch({
         savedQueries: nextSavedQueries
       });
+      setHeaderQueryLoading(false);
     },
-    [props.composition.controller, response, runQuery, savedHeaderQueries]
+    [headerQueryLoading, props.composition.controller, response, runQuery, savedHeaderQueries]
   );
 
   const deleteSavedHeaderQuery = React.useCallback(
@@ -922,27 +937,27 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                     savedHeaderQueries.find((entry) => entry.id === selectedHeaderQueryId)?.name ?? selectedHeaderQueryId,
                     selectedHeaderQueryId
                   )
-                : "Query wählen..."
+                : "Select query..."
             ),
             React.createElement(
               "div",
               { className: "header-query-dropdown-panel" },
               React.createElement("input", {
                 className: "header-query-dropdown-search",
-                "aria-label": "Queries suchen",
-                placeholder: "Suchen...",
+                "aria-label": "Search queries",
+                placeholder: "Search...",
                 value: headerQuerySearch,
                 onChange: (event) => {
                   setHeaderQuerySearch((event.target as HTMLInputElement).value);
                 }
               }),
               savedHeaderQueries.length === 0
-                ? React.createElement("div", { className: "header-query-dropdown-empty" }, "Keine gespeicherten Queries")
+                ? React.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries")
                 : React.createElement(
                     "div",
                     { className: "header-query-dropdown-list" },
                     ...(filteredHeaderQueries.length === 0
-                      ? [React.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "Keine Treffer")]
+                      ? [React.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")]
                       : filteredHeaderQueries.map((entry) =>
                       React.createElement(
                         "div",
@@ -952,7 +967,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                           {
                             type: "button",
                             className: "header-query-dropdown-item-delete",
-                            "aria-label": `Query ${toShortQueryName(entry.name, entry.id)} löschen`,
+                            "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
+                            disabled: headerQueryLoading,
                             onClick: (event) => {
                               event.preventDefault();
                               event.stopPropagation();
@@ -966,6 +982,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                           {
                             type: "button",
                             className: "header-query-dropdown-item-select",
+                            disabled: headerQueryLoading,
                             onClick: () => {
                               void loadSavedHeaderQuery(entry.id);
                             }
@@ -982,19 +999,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             {
               type: "button",
               className: "header-query-picker-button",
+              disabled: headerQueryLoading,
               onClick: () => {
                 setNewHeaderQueryMode((current) => !current);
                 setHeaderQueryMessage(null);
               }
             },
-            "Neu"
+            "Add Query"
           ),
           newHeaderQueryMode
             ? React.createElement("input", {
                 className: "header-query-picker-input",
-                "aria-label": "Neue Query URL oder ID",
-                placeholder: "Neue Query URL oder ID",
+                "aria-label": "New query URL or ID",
+                placeholder: "New query URL or ID",
                 value: newHeaderQueryInput,
+                disabled: headerQueryLoading,
                 onChange: (event) => {
                   setNewHeaderQueryInput((event.target as HTMLInputElement).value);
                   setHeaderQueryMessage(null);
@@ -1006,6 +1025,32 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                   }
                 }
               })
+            : null,
+          newHeaderQueryMode
+            ? React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "header-query-picker-button",
+                  disabled: headerQueryLoading,
+                  onClick: () => {
+                    void saveCurrentHeaderQuery(newHeaderQueryInput);
+                  }
+                },
+                headerQueryLoading ? "Loading..." : "Load"
+              )
+            : null,
+          headerQueryLoading
+            ? React.createElement(
+                "div",
+                {
+                  className: "header-query-loading",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-label": "Query is loading"
+                },
+                React.createElement("div", { className: "header-query-loading-bar" })
+              )
             : null,
           headerQueryMessage
             ? React.createElement(
@@ -1025,8 +1070,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           React.createElement("button", {
             type: "button",
             className: "theme-menu-trigger",
-            "aria-label": `Theme wechseln (aktuell: ${labelForThemeMode(themeMode)})`,
-            title: `Theme: ${labelForThemeMode(themeMode)} (klicken zum Wechseln)`,
+            "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
+            title: `Theme: ${labelForThemeMode(themeMode)} (click to switch)`,
             onClick: () => {
               setThemeMode(nextThemeMode(themeMode));
             }
@@ -1577,7 +1622,7 @@ function renderActivePanel(params: {
       React.createElement(
         "p",
         { className: "timeline-focus-note" },
-        "Gantt-Fokus ist aktiv. Nutze Query und Mapping Tabs nur, um Datenquelle und Feldzuordnung anzupassen."
+        "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."
       )
     );
   }

@@ -1,10 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import os from "node:os";
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { buildAzCommand, resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
+import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
 import {
   LowdbUserPreferencesAdapter,
   type UserPreferences
@@ -42,6 +43,7 @@ const ROOT_HTML = `<!doctype html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="ado-csrf-token" content="__ADO_CSRF_TOKEN__" />
     <title>Azure DevOps Query-Driven Gantt</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -119,6 +121,11 @@ const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
+const ADO_CSRF_HEADER = "x-ado-csrf-token";
+const ADO_CSRF_MISSING_OR_INVALID = {
+  code: "CSRF_INVALID",
+  message: "Missing or invalid CSRF protection."
+} as const;
 const QUERY_DETAILS_API_VERSION = "7.1";
 const ADO_COMM_URL_PATH_ORIGIN = "https://dev.azure.com";
 const ADO_COMM_INVALID_LIMIT = 0;
@@ -140,7 +147,7 @@ const ADO_COMM_ROUTE_NOT_FOUND = {
   code: "NOT_FOUND",
   message: "Route not found."
 } as const;
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 type AzLoginRunner = () => Promise<{
   message: string;
@@ -459,6 +466,7 @@ export function createHttpServer(params: {
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
+  const csrfToken = createCsrfToken();
 
   const server = createServer(async (req, res) => {
     await route(
@@ -476,7 +484,8 @@ export function createHttpServer(params: {
       workItemTypeCacheById,
       userPreferences,
       azLoginRunner,
-      azCliPathResolver
+      azCliPathResolver,
+      csrfToken
     );
   });
   server.listen(params.port ?? 8080, "127.0.0.1");
@@ -511,12 +520,18 @@ async function route(
   workItemTypeCacheById: Map<string, Promise<string | null>>,
   userPreferences: LowdbUserPreferencesAdapter,
   azLoginRunner: AzLoginRunner,
-  azCliPathResolver: AzCliPathResolver
+  azCliPathResolver: AzCliPathResolver,
+  csrfToken: string
 ): Promise<void> {
   const method = req.method ?? "GET";
   const url = sanitizeIncomingPath(req.url);
 
   logVerboseRoute(verboseLogs, method, url.pathname);
+
+  if ((isAzLoginRoute(method, url.pathname) || isAzCliPathRoute(method, url.pathname)) && !isValidCsrfRequest(req, csrfToken)) {
+    writeJson(res, 403, ADO_CSRF_MISSING_OR_INVALID);
+    return;
+  }
 
   if (isQueryIntakeRoute(method, url.pathname)) {
     const body = await readBody(req);
@@ -789,14 +804,18 @@ async function route(
     }
 
     if (azCliPath.length > 0) {
-      process.env.ADO_AZ_CLI_PATH = azCliPath;
+      writeJson(res, 403, {
+        code: "FORBIDDEN",
+        message: "Manual Azure CLI path override is disabled for security reasons."
+      });
+      return;
+    }
+
+    const autoDetectedPath = await azCliPathResolver();
+    if (autoDetectedPath && autoDetectedPath !== "az") {
+      process.env.ADO_AZ_CLI_PATH = autoDetectedPath;
     } else {
-      const autoDetectedPath = await azCliPathResolver();
-      if (autoDetectedPath && autoDetectedPath !== "az") {
-        process.env.ADO_AZ_CLI_PATH = autoDetectedPath;
-      } else {
-        delete process.env.ADO_AZ_CLI_PATH;
-      }
+      delete process.env.ADO_AZ_CLI_PATH;
     }
 
     writeJson(res, 200, {
@@ -862,7 +881,7 @@ async function route(
   }
 
   if (isRootRoute(method, url.pathname)) {
-    writeHtml(res, 200, ROOT_HTML);
+    writeHtml(res, 200, renderRootHtml(csrfToken));
     return;
   }
 
@@ -1271,7 +1290,7 @@ function parseAzCliPathPayload(input: Record<string, unknown> | null): string | 
 async function defaultAzLoginRunner(): Promise<{ message: string }> {
   try {
     const azExecutable = await resolveAzCliExecutablePath();
-    await execAsync(buildAzCommand(azExecutable, ["login", "--use-device-code", "--output", "none"]), {
+    await execFileAsync(azExecutable, ["login", "--use-device-code", "--output", "none"], {
       timeout: 5 * 60_000,
       windowsHide: true
     });
@@ -1287,6 +1306,49 @@ async function defaultAzLoginRunner(): Promise<{ message: string }> {
     const suffix = details ? ` Details: ${details.slice(0, 300)}` : "";
     throw new Error(`Azure CLI login failed.${suffix}`);
   }
+}
+
+function createCsrfToken(): string {
+  return randomBytes(32).toString("hex");
+}
+
+function renderRootHtml(csrfToken: string): string {
+  return ROOT_HTML.replace("__ADO_CSRF_TOKEN__", csrfToken);
+}
+
+function isValidCsrfRequest(req: IncomingMessage, expectedToken: string): boolean {
+  const tokenHeader = req.headers[ADO_CSRF_HEADER];
+  const providedToken = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+  if (typeof providedToken !== "string" || providedToken.length === 0 || providedToken !== expectedToken) {
+    return false;
+  }
+
+  const host = readHeaderValue(req.headers.host);
+  if (!host) {
+    return false;
+  }
+
+  const expectedOrigin = `http://${host}`;
+  const origin = readHeaderValue(req.headers.origin);
+  if (origin && origin !== expectedOrigin) {
+    return false;
+  }
+
+  const referer = readHeaderValue(req.headers.referer);
+  if (referer && !referer.startsWith(`${expectedOrigin}/`) && referer !== expectedOrigin) {
+    return false;
+  }
+
+  return true;
+}
+
+function readHeaderValue(header: string | string[] | undefined): string | null {
+  if (Array.isArray(header)) {
+    const first = header[0];
+    return typeof first === "string" && first.length > 0 ? first : null;
+  }
+
+  return typeof header === "string" && header.length > 0 ? header : null;
 }
 
 async function serveDistAsset(pathname: string, distRootPath: string, res: ServerResponse): Promise<void> {

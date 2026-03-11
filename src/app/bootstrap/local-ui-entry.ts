@@ -4,9 +4,31 @@ import type { AdoCommLogEntry } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
 const container = document.getElementById("app");
+const csrfToken = readCsrfToken();
 
 if (!(container instanceof HTMLElement)) {
   throw new Error("Missing required #app container.");
+}
+
+function withCsrf(headers: Record<string, string>): Record<string, string> {
+  if (!csrfToken) {
+    return headers;
+  }
+
+  return {
+    ...headers,
+    "x-ado-csrf-token": csrfToken
+  };
+}
+
+function readCsrfToken(): string | null {
+  const meta = document.querySelector('meta[name="ado-csrf-token"]');
+  if (!(meta instanceof HTMLMetaElement)) {
+    return null;
+  }
+
+  const token = meta.content.trim();
+  return token.length > 0 ? token : null;
 }
 
 const composition = createDefaultUiShellComposition({
@@ -14,10 +36,10 @@ const composition = createDefaultUiShellComposition({
     submit: async (request) => {
       const response = await fetch("/phase2/query-intake", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           "content-type": "application/json",
           accept: "application/json"
-        },
+        }),
         body: JSON.stringify(request)
       });
 
@@ -70,10 +92,10 @@ const composition = createDefaultUiShellComposition({
     adoptWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
       const response = await fetch("/phase2/work-item-schedule-adopt", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           "content-type": "application/json",
           accept: "application/json"
-        },
+        }),
         body: JSON.stringify({
           targetWorkItemId,
           startDate,
@@ -110,10 +132,10 @@ const composition = createDefaultUiShellComposition({
     linkDependency: async ({ predecessorWorkItemId, successorWorkItemId, action }) => {
       const response = await fetch("/phase2/dependency-link", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           "content-type": "application/json",
           accept: "application/json"
-        },
+        }),
         body: JSON.stringify({
           predecessorWorkItemId,
           successorWorkItemId,
@@ -150,10 +172,10 @@ const composition = createDefaultUiShellComposition({
     updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
       const response = await fetch("/phase2/work-item-details-update", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           "content-type": "application/json",
           accept: "application/json"
-        },
+        }),
         body: JSON.stringify({
           targetWorkItemId,
           title,
@@ -267,9 +289,9 @@ const composition = createDefaultUiShellComposition({
     authenticateAzureCli: async () => {
       const response = await fetch("/phase2/az-login", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           accept: "application/json"
-        }
+        })
       });
 
       const payload = (await response.json()) as { status?: "OK"; message?: string };
@@ -290,10 +312,10 @@ const composition = createDefaultUiShellComposition({
     setAzureCliPath: async (path) => {
       const response = await fetch("/phase2/az-cli-path", {
         method: "POST",
-        headers: {
+        headers: withCsrf({
           "content-type": "application/json",
           accept: "application/json"
-        },
+        }),
         body: JSON.stringify({ path })
       });
 

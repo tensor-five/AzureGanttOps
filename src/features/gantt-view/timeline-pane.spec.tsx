@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
-import { TimelinePane, applyAdoptedSchedules } from "./timeline-pane.js";
+import { TimelinePane, applyAdoptedSchedules, resolveTimelineVerticalLayoutMetrics } from "./timeline-pane.js";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import {
   clearTimelineColorCodingPreferenceForTests,
@@ -297,6 +297,22 @@ function createDataTransferMock(): DataTransfer {
 }
 
 describe("timeline-pane details width", () => {
+  it("computes vertical layout without phantom row by default", () => {
+    const metrics = resolveTimelineVerticalLayoutMetrics(5, false);
+    expect(metrics).toEqual({
+      contentRows: 5,
+      tailHeightPx: 18
+    });
+  });
+
+  it("adds one extra row only when unscheduled drop lane is active", () => {
+    const metrics = resolveTimelineVerticalLayoutMetrics(5, true);
+    expect(metrics).toEqual({
+      contentRows: 6,
+      tailHeightPx: 18
+    });
+  });
+
   it("resizes the details panel via splitter drag and persists width", () => {
     render(
       React.createElement(TimelinePane, {

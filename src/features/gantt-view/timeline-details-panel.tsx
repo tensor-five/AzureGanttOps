@@ -235,7 +235,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       ? React.createElement(
           "p",
           { className: "timeline-details-hidden-hint" },
-          "Details ausgeblendet. Bitte den Bereich breiter ziehen, um Details anzuzeigen."
+          "Details hidden. Drag the panel wider to show details."
         )
       : selected
         ? React.createElement(
