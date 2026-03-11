@@ -77,6 +77,11 @@ export type QueryIntakeTransport = {
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
     states: WorkItemStateOption[];
   }>;
+  fetchQueryDetails: (request: { queryId: string }) => Promise<{
+    id: string;
+    name: string;
+    path: string;
+  }>;
   authenticateAzureCli: () => Promise<{
     status: "OK";
     message: string;
@@ -179,6 +184,11 @@ export function createLocalUiShellController(params: {
     }),
     fetchWorkItemStateOptions: async () => ({
       states: []
+    }),
+    fetchQueryDetails: async ({ queryId }) => ({
+      id: queryId,
+      name: queryId,
+      path: queryId
     }),
     authenticateAzureCli: async () => ({
       status: "OK",

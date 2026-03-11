@@ -9,13 +9,19 @@ import {
   clearTimelineColorCodingPreferenceForTests,
   saveLastTimelineColorCoding
 } from "./timeline-color-coding-preference.js";
+import { clearTimelineDetailsWidthPreferenceForTests } from "./timeline-details-width-preference.js";
 import { clearTimelineLabelFieldsPreferenceForTests } from "./timeline-label-fields-preference.js";
+import { clearTimelineSidebarFieldsPreferenceForTests } from "./timeline-sidebar-fields-preference.js";
+import { clearTimelineSidebarWidthPreferenceForTests } from "./timeline-sidebar-width-preference.js";
 import { clearTimelineViewportPreferenceForTests } from "./timeline-viewport-preference.js";
 
 afterEach(() => {
   cleanup();
   clearTimelineColorCodingPreferenceForTests();
+  clearTimelineDetailsWidthPreferenceForTests();
   clearTimelineLabelFieldsPreferenceForTests();
+  clearTimelineSidebarFieldsPreferenceForTests();
+  clearTimelineSidebarWidthPreferenceForTests();
   clearTimelineViewportPreferenceForTests();
   window.history.replaceState(window.history.state, "", "/");
 });
@@ -289,6 +295,40 @@ function createDataTransferMock(): DataTransfer {
     setDragImage: () => undefined
   } as DataTransfer;
 }
+
+describe("timeline-pane details width", () => {
+  it("resizes the details panel via splitter drag and persists width", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const splitter = screen.getByRole("separator", { name: "Resize details panel" });
+    fireEvent.pointerDown(splitter, { button: 0, pointerId: 7, clientX: 900 });
+    fireEvent.pointerMove(window, { pointerId: 7, clientX: 860 });
+    fireEvent.pointerUp(window, { pointerId: 7, clientX: 860 });
+
+    expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("360");
+  });
+
+  it("expands details panel from fully collapsed splitter click", () => {
+    globalThis.localStorage.setItem("azure-ganttops.timeline-details-width-px.v1", "0");
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const splitter = screen.getByRole("separator", { name: "Expand details panel" });
+    fireEvent.click(splitter);
+
+    expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("260");
+  });
+});
 
 describe("timeline-pane unschedulable date adoption", () => {
   it("moves adopted unschedulable items into bars with copied schedule", () => {
@@ -1107,6 +1147,57 @@ describe("timeline-pane unschedulable date adoption", () => {
     });
   });
 
+  it("keeps timeline filter selections stable across reloads when values contain special characters", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    const specialValue = "Alpha,Beta~Ops/QA + 50%";
+    timeline.bars[0] = {
+      ...timeline.bars[0],
+      details: {
+        ...timeline.bars[0].details,
+        fieldValues: {
+          ...timeline.bars[0].details.fieldValues,
+          "Custom.Team": specialValue
+        }
+      }
+    };
+
+    const firstMount = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText(`Include ${specialValue} in filter 1`));
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      const all = params.getAll("tf");
+      expect(all).toHaveLength(1);
+      expect(all[0]).toContain("%2C");
+      expect(all[0]).toContain("%25");
+    });
+
+    firstMount.unmount();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+  });
+
   it("shows label settings gear directly after the filter toggle", () => {
     render(
       React.createElement(TimelinePane, {
@@ -1149,6 +1240,77 @@ describe("timeline-pane unschedulable date adoption", () => {
     const label = container.querySelector("text.timeline-bar-label");
     expect(label).not.toBeNull();
     expect((label as SVGTextElement).textContent).toBe("Alpha Platform - Alpha - Platform");
+  });
+
+  it("can hide all bar labels via label settings", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-04-10T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline label fields"));
+    await user.click(screen.getByRole("button", { name: "Nothing in bars" }));
+
+    const label = container.querySelector("text.timeline-bar-label");
+    expect(label).toBeNull();
+  });
+
+  it("shows configured values in left sidebar and can hide them", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    timeline.unschedulable = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline label fields"));
+    await user.click(screen.getByLabelText("Show Team in timeline sidebar"));
+
+    expect(screen.getByLabelText("timeline-sidebar-row-11").textContent).toContain("Alpha Platform");
+    expect(screen.getByLabelText("timeline-sidebar-row-11").textContent).toContain("Alpha");
+
+    await user.click(screen.getByRole("button", { name: "Nothing in sidebar" }));
+    expect(screen.queryByLabelText("timeline-sidebar-row-11")).toBeNull();
+    expect(screen.getByLabelText("Configure timeline sidebar fields")).toBeTruthy();
+  });
+
+  it("opens the existing label settings from collapsed sidebar gear", async () => {
+    const user = userEvent.setup();
+    const timeline = makeFieldFilterTimeline();
+    timeline.unschedulable = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline label fields"));
+    await user.click(screen.getByRole("button", { name: "Nothing in sidebar" }));
+    await user.click(screen.getByLabelText("Configure timeline sidebar fields"));
+
+    expect(screen.getByLabelText("Timeline label fields")).toBeTruthy();
   });
 
   it("updates settings value list when switching selected field from color coding dropdown", async () => {

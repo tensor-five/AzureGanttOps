@@ -5,8 +5,7 @@ import type { TimelineReadModel } from "../../application/dto/timeline-read-mode
 export type TimelineDetailsPanelProps = {
   timeline: TimelineReadModel | null;
   selectedWorkItemId: number | null;
-  collapsed?: boolean;
-  onToggleCollapsed?: () => void;
+  contentHidden?: boolean;
   organization?: string;
   project?: string;
   onUpdateSelectedWorkItemDetails?: (input: {
@@ -22,7 +21,7 @@ export type TimelineDetailsPanelProps = {
 const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
 
 export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.ReactElement {
-  const collapsed = props.collapsed ?? false;
+  const contentHidden = props.contentHidden ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
   const [titleDraft, setTitleDraft] = React.useState("");
   const [descriptionDraft, setDescriptionDraft] = React.useState("");
@@ -179,8 +178,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     "aside",
     {
       "aria-label": "timeline-details-panel",
-      className: collapsed
-        ? "timeline-details-panel-surface timeline-details-panel-surface-collapsed"
+      className: contentHidden
+        ? "timeline-details-panel-surface timeline-details-panel-surface-content-hidden"
         : "timeline-details-panel-surface"
     },
     React.createElement(
@@ -189,44 +188,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       React.createElement(
         "div",
         { className: "timeline-details-panel-head-main" },
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            className: "timeline-details-collapse-toggle",
-            "aria-label": collapsed ? "Expand details panel" : "Collapse details panel",
-            title: collapsed ? "Expand details panel" : "Collapse details panel",
-            onClick: () => {
-              props.onToggleCollapsed?.();
-            }
-          },
-          React.createElement(
-            "svg",
-            {
-              viewBox: "0 0 16 16",
-              "aria-hidden": "true",
-              className: "timeline-details-collapse-icon"
-            },
-            collapsed
-              ? React.createElement(
-                  React.Fragment,
-                  null,
-                  React.createElement("path", { d: "M6 8H2", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m4 5-2 3 2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "M10 8h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m12 5 2 3-2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
-                )
-              : React.createElement(
-                  React.Fragment,
-                  null,
-                  React.createElement("path", { d: "M2 8h4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m4 5 2 3-2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "M14 8h-4", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" }),
-                  React.createElement("path", { d: "m12 5-2 3 2 3", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round" })
-                )
-          )
-        ),
-        collapsed || !selected
+        !selected || contentHidden
           ? null
           : React.createElement(
               "button",
@@ -248,7 +210,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               isSaving ? "Saving..." : "Save"
             )
       ),
-      collapsed
+      contentHidden
         ? null
         : selected
           ? React.createElement(
@@ -269,8 +231,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
             )
           : null
     ),
-    collapsed
-      ? null
+    contentHidden
+      ? React.createElement(
+          "p",
+          { className: "timeline-details-hidden-hint" },
+          "Details ausgeblendet. Bitte den Bereich breiter ziehen, um Details anzuzeigen."
+        )
       : selected
         ? React.createElement(
             "div",
@@ -429,8 +395,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               : null
           )
         : React.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."),
-    collapsed ? null : React.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries),
-    React.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n"))
+    contentHidden ? null : React.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries),
+    contentHidden ? null : React.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n"))
   );
 }
 

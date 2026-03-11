@@ -28,6 +28,22 @@ import {
   loadLastTimelineLabelFields,
   saveTimelineLabelFields
 } from "./timeline-label-fields-preference.js";
+import {
+  DEFAULT_TIMELINE_SIDEBAR_FIELDS,
+  hydrateTimelineSidebarFieldsPreference,
+  loadLastTimelineSidebarFields,
+  saveTimelineSidebarFields
+} from "./timeline-sidebar-fields-preference.js";
+import {
+  hydrateTimelineSidebarWidthPreference,
+  loadLastTimelineSidebarWidthPx,
+  saveTimelineSidebarWidthPx
+} from "./timeline-sidebar-width-preference.js";
+import {
+  hydrateTimelineDetailsWidthPreference,
+  loadLastTimelineDetailsWidthPx,
+  saveTimelineDetailsWidthPx
+} from "./timeline-details-width-preference.js";
 import { createTimelineSelectionStore, type TimelineSelectionStore } from "./selection-store.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
@@ -102,6 +118,18 @@ type ActivePanDrag = {
   originClientY: number;
   originScrollLeft: number;
   originScrollTop: number;
+};
+
+type ActiveDetailsResize = {
+  pointerId: number;
+  originClientX: number;
+  originWidthPx: number;
+};
+
+type ActiveSidebarResize = {
+  pointerId: number;
+  originClientX: number;
+  originWidthPx: number;
 };
 
 type DependencyViewMode = "edit" | "show" | "none" | "violations";
@@ -187,7 +215,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [unscheduledDropPreview, setUnscheduledDropPreview] = React.useState<UnscheduledDropPreview | null>(null);
   const [dependencyViewMode, setDependencyViewMode] = React.useState<DependencyViewMode>("show");
   const [selectedDependency, setSelectedDependency] = React.useState<SelectedDependency | null>(null);
-  const [detailsCollapsed, setDetailsCollapsed] = React.useState(false);
+  const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
+    const preferredWidth = loadLastTimelineDetailsWidthPx();
+    return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
+  });
+  const [sidebarWidthPx, setSidebarWidthPx] = React.useState<number>(() => {
+    const preferredWidth = loadLastTimelineSidebarWidthPx();
+    return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
+  });
+  const [activeDetailsResize, setActiveDetailsResize] = React.useState<ActiveDetailsResize | null>(null);
+  const [activeSidebarResize, setActiveSidebarResize] = React.useState<ActiveSidebarResize | null>(null);
   const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
   const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
     loadTimelineFieldColorCodingConfig()
@@ -208,13 +245,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [filterValueSearchDraft, setFilterValueSearchDraft] = React.useState("");
   const [labelSettingsOpen, setLabelSettingsOpen] = React.useState(false);
   const [labelFieldSearchDraft, setLabelFieldSearchDraft] = React.useState("");
+  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = React.useState("");
   const [timelineLabelFields, setTimelineLabelFields] = React.useState<string[]>(
     () => loadLastTimelineLabelFields() ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]
   );
+  const [timelineSidebarFields, setTimelineSidebarFields] = React.useState<string[]>(
+    () => loadLastTimelineSidebarFields() ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]
+  );
   const [chartViewportWidthPx, setChartViewportWidthPx] = React.useState<number>(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = React.useState<number>(0);
 
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
+  const sidebarScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
+  const timelineMainGridRef = React.useRef<HTMLDivElement | null>(null);
   const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
   const filterToggleControlRef = React.useRef<HTMLDivElement | null>(null);
   const filterPanelRef = React.useRef<HTMLDivElement | null>(null);
@@ -227,8 +271,15 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
   const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
   const viewportPersistDebounceRef = React.useRef<number | null>(null);
+  const verticalScrollSyncSourceRef = React.useRef<"chart" | "sidebar" | null>(null);
   const spacePanPressedRef = React.useRef(false);
   const initialViewportAppliedRef = React.useRef(false);
+  const detailsWidthLiveRef = React.useRef(detailsWidthPx);
+  const sidebarWidthLiveRef = React.useRef(sidebarWidthPx);
+  const sidebarEffectiveWidthLiveRef = React.useRef(sidebarWidthPx);
+  const lastExpandedDetailsWidthRef = React.useRef(Math.max(detailsWidthPx, DETAILS_PANEL_CONTENT_MIN_WIDTH_PX));
+  const detailsResizeMovedRef = React.useRef(false);
+  const sidebarResizeMovedRef = React.useRef(false);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -242,6 +293,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const dependencyMode = dependencyViewMode === "edit";
   const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
+  const detailsContentHidden = detailsWidthPx < DETAILS_PANEL_CONTENT_MIN_WIDTH_PX;
+  const sidebarCollapsed = timelineSidebarFields.length === 0;
+  const effectiveSidebarWidthPx = sidebarCollapsed ? TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX : sidebarWidthPx;
 
   React.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
@@ -264,7 +318,32 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   React.useEffect(() => {
     hydrateTimelineLabelFieldsPreference((fieldRefs) => {
-      setTimelineLabelFields(sanitizeTimelineLabelFields(fieldRefs));
+      setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
+    });
+  }, []);
+
+  React.useEffect(() => {
+    hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
+      setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
+    });
+  }, []);
+
+  React.useEffect(() => {
+    hydrateTimelineSidebarWidthPreference((widthPx) => {
+      setSidebarWidthPx((current) => {
+        const next = clamp(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+    });
+  }, []);
+
+  React.useEffect(() => {
+    hydrateTimelineDetailsWidthPreference((widthPx) => {
+      setDetailsWidthPx((current) => {
+        const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+        const next = clamp(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
     });
   }, []);
 
@@ -327,6 +406,120 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [colorCodingDropdownOpen, labelSettingsOpen, openFilterDropdown]);
 
   React.useEffect(() => {
+    detailsWidthLiveRef.current = detailsWidthPx;
+    if (detailsWidthPx >= DETAILS_PANEL_CONTENT_MIN_WIDTH_PX) {
+      lastExpandedDetailsWidthRef.current = detailsWidthPx;
+    }
+  }, [detailsWidthPx]);
+
+  React.useEffect(() => {
+    sidebarWidthLiveRef.current = sidebarWidthPx;
+    sidebarEffectiveWidthLiveRef.current = effectiveSidebarWidthPx;
+  }, [effectiveSidebarWidthPx, sidebarWidthPx]);
+
+  React.useEffect(() => {
+    const clampWidthToAvailableSpace = (): void => {
+      setSidebarWidthPx((current) => {
+        const maxWidth = resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthLiveRef.current);
+        const next = clamp(current, TIMELINE_SIDEBAR_MIN_WIDTH_PX, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+
+      setDetailsWidthPx((current) => {
+        const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+        const next = clamp(current, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
+        return Math.abs(current - next) < 1 ? current : next;
+      });
+    };
+
+    clampWidthToAvailableSpace();
+    window.addEventListener("resize", clampWidthToAvailableSpace);
+    return () => {
+      window.removeEventListener("resize", clampWidthToAvailableSpace);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!activeDetailsResize) {
+      return;
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== activeDetailsResize.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - activeDetailsResize.originClientX;
+      if (Math.abs(deltaX) >= 2) {
+        detailsResizeMovedRef.current = true;
+      }
+      const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+      const nextWidth = clamp(activeDetailsResize.originWidthPx - deltaX, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
+      setDetailsWidthPx(nextWidth);
+      event.preventDefault();
+    };
+
+    const finishResize = (event: PointerEvent) => {
+      if (event.pointerId !== activeDetailsResize.pointerId) {
+        return;
+      }
+
+      setActiveDetailsResize(null);
+      saveTimelineDetailsWidthPx(detailsWidthLiveRef.current);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+    };
+  }, [activeDetailsResize]);
+
+  React.useEffect(() => {
+    if (!activeSidebarResize) {
+      return;
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== activeSidebarResize.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - activeSidebarResize.originClientX;
+      if (Math.abs(deltaX) >= 2) {
+        sidebarResizeMovedRef.current = true;
+      }
+      const maxWidth = resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthLiveRef.current);
+      const nextWidth = clamp(activeSidebarResize.originWidthPx + deltaX, TIMELINE_SIDEBAR_MIN_WIDTH_PX, maxWidth);
+      setSidebarWidthPx(nextWidth);
+      event.preventDefault();
+    };
+
+    const finishResize = (event: PointerEvent) => {
+      if (event.pointerId !== activeSidebarResize.pointerId) {
+        return;
+      }
+
+      setActiveSidebarResize(null);
+      saveTimelineSidebarWidthPx(sidebarWidthLiveRef.current);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+    };
+  }, [activeSidebarResize]);
+
+  React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
@@ -353,6 +546,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const scrollElement = chartScrollRef.current;
     if (scrollElement) {
       scrollElement.scrollTop = 0;
+    }
+    const sidebarScrollElement = sidebarScrollRef.current;
+    if (sidebarScrollElement) {
+      sidebarScrollElement.scrollTop = 0;
     }
   }, [timelineFieldFilters]);
 
@@ -399,6 +596,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const filteredTimelineLabelFieldOptions = React.useMemo(
     () => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft),
     [availableTimelineLabelFieldOptions, labelFieldSearchDraft]
+  );
+  const filteredTimelineSidebarFieldOptions = React.useMemo(
+    () => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft),
+    [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]
   );
 
   React.useEffect(() => {
@@ -516,18 +717,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || chartModel.bars.length === 0) {
       setChartViewportWidthPx(0);
+      setChartViewportHeightPx(0);
       return;
     }
 
-    const updateViewportWidth = (): void => {
+    const updateViewportSize = (): void => {
       setChartViewportWidthPx(scrollElement.clientWidth);
+      setChartViewportHeightPx(scrollElement.clientHeight);
     };
 
-    updateViewportWidth();
+    updateViewportSize();
 
     if (typeof ResizeObserver !== "undefined") {
       const resizeObserver = new ResizeObserver(() => {
-        updateViewportWidth();
+        updateViewportSize();
       });
       resizeObserver.observe(scrollElement);
       return () => {
@@ -535,11 +738,26 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       };
     }
 
-    window.addEventListener("resize", updateViewportWidth);
+    window.addEventListener("resize", updateViewportSize);
     return () => {
-      window.removeEventListener("resize", updateViewportWidth);
+      window.removeEventListener("resize", updateViewportSize);
     };
   }, [chartModel.bars.length]);
+
+  React.useEffect(() => {
+    const chartElement = chartScrollRef.current;
+    const sidebarElement = sidebarScrollRef.current;
+    if (!chartElement || !sidebarElement) {
+      return;
+    }
+
+    if (Math.abs(sidebarElement.scrollTop - chartElement.scrollTop) <= 1) {
+      return;
+    }
+
+    verticalScrollSyncSourceRef.current = "chart";
+    sidebarElement.scrollTop = chartElement.scrollTop;
+  }, [chartModel.bars.length, chartModel.height]);
 
   React.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
@@ -731,12 +949,56 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     }
 
     const onScroll = () => {
+      if (verticalScrollSyncSourceRef.current === "sidebar") {
+        verticalScrollSyncSourceRef.current = null;
+        persistTimelineViewportSoon();
+        return;
+      }
+
+      const sidebarElement = sidebarScrollRef.current;
+      if (sidebarElement && Math.abs(sidebarElement.scrollTop - scrollElement.scrollTop) > 1) {
+        verticalScrollSyncSourceRef.current = "chart";
+        sidebarElement.scrollTop = scrollElement.scrollTop;
+      }
+
       persistTimelineViewportSoon();
     };
 
     scrollElement.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       scrollElement.removeEventListener("scroll", onScroll);
+    };
+  }, [persistTimelineViewportSoon]);
+
+  React.useEffect(() => {
+    const sidebarElement = sidebarScrollRef.current;
+    if (!sidebarElement) {
+      return;
+    }
+
+    const onSidebarScroll = () => {
+      if (verticalScrollSyncSourceRef.current === "chart") {
+        verticalScrollSyncSourceRef.current = null;
+        return;
+      }
+
+      const chartElement = chartScrollRef.current;
+      if (!chartElement) {
+        return;
+      }
+
+      if (Math.abs(chartElement.scrollTop - sidebarElement.scrollTop) <= 1) {
+        return;
+      }
+
+      verticalScrollSyncSourceRef.current = "sidebar";
+      chartElement.scrollTop = sidebarElement.scrollTop;
+      persistTimelineViewportSoon();
+    };
+
+    sidebarElement.addEventListener("scroll", onSidebarScroll, { passive: true });
+    return () => {
+      sidebarElement.removeEventListener("scroll", onSidebarScroll);
     };
   }, [persistTimelineViewportSoon]);
 
@@ -1395,11 +1657,99 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setTimelineLabelFields((current) => {
       const exists = current.includes(normalized);
       const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
-      const sanitized = sanitizeTimelineLabelFields(next);
+      const sanitized = sanitizeTimelineFieldRefList(next);
       saveTimelineLabelFields(sanitized);
       return sanitized;
     });
   }, []);
+
+  const clearTimelineLabelFields = React.useCallback(() => {
+    setTimelineLabelFields(() => {
+      saveTimelineLabelFields([]);
+      return [];
+    });
+  }, []);
+
+  const toggleTimelineSidebarField = React.useCallback((fieldRef: string) => {
+    const normalized = fieldRef.trim();
+    if (!normalized) {
+      return;
+    }
+
+    setTimelineSidebarFields((current) => {
+      const exists = current.includes(normalized);
+      const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
+      const sanitized = sanitizeTimelineFieldRefList(next);
+      saveTimelineSidebarFields(sanitized);
+      return sanitized;
+    });
+  }, []);
+
+  const clearTimelineSidebarFields = React.useCallback(() => {
+    setTimelineSidebarFields(() => {
+      saveTimelineSidebarFields([]);
+      return [];
+    });
+  }, []);
+
+  const openTimelineLabelSettingsFromSidebar = React.useCallback(() => {
+    setLabelSettingsOpen(true);
+    setLabelFieldSearchDraft("");
+    setSidebarFieldSearchDraft("");
+  }, []);
+
+  const beginSidebarResize = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      event.preventDefault();
+      if ("setPointerCapture" in event.currentTarget) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+      sidebarResizeMovedRef.current = false;
+
+      setActiveSidebarResize({
+        pointerId: event.pointerId,
+        originClientX: event.clientX,
+        originWidthPx: sidebarWidthPx
+      });
+    },
+    [sidebarWidthPx]
+  );
+
+  const beginDetailsResize = React.useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      event.preventDefault();
+      if ("setPointerCapture" in event.currentTarget) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+      detailsResizeMovedRef.current = false;
+
+      setActiveDetailsResize({
+        pointerId: event.pointerId,
+        originClientX: event.clientX,
+        originWidthPx: detailsWidthPx
+      });
+    },
+    [detailsWidthPx]
+  );
+
+  const expandDetailsPanelFromHidden = React.useCallback(() => {
+    if (!detailsContentHidden || detailsResizeMovedRef.current) {
+      return;
+    }
+
+    const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
+    const restoredWidth = clamp(lastExpandedDetailsWidthRef.current, DETAILS_PANEL_CONTENT_MIN_WIDTH_PX, maxWidth);
+    setDetailsWidthPx(restoredWidth);
+    saveTimelineDetailsWidthPx(restoredWidth);
+  }, [detailsContentHidden]);
 
   const openFilterSlot = React.useMemo(
     () =>
@@ -1427,15 +1777,22 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const detailProps: TimelineDetailsPanelProps = {
     timeline: filteredTimeline,
     selectedWorkItemId,
-    collapsed: detailsCollapsed,
-    onToggleCollapsed: () => {
-      setDetailsCollapsed((current) => !current);
-    },
+    contentHidden: detailsContentHidden,
     organization: props.organization,
     project: props.project,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
   };
+  const timelineMainGridStyle = {
+    ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
+    ["--timeline-details-width-px"]: `${Math.round(detailsWidthPx)}px`
+  } as React.CSSProperties;
+  const timelineMainSplitterStyle =
+    chartViewportHeightPx > 0
+      ? ({
+          height: `${chartViewportHeightPx}px`
+        } as React.CSSProperties)
+      : undefined;
 
   const barCount = chartModel.bars.length;
   const unscheduledCount = filteredTimeline?.unschedulable.length ?? 0;
@@ -1675,6 +2032,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
               onClick: () => {
                 setLabelSettingsOpen((current) => !current);
                 setLabelFieldSearchDraft("");
+                setSidebarFieldSearchDraft("");
               }
             },
             React.createElement(
@@ -1688,7 +2046,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
               })
             ),
-            React.createElement("span", { className: "timeline-label-toggle-count" }, timelineLabelFields.length)
+            React.createElement(
+              "span",
+              { className: "timeline-label-toggle-count" },
+              `${timelineLabelFields.length}/${timelineSidebarFields.length}`
+            )
           ),
           labelSettingsOpen
             ? React.createElement(
@@ -1699,46 +2061,121 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   "aria-label": "Timeline label fields",
                   ref: labelPanelRef
                 },
-                React.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"),
-                React.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown as \" - \" joined text."),
-                React.createElement("input", {
-                  type: "search",
-                  className: "timeline-color-coding-dropdown-search",
-                  "aria-label": "Search timeline label fields",
-                  placeholder: "Search field",
-                  value: labelFieldSearchDraft,
-                  onChange: (event) => {
-                    setLabelFieldSearchDraft((event.target as HTMLInputElement).value);
-                  }
-                }),
                 React.createElement(
                   "div",
-                  { className: "timeline-label-menu-options" },
-                  filteredTimelineLabelFieldOptions.length === 0
-                    ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                    : filteredTimelineLabelFieldOptions.map((option) =>
-                        React.createElement(
-                          "label",
-                          {
-                            key: `timeline-label-field-${option.fieldRef}`,
-                            className: "timeline-label-menu-option"
-                          },
-                          React.createElement("input", {
-                            type: "checkbox",
-                            checked: timelineLabelFields.includes(option.fieldRef),
-                            "aria-label": `Show ${option.label} in timeline bars`,
-                            onChange: () => {
-                              toggleTimelineLabelField(option.fieldRef);
-                            }
-                          }),
-                          React.createElement(
-                            "span",
-                            { className: "timeline-label-menu-option-meta" },
-                            React.createElement("strong", null, option.label),
-                            React.createElement("span", null, option.subtitle)
+                  { className: "timeline-label-menu-grid" },
+                  React.createElement(
+                    "section",
+                    { className: "timeline-label-menu-column" },
+                    React.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"),
+                    React.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown as \" - \" joined text."),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-color-coding-value-reset",
+                        onClick: clearTimelineLabelFields
+                      },
+                      "Nothing in bars"
+                    ),
+                    React.createElement("input", {
+                      type: "search",
+                      className: "timeline-color-coding-dropdown-search",
+                      "aria-label": "Search timeline label fields",
+                      placeholder: "Search field",
+                      value: labelFieldSearchDraft,
+                      onChange: (event) => {
+                        setLabelFieldSearchDraft((event.target as HTMLInputElement).value);
+                      }
+                    }),
+                    React.createElement(
+                      "div",
+                      { className: "timeline-label-menu-options" },
+                      filteredTimelineLabelFieldOptions.length === 0
+                        ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                        : filteredTimelineLabelFieldOptions.map((option) =>
+                            React.createElement(
+                              "label",
+                              {
+                                key: `timeline-label-field-${option.fieldRef}`,
+                                className: "timeline-label-menu-option"
+                              },
+                              React.createElement("input", {
+                                type: "checkbox",
+                                checked: timelineLabelFields.includes(option.fieldRef),
+                                "aria-label": `Show ${option.label} in timeline bars`,
+                                onChange: () => {
+                                  toggleTimelineLabelField(option.fieldRef);
+                                }
+                              }),
+                              React.createElement(
+                                "span",
+                                { className: "timeline-label-menu-option-meta" },
+                                React.createElement("strong", null, option.label),
+                                React.createElement("span", null, option.subtitle)
+                              )
+                            )
                           )
-                        )
-                      )
+                    )
+                  ),
+                  React.createElement(
+                    "section",
+                    { className: "timeline-label-menu-column" },
+                    React.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"),
+                    React.createElement(
+                      "p",
+                      { className: "timeline-details-muted" },
+                      "Selected fields are shown per row in the sticky sidebar."
+                    ),
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-color-coding-value-reset",
+                        onClick: clearTimelineSidebarFields
+                      },
+                      "Nothing in sidebar"
+                    ),
+                    React.createElement("input", {
+                      type: "search",
+                      className: "timeline-color-coding-dropdown-search",
+                      "aria-label": "Search timeline sidebar fields",
+                      placeholder: "Search field",
+                      value: sidebarFieldSearchDraft,
+                      onChange: (event) => {
+                        setSidebarFieldSearchDraft((event.target as HTMLInputElement).value);
+                      }
+                    }),
+                    React.createElement(
+                      "div",
+                      { className: "timeline-label-menu-options" },
+                      filteredTimelineSidebarFieldOptions.length === 0
+                        ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                        : filteredTimelineSidebarFieldOptions.map((option) =>
+                            React.createElement(
+                              "label",
+                              {
+                                key: `timeline-sidebar-field-${option.fieldRef}`,
+                                className: "timeline-label-menu-option"
+                              },
+                              React.createElement("input", {
+                                type: "checkbox",
+                                checked: timelineSidebarFields.includes(option.fieldRef),
+                                "aria-label": `Show ${option.label} in timeline sidebar`,
+                                onChange: () => {
+                                  toggleTimelineSidebarField(option.fieldRef);
+                                }
+                              }),
+                              React.createElement(
+                                "span",
+                                { className: "timeline-label-menu-option-meta" },
+                                React.createElement("strong", null, option.label),
+                                React.createElement("span", null, option.subtitle)
+                              )
+                            )
+                          )
+                    )
+                  )
                 )
               )
             : null
@@ -2152,7 +2589,99 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       : null,
     React.createElement(
       "div",
-      { className: detailsCollapsed ? "timeline-main-grid timeline-main-grid-details-collapsed" : "timeline-main-grid" },
+      {
+        className: "timeline-main-grid",
+        ref: timelineMainGridRef,
+        style: timelineMainGridStyle
+      },
+      React.createElement(
+        "div",
+        {
+          className: sidebarCollapsed ? "timeline-left-sidebar timeline-left-sidebar-collapsed" : "timeline-left-sidebar",
+          "aria-label": "Timeline left sidebar"
+        },
+        sidebarCollapsed
+          ? React.createElement(
+              "div",
+              {
+                className: "timeline-left-sidebar-collapsed-body",
+                style: { height: chartViewportHeightPx > 0 ? `${chartViewportHeightPx}px` : undefined }
+              },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "timeline-left-sidebar-settings-button",
+                  "aria-label": "Configure timeline sidebar fields",
+                  onClick: openTimelineLabelSettingsFromSidebar
+                },
+                React.createElement(
+                  "svg",
+                  {
+                    viewBox: "0 0 24 24",
+                    className: "timeline-left-sidebar-settings-icon",
+                    "aria-hidden": "true"
+                  },
+                  React.createElement("path", {
+                    d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
+                  })
+                )
+              )
+            )
+          : [
+              React.createElement(
+                "div",
+                {
+                  className: "timeline-left-sidebar-header",
+                  style: { height: `${CHART_TOP_PADDING}px` },
+                  key: "header",
+                  "aria-hidden": "true"
+                }
+              ),
+              React.createElement(
+                "div",
+                {
+                  className: "timeline-left-sidebar-scroll",
+                  ref: sidebarScrollRef,
+                  style: { height: chartViewportHeightPx > 0 ? `${Math.max(0, chartViewportHeightPx - CHART_TOP_PADDING)}px` : undefined },
+                  key: "scroll"
+                },
+                chartModel.bars.map((bar) =>
+                  React.createElement(
+                    "button",
+                    {
+                      key: `timeline-left-sidebar-row-${bar.workItemId}`,
+                      type: "button",
+                      className:
+                        selectedWorkItemId === bar.workItemId
+                          ? "timeline-left-sidebar-row timeline-left-sidebar-row-selected"
+                          : "timeline-left-sidebar-row",
+                      "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
+                      style: { height: `${CHART_ROW_HEIGHT}px` },
+                      onClick: () => {
+                        selectWorkItem(bar.workItemId);
+                      }
+                    },
+                    buildTimelineSidebarLabel(bar, timelineSidebarFields)
+                  )
+                )
+              )
+            ]
+      ),
+      sidebarCollapsed
+        ? React.createElement("div", { className: "timeline-main-gap-fill", "aria-hidden": "true" })
+        : React.createElement("button", {
+            type: "button",
+            className: activeSidebarResize ? "timeline-main-splitter timeline-main-splitter-active" : "timeline-main-splitter",
+            "aria-label": "Resize timeline sidebar",
+            role: "separator",
+            "aria-orientation": "vertical",
+            "aria-valuemin": TIMELINE_SIDEBAR_MIN_WIDTH_PX,
+            "aria-valuemax": resolveTimelineSidebarMaxWidthPx(timelineMainGridRef.current, detailsWidthPx),
+            "aria-valuenow": Math.round(sidebarWidthPx),
+            onPointerDown: beginSidebarResize,
+            style: timelineMainSplitterStyle
+          }),
       React.createElement(
         "div",
         { className: "timeline-main-column timeline-chart-surface" },
@@ -2356,6 +2885,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     })
                   )
                 ),
+                Array.from({ length: chartModel.bars.length + 1 }, (_, index) =>
+                  React.createElement("line", {
+                    key: `row-guide-${index}`,
+                    x1: 0,
+                    y1: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+                    x2: chartModel.width,
+                    y2: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+                    className: "timeline-row-guide-line"
+                  })
+                ),
                 chartModel.todayX !== null
                   ? React.createElement(
                       "g",
@@ -2444,15 +2983,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           }
                         })
                       : null,
-                    React.createElement(
-                      "text",
-                      {
-                        x: CHART_LEFT_GUTTER + bar.x + 18,
-                        y: y + 16,
-                        className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
-                      },
-                      truncateTitleToBarWidth(bar.displayLabel, bar.width)
-                    ),
+                    bar.displayLabel.trim().length > 0
+                      ? React.createElement(
+                          "text",
+                          {
+                            x: CHART_LEFT_GUTTER + bar.x + 18,
+                            y: y + 16,
+                            className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
+                          },
+                          truncateTitleToBarWidth(bar.displayLabel, bar.width)
+                        )
+                      : null,
                     React.createElement("circle", {
                       cx: CHART_LEFT_GUTTER + bar.x + 10,
                       cy: y + BAR_HEIGHT / 2,
@@ -2594,6 +3135,44 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             : React.createElement("div", null, "None")
         )
       ),
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          className: activeDetailsResize ? "timeline-main-splitter timeline-main-splitter-active" : "timeline-main-splitter",
+          "aria-label": detailsContentHidden ? "Expand details panel" : "Resize details panel",
+          role: "separator",
+          "aria-orientation": "vertical",
+          "aria-valuemin": DETAILS_PANEL_MIN_WIDTH_PX,
+          "aria-valuemax": resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
+          "aria-valuenow": Math.round(detailsWidthPx),
+          onPointerDown: beginDetailsResize,
+          onClick: expandDetailsPanelFromHidden,
+          style: timelineMainSplitterStyle
+        },
+        detailsContentHidden
+          ? React.createElement(
+              "span",
+              { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" },
+              React.createElement(
+                "svg",
+                {
+                  className: "timeline-main-splitter-expand-icon",
+                  viewBox: "0 0 16 16",
+                  "aria-hidden": "true"
+                },
+                React.createElement("path", {
+                  d: "M10.5 3.5 6 8l4.5 4.5",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2.2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                })
+              )
+            )
+          : null
+      ),
       React.createElement(TimelineDetailsPanel, detailProps)
     )
   );
@@ -2621,6 +3200,16 @@ const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 const FIT_TO_VIEW_INSET_PX = 20;
 const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
+const DETAILS_PANEL_DEFAULT_WIDTH_PX = 320;
+const DETAILS_PANEL_MIN_WIDTH_PX = 0;
+const DETAILS_PANEL_MAX_WIDTH_PX = 820;
+const DETAILS_PANEL_SPLITTER_WIDTH_PX = 10;
+const DETAILS_PANEL_MIN_CHART_WIDTH_PX = 360;
+const DETAILS_PANEL_CONTENT_MIN_WIDTH_PX = 260;
+const TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX = 260;
+const TIMELINE_SIDEBAR_MIN_WIDTH_PX = 160;
+const TIMELINE_SIDEBAR_MAX_WIDTH_PX = 640;
+const TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX = 56;
 const MIN_BAR_WIDTH_PX = 10;
 const HANDLE_WIDTH = 8;
 const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
@@ -2685,9 +3274,11 @@ type VisualTimelineBar = {
   mappedId: string;
   title: string;
   displayLabel: string;
+  stateCode: string;
   color: string;
   stateColor: string;
   stateBadge: string;
+  fieldValues: Record<string, string | number | null>;
   x: number;
   width: number;
   start: Date;
@@ -2827,9 +3418,11 @@ function buildVisualChartModel(
       mappedId: bar.source.details.mappedId,
       title: bar.source.title,
       displayLabel: buildTimelineBarLabel(bar.source, timelineLabelFields),
+      stateCode: bar.source.state.code,
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
+      fieldValues: bar.source.details.fieldValues ?? {},
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
@@ -3106,8 +3699,12 @@ function toCompactTimelineFilterParam(entry: { fieldRef: string | null; selected
     return null;
   }
 
-  const valuePart = entry.selectedValueKeys.length > 0 ? entry.selectedValueKeys.join(",") : "";
-  return `${fieldRef}~${valuePart}`;
+  const encodedFieldRef = encodeTimelineFilterToken(fieldRef);
+  const valuePart =
+    entry.selectedValueKeys.length > 0
+      ? entry.selectedValueKeys.map((value) => encodeTimelineFilterToken(value)).join(",")
+      : "";
+  return `${encodedFieldRef}~${valuePart}`;
 }
 
 function parseCompactTimelineFilterParam(value: string): { fieldRef: string; selectedValueKeys: string[] } | null {
@@ -3117,14 +3714,14 @@ function parseCompactTimelineFilterParam(value: string): { fieldRef: string; sel
       return null;
     }
 
-    const fieldRef = rawFieldRef.trim();
+    const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
     if (fieldRef.length === 0) {
       return null;
     }
 
     const selectedValueKeys = rawValues
       .split(",")
-      .map((entry) => entry.trim())
+      .map((entry) => decodeTimelineFilterToken(entry).trim())
       .filter((entry) => entry.length > 0);
 
     return {
@@ -3134,6 +3731,19 @@ function parseCompactTimelineFilterParam(value: string): { fieldRef: string; sel
   } catch {
     return null;
   }
+}
+
+function decodeTimelineFilterToken(token: string): string {
+  try {
+    return decodeURIComponent(token);
+  } catch {
+    // Keep legacy unescaped tokens parseable even when they contain stray "%".
+    return token;
+  }
+}
+
+function encodeTimelineFilterToken(token: string): string {
+  return encodeURIComponent(token).replace(/~/g, "%7E");
 }
 
 function syncTimelineFiltersToUrl(filters: TimelineFieldFilter[]): void {
@@ -3242,11 +3852,10 @@ function filterFieldValueStatsBySearch(stats: FieldValueStat[], search: string):
   return stats.filter((entry) => entry.label.toLowerCase().includes(normalizedSearch));
 }
 
-function sanitizeTimelineLabelFields(fieldRefs: string[]): string[] {
-  const normalized = [...new Set(fieldRefs)]
+function sanitizeTimelineFieldRefList(fieldRefs: string[]): string[] {
+  return [...new Set(fieldRefs)]
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0);
-  return normalized.length > 0 ? normalized : [...DEFAULT_TIMELINE_LABEL_FIELDS];
 }
 
 function buildTimelineLabelFieldOptions(fieldRefs: string[]): TimelineLabelFieldOption[] {
@@ -3398,15 +4007,43 @@ function getFieldDisplayName(fieldRef: string): string {
 }
 
 function buildTimelineBarLabel(bar: TimelineReadModel["bars"][number], fieldRefs: string[]): string {
-  const parts = sanitizeTimelineLabelFields(fieldRefs)
+  const parts = sanitizeTimelineFieldRefList(fieldRefs)
     .map((fieldRef) => timelineBarLabelValueForFieldRef(bar, fieldRef))
     .filter((value): value is string => value !== null && value.length > 0);
 
   if (parts.length === 0) {
-    return bar.title;
+    return "";
   }
 
   return parts.join(" - ");
+}
+
+function buildTimelineSidebarLabel(bar: VisualTimelineBar, fieldRefs: string[]): string {
+  const parts = sanitizeTimelineFieldRefList(fieldRefs)
+    .map((fieldRef) => timelineSidebarLabelValueForFieldRef(bar, fieldRef))
+    .filter((value): value is string => value !== null && value.length > 0);
+
+  if (parts.length === 0) {
+    return "";
+  }
+
+  return parts.join(" - ");
+}
+
+function timelineSidebarLabelValueForFieldRef(bar: VisualTimelineBar, fieldRef: string): string | null {
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.title) {
+    return normalizeTimelineLabelValue(bar.title);
+  }
+
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.mappedId) {
+    return normalizeTimelineLabelValue(bar.mappedId);
+  }
+
+  if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.state) {
+    return normalizeTimelineLabelValue(bar.stateCode);
+  }
+
+  return normalizeTimelineLabelValue(bar.fieldValues[fieldRef]);
 }
 
 function timelineBarLabelValueForFieldRef(
@@ -3497,12 +4134,7 @@ function listFieldValueStats(timeline: TimelineReadModel | null, fieldRef: strin
       count: entry.count,
       defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
     }))
-    .sort((left, right) => {
-      if (right.count !== left.count) {
-        return right.count - left.count;
-      }
-      return left.label.localeCompare(right.label);
-    });
+    .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: "base", numeric: true }));
 }
 
 function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineColorCoding): FieldValueStat[] {
@@ -3541,12 +4173,7 @@ function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineCo
       count: entry.count,
       defaultColor: categoryColorMap.get(entry.label) ?? DEFAULT_NEUTRAL_TIMELINE_COLOR
     }))
-    .sort((left, right) => {
-      if (right.count !== left.count) {
-        return right.count - left.count;
-      }
-      return left.label.localeCompare(right.label);
-    });
+    .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: "base", numeric: true }));
 }
 
 function fieldValueToStorageKey(value: string | number | null | undefined): string {
@@ -3836,6 +4463,34 @@ function clientPointToSvg(clientX: number, clientY: number, svg: SVGSVGElement |
 
 function toIsoDateUtc(value: Date): string {
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
+}
+
+function resolveTimelineDetailsMaxWidthPx(container: HTMLElement | null, sidebarWidthPx: number): number {
+  if (!container || container.clientWidth <= 0) {
+    return DETAILS_PANEL_MAX_WIDTH_PX;
+  }
+
+  const normalizedSidebarWidth = clamp(
+    Math.round(sidebarWidthPx),
+    TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX,
+    TIMELINE_SIDEBAR_MAX_WIDTH_PX
+  );
+  const available = Math.floor(
+    container.clientWidth - normalizedSidebarWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX * 2 - DETAILS_PANEL_MIN_CHART_WIDTH_PX
+  );
+  return clamp(available, DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+}
+
+function resolveTimelineSidebarMaxWidthPx(container: HTMLElement | null, detailsWidthPx: number): number {
+  if (!container || container.clientWidth <= 0) {
+    return TIMELINE_SIDEBAR_MAX_WIDTH_PX;
+  }
+
+  const normalizedDetailsWidth = clamp(Math.round(detailsWidthPx), DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+  const available = Math.floor(
+    container.clientWidth - normalizedDetailsWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX * 2 - DETAILS_PANEL_MIN_CHART_WIDTH_PX
+  );
+  return clamp(available, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
 }
 
 function clamp(value: number, min: number, max: number): number {

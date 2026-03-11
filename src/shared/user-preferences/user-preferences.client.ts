@@ -8,6 +8,13 @@ export type TimelineFieldColorCodingPreference = {
 };
 
 export type TimelineLabelFieldPreference = string;
+export type SavedQueryPreference = {
+  id: string;
+  name: string;
+  queryInput: string;
+  organization?: string;
+  project?: string;
+};
 
 export type UserPreferences = {
   themeMode?: ThemeModePreference;
@@ -15,6 +22,10 @@ export type UserPreferences = {
   timelineColorCoding?: TimelineColorCodingPreference;
   timelineFieldColorCoding?: TimelineFieldColorCodingPreference;
   timelineLabelFields?: TimelineLabelFieldPreference[];
+  timelineSidebarFields?: TimelineLabelFieldPreference[];
+  timelineSidebarWidthPx?: number;
+  timelineDetailsWidthPx?: number;
+  savedQueries?: SavedQueryPreference[];
   filters?: Record<string, unknown>;
   views?: Record<string, unknown>;
   updatedAt?: string;
@@ -158,7 +169,36 @@ function sanitizePreferences(value: unknown): UserPreferences {
     const normalized = [...new Set(candidate.timelineLabelFields)]
       .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
       .filter((entry) => entry.length > 0);
-    next.timelineLabelFields = normalized.length > 0 ? normalized : undefined;
+    next.timelineLabelFields = normalized;
+  }
+
+  if (Array.isArray(candidate.timelineSidebarFields)) {
+    const normalized = [...new Set(candidate.timelineSidebarFields)]
+      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .filter((entry) => entry.length > 0);
+    next.timelineSidebarFields = normalized;
+  }
+
+  if (typeof candidate.timelineSidebarWidthPx === "number" && Number.isFinite(candidate.timelineSidebarWidthPx)) {
+    next.timelineSidebarWidthPx = clamp(Math.round(candidate.timelineSidebarWidthPx), 160, 640);
+  }
+
+  if (typeof candidate.timelineDetailsWidthPx === "number" && Number.isFinite(candidate.timelineDetailsWidthPx)) {
+    next.timelineDetailsWidthPx = clamp(Math.round(candidate.timelineDetailsWidthPx), 0, 900);
+  }
+
+  if (Array.isArray(candidate.savedQueries)) {
+    const deduped = new Map<string, SavedQueryPreference>();
+    candidate.savedQueries.forEach((entry) => {
+      const normalized = sanitizeSavedQueryPreference(entry);
+      if (!normalized || deduped.has(normalized.id)) {
+        return;
+      }
+
+      deduped.set(normalized.id, normalized);
+    });
+
+    next.savedQueries = deduped.size > 0 ? [...deduped.values()] : undefined;
   }
 
   if (isPlainRecord(candidate.filters)) {
@@ -178,4 +218,32 @@ function sanitizePreferences(value: unknown): UserPreferences {
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function sanitizeSavedQueryPreference(value: unknown): SavedQueryPreference | null {
+  if (!isPlainRecord(value)) {
+    return null;
+  }
+
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  const queryInput = typeof value.queryInput === "string" ? value.queryInput.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const organization = typeof value.organization === "string" ? value.organization.trim() : "";
+  const project = typeof value.project === "string" ? value.project.trim() : "";
+
+  if (!id || !queryInput) {
+    return null;
+  }
+
+  return {
+    id,
+    name: name.length > 0 ? name : id,
+    queryInput,
+    organization: organization.length > 0 ? organization : undefined,
+    project: project.length > 0 ? project : undefined
+  };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }

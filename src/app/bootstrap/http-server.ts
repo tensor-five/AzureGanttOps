@@ -115,9 +115,11 @@ const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
 const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
+const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
+const QUERY_DETAILS_API_VERSION = "7.1";
 const ADO_COMM_URL_PATH_ORIGIN = "https://dev.azure.com";
 const ADO_COMM_INVALID_LIMIT = 0;
 const ADO_COMM_DEFAULT_AFTER_SEQ = 0;
@@ -338,6 +340,10 @@ function isUpdateDetailsRoute(method: string, pathname: string): boolean {
 
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_STATE_OPTIONS_ROUTE_PATH;
+}
+
+function isQueryDetailsRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === QUERY_DETAILS_ROUTE_PATH;
 }
 
 function isAzLoginRoute(method: string, pathname: string): boolean {
@@ -709,6 +715,49 @@ async function route(
     }
   }
 
+  if (isQueryDetailsRoute(method, url.pathname)) {
+    const queryId = parseQueryIdFromQuery(url);
+    if (!queryId) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide queryId query param."
+      });
+      return;
+    }
+
+    try {
+      const queryDetails = await fetchQueryDetails({
+        queryId,
+        contextStore,
+        httpClient
+      });
+      writeJson(res, 200, queryDetails);
+      return;
+    } catch (error) {
+      if (error instanceof Error && error.message === "CONTEXT_REQUIRED") {
+        writeJson(res, 400, {
+          code: "CONTEXT_REQUIRED",
+          message: "Set Azure DevOps organization and project first."
+        });
+        return;
+      }
+
+      if (error instanceof Error && error.message === "QUERY_NOT_FOUND") {
+        writeJson(res, 404, {
+          code: "QUERY_NOT_FOUND",
+          message: "Query not found."
+        });
+        return;
+      }
+
+      writeJson(res, 500, {
+        code: "QUERY_DETAILS_FAILED",
+        message: error instanceof Error ? error.message : "Unable to fetch query details."
+      });
+      return;
+    }
+  }
+
   if (isAzLoginRoute(method, url.pathname)) {
     try {
       const result = await azLoginRunner();
@@ -887,6 +936,51 @@ function parseTargetWorkItemIdFromQuery(url: URL): number | null {
   }
 
   return parsed;
+}
+
+function parseQueryIdFromQuery(url: URL): string | null {
+  const raw = url.searchParams.get("queryId");
+  if (!raw) {
+    return null;
+  }
+
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+async function fetchQueryDetails(input: {
+  queryId: string;
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+}): Promise<{ id: string; name: string; path: string }> {
+  const context = await input.contextStore.getActiveContext();
+  if (!context) {
+    throw new Error("CONTEXT_REQUIRED");
+  }
+
+  const url =
+    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
+    `/_apis/wit/queries/${encodeURIComponent(input.queryId)}?$includeDeleted=true&api-version=${QUERY_DETAILS_API_VERSION}`;
+  const response = await input.httpClient.get(url);
+
+  if (response.status === 404) {
+    throw new Error("QUERY_NOT_FOUND");
+  }
+
+  if (response.status !== 200) {
+    throw new Error(`QUERY_DETAILS_FAILED:${response.status}`);
+  }
+
+  const payload = response.json as { id?: unknown; name?: unknown; path?: unknown };
+  if (typeof payload.id !== "string" || typeof payload.name !== "string" || typeof payload.path !== "string") {
+    throw new Error("MALFORMED_PAYLOAD");
+  }
+
+  return {
+    id: payload.id,
+    name: payload.name,
+    path: payload.path
+  };
 }
 
 async function fetchAllowedStateCodesForWorkItem(input: {

@@ -4,58 +4,58 @@ import {
   persistUserPreferencesPatch
 } from "../../shared/user-preferences/user-preferences.client.js";
 
-const STORAGE_KEY = "azure-ganttops.timeline-label-fields.v1";
-export const DEFAULT_TIMELINE_LABEL_FIELDS = ["title"] as const;
+const STORAGE_KEY = "azure-ganttops.timeline-sidebar-fields.v1";
+export const DEFAULT_TIMELINE_SIDEBAR_FIELDS = ["title"] as const;
 
-let memoryTimelineLabelFields: string[] | null = null;
+let memoryTimelineSidebarFields: string[] | null = null;
 let hydrationStarted = false;
 
-export function loadLastTimelineLabelFields(): string[] | null {
+export function loadLastTimelineSidebarFields(): string[] | null {
   const fromStorage = readFromLocalStorage();
   if (fromStorage) {
-    memoryTimelineLabelFields = fromStorage;
+    memoryTimelineSidebarFields = fromStorage;
     return fromStorage;
   }
 
-  const fromCache = sanitizeTimelineLabelFields(getCachedUserPreferences().timelineLabelFields);
+  const fromCache = sanitizeTimelineSidebarFields(getCachedUserPreferences().timelineSidebarFields);
   if (fromCache) {
-    memoryTimelineLabelFields = fromCache;
+    memoryTimelineSidebarFields = fromCache;
     writeToLocalStorage(fromCache);
     return fromCache;
   }
 
-  return memoryTimelineLabelFields;
+  return memoryTimelineSidebarFields;
 }
 
-export function saveTimelineLabelFields(fieldRefs: string[]): void {
-  const sanitized = sanitizeTimelineLabelFields(fieldRefs) ?? [];
-  memoryTimelineLabelFields = sanitized;
+export function saveTimelineSidebarFields(fieldRefs: string[]): void {
+  const sanitized = sanitizeTimelineSidebarFields(fieldRefs) ?? [];
+  memoryTimelineSidebarFields = sanitized;
   writeToLocalStorage(sanitized);
   persistUserPreferencesPatch({
-    timelineLabelFields: sanitized
+    timelineSidebarFields: sanitized
   });
 }
 
-export function hydrateTimelineLabelFieldsPreference(onHydrated?: (fieldRefs: string[]) => void): void {
+export function hydrateTimelineSidebarFieldsPreference(onHydrated?: (fieldRefs: string[]) => void): void {
   if (hydrationStarted) {
     return;
   }
 
   hydrationStarted = true;
   void hydrateUserPreferences().then((preferences) => {
-    const fieldRefs = sanitizeTimelineLabelFields(preferences.timelineLabelFields);
+    const fieldRefs = sanitizeTimelineSidebarFields(preferences.timelineSidebarFields);
     if (!fieldRefs) {
       return;
     }
 
-    memoryTimelineLabelFields = fieldRefs;
+    memoryTimelineSidebarFields = fieldRefs;
     writeToLocalStorage(fieldRefs);
     onHydrated?.(fieldRefs);
   });
 }
 
-export function clearTimelineLabelFieldsPreferenceForTests(): void {
-  memoryTimelineLabelFields = null;
+export function clearTimelineSidebarFieldsPreferenceForTests(): void {
+  memoryTimelineSidebarFields = null;
   hydrationStarted = false;
 
   if (typeof globalThis.localStorage !== "undefined") {
@@ -75,7 +75,7 @@ function readFromLocalStorage(): string[] | null {
 
   try {
     const parsed = JSON.parse(raw) as unknown;
-    return sanitizeTimelineLabelFields(parsed);
+    return sanitizeTimelineSidebarFields(parsed);
   } catch {
     return null;
   }
@@ -89,7 +89,7 @@ function writeToLocalStorage(fieldRefs: string[]): void {
   globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(fieldRefs));
 }
 
-function sanitizeTimelineLabelFields(value: unknown): string[] | null {
+function sanitizeTimelineSidebarFields(value: unknown): string[] | null {
   if (!Array.isArray(value)) {
     return null;
   }

@@ -20,6 +20,7 @@ import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import {
+  type SavedQueryPreference,
   getCachedUserPreferences,
   hydrateUserPreferences,
   persistUserPreferencesPatch
@@ -30,6 +31,9 @@ const ADO_COMM_LOG_READ_LIMIT = 200;
 const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
+const QUERY_GUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+const QUERY_GUID_EXACT_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const HEADER_SAVED_QUERY_LIMIT = 25;
 
 type ThemeMode = "system" | "light" | "dark";
 type WorkItemSyncState = "up_to_date" | "syncing" | "error";
@@ -414,6 +418,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [adoCommLogsError, setAdoCommLogsError] = React.useState<string | null>(null);
   const [adoCommLogsLoading, setAdoCommLogsLoading] = React.useState(true);
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => readPersistedThemeMode());
+  const [savedHeaderQueries, setSavedHeaderQueries] = React.useState<SavedQueryPreference[]>(
+    () => getCachedUserPreferences().savedQueries ?? []
+  );
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = React.useState("");
+  const [newHeaderQueryMode, setNewHeaderQueryMode] = React.useState(false);
+  const [newHeaderQueryInput, setNewHeaderQueryInput] = React.useState("");
+  const [headerQuerySearch, setHeaderQuerySearch] = React.useState("");
+  const [headerQueryMessage, setHeaderQueryMessage] = React.useState<string | null>(null);
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -672,6 +684,131 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     }
   }, [enrichResponseWithRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller, runQuery]);
 
+  const loadSavedHeaderQuery = React.useCallback(
+    async (queryId: string) => {
+      const selected = savedHeaderQueries.find((entry) => entry.id === queryId);
+      if (!selected) {
+        setHeaderQueryMessage("Die ausgewählte Query wurde nicht gefunden.");
+        return;
+      }
+
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(QUERY_INPUT_KEY, selected.queryInput);
+        if (selected.organization) {
+          localStorage.setItem(ORG_KEY, selected.organization);
+        }
+        if (selected.project) {
+          localStorage.setItem(PROJECT_KEY, selected.project);
+        }
+      }
+
+      try {
+        await runQuery({
+          queryId: selected.queryInput
+        });
+        setSelectedHeaderQueryId(selected.id);
+        setHeaderQueryMessage(null);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+        setHeaderQueryMessage(message);
+      }
+    },
+    [runQuery, savedHeaderQueries]
+  );
+
+  const saveCurrentHeaderQuery = React.useCallback(
+    async (rawInput: string) => {
+      const normalizedInput = rawInput.trim();
+      if (!normalizedInput) {
+        setHeaderQueryMessage("Ungültige Query. Bitte URL oder Query-ID mit Kontext angeben.");
+        return;
+      }
+
+      const persisted = readPersistedQueryContext();
+      const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
+      if (!transportQueryInput) {
+        setHeaderQueryMessage("Ungültige Query. Bitte URL oder Query-ID mit Kontext angeben.");
+        return;
+      }
+
+      const queryId = inferSavedQueryId(transportQueryInput);
+      try {
+        await runQuery({
+          queryId: transportQueryInput
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+        setHeaderQueryMessage(message);
+        return;
+      }
+
+      let azureQueryName = findAzureSavedQueryName(response, queryId);
+      try {
+        const queryDetails = await props.composition.controller.fetchQueryDetails({ queryId });
+        const normalizedName = queryDetails.name.trim();
+        if (normalizedName.length > 0) {
+          azureQueryName = normalizedName;
+        }
+      } catch {
+        // Keep fallback name when query details request fails.
+      }
+
+      const candidate: SavedQueryPreference = {
+        id: queryId,
+        name: toShortQueryName(
+          azureQueryName ??
+            buildSavedQueryLabel({
+              id: queryId,
+              organization: persisted.organization,
+              project: persisted.project
+            }),
+          queryId
+        ),
+        queryInput: transportQueryInput,
+        organization: persisted.organization.trim() || undefined,
+        project: persisted.project.trim() || undefined
+      };
+
+      const nextSavedQueries = upsertSavedQueries(savedHeaderQueries, candidate, HEADER_SAVED_QUERY_LIMIT);
+      setSavedHeaderQueries(nextSavedQueries);
+      setSelectedHeaderQueryId(candidate.id);
+      setNewHeaderQueryMode(false);
+      setNewHeaderQueryInput("");
+      setHeaderQueryMessage(null);
+      persistUserPreferencesPatch({
+        savedQueries: nextSavedQueries
+      });
+    },
+    [props.composition.controller, response, runQuery, savedHeaderQueries]
+  );
+
+  const deleteSavedHeaderQuery = React.useCallback(
+    (queryId: string) => {
+      const nextSavedQueries = savedHeaderQueries.filter((entry) => entry.id !== queryId);
+      setSavedHeaderQueries(nextSavedQueries);
+      if (selectedHeaderQueryId === queryId) {
+        setSelectedHeaderQueryId(nextSavedQueries[0]?.id ?? "");
+      }
+      setHeaderQueryMessage(null);
+      persistUserPreferencesPatch({
+        savedQueries: nextSavedQueries
+      });
+    },
+    [savedHeaderQueries, selectedHeaderQueryId]
+  );
+
+  const filteredHeaderQueries = React.useMemo(() => {
+    const search = headerQuerySearch.trim().toLowerCase();
+    if (!search) {
+      return savedHeaderQueries;
+    }
+
+    return savedHeaderQueries.filter((entry) => {
+      const shortName = toShortQueryName(entry.name, entry.id).toLowerCase();
+      return shortName.includes(search);
+    });
+  }, [headerQuerySearch, savedHeaderQueries]);
+
   const runTrackedWorkItemUpdate = React.useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
       workItemSyncInFlightRef.current += 1;
@@ -710,6 +847,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       if (preferences.themeMode) {
         setThemeMode(preferences.themeMode);
       }
+      setSavedHeaderQueries(preferences.savedQueries ?? []);
     });
   }, []);
 
@@ -769,6 +907,118 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       React.createElement(
         "div",
         { className: "ui-shell-header-actions" },
+        React.createElement(
+          "div",
+          { className: "header-query-picker" },
+          React.createElement("label", { className: "header-query-picker-label" }, "Queries"),
+          React.createElement(
+            "details",
+            { className: "header-query-dropdown" },
+            React.createElement(
+              "summary",
+              { className: "header-query-dropdown-trigger" },
+              selectedHeaderQueryId
+                ? toShortQueryName(
+                    savedHeaderQueries.find((entry) => entry.id === selectedHeaderQueryId)?.name ?? selectedHeaderQueryId,
+                    selectedHeaderQueryId
+                  )
+                : "Query wählen..."
+            ),
+            React.createElement(
+              "div",
+              { className: "header-query-dropdown-panel" },
+              React.createElement("input", {
+                className: "header-query-dropdown-search",
+                "aria-label": "Queries suchen",
+                placeholder: "Suchen...",
+                value: headerQuerySearch,
+                onChange: (event) => {
+                  setHeaderQuerySearch((event.target as HTMLInputElement).value);
+                }
+              }),
+              savedHeaderQueries.length === 0
+                ? React.createElement("div", { className: "header-query-dropdown-empty" }, "Keine gespeicherten Queries")
+                : React.createElement(
+                    "div",
+                    { className: "header-query-dropdown-list" },
+                    ...(filteredHeaderQueries.length === 0
+                      ? [React.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "Keine Treffer")]
+                      : filteredHeaderQueries.map((entry) =>
+                      React.createElement(
+                        "div",
+                        { key: `manage-${entry.id}`, className: "header-query-dropdown-item" },
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "header-query-dropdown-item-delete",
+                            "aria-label": `Query ${toShortQueryName(entry.name, entry.id)} löschen`,
+                            onClick: (event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              deleteSavedHeaderQuery(entry.id);
+                            }
+                          },
+                          "×"
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "header-query-dropdown-item-select",
+                            onClick: () => {
+                              void loadSavedHeaderQuery(entry.id);
+                            }
+                          },
+                          toShortQueryName(entry.name, entry.id)
+                        )
+                      )
+                    ))
+                  )
+            )
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "header-query-picker-button",
+              onClick: () => {
+                setNewHeaderQueryMode((current) => !current);
+                setHeaderQueryMessage(null);
+              }
+            },
+            "Neu"
+          ),
+          newHeaderQueryMode
+            ? React.createElement("input", {
+                className: "header-query-picker-input",
+                "aria-label": "Neue Query URL oder ID",
+                placeholder: "Neue Query URL oder ID",
+                value: newHeaderQueryInput,
+                onChange: (event) => {
+                  setNewHeaderQueryInput((event.target as HTMLInputElement).value);
+                  setHeaderQueryMessage(null);
+                },
+                onKeyDown: (event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void saveCurrentHeaderQuery(newHeaderQueryInput);
+                  }
+                }
+              })
+            : null,
+          headerQueryMessage
+            ? React.createElement(
+                "span",
+                {
+                  className: "header-query-picker-message",
+                  role: "status",
+                  "aria-live": "polite"
+                },
+                headerQueryMessage
+              )
+            : null
+        ),
         React.createElement(
           "div",
           { className: "theme-menu" },
@@ -1004,8 +1254,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     React.createElement(
       "footer",
       { className: "ui-shell-footer" },
-      React.createElement("span", null, "An Open Source Project by Christian Betz @ TensorFive GmbH"),
-      " ",
+      React.createElement("span", null, "An Open Source Project by Christian Betz @ "),
       React.createElement(
         "a",
         {
@@ -1013,7 +1262,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           target: "_blank",
           rel: "noreferrer"
         },
-        "tensorfive.com"
+        "TensorFive GmbH"
       )
     )
   );
@@ -1029,6 +1278,83 @@ function resolvePersistedRefreshQueryInput(): string | null {
   const project = localStorage.getItem(PROJECT_KEY) ?? "";
 
   return resolveQueryRunInput(queryInput, organization, project);
+}
+
+function readPersistedQueryContext(): {
+  queryInput: string;
+  organization: string;
+  project: string;
+} {
+  if (typeof localStorage === "undefined") {
+    return {
+      queryInput: "",
+      organization: "",
+      project: ""
+    };
+  }
+
+  return {
+    queryInput: localStorage.getItem(QUERY_INPUT_KEY) ?? "",
+    organization: localStorage.getItem(ORG_KEY) ?? "",
+    project: localStorage.getItem(PROJECT_KEY) ?? ""
+  };
+}
+
+function inferSavedQueryId(queryInput: string): string {
+  const match = queryInput.match(QUERY_GUID_PATTERN);
+  return match ? match[0] : queryInput;
+}
+
+function buildSavedQueryLabel(params: {
+  id: string;
+  organization: string;
+  project: string;
+}): string {
+  const _unused = params;
+  return "Unbenannte Query";
+}
+
+function findAzureSavedQueryName(response: QueryIntakeResponse | null, queryId: string): string | null {
+  if (!response) {
+    return null;
+  }
+
+  const normalizedQueryId = queryId.trim().toLowerCase();
+  const match = response.savedQueries.find((entry) => entry.id.trim().toLowerCase() === normalizedQueryId);
+  if (!match) {
+    return null;
+  }
+
+  const name = match.name.trim();
+  return name.length > 0 ? name : null;
+}
+
+function toShortQueryName(name: string, id: string): string {
+  const raw = name.trim();
+  if (!raw) {
+    return "Unbenannte Query";
+  }
+
+  const trailingGuidMatch = raw.match(/^(.*)\s\(([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\)$/i);
+  const withoutTrailingGuid = trailingGuidMatch ? trailingGuidMatch[1].trim() : raw;
+
+  if (!withoutTrailingGuid || QUERY_GUID_EXACT_PATTERN.test(withoutTrailingGuid) || withoutTrailingGuid === id) {
+    return "Unbenannte Query";
+  }
+
+  const segments = withoutTrailingGuid.split("/").map((segment) => segment.trim()).filter(Boolean);
+  const shortName = segments[segments.length - 1] ?? withoutTrailingGuid;
+  return shortName || "Unbenannte Query";
+}
+
+function upsertSavedQueries(
+  queries: SavedQueryPreference[],
+  candidate: SavedQueryPreference,
+  maxEntries: number
+): SavedQueryPreference[] {
+  const withoutCurrent = queries.filter((entry) => entry.id !== candidate.id);
+  const next = [candidate, ...withoutCurrent];
+  return next.slice(0, maxEntries);
 }
 
 type PersistedUiShellState = {

@@ -227,6 +227,43 @@ const composition = createDefaultUiShellComposition({
         : [];
       return { states };
     },
+    fetchQueryDetails: async ({ queryId }) => {
+      const response = await fetch(`/phase2/query-details?queryId=${encodeURIComponent(queryId)}`, {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as {
+        id?: unknown;
+        name?: unknown;
+        path?: unknown;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && typeof payload.message === "string"
+            ? payload.message
+            : `Query details request failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      if (
+        typeof payload.id !== "string" ||
+        typeof payload.name !== "string" ||
+        typeof payload.path !== "string"
+      ) {
+        throw new Error("Query details response is malformed");
+      }
+
+      return {
+        id: payload.id,
+        name: payload.name,
+        path: payload.path
+      };
+    },
     authenticateAzureCli: async () => {
       const response = await fetch("/phase2/az-login", {
         method: "POST",

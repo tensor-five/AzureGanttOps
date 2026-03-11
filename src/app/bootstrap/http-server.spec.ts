@@ -406,6 +406,19 @@ describe("createHttpServer", () => {
           preferences: {
             themeMode: "dark",
             timelineColorCoding: "status",
+            timelineDetailsWidthPx: 444,
+            timelineSidebarWidthPx: 280,
+            timelineLabelFields: [],
+            timelineSidebarFields: ["title", "Custom.Team"],
+            savedQueries: [
+              {
+                id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+                name: "delivery/default",
+                queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95",
+                organization: "contoso",
+                project: "delivery"
+              }
+            ],
             filters: {
               assignee: "me"
             }
@@ -417,6 +430,19 @@ describe("createHttpServer", () => {
       expect(saveResponse.status).toBe(200);
       expect(saveBody.preferences.themeMode).toBe("dark");
       expect(saveBody.preferences.timelineColorCoding).toBe("status");
+      expect(saveBody.preferences.timelineDetailsWidthPx).toBe(444);
+      expect(saveBody.preferences.timelineSidebarWidthPx).toBe(280);
+      expect(saveBody.preferences.timelineLabelFields).toEqual([]);
+      expect(saveBody.preferences.timelineSidebarFields).toEqual(["title", "Custom.Team"]);
+      expect(saveBody.preferences.savedQueries).toEqual([
+        {
+          id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          name: "delivery/default",
+          queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          organization: "contoso",
+          project: "delivery"
+        }
+      ]);
       expect(saveBody.preferences.filters).toEqual({
         assignee: "me"
       });
@@ -427,8 +453,65 @@ describe("createHttpServer", () => {
       expect(loadResponse.status).toBe(200);
       expect(loadBody.preferences.themeMode).toBe("dark");
       expect(loadBody.preferences.timelineColorCoding).toBe("status");
+      expect(loadBody.preferences.timelineDetailsWidthPx).toBe(444);
+      expect(loadBody.preferences.timelineSidebarWidthPx).toBe(280);
+      expect(loadBody.preferences.timelineLabelFields).toEqual([]);
+      expect(loadBody.preferences.timelineSidebarFields).toEqual(["title", "Custom.Team"]);
+      expect(loadBody.preferences.savedQueries).toEqual([
+        {
+          id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          name: "delivery/default",
+          queryInput: "https://dev.azure.com/contoso/delivery/_queries/query?qid=37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          organization: "contoso",
+          project: "delivery"
+        }
+      ]);
       expect(loadBody.preferences.filters).toEqual({
         assignee: "me"
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("loads query details via /phase2/query-details", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const queryId = "342f0f44-4069-46b1-a940-3d0468979ceb";
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async (url) => {
+          if (url.includes(`/_apis/wit/queries/${queryId}`)) {
+            return {
+              status: 200,
+              json: {
+                id: queryId,
+                name: "Active Bugs",
+                path: "My Queries/Website/Active Bugs"
+              },
+              headers: {}
+            };
+          }
+
+          return {
+            status: 200,
+            json: { value: [] },
+            headers: {}
+          };
+        }
+      }
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/query-details?queryId=${encodeURIComponent(queryId)}`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({
+        id: queryId,
+        name: "Active Bugs",
+        path: "My Queries/Website/Active Bugs"
       });
     } finally {
       await server.close();
