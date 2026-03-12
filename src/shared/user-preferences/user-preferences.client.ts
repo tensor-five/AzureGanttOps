@@ -1,6 +1,8 @@
 import { sanitizeUserPreferences, type UserPreferences } from "./user-preferences.schema.js";
 
 export type {
+  QueryScopedTimelinePreferences,
+  QueryScopedTimelinePreferencesByQueryId,
   SavedQueryPreference,
   ThemeModePreference,
   TimelineColorCodingPreference,

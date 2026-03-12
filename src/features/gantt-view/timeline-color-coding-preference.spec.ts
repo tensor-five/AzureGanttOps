@@ -60,4 +60,35 @@ describe("timeline-color-coding-preference", () => {
       overdueExcludedStateCodes: ["done", "resolved"]
     });
   });
+
+  it("persists color coding and field config per query id", () => {
+    clearTimelineColorCodingPreferenceForTests();
+    saveLastTimelineColorCoding("status", "query-a");
+    saveLastTimelineColorCoding("parent", "query-b");
+    saveTimelineFieldColorCodingConfig(
+      {
+        fieldRef: "Custom.Team",
+        valueColors: {
+          "Custom.Team::Alpha": "#00ff00"
+        },
+        overdueExcludedStateCodes: ["done"]
+      },
+      "query-a"
+    );
+
+    expect(loadLastTimelineColorCoding("query-a")).toBe("status");
+    expect(loadLastTimelineColorCoding("query-b")).toBe("parent");
+    expect(loadTimelineFieldColorCodingConfig("query-a")).toEqual({
+      fieldRef: "Custom.Team",
+      valueColors: {
+        "Custom.Team::Alpha": "#00ff00"
+      },
+      overdueExcludedStateCodes: ["done"]
+    });
+    expect(loadTimelineFieldColorCodingConfig("query-b")).toEqual({
+      fieldRef: null,
+      valueColors: {},
+      overdueExcludedStateCodes: ["closed", "done", "removed", "completed"]
+    });
+  });
 });

@@ -2,6 +2,10 @@ import {
   type UserPreferences
 } from "../../shared/user-preferences/user-preferences.client.js";
 import { createUserPreferenceStore } from "./create-user-preference-store.js";
+import {
+  buildQueryScopedTimelinePreferencePatch,
+  readQueryScopedTimelinePreference
+} from "./query-scoped-timeline-preferences.js";
 
 export type TimelineColorCoding = "none" | "status" | "parent" | "overdue" | "field";
 export type TimelineFieldColorCodingConfig = {
@@ -17,47 +21,60 @@ const FIELD_STORAGE_KEY = "azure-ganttops.timeline-field-color-coding";
 
 const modeStore = createUserPreferenceStore<TimelineColorCoding>({
   storageKey: STORAGE_KEY,
-  readFromServerCache: (preferences) => preferences.timelineColorCoding,
+  readFromServerCache: (preferences, scopeKey) =>
+    readQueryScopedTimelinePreference(preferences, scopeKey, "timelineColorCoding"),
   sanitize: sanitizeTimelineColorCoding,
-  buildPatch: (mode) => ({
-    timelineColorCoding: mode
-  }),
+  buildPatch: (mode, cachedPreferences, scopeKey) =>
+    buildQueryScopedTimelinePreferencePatch({
+      key: "timelineColorCoding",
+      value: mode,
+      cachedPreferences,
+      scopeKey
+    }),
   serialize: (mode) => mode,
   deserialize: (raw) => raw
 });
 
 const fieldConfigStore = createUserPreferenceStore<TimelineFieldColorCodingConfig>({
   storageKey: FIELD_STORAGE_KEY,
-  readFromServerCache: (preferences) => preferences.timelineFieldColorCoding,
+  readFromServerCache: (preferences, scopeKey) =>
+    readQueryScopedTimelinePreference(preferences, scopeKey, "timelineFieldColorCoding"),
   sanitize: sanitizeFieldConfig,
-  buildPatch: (config, cachedPreferences) => ({
-    timelineFieldColorCoding: buildTimelineFieldColorCodingPatch(config, cachedPreferences)
-  })
+  buildPatch: (config, cachedPreferences, scopeKey) =>
+    buildQueryScopedTimelinePreferencePatch({
+      key: "timelineFieldColorCoding",
+      value: buildTimelineFieldColorCodingPatch(config, cachedPreferences),
+      cachedPreferences,
+      scopeKey
+    })
 });
 
-export function loadLastTimelineColorCoding(): TimelineColorCoding | null {
-  return modeStore.load();
+export function loadLastTimelineColorCoding(queryId?: string | null): TimelineColorCoding | null {
+  return modeStore.load({ scopeKey: queryId });
 }
 
-export function saveLastTimelineColorCoding(mode: TimelineColorCoding): void {
-  modeStore.save(mode);
+export function saveLastTimelineColorCoding(mode: TimelineColorCoding, queryId?: string | null): void {
+  modeStore.save(mode, { scopeKey: queryId });
 }
 
-export function loadTimelineFieldColorCodingConfig(): TimelineFieldColorCodingConfig {
-  return fieldConfigStore.load() ?? {
+export function loadTimelineFieldColorCodingConfig(queryId?: string | null): TimelineFieldColorCodingConfig {
+  return fieldConfigStore.load({ scopeKey: queryId }) ?? {
     fieldRef: null,
     valueColors: {},
     overdueExcludedStateCodes: [...DEFAULT_OVERDUE_EXCLUDED_STATE_CODES]
   };
 }
 
-export function saveTimelineFieldColorCodingConfig(config: TimelineFieldColorCodingConfig): void {
-  fieldConfigStore.save(config);
+export function saveTimelineFieldColorCodingConfig(config: TimelineFieldColorCodingConfig, queryId?: string | null): void {
+  fieldConfigStore.save(config, { scopeKey: queryId });
 }
 
-export function hydrateTimelineColorCodingPreference(onHydrated?: (mode: TimelineColorCoding) => void): void {
-  modeStore.hydrate(onHydrated);
-  fieldConfigStore.hydrate();
+export function hydrateTimelineColorCodingPreference(
+  onHydrated?: (mode: TimelineColorCoding) => void,
+  queryId?: string | null
+): void {
+  modeStore.hydrate(onHydrated, { scopeKey: queryId });
+  fieldConfigStore.hydrate(undefined, { scopeKey: queryId });
 }
 
 export function clearTimelineColorCodingPreferenceForTests(): void {

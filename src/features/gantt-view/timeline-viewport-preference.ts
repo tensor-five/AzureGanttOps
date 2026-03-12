@@ -1,4 +1,8 @@
 import { createUserPreferenceStore } from "./create-user-preference-store.js";
+import {
+  buildQueryScopedTimelinePreferencePatch,
+  readQueryScopedTimelinePreference
+} from "./query-scoped-timeline-preferences.js";
 
 export type TimelineViewportPreference = {
   dayWidthPx: number;
@@ -7,47 +11,38 @@ export type TimelineViewportPreference = {
 };
 
 const STORAGE_KEY = "azure-ganttops.timeline-viewport";
-const VIEW_KEY = "timelineViewport";
 
 const store = createUserPreferenceStore<TimelineViewportPreference>({
   storageKey: STORAGE_KEY,
-  readFromServerCache: (preferences) => readFromViews(preferences.views),
+  readFromServerCache: (preferences, scopeKey) =>
+    readQueryScopedTimelinePreference(preferences, scopeKey, "timelineViewport"),
   sanitize: normalizeViewport,
-  buildPatch: (viewport, cachedPreferences) => {
-    const cachedViews = cachedPreferences.views;
-    const baseViews = isPlainRecord(cachedViews) ? cachedViews : {};
-    return {
-      views: {
-        ...baseViews,
-        [VIEW_KEY]: viewport
-      }
-    };
-  }
+  buildPatch: (viewport, cachedPreferences, scopeKey) =>
+    buildQueryScopedTimelinePreferencePatch({
+      key: "timelineViewport",
+      value: viewport,
+      cachedPreferences,
+      scopeKey
+    })
 });
 
-export function loadLastTimelineViewportPreference(): TimelineViewportPreference | null {
-  return store.load();
+export function loadLastTimelineViewportPreference(queryId?: string | null): TimelineViewportPreference | null {
+  return store.load({ scopeKey: queryId });
 }
 
-export function saveTimelineViewportPreference(viewport: TimelineViewportPreference): void {
-  store.save(viewport);
+export function saveTimelineViewportPreference(viewport: TimelineViewportPreference, queryId?: string | null): void {
+  store.save(viewport, { scopeKey: queryId });
 }
 
-export function hydrateTimelineViewportPreference(onHydrated?: (viewport: TimelineViewportPreference) => void): void {
-  store.hydrate(onHydrated);
+export function hydrateTimelineViewportPreference(
+  onHydrated?: (viewport: TimelineViewportPreference) => void,
+  queryId?: string | null
+): void {
+  store.hydrate(onHydrated, { scopeKey: queryId });
 }
 
 export function clearTimelineViewportPreferenceForTests(): void {
   store.clearForTests();
-}
-
-function readFromViews(views: unknown): TimelineViewportPreference | null {
-  if (!isPlainRecord(views)) {
-    return null;
-  }
-
-  const candidate = views[VIEW_KEY];
-  return normalizeViewport(candidate);
 }
 
 function normalizeViewport(value: unknown): TimelineViewportPreference | null {

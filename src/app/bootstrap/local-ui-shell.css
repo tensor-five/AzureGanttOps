@@ -314,9 +314,9 @@ section[role="tabpanel"]:hover {
 .trust-badge-trigger {
   list-style: none;
   gap: 6px;
-  border: 1px solid #86efac;
-  background: #f0fdf4;
-  color: #166534;
+  border: 1px solid color-mix(in srgb, #22c55e 42%, var(--color-border));
+  background: color-mix(in srgb, #22c55e 14%, var(--color-surface-elevated));
+  color: color-mix(in srgb, #166534 65%, var(--color-text));
   padding: 0 12px;
   cursor: pointer;
   font-size: var(--text-xs);
@@ -330,9 +330,9 @@ section[role="tabpanel"]:hover {
 }
 
 .trust-badge-details[data-trust-state="unhealthy"] .trust-badge-trigger {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: color-mix(in srgb, #ef4444 44%, var(--color-border));
+  background: color-mix(in srgb, #ef4444 14%, var(--color-surface-elevated));
+  color: color-mix(in srgb, #991b1b 64%, var(--color-text));
 }
 
 .trust-badge-icon {
@@ -441,21 +441,21 @@ section[role="tabpanel"]:hover {
 }
 
 .gantt-sync-status[data-state="up_to_date"] {
-  color: #166534;
-  border-color: #86efac;
-  background: #f0fdf4;
+  color: color-mix(in srgb, #166534 65%, var(--color-text));
+  border-color: color-mix(in srgb, #22c55e 42%, var(--color-border));
+  background: color-mix(in srgb, #22c55e 14%, var(--color-surface-elevated));
 }
 
 .gantt-sync-status[data-state="syncing"] {
-  color: #1e40af;
-  border-color: #93c5fd;
-  background: #eff6ff;
+  color: color-mix(in srgb, #1e40af 70%, var(--color-text));
+  border-color: color-mix(in srgb, #3b82f6 44%, var(--color-border));
+  background: color-mix(in srgb, #3b82f6 14%, var(--color-surface-elevated));
 }
 
 .gantt-sync-status[data-state="error"] {
-  color: #991b1b;
-  border-color: #fca5a5;
-  background: #fef2f2;
+  color: color-mix(in srgb, #991b1b 64%, var(--color-text));
+  border-color: color-mix(in srgb, #ef4444 44%, var(--color-border));
+  background: color-mix(in srgb, #ef4444 14%, var(--color-surface-elevated));
 }
 
 .ui-shell-workspace {
@@ -893,7 +893,7 @@ button {
   grid-column: 1;
   grid-row: 1;
   z-index: 12;
-  background: color-mix(in srgb, #ffffff 95%, transparent);
+  background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
   box-shadow: none;
 }
 

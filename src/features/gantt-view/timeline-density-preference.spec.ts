@@ -33,4 +33,12 @@ describe("timeline-density-preference", () => {
 
     expect(loadLastDensity()).toBe("compact");
   });
+
+  it("persists density per query id", () => {
+    saveLastDensity("comfortable", "query-a");
+    saveLastDensity("compact", "query-b");
+
+    expect(loadLastDensity("query-a")).toBe("comfortable");
+    expect(loadLastDensity("query-b")).toBe("compact");
+  });
 });

@@ -86,6 +86,7 @@ const MAX_PRIMARY_TITLE_LENGTH = 42;
 
 export type TimelinePaneProps = {
   timeline: TimelineReadModel | null;
+  activeQueryId?: string | null;
   showDependencies: boolean;
   isRefreshing?: boolean;
   workItemSyncState?: "up_to_date" | "syncing" | "error";
@@ -225,13 +226,13 @@ type TimelineColorCodingState = {
   setColorCodingSearchDraft: React.Dispatch<React.SetStateAction<string>>;
 };
 
-function useTimelineColorCoding(): TimelineColorCodingState {
-  const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding() ?? "none");
+function useTimelineColorCoding(queryId?: string | null): TimelineColorCodingState {
+  const [colorCoding, setColorCoding] = React.useState<TimelineColorCoding>(() => loadLastTimelineColorCoding(queryId) ?? "none");
   const [fieldColorCoding, setFieldColorCoding] = React.useState<TimelineFieldColorCodingConfig>(() =>
-    loadTimelineFieldColorCodingConfig()
+    loadTimelineFieldColorCodingConfig(queryId)
   );
   const [lastSelectedFieldRef, setLastSelectedFieldRef] = React.useState<string | null>(() =>
-    loadTimelineFieldColorCodingConfig().fieldRef
+    loadTimelineFieldColorCodingConfig(queryId).fieldRef
   );
   const [colorSettingsOpen, setColorSettingsOpen] = React.useState(false);
   const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = React.useState(false);
@@ -255,11 +256,12 @@ function useTimelineColorCoding(): TimelineColorCodingState {
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(), []);
-  const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(), []);
+  const activeQueryId = props.activeQueryId ?? null;
+  const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
   const dependencyEditing = useDependencyEditing();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
-  const timelineSorting = useTimelineSorting();
+  const timelineSorting = useTimelineSorting(activeQueryId);
   const internalSelectionStoreRef = React.useRef<TimelineSelectionStore | null>(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
@@ -345,11 +347,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     zoomLevel
   } = useTimelineViewport(initialViewportPreference);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
-    const preferredWidth = loadLastTimelineDetailsWidthPx();
+    const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
   });
   const [sidebarWidthPx, setSidebarWidthPx] = React.useState<number>(() => {
-    const preferredWidth = loadLastTimelineSidebarWidthPx();
+    const preferredWidth = loadLastTimelineSidebarWidthPx(activeQueryId);
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
   const {
@@ -365,18 +367,18 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setColorCodingDropdownOpen,
     colorCodingSearchDraft,
     setColorCodingSearchDraft
-  } = useTimelineColorCoding();
+  } = useTimelineColorCoding(activeQueryId);
   const [labelSettingsOpen, setLabelSettingsOpen] = React.useState(false);
   const [labelFieldSearchDraft, setLabelFieldSearchDraft] = React.useState("");
   const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = React.useState("");
   const [timelineLabelFields, setTimelineLabelFields] = React.useState<string[]>(
-    () => loadLastTimelineLabelFields() ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]
+    () => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]
   );
   const [timelineSidebarFields, setTimelineSidebarFields] = React.useState<string[]>(
-    () => loadLastTimelineSidebarFields() ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]
+    () => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]
   );
   const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = React.useState<TimelineSidebarRowJustify>(
-    () => loadLastTimelineSidebarRowJustify() ?? "flex-start"
+    () => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start"
   );
   const timelineMainGridRef = React.useRef<HTMLDivElement | null>(null);
   const colorCodingControlRef = React.useRef<HTMLDivElement | null>(null);
@@ -416,8 +418,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     clamp,
     resolveTimelineDetailsMaxWidthPx,
     resolveTimelineSidebarMaxWidthPx,
-    persistDetailsWidthPx: saveTimelineDetailsWidthPx,
-    persistSidebarWidthPx: saveTimelineSidebarWidthPx
+    persistDetailsWidthPx: (widthPx) => {
+      saveTimelineDetailsWidthPx(widthPx, activeQueryId);
+    },
+    persistSidebarWidthPx: (widthPx) => {
+      saveTimelineSidebarWidthPx(widthPx, activeQueryId);
+    }
   });
   const {
     isSidebarResizing,
@@ -437,37 +443,37 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       pendingViewportRestoreRef.current = viewport;
       setDayWidthPx(clamp(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
       initialViewportAppliedRef.current = false;
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineColorCodingPreference((mode) => {
       setColorCoding(mode);
-      const config = loadTimelineFieldColorCodingConfig();
+      const config = loadTimelineFieldColorCodingConfig(activeQueryId);
       setFieldColorCoding(config);
       if (config.fieldRef) {
         setLastSelectedFieldRef(config.fieldRef);
       }
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineLabelFieldsPreference((fieldRefs) => {
       setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
       setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineSidebarRowJustifyPreference((justify) => {
       setTimelineSidebarRowJustify(justify);
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
@@ -475,8 +481,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         const next = clamp(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
         return Math.abs(current - next) < 1 ? current : next;
       });
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId]);
 
   React.useEffect(() => {
     hydrateTimelineDetailsWidthPreference((widthPx) => {
@@ -485,8 +491,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         const next = clamp(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
         return Math.abs(current - next) < 1 ? current : next;
       });
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId, sidebarEffectiveWidthLiveRef]);
 
   useTimelineOverlayDismiss({
     colorCodingDropdownOpen,
@@ -668,9 +674,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         dayWidthPx: liveDayWidthRef.current,
         scrollLeftPx: scrollElement.scrollLeft,
         scrollTopPx: scrollElement.scrollTop
-      });
+      }, activeQueryId);
     }, VIEWPORT_PERSIST_DEBOUNCE_MS);
-  }, []);
+  }, [activeQueryId]);
 
   const resolveFitLayoutLeftOffsets = React.useCallback(
     (scrollElement: HTMLDivElement): { chartStartX: number; obscuredLeftPx: number } => {
@@ -1421,7 +1427,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const updateFieldColorCoding = React.useCallback(
     (next: TimelineFieldColorCodingConfig) => {
       setFieldColorCoding(next);
-      saveTimelineFieldColorCodingConfig(next);
+      saveTimelineFieldColorCodingConfig(next, activeQueryId);
     },
     []
   );
@@ -1499,7 +1505,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const selectColorCodingOption = React.useCallback(
     (option: ColorCodingOption) => {
       setColorCoding(option.mode);
-      saveLastTimelineColorCoding(option.mode);
+      saveLastTimelineColorCoding(option.mode, activeQueryId);
       if (option.mode === "field") {
         selectFieldForColorCoding(option.fieldRef);
       } else {
@@ -1602,14 +1608,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const exists = current.includes(normalized);
       const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
       const sanitized = sanitizeTimelineFieldRefList(next);
-      saveTimelineLabelFields(sanitized);
+      saveTimelineLabelFields(sanitized, activeQueryId);
       return sanitized;
     });
   }, []);
 
   const clearTimelineLabelFields = React.useCallback(() => {
     setTimelineLabelFields(() => {
-      saveTimelineLabelFields([]);
+      saveTimelineLabelFields([], activeQueryId);
       return [];
     });
   }, []);
@@ -1624,14 +1630,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const exists = current.includes(normalized);
       const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
       const sanitized = sanitizeTimelineFieldRefList(next);
-      saveTimelineSidebarFields(sanitized);
+      saveTimelineSidebarFields(sanitized, activeQueryId);
       return sanitized;
     });
   }, []);
 
   const clearTimelineSidebarFields = React.useCallback(() => {
     setTimelineSidebarFields(() => {
-      saveTimelineSidebarFields([]);
+      saveTimelineSidebarFields([], activeQueryId);
       return [];
     });
   }, []);
@@ -2005,7 +2011,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                             onClick: () => {
                               const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
                               setTimelineSidebarRowJustify(next);
-                              saveTimelineSidebarRowJustify(next);
+                              saveTimelineSidebarRowJustify(next, activeQueryId);
                             }
                           },
                           React.createElement(

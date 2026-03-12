@@ -121,4 +121,40 @@ describe("user-preferences.schema", () => {
     });
     expect(sanitizeSavedQueryPreference({ id: "", queryInput: "x" })).toBeNull();
   });
+
+  it("sanitizes query-scoped timeline preferences map", () => {
+    const sanitized = sanitizeUserPreferences({
+      queryScopedTimelinePreferencesByQueryId: {
+        " query-a ": {
+          timelineDensity: "compact",
+          timelineColorCoding: "status",
+          timelineLabelFields: ["title", " title ", "", 1],
+          timelineViewport: {
+            dayWidthPx: 30,
+            scrollLeftPx: -10,
+            scrollTopPx: 50
+          }
+        },
+        "  ": {
+          timelineDensity: "comfortable"
+        },
+        "query-b": {
+          timelineColorCoding: "invalid"
+        }
+      }
+    });
+
+    expect(sanitized.queryScopedTimelinePreferencesByQueryId).toEqual({
+      "query-a": {
+        timelineDensity: "compact",
+        timelineColorCoding: "status",
+        timelineLabelFields: ["title", "title"],
+        timelineViewport: {
+          dayWidthPx: 30,
+          scrollLeftPx: 0,
+          scrollTopPx: 50
+        }
+      }
+    });
+  });
 });

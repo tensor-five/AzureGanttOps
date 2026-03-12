@@ -613,6 +613,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           }
         }),
         React.createElement(TimelinePane, {
+          key: response?.activeQueryId ?? "timeline-no-query",
+          activeQueryId: response?.activeQueryId ?? null,
           timeline: uiModel.timeline,
           showDependencies: true,
           isRefreshing,

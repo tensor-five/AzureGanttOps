@@ -1,4 +1,8 @@
 import { createUserPreferenceStore } from "./create-user-preference-store.js";
+import {
+  buildQueryScopedTimelinePreferencePatch,
+  readQueryScopedTimelinePreference
+} from "./query-scoped-timeline-preferences.js";
 
 export type TimelineSortField =
   | "startDate"
@@ -24,27 +28,35 @@ const STORAGE_KEY = "azure-ganttops.timeline-sort.v1";
 
 const store = createUserPreferenceStore<TimelineSortPreference>({
   storageKey: STORAGE_KEY,
-  readFromServerCache: (preferences) => preferences.timelineSort,
+  readFromServerCache: (preferences, scopeKey) =>
+    readQueryScopedTimelinePreference(preferences, scopeKey, "timelineSort"),
   sanitize: sanitizeTimelineSortPreference,
-  buildPatch: (preference) => ({
-    timelineSort: {
-      primary: preference.primary,
-      secondary: preference.secondary
-    }
-  })
+  buildPatch: (preference, cachedPreferences, scopeKey) =>
+    buildQueryScopedTimelinePreferencePatch({
+      key: "timelineSort",
+      value: {
+        primary: preference.primary,
+        secondary: preference.secondary
+      },
+      cachedPreferences,
+      scopeKey
+    })
 });
 
-export function loadLastTimelineSortPreference(): TimelineSortPreference | null {
-  return store.load();
+export function loadLastTimelineSortPreference(queryId?: string | null): TimelineSortPreference | null {
+  return store.load({ scopeKey: queryId });
 }
 
-export function saveTimelineSortPreference(preference: TimelineSortPreference): void {
+export function saveTimelineSortPreference(preference: TimelineSortPreference, queryId?: string | null): void {
   const sanitized = sanitizeTimelineSortPreference(preference) ?? DEFAULT_TIMELINE_SORT_PREFERENCE;
-  store.save(sanitized);
+  store.save(sanitized, { scopeKey: queryId });
 }
 
-export function hydrateTimelineSortPreference(onHydrated?: (preference: TimelineSortPreference) => void): void {
-  store.hydrate(onHydrated);
+export function hydrateTimelineSortPreference(
+  onHydrated?: (preference: TimelineSortPreference) => void,
+  queryId?: string | null
+): void {
+  store.hydrate(onHydrated, { scopeKey: queryId });
 }
 
 export function clearTimelineSortPreferenceForTests(): void {
