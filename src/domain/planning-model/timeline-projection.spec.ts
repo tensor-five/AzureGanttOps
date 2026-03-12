@@ -67,6 +67,20 @@ describe("projectTimeline", () => {
 
     expect(projection.bars).toHaveLength(2);
     expect(projection.bars[0]).toMatchObject({
+      workItemId: 2,
+      title: "Beta",
+      state: { code: "New", badge: "N", color: "#7c3aed" },
+      schedule: {
+        startDate: null,
+        endDate: "2026-03-04T00:00:00.000Z",
+        missingBoundary: "start"
+      },
+      details: {
+        mappedId: "WI-2"
+      }
+    });
+
+    expect(projection.bars[1]).toMatchObject({
       workItemId: 1,
       title: "Alpha",
       state: { code: "Active", badge: "A", color: "#1d4ed8" },
@@ -77,17 +91,6 @@ describe("projectTimeline", () => {
       },
       details: {
         mappedId: "WI-1"
-      }
-    });
-
-    expect(projection.bars[1]).toMatchObject({
-      workItemId: 2,
-      title: "Beta",
-      state: { code: "New", badge: "N", color: "#7c3aed" },
-      schedule: {
-        startDate: null,
-        endDate: "2026-03-04T00:00:00.000Z",
-        missingBoundary: "start"
       }
     });
 
@@ -148,5 +151,41 @@ describe("projectTimeline", () => {
     });
 
     expect(projection.bars[0].schedule.missingBoundary).toBe("end");
+  });
+
+  it("sorts end-only bars by derived 14-day fallback start", () => {
+    const projection = projectTimeline({
+      tasks: [
+        {
+          workItemId: 10,
+          mappedId: "WI-10",
+          title: "End only",
+          descriptionHtml: null,
+          workItemType: "Task",
+          fieldValues: {},
+          assignedTo: null,
+          parentWorkItemId: null,
+          startDate: null,
+          endDate: "2026-03-20T00:00:00.000Z",
+          state: { code: "Active", badge: "A", color: "#1d4ed8" }
+        },
+        {
+          workItemId: 20,
+          mappedId: "WI-20",
+          title: "Has start",
+          descriptionHtml: null,
+          workItemType: "Task",
+          fieldValues: {},
+          assignedTo: null,
+          parentWorkItemId: null,
+          startDate: "2026-03-10T00:00:00.000Z",
+          endDate: "2026-03-12T00:00:00.000Z",
+          state: { code: "Active", badge: "A", color: "#1d4ed8" }
+        }
+      ],
+      dependencies: []
+    });
+
+    expect(projection.bars.map((bar) => bar.workItemId)).toEqual([10, 20]);
   });
 });

@@ -5,6 +5,8 @@ import type {
   TimelineUnschedulableItem
 } from "../../application/dto/timeline-read-model.js";
 import type { CanonicalModel } from "./canonical-model-builder.js";
+const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
+const MS_PER_DAY = 86_400_000;
 
 export type TimelineProjection = {
   bars: TimelineBar[];
@@ -105,23 +107,46 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
 }
 
 function compareBars(left: TimelineBar, right: TimelineBar): number {
-  const leftDate = left.schedule.startDate ?? left.schedule.endDate;
-  const rightDate = right.schedule.startDate ?? right.schedule.endDate;
+  const leftDate = resolveBarSortStartTimestamp(left);
+  const rightDate = resolveBarSortStartTimestamp(right);
 
-  if (leftDate && rightDate) {
-    const byDate = leftDate.localeCompare(rightDate);
+  if (leftDate !== null && rightDate !== null) {
+    const byDate = leftDate - rightDate;
     if (byDate !== 0) {
       return byDate;
     }
   }
 
-  if (leftDate && !rightDate) {
+  if (leftDate !== null && rightDate === null) {
     return -1;
   }
 
-  if (!leftDate && rightDate) {
+  if (leftDate === null && rightDate !== null) {
     return 1;
   }
 
   return left.workItemId - right.workItemId;
+}
+
+function resolveBarSortStartTimestamp(bar: TimelineBar): number | null {
+  const startTimestamp = toTimestamp(bar.schedule.startDate);
+  if (startTimestamp !== null) {
+    return startTimestamp;
+  }
+
+  const endTimestamp = toTimestamp(bar.schedule.endDate);
+  if (endTimestamp === null) {
+    return null;
+  }
+
+  return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY;
+}
+
+function toTimestamp(value: string | null): number | null {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return null;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
 }

@@ -232,6 +232,45 @@ describe("timeline-pane layout and labels", () => {
     expect(earlyBarY).toBeLessThan(lateBarY);
   });
 
+  it("sorts start-date with 14-day fallback for end-only items", () => {
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 31,
+        title: "End only",
+        schedule: {
+          startDate: null,
+          endDate: "2026-03-20T00:00:00.000Z",
+          missingBoundary: "start"
+        }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 32,
+        title: "Has start",
+        schedule: {
+          startDate: "2026-03-10T00:00:00.000Z",
+          endDate: "2026-03-13T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    // End-only item gets derived start (end - 13d => 2026-03-07), so it should be before 2026-03-10.
+    const endOnlyY = Number(screen.getByLabelText("timeline-bar-31").getAttribute("y"));
+    const hasStartY = Number(screen.getByLabelText("timeline-bar-32").getAttribute("y"));
+    expect(endOnlyY).toBeLessThan(hasStartY);
+  });
+
   it("sets Start date as secondary when primary sorting changes away from Start date", async () => {
     const user = userEvent.setup();
     render(
