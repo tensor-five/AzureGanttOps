@@ -3,6 +3,7 @@ import React from "react";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
+  DEFAULT_OVERDUE_EXCLUDED_STATE_CODES,
   hydrateTimelineColorCodingPreference,
   loadLastTimelineColorCoding,
   loadTimelineFieldColorCodingConfig,
@@ -1391,10 +1392,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       }
       updateFieldColorCoding({
         fieldRef: normalizedFieldRef,
-        valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {}
+        valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {},
+        overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
       });
     },
-    [fieldColorCoding.valueColors, updateFieldColorCoding]
+    [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]
   );
 
   const updateFieldValueColor = React.useCallback(
@@ -1417,10 +1419,39 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
       updateFieldColorCoding({
         fieldRef: fieldColorCoding.fieldRef,
-        valueColors: nextValueColors
+        valueColors: nextValueColors,
+        overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
       });
     },
-    [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]
+    [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]
+  );
+
+  const toggleOverdueExcludedState = React.useCallback(
+    (stateCode: string, excluded: boolean) => {
+      const normalizedStateCode = normalizeStateCodeForComparison(stateCode);
+      if (normalizedStateCode.length === 0) {
+        return;
+      }
+
+      const next = new Set(
+        resolveOverdueExcludedStateCodes(
+          fieldColorCoding.overdueExcludedStateCodes,
+          DEFAULT_OVERDUE_EXCLUDED_STATE_CODES
+        )
+      );
+      if (excluded) {
+        next.add(normalizedStateCode);
+      } else {
+        next.delete(normalizedStateCode);
+      }
+
+      updateFieldColorCoding({
+        fieldRef: fieldColorCoding.fieldRef,
+        valueColors: fieldColorCoding.valueColors,
+        overdueExcludedStateCodes: [...next].sort((left, right) => left.localeCompare(right))
+      });
+    },
+    [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]
   );
 
   const selectColorCodingOption = React.useCallback(
@@ -1432,13 +1463,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       } else {
         updateFieldColorCoding({
           fieldRef: null,
-          valueColors: fieldColorCoding.valueColors
+          valueColors: fieldColorCoding.valueColors,
+          overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
         });
       }
       setColorCodingDropdownOpen(false);
       setColorCodingSearchDraft("");
     },
-    [fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]
+    [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]
   );
 
   const applyFirstFilteredColorCodingOption = React.useCallback((): boolean => {
@@ -1656,6 +1688,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
   const isFieldColorCodingMode = colorCoding === "field";
   const isReadOnlyStatusColorCodingMode = colorCoding === "status";
+  const isOverdueColorCodingMode = colorCoding === "overdue";
 
   return React.createElement(
     "section",
@@ -1802,10 +1835,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       selectedModeValueStats,
       isFieldColorCodingMode,
       isReadOnlyStatusColorCodingMode,
+      isOverdueColorCodingMode,
+      overdueExcludedStateCodes: resolveOverdueExcludedStateCodes(
+        fieldColorCoding.overdueExcludedStateCodes,
+        DEFAULT_OVERDUE_EXCLUDED_STATE_CODES
+      ),
       onClose: () => {
         setColorSettingsOpen(false);
       },
       onUpdateFieldValueColor: updateFieldValueColor,
+      onToggleOverdueExcludedState: toggleOverdueExcludedState,
       resolveSelectedColorCodingLabel,
       toScopedFieldValueColorKey
     }),
@@ -2774,8 +2813,17 @@ function buildColorByWorkItemId(
   }
 
   if (mode === "overdue") {
+    const overdueExcludedStateCodes = resolveOverdueExcludedStateCodes(
+      fieldConfig.overdueExcludedStateCodes,
+      DEFAULT_OVERDUE_EXCLUDED_STATE_CODES
+    );
     items.forEach((item) => {
-      map.set(item.workItemId, isOverdueTimelineItem(item.endDate, item.stateCode) ? OVERDUE_TIMELINE_COLOR : OVERDUE_OK_TIMELINE_COLOR);
+      map.set(
+        item.workItemId,
+        isOverdueTimelineItem(item.endDate, item.stateCode, overdueExcludedStateCodes)
+          ? OVERDUE_TIMELINE_COLOR
+          : OVERDUE_OK_TIMELINE_COLOR
+      );
     });
     return map;
   }
@@ -3418,7 +3466,7 @@ function listFieldValueStats(timeline: TimelineReadModel | null, fieldRef: strin
 }
 
 function listModeValueStats(timeline: TimelineReadModel | null, mode: TimelineColorCoding): FieldValueStat[] {
-  if (!timeline || mode !== "status") {
+  if (!timeline || (mode !== "status" && mode !== "overdue")) {
     return [];
   }
 
@@ -3496,7 +3544,7 @@ function buildCategoricalColorMap(categories: string[]): Map<string, string> {
   return map;
 }
 
-function isOverdueTimelineItem(endDateIso: string | null, stateCode: string): boolean {
+function isOverdueTimelineItem(endDateIso: string | null, stateCode: string, overdueExcludedStateCodes: string[]): boolean {
   if (!endDateIso) {
     return false;
   }
@@ -3512,8 +3560,27 @@ function isOverdueTimelineItem(endDateIso: string | null, stateCode: string): bo
     return false;
   }
 
-  const normalizedState = stateCode.trim().toLowerCase();
-  return !["closed", "done", "removed", "completed"].includes(normalizedState);
+  const normalizedState = normalizeStateCodeForComparison(stateCode);
+  if (normalizedState.length === 0) {
+    return true;
+  }
+
+  return !resolveOverdueExcludedStateCodes(overdueExcludedStateCodes, DEFAULT_OVERDUE_EXCLUDED_STATE_CODES).includes(normalizedState);
+}
+
+function resolveOverdueExcludedStateCodes(
+  stateCodes: string[] | null | undefined,
+  defaults: string[]
+): string[] {
+  if (!Array.isArray(stateCodes)) {
+    return [...defaults];
+  }
+
+  return [...new Set(stateCodes.map((stateCode) => normalizeStateCodeForComparison(stateCode)).filter((stateCode) => stateCode.length > 0))];
+}
+
+function normalizeStateCodeForComparison(stateCode: string): string {
+  return stateCode.trim().toLowerCase();
 }
 
 function parseIso(value: string | null): Date | null {

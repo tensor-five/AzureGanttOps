@@ -7,7 +7,10 @@ export type TimelineColorCoding = "none" | "status" | "parent" | "overdue" | "fi
 export type TimelineFieldColorCodingConfig = {
   fieldRef: string | null;
   valueColors: Record<string, string>;
+  overdueExcludedStateCodes: string[];
 };
+
+export const DEFAULT_OVERDUE_EXCLUDED_STATE_CODES = ["closed", "done", "removed", "completed"];
 
 const STORAGE_KEY = "azure-ganttops.timeline-color-coding";
 const FIELD_STORAGE_KEY = "azure-ganttops.timeline-field-color-coding";
@@ -43,7 +46,8 @@ export function saveLastTimelineColorCoding(mode: TimelineColorCoding): void {
 export function loadTimelineFieldColorCodingConfig(): TimelineFieldColorCodingConfig {
   return fieldConfigStore.load() ?? {
     fieldRef: null,
-    valueColors: {}
+    valueColors: {},
+    overdueExcludedStateCodes: [...DEFAULT_OVERDUE_EXCLUDED_STATE_CODES]
   };
 }
 
@@ -75,10 +79,12 @@ function buildTimelineFieldColorCodingPatch(
 ): {
   fieldRef?: string;
   valueColors?: Record<string, string>;
+  overdueExcludedStateCodes?: string[];
 } {
   return {
     fieldRef: config.fieldRef ?? undefined,
-    valueColors: Object.keys(config.valueColors).length > 0 ? config.valueColors : undefined
+    valueColors: Object.keys(config.valueColors).length > 0 ? config.valueColors : undefined,
+    overdueExcludedStateCodes: config.overdueExcludedStateCodes
   };
 }
 
@@ -94,6 +100,9 @@ function sanitizeFieldConfig(value: unknown): TimelineFieldColorCodingConfig | n
     candidate.valueColors && typeof candidate.valueColors === "object" && !Array.isArray(candidate.valueColors)
       ? (candidate.valueColors as Record<string, unknown>)
       : {};
+  const overdueExcludedStateCodesRaw = Array.isArray(candidate.overdueExcludedStateCodes)
+    ? candidate.overdueExcludedStateCodes
+    : null;
   const valueColors: Record<string, string> = {};
 
   Object.entries(valueColorsRaw).forEach(([key, color]) => {
@@ -107,8 +116,21 @@ function sanitizeFieldConfig(value: unknown): TimelineFieldColorCodingConfig | n
     }
   });
 
+  const overdueExcludedStateCodes = sanitizeOverdueExcludedStateCodes(overdueExcludedStateCodesRaw);
+
   return {
     fieldRef,
-    valueColors
+    valueColors,
+    overdueExcludedStateCodes
   };
+}
+
+function sanitizeOverdueExcludedStateCodes(value: unknown[] | null): string[] {
+  if (!value) {
+    return [...DEFAULT_OVERDUE_EXCLUDED_STATE_CODES];
+  }
+
+  return [...new Set(value)]
+    .map((entry) => (typeof entry === "string" ? entry.trim().toLowerCase() : ""))
+    .filter((entry) => entry.length > 0);
 }

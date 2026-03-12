@@ -30,7 +30,8 @@ describe("user-preferences.schema", () => {
           alpha: " #ABCDEF ",
           beta: "nope",
           gamma: 3
-        }
+        },
+        overdueExcludedStateCodes: [" Done ", " resolved ", "", 1]
       }
     });
 
@@ -41,7 +42,8 @@ describe("user-preferences.schema", () => {
       fieldRef: "Custom.Team",
       valueColors: {
         alpha: "#abcdef"
-      }
+      },
+      overdueExcludedStateCodes: ["done", "resolved"]
     });
   });
 

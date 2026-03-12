@@ -18,8 +18,11 @@ export type TimelineColorCodingPanelProps = {
   selectedModeValueStats: ValueColorStat[];
   isFieldColorCodingMode: boolean;
   isReadOnlyStatusColorCodingMode: boolean;
+  isOverdueColorCodingMode: boolean;
+  overdueExcludedStateCodes: string[];
   onClose: () => void;
   onUpdateFieldValueColor: (valueKey: string, color: string | null) => void;
+  onToggleOverdueExcludedState: (stateCode: string, excluded: boolean) => void;
   resolveSelectedColorCodingLabel: (mode: TimelineColorCoding, fieldRef: string | null) => string;
   toScopedFieldValueColorKey: (fieldRef: string | null, valueKey: string) => string | null;
 };
@@ -119,6 +122,39 @@ export function TimelineColorCodingPanel(props: TimelineColorCodingPanelProps): 
                   );
                 })
           )
+        : props.isOverdueColorCodingMode
+          ? React.createElement(
+              "div",
+              { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` },
+              React.createElement(
+                "p",
+                { className: "timeline-details-muted" },
+                "Select statuses that should be treated as completed (not overdue/red)."
+              ),
+              props.selectedModeValueStats.length === 0
+                ? React.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.")
+                : props.selectedModeValueStats.map((entry) => {
+                    const checked = props.overdueExcludedStateCodes.includes(entry.key.trim().toLowerCase());
+                    return React.createElement(
+                      "label",
+                      { key: entry.key, className: "timeline-filter-value-option" },
+                      React.createElement("input", {
+                        type: "checkbox",
+                        checked,
+                        "aria-label": `Treat ${entry.label} as completed`,
+                        onChange: (event) => {
+                          props.onToggleOverdueExcludedState(entry.label, (event.target as HTMLInputElement).checked);
+                        }
+                      }),
+                      React.createElement(
+                        "div",
+                        { className: "timeline-filter-value-option-meta" },
+                        React.createElement("strong", null, entry.label),
+                        React.createElement("span", null, `${entry.count} item(s)`)
+                      )
+                    );
+                  })
+            )
         : props.isReadOnlyStatusColorCodingMode
           ? React.createElement(
               "div",

@@ -6,6 +6,7 @@ export type TimelineSidebarRowJustifyPreference = "flex-start" | "flex-end";
 export type TimelineFieldColorCodingPreference = {
   fieldRef?: string;
   valueColors?: Record<string, string>;
+  overdueExcludedStateCodes?: string[];
 };
 
 export type TimelineLabelFieldPreference = string;
@@ -69,7 +70,13 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
     const raw = candidate.timelineFieldColorCoding as Record<string, unknown>;
     const fieldRef = typeof raw.fieldRef === "string" ? raw.fieldRef.trim() : "";
     const valueColorsRaw = isPlainRecord(raw.valueColors) ? raw.valueColors : null;
+    const overdueExcludedStateCodesRaw = Array.isArray(raw.overdueExcludedStateCodes) ? raw.overdueExcludedStateCodes : null;
     const valueColors: Record<string, string> = {};
+    const overdueExcludedStateCodes = overdueExcludedStateCodesRaw
+      ? [...new Set(overdueExcludedStateCodesRaw)]
+          .map((entry) => (typeof entry === "string" ? entry.trim().toLowerCase() : ""))
+          .filter((entry) => entry.length > 0)
+      : undefined;
 
     if (valueColorsRaw) {
       Object.entries(valueColorsRaw).forEach(([key, entry]) => {
@@ -86,7 +93,8 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
 
     next.timelineFieldColorCoding = {
       fieldRef: fieldRef.length > 0 ? fieldRef : undefined,
-      valueColors: Object.keys(valueColors).length > 0 ? valueColors : undefined
+      valueColors: Object.keys(valueColors).length > 0 ? valueColors : undefined,
+      ...(overdueExcludedStateCodes ? { overdueExcludedStateCodes } : {})
     };
   }
 

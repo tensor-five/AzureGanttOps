@@ -36,7 +36,8 @@ describe("timeline-color-coding-preference", () => {
     clearTimelineColorCodingPreferenceForTests();
     expect(loadTimelineFieldColorCodingConfig()).toEqual({
       fieldRef: null,
-      valueColors: {}
+      valueColors: {},
+      overdueExcludedStateCodes: ["closed", "done", "removed", "completed"]
     });
   });
 
@@ -47,14 +48,16 @@ describe("timeline-color-coding-preference", () => {
       valueColors: {
         "Custom.Team::Alpha": " #FF00AA ",
         "Custom.Team::Beta": "blue"
-      }
+      },
+      overdueExcludedStateCodes: [" DONE ", "resolved", ""]
     });
 
     expect(loadTimelineFieldColorCodingConfig()).toEqual({
       fieldRef: "Custom.Team",
       valueColors: {
         "Custom.Team::Alpha": "#ff00aa"
-      }
+      },
+      overdueExcludedStateCodes: ["done", "resolved"]
     });
   });
 });
