@@ -8,6 +8,8 @@ export type TimelineSortOption = {
 };
 
 type TimelineSortableItem = TimelineBar | TimelineUnschedulableItem;
+const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
+const MS_PER_DAY = 86_400_000;
 
 const BUILT_IN_SORT_OPTIONS: TimelineSortOption[] = [
   { value: "startDate", label: "Start date", subtitle: "Built-in" },
@@ -107,7 +109,7 @@ function compareTimelineSortableValues(
 
 function extractSortValue(item: TimelineSortableItem, field: TimelineSortField): string | number | null {
   if (field === "startDate") {
-    return toTimestamp(item.schedule?.startDate);
+    return resolveStartDateSortTimestamp(item);
   }
 
   if (field === "endDate") {
@@ -141,6 +143,21 @@ function extractSortValue(item: TimelineSortableItem, field: TimelineSortField):
     return fieldValue;
   }
   return normalizeString(fieldValue ?? null);
+}
+
+function resolveStartDateSortTimestamp(item: TimelineSortableItem): number | null {
+  const startTimestamp = toTimestamp(item.schedule?.startDate);
+  if (startTimestamp !== null) {
+    return startTimestamp;
+  }
+
+  const endTimestamp = toTimestamp(item.schedule?.endDate);
+  if (endTimestamp === null) {
+    return null;
+  }
+
+  // Keep sorting aligned with chart rendering for half-open ranges (missing start -> 14-day assumed span).
+  return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY;
 }
 
 function normalizeString(value: unknown): string | null {

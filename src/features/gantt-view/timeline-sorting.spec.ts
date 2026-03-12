@@ -49,6 +49,39 @@ describe("timeline-sorting", () => {
     expect(sorted?.bars.map((bar) => bar.workItemId)).toEqual([1, 2]);
   });
 
+  it("uses derived start date for start sorting when start date is missing", () => {
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 1,
+        title: "Missing start",
+        schedule: {
+          startDate: null,
+          endDate: "2026-03-20T00:00:00.000Z",
+          missingBoundary: "start"
+        }
+      },
+      {
+        ...timeline.bars[1],
+        workItemId: 2,
+        title: "Real start",
+        schedule: {
+          startDate: "2026-03-10T00:00:00.000Z",
+          endDate: "2026-03-12T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+
+    const sorted = applyTimelineSorting(timeline, {
+      primary: "startDate",
+      secondary: null
+    });
+
+    expect(sorted?.bars.map((bar) => bar.workItemId)).toEqual([1, 2]);
+  });
+
   it("exposes built-in and dynamic sort options", () => {
     const options = buildTimelineSortOptions(["Custom.Team"]);
     expect(options.some((option) => option.value === "startDate")).toBe(true);
