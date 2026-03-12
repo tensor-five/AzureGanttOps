@@ -1378,7 +1378,7 @@ button {
 
 .timeline-color-coding-option-subtitle {
   font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   line-height: 1.3;
 }
 

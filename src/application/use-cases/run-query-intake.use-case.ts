@@ -91,10 +91,13 @@ export class RunQueryIntakeUseCase {
     }
 
     let savedQueries: SavedQuery[] = [];
+    let snapshot: IngestionSnapshot;
 
     try {
-      savedQueries = await this.queryRuntime.listSavedQueries(context);
-      const snapshot = await this.queryRuntime.executeByQueryId(selectedQueryId, context);
+      [savedQueries, snapshot] = await Promise.all([
+        this.queryRuntime.listSavedQueries(context),
+        this.queryRuntime.executeByQueryId(selectedQueryId, context)
+      ]);
       const stale = this.isStale(runVersion);
       const timeline = stale ? null : this.buildTimeline(snapshot);
       const stableSnapshot = stale ? null : snapshot;

@@ -149,6 +149,68 @@ describe("RunQueryIntakeUseCase", () => {
     expect(result.reload.lastRefreshAt).not.toBeNull();
   });
 
+  it("starts query execution in parallel with saved query loading", async () => {
+    let releaseSavedQueries!: () => void;
+    const executionStarts: string[] = [];
+
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => {
+        await new Promise<void>((resolve) => {
+          releaseSavedQueries = resolve;
+        });
+        return [{ id: contextA.queryId.value, name: "Delivery Timeline", path: "Shared Queries/Delivery Timeline" }];
+      }),
+      executeByQueryId: vi.fn(async () => {
+        executionStarts.push("execute-started");
+        return {
+          queryType: "flat" as const,
+          workItemIds: [101],
+          workItems: [{ id: 101, title: "Work item 101" }],
+          relations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 1,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        };
+      })
+    };
+
+    const buildTimelineView: BuildTimelineViewUseCase = {
+      execute: vi.fn(() => createTimeline())
+    } as never;
+
+    const useCase = new RunQueryIntakeUseCase(
+      authPreflight,
+      queryRuntime,
+      buildTimelineView,
+      createMappingSettingsStub([activeProfile], "profile-a")
+    );
+
+    const pendingResult = useCase.execute({ context: contextA });
+
+    await vi.waitFor(() => {
+      expect(executionStarts).toEqual(["execute-started"]);
+    });
+
+    releaseSavedQueries();
+    await expect(pendingResult).resolves.toMatchObject({
+      preflight: { status: "READY" },
+      snapshot: {
+        workItemIds: [101]
+      }
+    });
+  });
+
   it("auto-applies persisted last active mapping profile on first run after restart", async () => {
     const authPreflight: AuthPreflightPort = {
       check: vi.fn(async () => ({ status: "READY" as const }))

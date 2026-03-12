@@ -10,7 +10,8 @@ import { filterRuntimeRelations } from "../../../domain/query-runtime/services/r
 
 const API_VERSION = "7.1";
 const MAX_IDS_PER_BATCH = 200;
-const HYDRATION_CONCURRENCY = 3;
+const DEFAULT_HYDRATION_CONCURRENCY = 6;
+const MAX_HYDRATION_CONCURRENCY = 12;
 const MAX_RETRY_ATTEMPTS = 4;
 const BASE_BACKOFF_MS = 250;
 const MAX_BACKOFF_MS = 4000;
@@ -48,6 +49,8 @@ type HydrationChunkResult = {
   missingIds: number[];
   retriedRequests: number;
 };
+
+const HYDRATION_CONCURRENCY = resolveHydrationConcurrency();
 
 export class AzureQueryRuntimeAdapter {
   public constructor(
@@ -558,6 +561,20 @@ function toTransportFailureHint(error: unknown): string {
       .replace(/^_+|_+$/g, "")
       .slice(0, 80) || "TRANSPORT"
   );
+}
+
+function resolveHydrationConcurrency(): number {
+  const raw = process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY;
+  if (!raw) {
+    return DEFAULT_HYDRATION_CONCURRENCY;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return DEFAULT_HYDRATION_CONCURRENCY;
+  }
+
+  return Math.min(parsed, MAX_HYDRATION_CONCURRENCY);
 }
 
 function summarizeHttpPayload(payload: unknown): string {

@@ -81,6 +81,7 @@ import { useTimelineResizing } from "./use-timeline-resizing.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
+import { extractFilterMatchKeys, extractFilterValueTokens } from "./timeline-field-filtering.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -3251,8 +3252,9 @@ function applyTimelineFieldFilters(
         return true;
       }
 
-      const valueKey = fieldValueToStorageKey(fieldValues?.[normalizedFieldRef]);
-      return filter.selectedValueKeys.includes(valueKey);
+      const selectedValueKeys = new Set(filter.selectedValueKeys);
+      const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
+      return matchKeys.some((key) => selectedValueKeys.has(key));
     });
   };
 
@@ -3376,6 +3378,7 @@ const COLOR_CODING_MODE_OPTIONS: ColorCodingOption[] = [
 ];
 
 const COLOR_CODING_RESERVED_FIELD_REFS = new Set(["state", "system.state"]);
+const WELL_KNOWN_FILTER_FIELD_REFS = ["System.Tags"] as const;
 
 function buildColorCodingOptions(fieldRefs: string[]): ColorCodingOption[] {
   const fieldOptions = fieldRefs
@@ -3533,25 +3536,24 @@ function normalizeTimelineLabelValue(value: string | number | null | undefined):
 }
 
 function listAvailableColorCodingFields(timeline: TimelineReadModel | null): string[] {
-  if (!timeline) {
-    return [];
-  }
-
   const set = new Set<string>();
-  const register = (fieldValues: Record<string, string | number | null> | undefined): void => {
-    if (!fieldValues) {
-      return;
-    }
-
-    Object.keys(fieldValues).forEach((fieldRef) => {
-      if (fieldRef.trim().length > 0) {
-        set.add(fieldRef);
+  WELL_KNOWN_FILTER_FIELD_REFS.forEach((fieldRef) => set.add(fieldRef));
+  if (timeline) {
+    const register = (fieldValues: Record<string, string | number | null> | undefined): void => {
+      if (!fieldValues) {
+        return;
       }
-    });
-  };
 
-  timeline.bars.forEach((bar) => register(bar.details.fieldValues));
-  timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+      Object.keys(fieldValues).forEach((fieldRef) => {
+        if (fieldRef.trim().length > 0) {
+          set.add(fieldRef);
+        }
+      });
+    };
+
+    timeline.bars.forEach((bar) => register(bar.details.fieldValues));
+    timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+  }
 
   return [...set].sort((a, b) => a.localeCompare(b));
 }
@@ -3568,16 +3570,19 @@ function listFieldValueStats(timeline: TimelineReadModel | null, fieldRef: strin
 
   const counts = new Map<string, { label: string; count: number }>();
   const register = (value: string | number | null | undefined): void => {
-    const key = fieldValueToStorageKey(value);
-    const existing = counts.get(key);
-    if (existing) {
-      existing.count += 1;
-      return;
-    }
+    const uniqueTokensForItem = new Map<string, string>();
+    extractFilterValueTokens(trimmedFieldRef, value).forEach((token) => {
+      uniqueTokensForItem.set(token.key, token.label);
+    });
 
-    counts.set(key, {
-      label: fieldValueToCategoryLabel(value),
-      count: 1
+    uniqueTokensForItem.forEach((label, key) => {
+      const existing = counts.get(key);
+      if (existing) {
+        existing.count += 1;
+        return;
+      }
+
+      counts.set(key, { label, count: 1 });
     });
   };
 
