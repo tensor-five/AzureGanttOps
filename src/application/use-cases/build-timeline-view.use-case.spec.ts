@@ -63,13 +63,14 @@ describe("BuildTimelineViewUseCase", () => {
 
     expect(result.mappingValidation).toEqual({ status: "valid", issues: [] });
     expect(result.bars).toHaveLength(2);
-    expect(result.bars[0].title).toBe("Alpha");
+    expect(result.bars[0].title).toBe("Beta");
     expect(result.bars[0].state).toEqual({
-      code: "Active",
-      badge: "A",
-      color: "#1d4ed8"
+      code: "New",
+      badge: "N",
+      color: "#7c3aed"
     });
-    expect(result.bars[1].schedule.missingBoundary).toBe("start");
+    expect(result.bars[0].schedule.missingBoundary).toBe("start");
+    expect(result.bars[1].title).toBe("Alpha");
     expect(result.unschedulable).toHaveLength(1);
     expect(result.unschedulable[0]).toMatchObject({
       title: "Gamma",
