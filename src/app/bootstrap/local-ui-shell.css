@@ -1549,6 +1549,7 @@ button {
   display: grid;
   gap: 8px;
   min-width: 0;
+  align-content: start;
 }
 
 .timeline-label-menu-divider {
