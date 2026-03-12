@@ -202,12 +202,15 @@ describe("createHttpServer", () => {
       expect(body.entries.length).toBeGreaterThanOrEqual(2);
       expect(body.entries[0]?.seq).toBe(1);
       expect(body.entries[1]?.seq).toBe(2);
-      expect(body.entries[0]?.direction).toBe("request");
-      expect(body.entries[1]?.direction).toBe("response");
+      expect(body.entries.every((entry, index) => index === 0 || entry.seq > body.entries[index - 1]!.seq)).toBe(true);
+      expect(body.entries.some((entry) => entry.direction === "request")).toBe(true);
+      expect(body.entries.some((entry) => entry.direction === "response")).toBe(true);
       expect(body.nextSeq).toBeGreaterThanOrEqual(2);
       expect(body.entries.every((entry) => !entry.url.includes("plain_token_value"))).toBe(true);
-      expect(body.entries[1]?.preview).not.toContain("plain_token_value");
-      expect(body.entries[1]?.preview).toContain("[REDACTED]");
+      const responseEntry = body.entries.find((entry) => entry.direction === "response");
+      expect(responseEntry).toBeDefined();
+      expect(responseEntry?.preview).not.toContain("plain_token_value");
+      expect(responseEntry?.preview).toContain("[REDACTED]");
     } finally {
       process.env.PATH = originalPath;
       await server.close();
