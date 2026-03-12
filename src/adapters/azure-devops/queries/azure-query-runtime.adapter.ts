@@ -62,8 +62,8 @@ export class AzureQueryRuntimeAdapter {
     let response: HttpResponse;
     try {
       response = await this.httpClient.get(url);
-    } catch {
-      throw new Error("QUERY_LIST_FAILED");
+    } catch (error) {
+      throw new Error(`QUERY_LIST_FAILED:${toTransportFailureHint(error)}`);
     }
 
     if (response.status !== 200) {
@@ -544,6 +544,20 @@ function buildHttpFailureCode(baseCode: string, response: HttpResponse): string 
   const summary = summarizeHttpPayload(response.json);
   const serialized = summary ? `_${summary}` : "";
   return `${baseCode}_HTTP_${response.status}${serialized}`;
+}
+
+function toTransportFailureHint(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "TRANSPORT";
+  }
+
+  return (
+    error.message
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 80) || "TRANSPORT"
+  );
 }
 
 function summarizeHttpPayload(payload: unknown): string {

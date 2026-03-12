@@ -41,41 +41,55 @@ async function main(): Promise<void> {
     port: PORT,
     httpClient: {
       get: async (url: string): Promise<FetchResponse> => {
-        const response = await fetch(url, {
-          method: "GET",
-          redirect: "manual",
-          headers: {
-            authorization: await authHeaderProvider.getHeader(),
-            accept: "application/json"
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            redirect: "manual",
+            headers: {
+              authorization: await authHeaderProvider.getHeader(),
+              accept: "application/json"
+            }
+          });
+          return {
+            status: response.status,
+            json: await parseResponseBody(response),
+            headers: toHeaders(response.headers)
+          };
+        } catch (error) {
+          if (process.env.ADO_VERBOSE_LOGS === "1") {
+            console.log(`[ado-runtime] http transport error method=GET url=${url} error=${formatError(error)}`);
           }
-        });
-        return {
-          status: response.status,
-          json: await parseResponseBody(response),
-          headers: toHeaders(response.headers)
-        };
+          throw error;
+        }
       },
       patch: async (
         url: string,
         body: unknown,
         headers?: Record<string, string>
       ): Promise<FetchResponse> => {
-        const response = await fetch(url, {
-          method: "PATCH",
-          redirect: "manual",
-          headers: {
-            authorization: await authHeaderProvider.getHeader(),
-            accept: "application/json",
-            "content-type": "application/json-patch+json",
-            ...(headers ?? {})
-          },
-          body: JSON.stringify(body)
-        });
-        return {
-          status: response.status,
-          json: await parseResponseBody(response),
-          headers: toHeaders(response.headers)
-        };
+        try {
+          const response = await fetch(url, {
+            method: "PATCH",
+            redirect: "manual",
+            headers: {
+              authorization: await authHeaderProvider.getHeader(),
+              accept: "application/json",
+              "content-type": "application/json-patch+json",
+              ...(headers ?? {})
+            },
+            body: JSON.stringify(body)
+          });
+          return {
+            status: response.status,
+            json: await parseResponseBody(response),
+            headers: toHeaders(response.headers)
+          };
+        } catch (error) {
+          if (process.env.ADO_VERBOSE_LOGS === "1") {
+            console.log(`[ado-runtime] http transport error method=PATCH url=${url} error=${formatError(error)}`);
+          }
+          throw error;
+        }
       }
     }
   });
@@ -227,6 +241,14 @@ function toHeaders(headers: Headers): HeaderBag {
   });
 
   return values;
+}
+
+function formatError(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "unknown";
+  }
+
+  return error.message.replace(/[\r\n\t]+/g, " ").trim();
 }
 
 void main();

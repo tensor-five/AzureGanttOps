@@ -201,12 +201,13 @@ export function toDiagnosticsStatusCode(code: string): DiagnosticsStatusCode {
 }
 
 function normalizeDiagnosticsCode(code: string): string {
-  if (!code.includes("_HTTP_")) {
-    return code;
+  const withoutDetails = code.includes(":") ? (code.split(":", 1)[0] ?? code) : code;
+  if (!withoutDetails.includes("_HTTP_")) {
+    return withoutDetails;
   }
 
-  const [baseCode] = code.split("_HTTP_", 1);
-  return baseCode ?? code;
+  const [baseCode] = withoutDetails.split("_HTTP_", 1);
+  return baseCode ?? withoutDetails;
 }
 
 const DETERMINISTIC_DIAGNOSTICS_CODES: ReadonlySet<DiagnosticsStatusCode> = new Set<DiagnosticsStatusCode>([

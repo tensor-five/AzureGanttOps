@@ -15,6 +15,7 @@ describe("query-intake.controller.mappers", () => {
   it("maps known and unknown diagnostics codes deterministically", () => {
     expect(toDiagnosticsStatusCode("MAP_VALIDATION_FAILED")).toBe("MAP_VALIDATION_FAILED");
     expect(toDiagnosticsStatusCode("QUERY_EXECUTION_FAILED_HTTP_401_UNAUTHORIZED")).toBe("QUERY_EXECUTION_FAILED");
+    expect(toDiagnosticsStatusCode("QUERY_LIST_FAILED:FETCH_FAILED_ENOTFOUND")).toBe("QUERY_LIST_FAILED");
     expect(toDiagnosticsStatusCode("SOMETHING_NEW")).toBe("UNKNOWN_ERROR");
     expect(toDiagnosticsErrorCode("OK")).toBeNull();
     expect(toDiagnosticsErrorCode("QUERY_EXECUTION_FAILED")).toBe("QUERY_EXECUTION_FAILED");
