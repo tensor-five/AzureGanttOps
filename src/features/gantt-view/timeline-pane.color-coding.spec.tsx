@@ -76,6 +76,47 @@ describe("timeline-pane color coding", () => {
     expect(colorCodingButton.textContent).toContain("Overdue");
   });
 
+  it("treats resolved items as overdue in overdue mode", () => {
+    saveLastTimelineColorCoding("overdue");
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: {
+          ...makeTimeline(),
+          bars: [
+            {
+              ...makeTimeline().bars[0],
+              workItemId: 11,
+              state: { code: "Resolved", badge: "R", color: "#2f855a" },
+              schedule: {
+                startDate: "2000-01-01T00:00:00.000Z",
+                endDate: "2000-01-02T00:00:00.000Z",
+                missingBoundary: null
+              },
+              details: { mappedId: "11" }
+            },
+            {
+              ...makeTimeline().bars[0],
+              workItemId: 12,
+              state: { code: "Done", badge: "D", color: "#2f855a" },
+              schedule: {
+                startDate: "2000-01-03T00:00:00.000Z",
+                endDate: "2000-01-04T00:00:00.000Z",
+                missingBoundary: null
+              },
+              details: { mappedId: "12" }
+            }
+          ]
+        },
+        showDependencies: true
+      })
+    );
+
+    const bars = container.querySelectorAll("rect.timeline-bar");
+    expect(bars).toHaveLength(2);
+    expect((bars[0] as SVGRectElement).style.fill).toBe("rgb(185, 28, 28)");
+    expect((bars[1] as SVGRectElement).style.fill).toBe("rgb(71, 85, 105)");
+  });
+
   it("supports field-based color coding via searchable field selector", async () => {
     const user = userEvent.setup();
     const timeline = makeTimeline();

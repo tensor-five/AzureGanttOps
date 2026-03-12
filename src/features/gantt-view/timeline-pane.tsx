@@ -3513,7 +3513,7 @@ function isOverdueTimelineItem(endDateIso: string | null, stateCode: string): bo
   }
 
   const normalizedState = stateCode.trim().toLowerCase();
-  return !["closed", "done", "resolved", "removed", "completed"].includes(normalizedState);
+  return !["closed", "done", "removed", "completed"].includes(normalizedState);
 }
 
 function parseIso(value: string | null): Date | null {
