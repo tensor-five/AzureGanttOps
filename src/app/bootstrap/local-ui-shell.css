@@ -198,10 +198,32 @@ section[role="tabpanel"]:hover {
   display: none;
 }
 
+@keyframes ui-menu-surface-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ui-filter-row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .header-query-dropdown-panel {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   z-index: 110;
   min-width: min(300px, 88vw);
   max-width: min(340px, 90vw);
@@ -212,6 +234,13 @@ section[role="tabpanel"]:hover {
   padding: 10px;
   display: grid;
   gap: 8px;
+  font-size: var(--text-xs);
+}
+
+.header-query-dropdown[open] .header-query-dropdown-panel {
+  transform-origin: top right;
+  will-change: transform, opacity;
+  animation: ui-menu-surface-enter var(--transition-duration-base) var(--transition-easing-standard);
 }
 
 .header-query-dropdown-search {
@@ -221,11 +250,11 @@ section[role="tabpanel"]:hover {
   background: var(--color-surface-elevated);
   color: var(--color-text);
   padding: 0 10px;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 
 .header-query-dropdown-empty {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 
@@ -1324,6 +1353,9 @@ button {
   display: grid;
   gap: 8px;
   z-index: 120;
+  transform-origin: top left;
+  will-change: transform, opacity;
+  animation: ui-menu-surface-enter var(--transition-duration-base) var(--transition-easing-standard);
 }
 
 .timeline-color-coding-dropdown-search {
@@ -1514,6 +1546,9 @@ button {
   z-index: 230;
   display: grid;
   gap: 8px;
+  transform-origin: top right;
+  will-change: transform, opacity;
+  animation: ui-menu-surface-enter var(--transition-duration-base) var(--transition-easing-standard);
 }
 
 .timeline-sort-menu {
@@ -1614,6 +1649,12 @@ button {
   overflow: visible;
 }
 
+.timeline-filter-panel-motion {
+  transform-origin: top left;
+  will-change: transform, opacity;
+  animation: ui-menu-surface-enter var(--transition-duration-slow) var(--transition-easing-standard);
+}
+
 .timeline-filter-add {
   min-width: 32px;
   height: 32px;
@@ -1647,6 +1688,8 @@ button {
   flex: 0 0 auto;
   position: relative;
   z-index: 1;
+  transform-origin: top left;
+  animation: ui-filter-row-enter var(--transition-duration-base) var(--transition-easing-standard);
 }
 
 .timeline-filter-row-open {
@@ -2714,6 +2757,16 @@ input {
 
   .timeline-action-button-spinner {
     animation: none;
+  }
+
+  .header-query-dropdown[open] .header-query-dropdown-panel,
+  .timeline-color-coding-dropdown,
+  .timeline-label-menu,
+  .timeline-filter-panel-motion {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    will-change: auto;
   }
 
   body::after {

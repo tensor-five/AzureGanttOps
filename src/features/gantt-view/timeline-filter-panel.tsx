@@ -47,6 +47,11 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
   return React.createElement(
     "div",
     {
+      className: "timeline-filter-panel-motion"
+    },
+    React.createElement(
+      "div",
+    {
       className: "timeline-filter-panel",
       role: "group",
       "aria-label": "Timeline filters",
@@ -70,7 +75,7 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
             const filterValueOptions =
               isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId
                 ? props.openFilterValueOptions
-                : props.effectiveTimelineValueOptionsForFilter(filter.fieldRef);
+                : [];
 
             return React.createElement(
               "div",
@@ -268,5 +273,6 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
             "+"
           )
         )
+    )
   );
 }
