@@ -1,7 +1,8 @@
 import { createHttpServer } from "./http-server.js";
+import { exec } from "node:child_process";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
+import { buildAzCommand, resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js";
 
 type HeaderBag = Record<string, string | undefined>;
 
@@ -12,6 +13,7 @@ type FetchResponse = {
 };
 
 const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
 const ADO_RESOURCE_ID = "499b84ac-1321-427f-aa17-267ca6975798";
 const TOKEN_REFRESH_SKEW_MS = 120_000;
 const TOKEN_COMMAND_TIMEOUT_MS = 60_000;
@@ -179,23 +181,26 @@ function logAuthMode(event: string, mode: string): void {
 async function resolveAzureCliAccessToken(): Promise<string> {
   try {
     const azExecutable = await resolveAzCliExecutablePath();
-    const output = await execFileAsync(
-      azExecutable,
-      [
-        "account",
-        "get-access-token",
-        "--resource",
-        ADO_RESOURCE_ID,
-        "--query",
-        "accessToken",
-        "-o",
-        "tsv"
-      ],
-      {
-        timeout: TOKEN_COMMAND_TIMEOUT_MS,
-        windowsHide: true
-      }
-    );
+    const azArgs = [
+      "account",
+      "get-access-token",
+      "--resource",
+      ADO_RESOURCE_ID,
+      "--query",
+      "accessToken",
+      "-o",
+      "tsv"
+    ];
+    const output =
+      process.platform === "win32" && azExecutable.toLowerCase().endsWith(".cmd")
+        ? await execAsync(buildAzCommand(azExecutable, azArgs), {
+            timeout: TOKEN_COMMAND_TIMEOUT_MS,
+            windowsHide: true
+          })
+        : await execFileAsync(azExecutable, azArgs, {
+            timeout: TOKEN_COMMAND_TIMEOUT_MS,
+            windowsHide: true
+          });
 
     const token = (output.stdout ?? "").trim();
 
