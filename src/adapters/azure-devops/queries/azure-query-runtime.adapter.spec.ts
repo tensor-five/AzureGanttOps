@@ -97,6 +97,16 @@ describe("AzureQueryRuntimeAdapter", () => {
     ]);
   });
 
+  it("maps list transport failures to QUERY_LIST_FAILED", async () => {
+    const client = makeClient(() => {
+      throw new Error("fetch failed");
+    });
+
+    const adapter = makeAdapter(client);
+
+    await expect(adapter.listSavedQueries()).rejects.toThrow("QUERY_LIST_FAILED");
+  });
+
   it.each([
     { totalIds: 0, expectedChunks: [] },
     { totalIds: 1, expectedChunks: [1] },

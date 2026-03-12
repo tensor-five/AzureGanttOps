@@ -59,7 +59,12 @@ export class AzureQueryRuntimeAdapter {
     const activeContext = await this.resolveContext(context);
     const url = `https://dev.azure.com/${activeContext.organization}/${activeContext.project}/_apis/wit/queries/Shared%20Queries?$depth=2&api-version=${API_VERSION}`;
 
-    const response = await this.httpClient.get(url);
+    let response: HttpResponse;
+    try {
+      response = await this.httpClient.get(url);
+    } catch {
+      throw new Error("QUERY_LIST_FAILED");
+    }
 
     if (response.status !== 200) {
       throw new Error(buildHttpFailureCode("QUERY_LIST_FAILED", response));

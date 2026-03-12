@@ -32,7 +32,7 @@ async function main(): Promise<void> {
   if (process.env.ADO_VERBOSE_LOGS === "1") {
     console.log("[ado-runtime] ADO_VERBOSE_LOGS=1");
     console.log(`[ado-runtime] ADO_WRITE_ENABLED=${process.env.ADO_WRITE_ENABLED === "1" ? "1" : "0"}`);
-    console.log(`[ado-runtime] ADO_AZ_CLI_PATH=${resolveAzCliExecutablePath()}`);
+    console.log(`[ado-runtime] ADO_AZ_CLI_PATH=${detectedAzCliPath}`);
   }
 
   const authHeaderProvider = createAdoAuthHeaderProvider();
