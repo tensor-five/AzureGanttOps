@@ -78,7 +78,11 @@ describe("timeline-pane dragging", () => {
   });
 
   it("zooms chart to fit visible timeline range via fit button", async () => {
-    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains("timeline-chart-scroll") ? 520 : 1200;
+      });
 
     try {
       render(
@@ -97,9 +101,106 @@ describe("timeline-pane dragging", () => {
       await waitFor(() => {
         const afterWidth = Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"));
         expect(afterWidth).toBeGreaterThan(beforeWidth);
+        expect(afterWidth).toBeLessThan(120);
       });
     } finally {
       clientWidthSpy.mockRestore();
+    }
+  });
+
+  it("applies faster ctrl-wheel zoom for chart zoom gestures", async () => {
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const scrollContainer = container.querySelector(".timeline-chart-scroll") as HTMLDivElement | null;
+    expect(scrollContainer).not.toBeNull();
+    const chart = screen.getByLabelText("gantt-chart");
+    const bar = screen.getByLabelText("timeline-bar-11");
+
+    const chartRectSpy = vi.spyOn(chart, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 1000,
+      height: 480,
+      top: 0,
+      right: 1000,
+      bottom: 480,
+      left: 0,
+      toJSON: () => null
+    } as DOMRect);
+    const scrollRectSpy = vi.spyOn(scrollContainer as HTMLDivElement, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 1000,
+      height: 480,
+      top: 0,
+      right: 1000,
+      bottom: 480,
+      left: 0,
+      toJSON: () => null
+    } as DOMRect);
+
+    try {
+      expect(Number(bar.getAttribute("width"))).toBe(66);
+
+      fireEvent.wheel(scrollContainer as HTMLDivElement, {
+        ctrlKey: true,
+        deltaY: -100,
+        clientX: 300
+      });
+
+      await waitFor(() => {
+        expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(84);
+      });
+    } finally {
+      chartRectSpy.mockRestore();
+      scrollRectSpy.mockRestore();
+    }
+  });
+
+  it("repositions viewport on fit even when day width already matches target", async () => {
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains("timeline-chart-scroll") ? 480 : 1200;
+      });
+    const scrollWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "scrollWidth", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains("timeline-chart-scroll") ? 1160 : 1200;
+      });
+
+    try {
+      const { container } = render(
+        React.createElement(TimelinePane, {
+          timeline: makeTimeline(),
+          showDependencies: true
+        })
+      );
+
+      const scrollContainer = container.querySelector(".timeline-chart-scroll") as HTMLDivElement | null;
+      expect(scrollContainer).not.toBeNull();
+      (scrollContainer as HTMLDivElement).scrollLeft = 240;
+
+      const beforeWidth = Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"));
+      expect(beforeWidth).toBe(66);
+      expect((scrollContainer as HTMLDivElement).scrollLeft).toBe(240);
+
+      fireEvent.click(screen.getByRole("button", { name: "Zoom to fit timeline" }));
+
+      await waitFor(() => {
+        expect((scrollContainer as HTMLDivElement).scrollLeft).toBe(0);
+      });
+
+      const afterWidth = Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"));
+      expect(afterWidth).toBe(beforeWidth);
+    } finally {
+      clientWidthSpy.mockRestore();
+      scrollWidthSpy.mockRestore();
     }
   });
 

@@ -85,4 +85,56 @@ describe("timeline-pane layout", () => {
 
     expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("260");
   });
+
+  it("collapses details panel from splitter click when visible", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const splitter = screen.getByRole("separator", { name: "Resize details panel" });
+    fireEvent.click(splitter);
+
+    expect(globalThis.localStorage.getItem("azure-ganttops.timeline-details-width-px.v1")).toBe("0");
+    expect(screen.getByRole("separator", { name: "Expand details panel" })).toBeTruthy();
+  });
+
+  it("uses compact unscheduled section when there are no unscheduled items", () => {
+    const { container, rerender } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const emptyState = container.querySelector(".timeline-unschedulable-list");
+    expect(emptyState?.classList.contains("timeline-unschedulable-list-empty")).toBe(true);
+    const emptyChartScroll = container.querySelector(".timeline-chart-scroll");
+    expect(emptyChartScroll?.classList.contains("timeline-chart-scroll-unscheduled-empty")).toBe(true);
+
+    const populatedTimeline = makeTimeline();
+    populatedTimeline.unschedulable = [
+      {
+        workItemId: 22,
+        title: "Target Item",
+        state: { code: "New", badge: "N", color: "#2563eb" },
+        reason: "missing-both-dates",
+        details: { mappedId: "22" }
+      }
+    ];
+
+    rerender(
+      React.createElement(TimelinePane, {
+        timeline: populatedTimeline,
+        showDependencies: true
+      })
+    );
+
+    const nonEmptyState = container.querySelector(".timeline-unschedulable-list");
+    expect(nonEmptyState?.classList.contains("timeline-unschedulable-list-empty")).toBe(false);
+    const nonEmptyChartScroll = container.querySelector(".timeline-chart-scroll");
+    expect(nonEmptyChartScroll?.classList.contains("timeline-chart-scroll-unscheduled-empty")).toBe(false);
+  });
 });

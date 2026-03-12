@@ -39,7 +39,7 @@ export function useTimelineResizing(input: {
   sidebarEffectiveWidthLiveRef: React.MutableRefObject<number>;
   beginSidebarResize: (event: React.PointerEvent<HTMLButtonElement>) => void;
   beginDetailsResize: (event: React.PointerEvent<HTMLButtonElement>) => void;
-  expandDetailsPanelFromHidden: () => void;
+  toggleDetailsPanelFromSplitter: () => void;
 } {
   const [activeDetailsResize, setActiveDetailsResize] = React.useState<ActiveDetailsResize | null>(null);
   const [activeSidebarResize, setActiveSidebarResize] = React.useState<ActiveSidebarResize | null>(null);
@@ -245,8 +245,14 @@ export function useTimelineResizing(input: {
     [input.detailsWidthPx]
   );
 
-  const expandDetailsPanelFromHidden = React.useCallback(() => {
-    if (!detailsContentHidden || detailsResizeMovedRef.current) {
+  const toggleDetailsPanelFromSplitter = React.useCallback(() => {
+    if (detailsResizeMovedRef.current) {
+      return;
+    }
+
+    if (!detailsContentHidden) {
+      input.setDetailsWidthPx(input.detailsPanelMinWidthPx);
+      input.persistDetailsWidthPx(input.detailsPanelMinWidthPx);
       return;
     }
 
@@ -260,6 +266,7 @@ export function useTimelineResizing(input: {
   }, [
     detailsContentHidden,
     input.clamp,
+    input.detailsPanelMinWidthPx,
     input.detailsPanelContentMinWidthPx,
     input.persistDetailsWidthPx,
     input.resolveTimelineDetailsMaxWidthPx,
@@ -278,6 +285,6 @@ export function useTimelineResizing(input: {
     sidebarEffectiveWidthLiveRef,
     beginSidebarResize,
     beginDetailsResize,
-    expandDetailsPanelFromHidden
+    toggleDetailsPanelFromSplitter
   };
 }

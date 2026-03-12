@@ -429,7 +429,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     sidebarEffectiveWidthLiveRef,
     beginSidebarResize,
     beginDetailsResize,
-    expandDetailsPanelFromHidden
+    toggleDetailsPanelFromSplitter
   } = timelineResizing;
 
   React.useEffect(() => {
@@ -672,6 +672,25 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     }, VIEWPORT_PERSIST_DEBOUNCE_MS);
   }, []);
 
+  const resolveFitLayoutLeftOffsets = React.useCallback(
+    (scrollElement: HTMLDivElement): { chartStartX: number; obscuredLeftPx: number } => {
+      const mainLaneElement = scrollElement.querySelector<HTMLElement>(".timeline-chart-main-lane");
+      const splitterElement = scrollElement.querySelector<HTMLElement>(".timeline-main-splitter-embedded");
+      const measuredSplitterWidthPx = splitterElement?.getBoundingClientRect().width ?? 0;
+      const measuredMainLaneOffsetPx = mainLaneElement?.offsetLeft ?? 0;
+      const fallbackSidebarWidthPx = effectiveSidebarWidthPx;
+      const fallbackSplitterWidthPx = splitterElement ? TIMELINE_MAIN_SPLITTER_WIDTH_PX : 0;
+      const sidebarWidthPx = measuredMainLaneOffsetPx > 0 ? measuredMainLaneOffsetPx : fallbackSidebarWidthPx;
+      const splitterWidthPx = measuredSplitterWidthPx > 0 ? measuredSplitterWidthPx : fallbackSplitterWidthPx;
+
+      return {
+        chartStartX: sidebarWidthPx + CHART_LEFT_GUTTER,
+        obscuredLeftPx: sidebarWidthPx + splitterWidthPx
+      };
+    },
+    [effectiveSidebarWidthPx]
+  );
+
   React.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
@@ -786,21 +805,34 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     persistTimelineViewportSoon();
   }, [chartModel.dayWidthPx, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
 
+  const applyFitRangeToViewport = React.useCallback(
+    (fitRange: { start: Date; end: Date }, dayWidth: number): void => {
+      const scrollElement = chartScrollRef.current;
+      if (!scrollElement) {
+        return;
+      }
+
+      const layoutOffsets = resolveFitLayoutLeftOffsets(scrollElement);
+      const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - scrollElement.clientWidth);
+      const rangeStartWithPadding = addDays(fitRange.start, -FIT_TO_VIEW_SIDE_PADDING_DAYS);
+      const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
+      const desiredStartX = layoutOffsets.chartStartX + rangeStartOffset * dayWidth;
+      const viewportTargetX = layoutOffsets.obscuredLeftPx + FIT_TO_VIEW_INSET_PX;
+      scrollElement.scrollLeft = clamp(desiredStartX - viewportTargetX, 0, maxScrollLeft);
+      persistTimelineViewportSoon();
+    },
+    [chartModel.domainStart, persistTimelineViewportSoon, resolveFitLayoutLeftOffsets]
+  );
+
   React.useEffect(() => {
     const fitRange = pendingFitRangeRef.current;
-    const scrollElement = chartScrollRef.current;
-    if (!fitRange || !scrollElement) {
+    if (!fitRange) {
       return;
     }
 
-    const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - scrollElement.clientWidth);
-    const rangeStartWithPadding = addDays(fitRange.start, -FIT_TO_VIEW_SIDE_PADDING_DAYS);
-    const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
-    const desiredStartX = effectiveSidebarWidthPx + CHART_LEFT_GUTTER + rangeStartOffset * chartModel.dayWidthPx;
-    scrollElement.scrollLeft = clamp(desiredStartX - FIT_TO_VIEW_INSET_PX, 0, maxScrollLeft);
+    applyFitRangeToViewport(fitRange, chartModel.dayWidthPx);
     pendingFitRangeRef.current = null;
-    persistTimelineViewportSoon();
-  }, [chartModel.dayWidthPx, chartModel.domainStart, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
+  }, [applyFitRangeToViewport, chartModel.dayWidthPx]);
 
   useTimelineKeyboardShortcuts({
     isRefreshing: props.isRefreshing,
@@ -903,8 +935,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       return;
     }
 
+    const layoutOffsets = resolveFitLayoutLeftOffsets(scrollElement);
     const availableWidth =
-      scrollElement.clientWidth - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX - FIT_TO_VIEW_INSET_PX * 2;
+      scrollElement.clientWidth -
+      layoutOffsets.obscuredLeftPx -
+      CHART_LEFT_GUTTER -
+      CHART_RIGHT_PADDING_PX -
+      FIT_TO_VIEW_INSET_PX * 2;
     if (availableWidth <= 0) {
       return;
     }
@@ -912,8 +949,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const spanDays = Math.max(1, dayDiffInclusive(visibleTimelineRange.start, visibleTimelineRange.end));
     const fittedDayWidthPx = clamp(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
     pendingFitRangeRef.current = visibleTimelineRange;
+    if (Math.abs(fittedDayWidthPx - chartModel.dayWidthPx) < 0.01) {
+      applyFitRangeToViewport(visibleTimelineRange, fittedDayWidthPx);
+      pendingFitRangeRef.current = null;
+      return;
+    }
     setDayWidthPx(fittedDayWidthPx);
-  }, [filteredTimeline]);
+  }, [applyFitRangeToViewport, chartModel.dayWidthPx, filteredTimeline, resolveFitLayoutLeftOffsets]);
 
   const beginPanDrag = React.useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -1891,6 +1933,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 {
                   className: [
                     "timeline-chart-scroll",
+                    unscheduledCount === 0 ? "timeline-chart-scroll-unscheduled-empty" : "",
                     activeScheduleDrag ? "timeline-chart-scroll-dragging" : "",
                     activePanDrag ? "timeline-chart-scroll-panning" : "",
                     spacePanPressed ? "timeline-chart-scroll-space-pan-ready" : ""
@@ -2391,7 +2434,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             ),
         React.createElement(
           "div",
-          { className: "timeline-unschedulable-list" },
+          {
+            className: [
+              "timeline-unschedulable-list",
+              filteredTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
+            ]
+              .filter(Boolean)
+              .join(" ")
+          },
           React.createElement(
             "div",
             { className: "timeline-unschedulable-header" },
@@ -2455,7 +2505,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                   )
                 )
               )
-            : React.createElement("div", null, "None")
+            : React.createElement("p", { className: "timeline-unschedulable-empty" }, "None")
         )
       ),
       React.createElement(
@@ -2467,7 +2517,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           ariaValueMax: resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
           ariaValueNow: detailsWidthPx,
           onPointerDown: beginDetailsResize,
-          onClick: expandDetailsPanelFromHidden,
+          onClick: toggleDetailsPanelFromSplitter,
           style: timelineMainSplitterStyle
         },
         detailsContentHidden
@@ -2491,7 +2541,26 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 })
               )
             )
-          : null
+          : React.createElement(
+              "span",
+              { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" },
+              React.createElement(
+                "svg",
+                {
+                  className: "timeline-main-splitter-expand-icon",
+                  viewBox: "0 0 16 16",
+                  "aria-hidden": "true"
+                },
+                React.createElement("path", {
+                  d: "M5.5 3.5 10 8l-4.5 4.5",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2.2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                })
+              )
+            )
       ),
       React.createElement(TimelineDetailsPanel, detailProps)
     )
@@ -2516,7 +2585,7 @@ const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
 const DAY_WIDTH_MAX_PX = 40;
 const DAY_WIDTH_MIN_PX = 4;
-const ZOOM_WHEEL_SENSITIVITY = 0.0018;
+const ZOOM_WHEEL_SENSITIVITY = 0.0024;
 const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
 const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 const FIT_TO_VIEW_INSET_PX = 20;
@@ -2526,6 +2595,7 @@ const DETAILS_PANEL_DEFAULT_WIDTH_PX = 320;
 const DETAILS_PANEL_MIN_WIDTH_PX = 0;
 const DETAILS_PANEL_MAX_WIDTH_PX = 820;
 const DETAILS_PANEL_SPLITTER_WIDTH_PX = 10;
+const TIMELINE_MAIN_SPLITTER_WIDTH_PX = 10;
 const DETAILS_PANEL_MIN_CHART_WIDTH_PX = 360;
 const DETAILS_PANEL_CONTENT_MIN_WIDTH_PX = 260;
 const TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX = 260;
