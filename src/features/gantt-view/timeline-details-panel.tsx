@@ -227,7 +227,23 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                       target: "_blank",
                       rel: "noreferrer"
                     },
-                    `#${selected.workItemId}`
+                    `#${selected.workItemId}`,
+                    React.createElement(
+                      "svg",
+                      {
+                        className: "timeline-details-work-item-link-icon",
+                        viewBox: "0 0 16 16",
+                        "aria-hidden": "true"
+                      },
+                      React.createElement("path", {
+                        d: "M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "1.6",
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round"
+                      })
+                    )
                   )
                 : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)
             )

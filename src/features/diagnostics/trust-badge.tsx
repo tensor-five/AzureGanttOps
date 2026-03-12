@@ -5,6 +5,9 @@ export type TrustBadgeModel = {
   trustState: "ready" | "needs_attention" | "partial_failure";
   lastRefreshAt: string | null;
   readOnlyTimeline: boolean;
+  controlsOpen?: boolean;
+  onControlsOpenChange?: (open: boolean) => void;
+  controlsContent?: React.ReactNode;
 };
 
 export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
@@ -17,14 +20,31 @@ export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
   const pillLabel = isHealthy ? "OK" : "Trust Attention";
   const pillIcon = isHealthy ? "✓" : "!";
   const statusLine = `[${props.statusCode}] ${label}`;
+  const detailsProps: {
+    "aria-label": string;
+    className: string;
+    "data-trust-state": "healthy" | "unhealthy";
+    open?: boolean;
+    onToggle?: (event: React.SyntheticEvent<HTMLDetailsElement>) => void;
+  } = {
+    "aria-label": "global-trust-badge",
+    className: "trust-badge-details",
+    "data-trust-state": isHealthy ? "healthy" : "unhealthy"
+  };
+
+  if (typeof props.controlsOpen === "boolean") {
+    detailsProps.open = props.controlsOpen;
+  }
+
+  if (props.onControlsOpenChange) {
+    detailsProps.onToggle = (event) => {
+      props.onControlsOpenChange?.((event.currentTarget as HTMLDetailsElement).open);
+    };
+  }
 
   return React.createElement(
     "details",
-    {
-      "aria-label": "global-trust-badge",
-      className: "trust-badge-details",
-      "data-trust-state": isHealthy ? "healthy" : "unhealthy"
-    },
+    detailsProps,
     React.createElement(
       "summary",
       { className: "trust-badge-trigger" },
@@ -40,7 +60,14 @@ export function TrustBadge(props: TrustBadgeModel): React.ReactElement {
         { className: "trust-badge-meta" },
         React.createElement("dt", null, "last-updated"),
         React.createElement("dd", null, props.lastRefreshAt ?? "none")
-      )
+      ),
+      props.controlsContent
+        ? React.createElement(
+            "section",
+            { className: "trust-badge-controls-menu", "aria-label": "controls-menu" },
+            props.controlsContent
+          )
+        : null
     )
   );
 }

@@ -275,7 +275,6 @@ section[role="tabpanel"]:hover {
 }
 
 .theme-menu-trigger,
-.controls-toggle-button,
 .trust-badge-trigger {
   height: 36px;
   box-sizing: border-box;
@@ -292,19 +291,6 @@ section[role="tabpanel"]:hover {
   width: 36px;
   font-size: 1rem;
   cursor: pointer;
-}
-
-.controls-toggle-button {
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface-elevated);
-  color: var(--color-text);
-  padding: 0 12px;
-  font-size: 0.82rem;
-  font-weight: var(--font-bold);
-  cursor: pointer;
-  transition:
-    background-color var(--transition-duration-base) var(--transition-easing-standard),
-    border-color var(--transition-duration-base) var(--transition-easing-standard);
 }
 
 .trust-badge-details {
@@ -353,7 +339,7 @@ section[role="tabpanel"]:hover {
   right: 0;
   top: calc(100% + 8px);
   z-index: 50;
-  min-width: 260px;
+  width: min(430px, calc(100vw - 24px));
   display: grid;
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
@@ -361,6 +347,8 @@ section[role="tabpanel"]:hover {
   border-radius: var(--radius-lg);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-md);
+  max-height: calc(100vh - 110px);
+  overflow: auto;
 }
 
 .trust-badge-details:not([open]) .trust-badge-panel {
@@ -397,6 +385,14 @@ section[role="tabpanel"]:hover {
 
 .trust-badge-meta dd {
   margin: 0;
+}
+
+.trust-badge-controls-menu {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .gantt-primary-card {
@@ -1021,7 +1017,7 @@ button {
   padding: 0;
   margin: 0;
   border-radius: 0;
-  background: #ffffff;
+  background: transparent;
   position: relative;
   cursor: col-resize;
   touch-action: none;
@@ -1090,6 +1086,7 @@ button {
 
 .timeline-main-splitter-collapse-symbol {
   position: absolute;
+  z-index: 25;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -1667,6 +1664,10 @@ button {
   background: var(--color-surface-elevated);
 }
 
+.timeline-filter-row .timeline-color-coding-select-trigger {
+  padding-right: 28px;
+}
+
 .timeline-filter-panel .timeline-color-coding-dropdown {
   z-index: 220;
 }
@@ -1882,14 +1883,21 @@ button {
 
 .timeline-chart-fit-button {
   min-height: 28px;
+  min-width: 28px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
   background: color-mix(in srgb, var(--color-surface-elevated) 88%, transparent);
   color: var(--color-text-secondary);
-  font-size: 11px;
   line-height: 1;
-  padding: 0 10px;
+  padding: 0 8px;
+  cursor: pointer;
   box-shadow: var(--shadow-sm);
+}
+
+.timeline-chart-fit-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .timeline-chart-fit-button:hover {
@@ -1916,7 +1924,6 @@ button {
 
 .timeline-chart-axis {
   display: block;
-  padding-top: 5px;
   background: color-mix(in srgb, var(--color-surface-elevated) 85%, transparent);
 }
 
@@ -2421,6 +2428,13 @@ button {
   color: var(--color-text);
 }
 
+.timeline-details-work-item-link-icon {
+  width: 13px;
+  height: 13px;
+  margin-left: 6px;
+  display: block;
+}
+
 .timeline-details-edit-form {
   display: grid;
   gap: var(--space-2);
@@ -2653,7 +2667,7 @@ footer {
   color: var(--color-text-secondary);
   font-size: 0.8rem;
   text-align: center;
-  background: rgba(255, 255, 255, 0.5);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);

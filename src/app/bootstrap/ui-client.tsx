@@ -42,6 +42,7 @@ import {
   type ThemeMode
 } from "./ui-client-theme.js";
 import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
+import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
 import { resolvePersistedRefreshQueryInput, runRetryRefreshFlow, type RunRequest } from "./ui-client-refresh-flow.js";
 import {
   applyTimelineMutationToUiState,
@@ -70,7 +71,8 @@ function renderAdoCommLogPanel(params: {
     {
       "aria-label": "ado-communication-log-panel",
       className: "ado-communication-log-panel",
-      open: true
+      open: true,
+      "data-auto-dismiss": "off"
     },
     React.createElement("summary", null, "Azure DevOps API logs"),
     params.loading ? React.createElement("div", null, "Loading communication logs…") : null,
@@ -391,6 +393,41 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     };
   }, [themeMode]);
 
+  React.useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      const trustBadgeElement = document.querySelector<HTMLDetailsElement>("details.trust-badge-details");
+
+      if (controlsOpen && !isTargetInsideElement(target, trustBadgeElement)) {
+        setControlsOpen(false);
+      }
+
+      dismissOpenDetailsMenus({
+        root: document,
+        target
+      });
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setControlsOpen(false);
+      dismissOpenDetailsMenus({
+        root: document,
+        target: null
+      });
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [controlsOpen]);
+
   const mainPanel = renderActivePanel({
     activeTab,
     uiModel,
@@ -406,6 +443,39 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
+  const controlsContent = React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(
+      "p",
+      { className: "ui-shell-side-title" },
+      "Controls"
+    ),
+    React.createElement(TopTabs, {
+      activeTab,
+      model: uiModel,
+      onTabChange: (tab) => {
+        setActiveTab(tab);
+      },
+      onBlockedAttempt: (payload) => {
+        setBlockerMessage(payload);
+        setControlsOpen(true);
+      }
+    }),
+    blockerMessage
+      ? React.createElement(
+          "section",
+          {
+            "aria-label": "tab-blocker-guidance",
+            className: "tab-blocker-guidance"
+          },
+          React.createElement("strong", null, `Blocked ${blockerMessage.tab}`),
+          React.createElement("div", null, `Reason: ${blockerMessage.reason}`),
+          React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
+        )
+      : null,
+    mainPanel
+  );
 
   return React.createElement(
     "main",
@@ -580,21 +650,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           statusCode: uiModel.statusCode,
           trustState: uiModel.trustState,
           lastRefreshAt: uiModel.freshness.lastRefreshAt,
-          readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
-        }),
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            className: "controls-toggle-button",
-            "aria-expanded": controlsOpen,
-            "aria-controls": "ui-controls-drawer",
-            onClick: () => {
-              setControlsOpen((current) => !current);
-            }
-          },
-          controlsOpen ? "Close controls" : "Open controls"
-        )
+          readOnlyTimeline: uiModel.capabilities.readOnlyTimeline,
+          controlsOpen,
+          onControlsOpenChange: setControlsOpen,
+          controlsContent
+        })
       )
     ),
     React.createElement(
@@ -714,42 +774,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             void retryRefresh();
           }
         })
-      ),
-      React.createElement(
-        "section",
-        {
-          id: "ui-controls-drawer",
-          className: controlsOpen ? "ui-shell-workspace ui-shell-workspace-open" : "ui-shell-workspace",
-          "aria-hidden": controlsOpen ? "false" : "true"
-        },
-        React.createElement(
-          "p",
-          { className: "ui-shell-side-title" },
-          "Controls"
-        ),
-        React.createElement(TopTabs, {
-          activeTab,
-          model: uiModel,
-          onTabChange: (tab) => {
-            setActiveTab(tab);
-          },
-          onBlockedAttempt: (payload) => {
-            setBlockerMessage(payload);
-          }
-        }),
-        blockerMessage
-          ? React.createElement(
-              "section",
-              {
-                "aria-label": "tab-blocker-guidance",
-                className: "tab-blocker-guidance"
-              },
-              React.createElement("strong", null, `Blocked ${blockerMessage.tab}`),
-              React.createElement("div", null, `Reason: ${blockerMessage.reason}`),
-              React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
-            )
-          : null,
-        mainPanel
       )
     ),
     React.createElement(

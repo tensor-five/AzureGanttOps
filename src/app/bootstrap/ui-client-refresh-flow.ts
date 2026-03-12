@@ -60,7 +60,7 @@ export async function runRetryRefreshFlow(params: {
       blocker: {
         tab: "query",
         reason: "No query available to refresh.",
-        nextAction: "Open controls, enter Query ID, then run query."
+        nextAction: "Open OK menu, enter Query ID, then run query."
       }
     };
   }

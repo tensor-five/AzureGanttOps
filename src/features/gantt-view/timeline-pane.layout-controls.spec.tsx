@@ -175,6 +175,74 @@ describe("timeline-pane layout and labels", () => {
     expect(Boolean(sortToggle.compareDocumentPosition(labelToggle) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 
+  it("toggles filter, sort, and label menus via keyboard shortcuts", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    fireEvent.keyDown(window, { key: "f" });
+    expect(screen.getByLabelText("Timeline filters")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "f" });
+    expect(screen.queryByLabelText("Timeline filters")).toBeNull();
+
+    fireEvent.keyDown(window, { key: "s" });
+    expect(screen.getByLabelText("Timeline sorting")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "s" });
+    expect(screen.queryByLabelText("Timeline sorting")).toBeNull();
+
+    fireEvent.keyDown(window, { key: "l" });
+    expect(screen.getByLabelText("Timeline label fields")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "l" });
+    expect(screen.queryByLabelText("Timeline label fields")).toBeNull();
+  });
+
+  it("rotates dependency mode via d shortcut", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const dependencyModeSelect = screen.getByLabelText("Dependency mode");
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("show");
+
+    fireEvent.keyDown(window, { key: "d" });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("edit");
+
+    fireEvent.keyDown(window, { key: "d" });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("violations");
+
+    fireEvent.keyDown(window, { key: "d" });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("none");
+
+    fireEvent.keyDown(window, { key: "d" });
+    expect((dependencyModeSelect as HTMLSelectElement).value).toBe("show");
+  });
+
+  it("switches zoom mode via m and w shortcuts", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const weekZoomButton = screen.getByLabelText("Zoom in to week view");
+    const monthZoomButton = screen.getByLabelText("Zoom out to month view");
+
+    fireEvent.keyDown(window, { key: "m" });
+    expect(monthZoomButton.getAttribute("aria-pressed")).toBe("true");
+    expect(weekZoomButton.getAttribute("aria-pressed")).toBe("false");
+
+    fireEvent.keyDown(window, { key: "w" });
+    expect(weekZoomButton.getAttribute("aria-pressed")).toBe("true");
+    expect(monthZoomButton.getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("toggles sidebar row alignment and persists the choice", async () => {
     const user = userEvent.setup();
 

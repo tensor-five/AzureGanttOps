@@ -840,8 +840,71 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     pendingFitRangeRef.current = null;
   }, [applyFitRangeToViewport, chartModel.dayWidthPx]);
 
+  const selectWeekZoom = React.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_WEEK_PX);
+  }, [setDayWidthPx]);
+
+  const selectMonthZoom = React.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_MONTH_PX);
+  }, [setDayWidthPx]);
+
+  const applyDependencyViewModeChange = React.useCallback(
+    (mode: DependencyViewMode) => {
+      setDependencyViewMode(mode);
+      setActiveDependencyDrag(null);
+      setActiveScheduleDrag(null);
+      setActiveUnschedulableDrag(null);
+      setUnscheduledDropPreview(null);
+      setSelectedDependency(null);
+    },
+    [
+      setActiveDependencyDrag,
+      setActiveScheduleDrag,
+      setActiveUnschedulableDrag,
+      setDependencyViewMode,
+      setSelectedDependency,
+      setUnscheduledDropPreview
+    ]
+  );
+
+  const rotateDependencyViewMode = React.useCallback(() => {
+    const modes = DEPENDENCY_VIEW_MODE_OPTIONS.map((option) => option.value);
+    const currentIndex = modes.indexOf(dependencyViewMode);
+    const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % modes.length;
+    const nextMode = modes[nextIndex];
+    if (!nextMode) {
+      return;
+    }
+    applyDependencyViewModeChange(nextMode);
+  }, [applyDependencyViewModeChange, dependencyViewMode]);
+
+  const toggleTimelineFilters = React.useCallback(() => {
+    setTimelineFiltersOpen((current) => {
+      if (current) {
+        setOpenFilterDropdown(null);
+      }
+      return !current;
+    });
+  }, [setOpenFilterDropdown, setTimelineFiltersOpen]);
+
+  const toggleSortSettings = React.useCallback(() => {
+    setSortSettingsOpen((current) => !current);
+  }, [setSortSettingsOpen]);
+
+  const toggleLabelSettings = React.useCallback(() => {
+    setLabelSettingsOpen((current) => !current);
+    setLabelFieldSearchDraft("");
+    setSidebarFieldSearchDraft("");
+  }, [setLabelFieldSearchDraft, setLabelSettingsOpen, setSidebarFieldSearchDraft]);
+
   useTimelineKeyboardShortcuts({
     isRefreshing: props.isRefreshing,
+    onToggleTimelineFilters: toggleTimelineFilters,
+    onToggleSortSettings: toggleSortSettings,
+    onToggleLabelSettings: toggleLabelSettings,
+    onRotateDependencyMode: rotateDependencyViewMode,
+    onSelectMonthZoom: selectMonthZoom,
+    onSelectWeekZoom: selectWeekZoom,
     onRemoveDependency: props.onRemoveDependency,
     onRetryRefresh: props.onRetryRefresh,
     selectedDependency,
@@ -1750,22 +1813,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         props.onRetryRefresh?.();
       },
       zoomLevel,
-      onSelectWeekZoom: () => {
-        setDayWidthPx(DAY_WIDTH_WEEK_PX);
-      },
-      onSelectMonthZoom: () => {
-        setDayWidthPx(DAY_WIDTH_MONTH_PX);
-      },
+      onSelectWeekZoom: selectWeekZoom,
+      onSelectMonthZoom: selectMonthZoom,
       dependencyViewMode,
       dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
-      onChangeDependencyMode: (mode) => {
-        setDependencyViewMode(mode);
-        setActiveDependencyDrag(null);
-        setActiveScheduleDrag(null);
-        setActiveUnschedulableDrag(null);
-        setUnscheduledDropPreview(null);
-        setSelectedDependency(null);
-      },
+      onChangeDependencyMode: applyDependencyViewModeChange,
       colorCodingControlRef,
       selectedColorCodingLabel,
       colorCodingDropdownOpen,
@@ -1791,23 +1843,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       filterToggleControlRef,
       timelineFiltersOpen,
       activeTimelineFiltersCount: activeTimelineFilters.length,
-      onToggleTimelineFilters: () => {
-        setTimelineFiltersOpen((current) => {
-          if (current) {
-            setOpenFilterDropdown(null);
-          }
-          return !current;
-        });
-      },
+      onToggleTimelineFilters: toggleTimelineFilters,
       sortControl: React.createElement(TimelineSortControl, {
         availableFieldRefs,
         controlRef: sortToggleControlRef,
         panelRef: sortPanelRef,
         sortSettingsOpen,
         timelineSortPreference,
-        onToggleSortSettings: () => {
-          setSortSettingsOpen((current) => !current);
-        },
+        onToggleSortSettings: toggleSortSettings,
         onSelectPrimarySortField: selectPrimarySortField,
         onSelectSecondarySortField: selectSecondarySortField
       }),
@@ -1822,11 +1865,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       labelFieldSearchDraft,
       filteredTimelineSidebarFieldOptions,
       filteredTimelineLabelFieldOptions,
-      onToggleLabelSettings: () => {
-        setLabelSettingsOpen((current) => !current);
-        setLabelFieldSearchDraft("");
-        setSidebarFieldSearchDraft("");
-      },
+      onToggleLabelSettings: toggleLabelSettings,
       onChangeSidebarFieldSearchDraft: (value) => {
         setSidebarFieldSearchDraft(value);
       },
@@ -1931,7 +1970,22 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     "aria-label": "Zoom to fit timeline",
                     onClick: zoomToFitTimeline
                   },
-                  "Fit"
+                  React.createElement(
+                    "svg",
+                    {
+                      viewBox: "0 0 24 24",
+                      className: "timeline-chart-fit-icon",
+                      "aria-hidden": "true"
+                    },
+                    React.createElement("path", {
+                      d: "M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4",
+                      fill: "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    })
+                  )
                 )
               ),
               React.createElement(
@@ -2577,7 +2631,7 @@ const BAR_HEIGHT = 24;
 const BAR_ROW_GAP = 2;
 const CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
 const BAR_ROW_TOP_INSET_PX = Math.max(0, Math.floor((CHART_ROW_HEIGHT - BAR_HEIGHT) / 2));
-const CHART_TOP_PADDING = 56;
+const CHART_TOP_PADDING = 64;
 const CHART_BOTTOM_PADDING = 18;
 const CHART_LEFT_GUTTER = 24;
 const CHART_RIGHT_PADDING_PX = 80;

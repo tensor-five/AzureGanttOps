@@ -10,6 +10,12 @@ type UseTimelineKeyboardShortcutsParams = {
   isRefreshing?: boolean;
   onRemoveDependency?: (input: { predecessorWorkItemId: number; successorWorkItemId: number }) => Promise<void>;
   onRetryRefresh?: () => void;
+  onToggleTimelineFilters: () => void;
+  onToggleSortSettings: () => void;
+  onToggleLabelSettings: () => void;
+  onRotateDependencyMode: () => void;
+  onSelectMonthZoom: () => void;
+  onSelectWeekZoom: () => void;
   selectedDependency: SelectedDependency | null;
   setSelectedDependency: React.Dispatch<React.SetStateAction<SelectedDependency | null>>;
   setSpacePanPressed: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,7 +56,44 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
         return;
       }
 
-      if (event.key.toLowerCase() !== "r" || params.isRefreshing === true) {
+      const key = event.key.toLowerCase();
+      if (key === "f") {
+        params.onToggleTimelineFilters();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "s") {
+        params.onToggleSortSettings();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "l") {
+        params.onToggleLabelSettings();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "d") {
+        params.onRotateDependencyMode();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "m") {
+        params.onSelectMonthZoom();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "w") {
+        params.onSelectWeekZoom();
+        event.preventDefault();
+        return;
+      }
+
+      if (key !== "r" || params.isRefreshing === true) {
         return;
       }
 
@@ -82,7 +125,13 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
   }, [
     params.isRefreshing,
     params.onRemoveDependency,
+    params.onRotateDependencyMode,
     params.onRetryRefresh,
+    params.onSelectMonthZoom,
+    params.onSelectWeekZoom,
+    params.onToggleLabelSettings,
+    params.onToggleSortSettings,
+    params.onToggleTimelineFilters,
     params.selectedDependency,
     params.setAdoptScheduleError,
     params.setSelectedDependency,
