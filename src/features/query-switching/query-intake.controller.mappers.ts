@@ -194,9 +194,19 @@ export function toDiagnosticsErrorCode(code: string | null): DiagnosticsErrorCod
 }
 
 export function toDiagnosticsStatusCode(code: string): DiagnosticsStatusCode {
-  return DETERMINISTIC_DIAGNOSTICS_CODES.has(code as DiagnosticsStatusCode)
-    ? (code as DiagnosticsStatusCode)
+  const canonicalCode = normalizeDiagnosticsCode(code);
+  return DETERMINISTIC_DIAGNOSTICS_CODES.has(canonicalCode as DiagnosticsStatusCode)
+    ? (canonicalCode as DiagnosticsStatusCode)
     : "UNKNOWN_ERROR";
+}
+
+function normalizeDiagnosticsCode(code: string): string {
+  if (!code.includes("_HTTP_")) {
+    return code;
+  }
+
+  const [baseCode] = code.split("_HTTP_", 1);
+  return baseCode ?? code;
 }
 
 const DETERMINISTIC_DIAGNOSTICS_CODES: ReadonlySet<DiagnosticsStatusCode> = new Set<DiagnosticsStatusCode>([
