@@ -308,10 +308,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     selectPrimarySortField,
     selectSecondarySortField
   } = timelineSorting;
-  const [appliedTimelineSortPreference, setAppliedTimelineSortPreference] = React.useState(() => timelineSortPreference);
   const sortedBaseTimeline = React.useMemo(
-    () => applyTimelineSorting(props.timeline, appliedTimelineSortPreference),
-    [appliedTimelineSortPreference, props.timeline]
+    () => applyTimelineSorting(props.timeline, timelineSortPreference),
+    [props.timeline, timelineSortPreference]
   );
   const effectiveTimeline = React.useMemo(() => {
     const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
@@ -517,7 +516,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   React.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
-    setAppliedTimelineSortPreference(timelineSortPreference);
     setActiveScheduleDrag(null);
     setActivePanDrag(null);
     setActiveUnschedulableDrag(null);

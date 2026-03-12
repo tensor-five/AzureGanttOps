@@ -250,7 +250,7 @@ describe("timeline-pane layout and labels", () => {
     expect(secondaryTrigger.textContent).toContain("Start date");
   });
 
-  it("applies changed sorting only after timeline reload", async () => {
+  it("applies changed sorting immediately", async () => {
     const user = userEvent.setup();
     saveTimelineSortPreference({
       primary: "startDate",
@@ -296,26 +296,13 @@ describe("timeline-pane layout and labels", () => {
     await user.type(screen.getByLabelText("Search timeline sort primary"), "title");
     await user.click(screen.getByRole("button", { name: /Title/ }));
 
-    const still11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
-    const still12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
-    expect(still11Y).toBe(before11Y);
-    expect(still12Y).toBe(before12Y);
-
-    firstMount.unmount();
-
-    render(
-      React.createElement(TimelinePane, {
-        timeline: {
-          ...timeline,
-          bars: [...timeline.bars]
-        },
-        showDependencies: true
-      })
-    );
-
     const after11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
     const after12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(after11Y).not.toBe(before11Y);
+    expect(after12Y).not.toBe(before12Y);
     expect(after12Y).toBeLessThan(after11Y);
+
+    firstMount.unmount();
   });
 
   it("composes bar labels from multiple configured fields with dash separator", async () => {
