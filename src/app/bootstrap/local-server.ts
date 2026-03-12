@@ -14,6 +14,7 @@ type FetchResponse = {
 const execFileAsync = promisify(execFile);
 const ADO_RESOURCE_ID = "499b84ac-1321-427f-aa17-267ca6975798";
 const TOKEN_REFRESH_SKEW_MS = 120_000;
+const TOKEN_COMMAND_TIMEOUT_MS = 60_000;
 const PORT = Number(process.env.PORT ?? "8080");
 
 if (process.env.ADO_VERBOSE_LOGS !== "1") {
@@ -191,7 +192,7 @@ async function resolveAzureCliAccessToken(): Promise<string> {
         "tsv"
       ],
       {
-        timeout: 15_000,
+        timeout: TOKEN_COMMAND_TIMEOUT_MS,
         windowsHide: true
       }
     );
@@ -205,10 +206,16 @@ async function resolveAzureCliAccessToken(): Promise<string> {
     return token;
   } catch (error: unknown) {
     const nodeError = error as {
+      message?: string;
+      code?: string;
+      signal?: string;
       stderr?: string;
       stdout?: string;
     };
-    const detail = `${nodeError.stderr ?? ""} ${nodeError.stdout ?? ""}`.trim();
+    const detail = [nodeError.message, nodeError.code, nodeError.signal, nodeError.stderr, nodeError.stdout]
+      .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      .join(" ")
+      .trim();
     const hint = detail.length > 0 ? ` Details: ${detail.slice(0, 300)}` : "";
     throw new Error(`ADO_AUTH_REQUIRED: Set ADO_PAT/AZURE_DEVOPS_EXT_PAT or run 'az login'.${hint}`);
   }
