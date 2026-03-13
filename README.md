@@ -4,7 +4,9 @@ Local-first Azure DevOps timeline tooling with a small HTTP backend and React UI
 
 ## License
 
-This project is licensed under the MIT License. See [`LICENSE`](./LICENSE).
+This project is licensed under the Azure GanttOps Attribution License. It is
+MIT-like, but requires visible attribution to TensorFive GmbH. See
+[`LICENSE`](./LICENSE).
 
 ## Contributing and Security
 

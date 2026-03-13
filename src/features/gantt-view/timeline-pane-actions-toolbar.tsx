@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 
 import type { TimelineColorCoding, TimelineFieldColorCodingConfig } from "./timeline-color-coding-preference.js";
 import type { DependencyViewMode } from "./use-dependency-editing.js";
@@ -71,6 +72,49 @@ export type TimelinePaneActionsToolbarProps = {
 };
 
 export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProps): React.ReactElement {
+  const colorCodingTriggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = React.useState<React.CSSProperties | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (!props.colorCodingDropdownOpen) {
+      setColorCodingDropdownStyle(null);
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const updateDropdownPosition = () => {
+      const trigger = colorCodingTriggerRef.current;
+      if (!trigger) {
+        return;
+      }
+
+      const rect = trigger.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const dropdownWidth = Math.min(Math.max(rect.width, 440), Math.max(320, viewportWidth - 16));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, viewportWidth - dropdownWidth - 8));
+
+      setColorCodingDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 6,
+        left,
+        width: dropdownWidth,
+        maxWidth: "min(560px, calc(100vw - 16px))"
+      });
+    };
+
+    updateDropdownPosition();
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [props.colorCodingDropdownOpen]);
+
   return React.createElement(
     React.Fragment,
     null,
@@ -170,6 +214,7 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
             {
               type: "button",
               className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+              ref: colorCodingTriggerRef,
               "aria-label": "Color coding",
               title: "Choose how timeline bars are color-coded.",
               "aria-haspopup": "listbox",
@@ -179,55 +224,64 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
             props.selectedColorCodingLabel
           ),
           props.colorCodingDropdownOpen
-            ? React.createElement(
-                "div",
-                { className: "timeline-color-coding-dropdown", role: "listbox", "aria-label": "Color coding options" },
-                React.createElement("input", {
-                  type: "search",
-                  className: "timeline-color-coding-dropdown-search",
-                  "aria-label": "Search color coding",
-                  placeholder: "Search mode or field",
-                  value: props.colorCodingSearchDraft,
-                  onChange: (event) => {
-                    props.onChangeColorCodingSearchDraft((event.target as HTMLInputElement).value);
-                  },
-                  onKeyDown: (event) => {
-                    if (event.key !== "Enter") {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    props.onApplyFirstFilteredColorCodingOption();
-                  }
-                }),
+            ? createPortal(
                 React.createElement(
                   "div",
-                  { className: "timeline-color-coding-dropdown-options" },
-                  props.filteredColorCodingOptions.length === 0
-                    ? React.createElement("p", { className: "timeline-details-muted" }, "No matching option.")
-                    : props.filteredColorCodingOptions.map((option) =>
-                        React.createElement(
-                          "button",
-                          {
-                            key: option.key,
-                            type: "button",
-                            className:
-                              option.mode === props.colorCoding &&
-                              ((option.mode !== "field" && props.colorCoding !== "field") ||
-                                option.fieldRef === props.fieldColorCoding.fieldRef)
-                                ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                : "timeline-color-coding-option",
-                            onClick: () => {
-                              props.onSelectColorCodingOption(option);
-                            }
-                          },
-                          React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
-                          option.subtitle
-                            ? React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
-                            : null
+                  {
+                    className: "timeline-color-coding-dropdown",
+                    "data-timeline-color-coding-overlay": "true",
+                    style: colorCodingDropdownStyle ?? undefined,
+                    role: "listbox",
+                    "aria-label": "Color coding options"
+                  },
+                  React.createElement("input", {
+                    type: "search",
+                    className: "timeline-color-coding-dropdown-search",
+                    "aria-label": "Search color coding",
+                    placeholder: "Search mode or field",
+                    value: props.colorCodingSearchDraft,
+                    onChange: (event) => {
+                      props.onChangeColorCodingSearchDraft((event.target as HTMLInputElement).value);
+                    },
+                    onKeyDown: (event) => {
+                      if (event.key !== "Enter") {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      props.onApplyFirstFilteredColorCodingOption();
+                    }
+                  }),
+                  React.createElement(
+                    "div",
+                    { className: "timeline-color-coding-dropdown-options" },
+                    props.filteredColorCodingOptions.length === 0
+                      ? React.createElement("p", { className: "timeline-details-muted" }, "No matching option.")
+                      : props.filteredColorCodingOptions.map((option) =>
+                          React.createElement(
+                            "button",
+                            {
+                              key: option.key,
+                              type: "button",
+                              className:
+                                option.mode === props.colorCoding &&
+                                ((option.mode !== "field" && props.colorCoding !== "field") ||
+                                  option.fieldRef === props.fieldColorCoding.fieldRef)
+                                  ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                  : "timeline-color-coding-option",
+                              onClick: () => {
+                                props.onSelectColorCodingOption(option);
+                              }
+                            },
+                            React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
+                            option.subtitle
+                              ? React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                              : null
+                          )
                         )
-                      )
-                )
+                  )
+                ),
+                document.body
               )
             : null,
           React.createElement(

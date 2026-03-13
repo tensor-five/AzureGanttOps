@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 
 type TimelineFieldFilter = {
   slotId: number;
@@ -40,6 +41,51 @@ export type TimelineFilterPanelProps = {
 };
 
 export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.ReactElement | null {
+  const filterDropdownTriggerRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
+  const [filterDropdownStyle, setFilterDropdownStyle] = React.useState<React.CSSProperties | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (!props.openFilterDropdown) {
+      setFilterDropdownStyle(null);
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const triggerKey = `${props.openFilterDropdown.slotId}-${props.openFilterDropdown.kind}`;
+
+    const updateDropdownPosition = () => {
+      const trigger = filterDropdownTriggerRefs.current[triggerKey];
+      if (!trigger) {
+        return;
+      }
+
+      const rect = trigger.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const dropdownWidth = Math.min(Math.max(rect.width, 440), Math.max(320, viewportWidth - 16));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, viewportWidth - dropdownWidth - 8));
+
+      setFilterDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 6,
+        left,
+        width: dropdownWidth,
+        maxWidth: "min(560px, calc(100vw - 16px))"
+      });
+    };
+
+    updateDropdownPosition();
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [props.openFilterDropdown]);
+
   if (!props.open) {
     return null;
   }
@@ -94,6 +140,9 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                   {
                     type: "button",
                     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+                    ref: (element) => {
+                      filterDropdownTriggerRefs.current[`${filter.slotId}-field`] = element as HTMLButtonElement | null;
+                    },
                     "aria-label": `Select filter field ${index + 1}`,
                     "aria-haspopup": "listbox",
                     "aria-expanded": isFieldDropdownOpen ? "true" : "false",
@@ -110,61 +159,66 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                   selectedFieldDisplay
                 ),
                 isFieldDropdownOpen
-                  ? React.createElement(
-                      "div",
-                      {
-                        className: "timeline-color-coding-dropdown",
-                        role: "listbox",
-                        "aria-label": `Filter field options ${index + 1}`
-                      },
-                      React.createElement("input", {
-                        type: "search",
-                        className: "timeline-color-coding-dropdown-search",
-                        "aria-label": `Search filter fields ${index + 1}`,
-                        placeholder: "Search field",
-                        value: props.filterFieldSearchDraft,
-                        onChange: (event) => {
-                          props.onSetFilterFieldSearchDraft((event.target as HTMLInputElement).value);
-                        },
-                        onKeyDown: (event) => {
-                          if (event.key !== "Enter") {
-                            return;
-                          }
-
-                          event.preventDefault();
-                          const firstField = props.openFilterFieldOptions[0] ?? null;
-                          if (!firstField) {
-                            return;
-                          }
-                          props.onApplyFieldFilterSelection(filter.slotId, firstField);
-                          props.onSetOpenFilterDropdown(null);
-                        }
-                      }),
+                  ? createPortal(
                       React.createElement(
                         "div",
-                        { className: "timeline-color-coding-dropdown-options" },
-                        props.openFilterFieldOptions.length === 0
-                          ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                          : props.openFilterFieldOptions.map((fieldRef) =>
-                              React.createElement(
-                                "button",
-                                {
-                                  key: `${filter.slotId}-${fieldRef}`,
-                                  type: "button",
-                                  className:
-                                    filter.fieldRef === fieldRef
-                                      ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                      : "timeline-color-coding-option",
-                                  onClick: () => {
-                                    props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
-                                    props.onSetOpenFilterDropdown(null);
-                                  }
-                                },
-                                React.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)),
-                                React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef)
+                        {
+                          className: "timeline-color-coding-dropdown",
+                          "data-timeline-filter-overlay": "true",
+                          style: filterDropdownStyle ?? undefined,
+                          role: "listbox",
+                          "aria-label": `Filter field options ${index + 1}`
+                        },
+                        React.createElement("input", {
+                          type: "search",
+                          className: "timeline-color-coding-dropdown-search",
+                          "aria-label": `Search filter fields ${index + 1}`,
+                          placeholder: "Search field",
+                          value: props.filterFieldSearchDraft,
+                          onChange: (event) => {
+                            props.onSetFilterFieldSearchDraft((event.target as HTMLInputElement).value);
+                          },
+                          onKeyDown: (event) => {
+                            if (event.key !== "Enter") {
+                              return;
+                            }
+
+                            event.preventDefault();
+                            const firstField = props.openFilterFieldOptions[0] ?? null;
+                            if (!firstField) {
+                              return;
+                            }
+                            props.onApplyFieldFilterSelection(filter.slotId, firstField);
+                            props.onSetOpenFilterDropdown(null);
+                          }
+                        }),
+                        React.createElement(
+                          "div",
+                          { className: "timeline-color-coding-dropdown-options" },
+                          props.openFilterFieldOptions.length === 0
+                            ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                            : props.openFilterFieldOptions.map((fieldRef) =>
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: `${filter.slotId}-${fieldRef}`,
+                                    type: "button",
+                                    className:
+                                      filter.fieldRef === fieldRef
+                                        ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                        : "timeline-color-coding-option",
+                                    onClick: () => {
+                                      props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
+                                      props.onSetOpenFilterDropdown(null);
+                                    }
+                                  },
+                                  React.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)),
+                                  React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef)
+                                )
                               )
-                            )
-                      )
+                        )
+                      ),
+                      document.body
                     )
                   : null
               ),
@@ -176,6 +230,9 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                   {
                     type: "button",
                     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+                    ref: (element) => {
+                      filterDropdownTriggerRefs.current[`${filter.slotId}-value`] = element as HTMLButtonElement | null;
+                    },
                     "aria-label": `Select filter values ${index + 1}`,
                     "aria-haspopup": "listbox",
                     "aria-expanded": isValueDropdownOpen ? "true" : "false",
@@ -197,52 +254,57 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                   valueLabel
                 ),
                 isValueDropdownOpen
-                  ? React.createElement(
-                      "div",
-                      {
-                        className: "timeline-color-coding-dropdown",
-                        role: "listbox",
-                        "aria-label": `Filter value options ${index + 1}`
-                      },
-                      React.createElement("input", {
-                        type: "search",
-                        className: "timeline-color-coding-dropdown-search",
-                        "aria-label": `Search filter values ${index + 1}`,
-                        placeholder: "Search value",
-                        value: props.filterValueSearchDraft,
-                        onChange: (event) => {
-                          props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
-                        }
-                      }),
+                  ? createPortal(
                       React.createElement(
                         "div",
-                        { className: "timeline-color-coding-dropdown-options" },
-                        filterValueOptions.length === 0
-                          ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
-                          : filterValueOptions.map((entry) =>
-                              React.createElement(
-                                "label",
-                                {
-                                  key: `${filter.slotId}-value-${entry.key}`,
-                                  className: "timeline-filter-value-option"
-                                },
-                                React.createElement("input", {
-                                  type: "checkbox",
-                                  checked: filter.selectedValueKeys.includes(entry.key),
-                                  "aria-label": `Include ${entry.label} in filter ${index + 1}`,
-                                  onChange: () => {
-                                    props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
-                                  }
-                                }),
+                        {
+                          className: "timeline-color-coding-dropdown",
+                          "data-timeline-filter-overlay": "true",
+                          style: filterDropdownStyle ?? undefined,
+                          role: "listbox",
+                          "aria-label": `Filter value options ${index + 1}`
+                        },
+                        React.createElement("input", {
+                          type: "search",
+                          className: "timeline-color-coding-dropdown-search",
+                          "aria-label": `Search filter values ${index + 1}`,
+                          placeholder: "Search value",
+                          value: props.filterValueSearchDraft,
+                          onChange: (event) => {
+                            props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
+                          }
+                        }),
+                        React.createElement(
+                          "div",
+                          { className: "timeline-color-coding-dropdown-options" },
+                          filterValueOptions.length === 0
+                            ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
+                            : filterValueOptions.map((entry) =>
                                 React.createElement(
-                                  "span",
-                                  { className: "timeline-filter-value-option-meta" },
-                                  React.createElement("strong", null, entry.label),
-                                  React.createElement("span", null, `${entry.count} item(s)`)
+                                  "label",
+                                  {
+                                    key: `${filter.slotId}-value-${entry.key}`,
+                                    className: "timeline-filter-value-option"
+                                  },
+                                  React.createElement("input", {
+                                    type: "checkbox",
+                                    checked: filter.selectedValueKeys.includes(entry.key),
+                                    "aria-label": `Include ${entry.label} in filter ${index + 1}`,
+                                    onChange: () => {
+                                      props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
+                                    }
+                                  }),
+                                  React.createElement(
+                                    "span",
+                                    { className: "timeline-filter-value-option-meta" },
+                                    React.createElement("strong", null, entry.label),
+                                    React.createElement("span", null, `${entry.count} item(s)`)
+                                  )
                                 )
                               )
-                            )
-                      )
+                        )
+                      ),
+                      document.body
                     )
                   : null
               ),

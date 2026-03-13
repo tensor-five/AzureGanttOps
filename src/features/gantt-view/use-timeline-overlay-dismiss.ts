@@ -30,6 +30,14 @@ export function useTimelineOverlayDismiss(params: UseTimelineOverlayDismissParam
         return;
       }
 
+      if (target instanceof Element && target.closest("[data-timeline-color-coding-overlay='true']")) {
+        return;
+      }
+
+      if (target instanceof Element && target.closest("[data-timeline-filter-overlay='true']")) {
+        return;
+      }
+
       const control = params.colorCodingControlRef.current;
       if (control && control.contains(target)) {
         return;
