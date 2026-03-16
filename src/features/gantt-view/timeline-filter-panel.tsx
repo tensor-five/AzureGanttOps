@@ -36,6 +36,7 @@ export type TimelineFilterPanelProps = {
   filterValueSearchDraft: string;
   onApplyFieldFilterSelection: (slotId: number, fieldRef: string | null) => void;
   onToggleTimelineFieldValueSelection: (slotId: number, valueKey: string) => void;
+  onToggleVisibleTimelineFieldValueSelections: (slotId: number, valueKeys: string[]) => void;
   onRemoveTimelineFilterSlot: (slotId: number) => void;
   onAddTimelineFilterSlot: () => void;
 };
@@ -122,6 +123,10 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
               isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId
                 ? props.openFilterValueOptions
                 : [];
+            const visibleValueKeys = filterValueOptions.map((entry) => entry.key);
+            const hasVisibleValueOptions = visibleValueKeys.length > 0;
+            const areAllVisibleValuesSelected =
+              hasVisibleValueOptions && visibleValueKeys.every((key) => filter.selectedValueKeys.includes(key));
 
             return React.createElement(
               "div",
@@ -264,16 +269,50 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                           role: "listbox",
                           "aria-label": `Filter value options ${index + 1}`
                         },
-                        React.createElement("input", {
-                          type: "search",
-                          className: "timeline-color-coding-dropdown-search",
-                          "aria-label": `Search filter values ${index + 1}`,
-                          placeholder: "Search value",
-                          value: props.filterValueSearchDraft,
-                          onChange: (event) => {
-                            props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
-                          }
-                        }),
+                        React.createElement(
+                          "div",
+                          { className: "timeline-filter-value-search-row" },
+                          React.createElement(
+                            "button",
+                            {
+                              type: "button",
+                              className: areAllVisibleValuesSelected
+                                ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active"
+                                : "timeline-filter-bulk-toggle",
+                              "aria-label": areAllVisibleValuesSelected
+                                ? `Deselect all visible filter values ${index + 1}`
+                                : `Select all visible filter values ${index + 1}`,
+                              title: areAllVisibleValuesSelected
+                                ? "Deselect all currently filtered values"
+                                : "Select all currently filtered values",
+                              disabled: !hasVisibleValueOptions,
+                              onClick: () => {
+                                props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, visibleValueKeys);
+                              }
+                            },
+                            React.createElement(
+                              "svg",
+                              {
+                                viewBox: "0 0 24 24",
+                                className: "timeline-label-toggle-icon",
+                                "aria-hidden": "true"
+                              },
+                              React.createElement("path", {
+                                d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
+                              })
+                            )
+                          ),
+                          React.createElement("input", {
+                            type: "search",
+                            className: "timeline-color-coding-dropdown-search",
+                            "aria-label": `Search filter values ${index + 1}`,
+                            placeholder: "Search value",
+                            value: props.filterValueSearchDraft,
+                            onChange: (event) => {
+                              props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
+                            }
+                          })
+                        ),
                         React.createElement(
                           "div",
                           { className: "timeline-color-coding-dropdown-options" },

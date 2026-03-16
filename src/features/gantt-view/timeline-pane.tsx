@@ -1633,6 +1633,42 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     );
   }, []);
 
+  const toggleVisibleTimelineFieldValueSelections = React.useCallback((slotId: number, valueKeys: string[]) => {
+    if (valueKeys.length === 0) {
+      return;
+    }
+
+    setTimelineFieldFilters((current) =>
+      current.map((filter) => {
+        if (filter.slotId !== slotId) {
+          return filter;
+        }
+
+        const visibleValueKeySet = new Set(valueKeys);
+        const allVisibleValuesSelected = valueKeys.every((valueKey) => filter.selectedValueKeys.includes(valueKey));
+
+        if (allVisibleValuesSelected) {
+          return {
+            ...filter,
+            selectedValueKeys: filter.selectedValueKeys.filter((valueKey) => !visibleValueKeySet.has(valueKey))
+          };
+        }
+
+        const nextSelectedValueKeys = [...filter.selectedValueKeys];
+        for (const valueKey of valueKeys) {
+          if (!nextSelectedValueKeys.includes(valueKey)) {
+            nextSelectedValueKeys.push(valueKey);
+          }
+        }
+
+        return {
+          ...filter,
+          selectedValueKeys: nextSelectedValueKeys
+        };
+      })
+    );
+  }, []);
+
   const addTimelineFilterSlot = React.useCallback(() => {
     setTimelineFieldFilters((current) => {
       if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
@@ -1901,6 +1937,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       filterValueSearchDraft,
       onApplyFieldFilterSelection: applyFieldFilterSelection,
       onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
+      onToggleVisibleTimelineFieldValueSelections: toggleVisibleTimelineFieldValueSelections,
       onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
       onAddTimelineFilterSlot: addTimelineFilterSlot
     }),

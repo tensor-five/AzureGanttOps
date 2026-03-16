@@ -57,6 +57,63 @@ describe("timeline-pane filters", () => {
     expect(screen.getByRole("button", { name: /#22 Unsched Beta/ })).toBeTruthy();
   });
 
+  it("selects all currently visible values from the filtered value search without clearing hidden selections", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+    await user.type(screen.getByLabelText("Search filter values 1"), "bet");
+    await user.click(screen.getByLabelText("Select all visible filter values 1"));
+    await user.clear(screen.getByLabelText("Search filter values 1"));
+
+    expect((screen.getByLabelText("Include Alpha in filter 1") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Include Beta in filter 1") as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+  });
+
+  it("deselects only the currently visible values when all filtered matches are already selected", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+    await user.click(screen.getByLabelText("Include Beta in filter 1"));
+    await user.type(screen.getByLabelText("Search filter values 1"), "bet");
+    await user.click(screen.getByLabelText("Deselect all visible filter values 1"));
+    await user.clear(screen.getByLabelText("Search filter values 1"));
+
+    expect((screen.getByLabelText("Include Alpha in filter 1") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Include Beta in filter 1") as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-13")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+  });
+
   it("applies multiple field filters in parallel", async () => {
     const user = userEvent.setup();
 

@@ -1763,6 +1763,54 @@ button {
   color: var(--color-text-secondary);
 }
 
+.timeline-filter-value-search-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-filter-value-search-row .timeline-color-coding-dropdown-search {
+  min-width: 0;
+}
+
+.timeline-filter-bulk-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.timeline-filter-bulk-toggle:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.timeline-filter-bulk-toggle:focus,
+.timeline-filter-bulk-toggle:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.timeline-filter-bulk-toggle:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.timeline-filter-bulk-toggle-active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-elevated));
+  color: var(--color-primary);
+}
+
 .timeline-color-coding-modal-backdrop {
   position: fixed;
   inset: 0;
