@@ -2620,10 +2620,37 @@ button {
   margin: 0;
 }
 
+.timeline-description-readonly-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-description-toggle {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+}
+
+.timeline-description-toggle:hover {
+  color: var(--color-text);
+}
+
 .timeline-details-richtext:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.timeline-details-richtext-collapsed {
+  min-height: auto;
+  max-height: calc(var(--leading-normal) * 1em * 4 + 16px);
+  overflow: hidden;
 }
 
 .timeline-details-muted {

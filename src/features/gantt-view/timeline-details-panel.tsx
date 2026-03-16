@@ -29,6 +29,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const [stateDraft, setStateDraft] = React.useState("");
   const [serverStateOptions, setServerStateOptions] = React.useState<Array<{ name: string; color: string | null }>>([]);
   const [isDescriptionEditing, setIsDescriptionEditing] = React.useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
   const descriptionFieldRef = React.useRef<HTMLDivElement | null>(null);
@@ -41,6 +42,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       setDescriptionDraft("");
       setStateDraft("");
       setIsDescriptionEditing(false);
+      setIsDescriptionExpanded(false);
       setSaveError(null);
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
@@ -53,6 +55,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     setDescriptionDraft(sanitizedDescription);
     setStateDraft(selected.state);
     setIsDescriptionEditing(false);
+    setIsDescriptionExpanded(false);
     setSaveError(null);
     if (descriptionRef.current) {
       descriptionRef.current.innerHTML = sanitizedDescription;
@@ -119,6 +122,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   );
   const selectedStateColor =
     stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
+  const hasDescriptionContent = stripHtmlToText(descriptionDraft).length > 0;
 
   const applyDescriptionCommand = (command: string, value?: string) => {
     if (!descriptionRef.current) {
@@ -368,15 +372,38 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                     )
                   )
                 : React.createElement(
-                    "p",
-                    { className: "timeline-details-muted timeline-description-edit-hint" },
-                    "Click description to edit"
+                    "div",
+                    { className: "timeline-description-readonly-head" },
+                    React.createElement(
+                      "p",
+                      { className: "timeline-details-muted timeline-description-edit-hint" },
+                      "Click description to edit"
+                    ),
+                    hasDescriptionContent
+                      ? React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "timeline-description-toggle",
+                            "aria-expanded": isDescriptionExpanded,
+                            onClick: (event) => {
+                              event.stopPropagation();
+                              setIsDescriptionExpanded((current) => !current);
+                            }
+                          },
+                          isDescriptionExpanded ? "Show less" : "Show more"
+                        )
+                      : null
                   ),
               React.createElement("div", {
                 ref: descriptionRef,
-                className: isDescriptionEditing
-                  ? "timeline-details-richtext timeline-details-richtext-editing"
-                  : "timeline-details-richtext timeline-details-richtext-readonly",
+                className: [
+                  "timeline-details-richtext",
+                  isDescriptionEditing ? "timeline-details-richtext-editing" : "timeline-details-richtext-readonly",
+                  !isDescriptionEditing && !isDescriptionExpanded ? "timeline-details-richtext-collapsed" : null
+                ]
+                  .filter(Boolean)
+                  .join(" "),
                 contentEditable: isDescriptionEditing,
                 suppressContentEditableWarning: true,
                 onClick: () => {
@@ -521,6 +548,10 @@ function parseTimelineDetailLine(line: string): { label: string; value: string }
     label: match[1],
     value: match[2]
   };
+}
+
+function stripHtmlToText(value: string): string {
+  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function formatTimelineDetailValue(label: string, value: string): string {

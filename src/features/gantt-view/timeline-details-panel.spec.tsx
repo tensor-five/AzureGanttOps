@@ -39,6 +39,32 @@ function makeTimeline(): TimelineReadModel {
 }
 
 describe("timeline-details-panel keyboard shortcuts", () => {
+  it("shows description collapsed by default and expands when toggled or edited", async () => {
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeTimeline(),
+        selectedWorkItemId: 11
+      })
+    );
+
+    const description = container.querySelector(".timeline-details-richtext");
+    expect(description?.className).toContain("timeline-details-richtext-collapsed");
+
+    const toggle = screen.getByRole("button", { name: "Show more" });
+    fireEvent.click(toggle);
+    expect(description?.className).not.toContain("timeline-details-richtext-collapsed");
+
+    fireEvent.click(toggle);
+    expect(description?.className).toContain("timeline-details-richtext-collapsed");
+
+    fireEvent.click(description as HTMLDivElement);
+
+    await waitFor(() => {
+      expect(description?.getAttribute("contenteditable")).toBe("true");
+    });
+    expect(description?.className).not.toContain("timeline-details-richtext-collapsed");
+  });
+
   it("saves on Ctrl+S when details are dirty", async () => {
     const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
 
