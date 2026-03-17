@@ -9,6 +9,7 @@ type SelectedDependency = {
 type UseTimelineKeyboardShortcutsParams = {
   isRefreshing?: boolean;
   onRemoveDependency?: (input: { predecessorWorkItemId: number; successorWorkItemId: number }) => Promise<void>;
+  onPushPendingWorkItemChanges?: () => void;
   onRetryRefresh?: () => void;
   onToggleTimelineFilters: () => void;
   onToggleSortSettings: () => void;
@@ -16,6 +17,7 @@ type UseTimelineKeyboardShortcutsParams = {
   onRotateDependencyMode: () => void;
   onSelectMonthZoom: () => void;
   onSelectWeekZoom: () => void;
+  pendingWorkItemSyncCount?: number;
   selectedDependency: SelectedDependency | null;
   setSelectedDependency: React.Dispatch<React.SetStateAction<SelectedDependency | null>>;
   setSpacePanPressed: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,6 +28,18 @@ type UseTimelineKeyboardShortcutsParams = {
 export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcutsParams): void {
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === "s") {
+        if ((params.pendingWorkItemSyncCount ?? 0) > 0) {
+          event.preventDefault();
+          params.onPushPendingWorkItemChanges?.();
+        }
+        return;
+      }
+
       if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
@@ -125,6 +139,7 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
   }, [
     params.isRefreshing,
     params.onRemoveDependency,
+    params.onPushPendingWorkItemChanges,
     params.onRotateDependencyMode,
     params.onRetryRefresh,
     params.onSelectMonthZoom,
@@ -132,6 +147,7 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
     params.onToggleLabelSettings,
     params.onToggleSortSettings,
     params.onToggleTimelineFilters,
+    params.pendingWorkItemSyncCount,
     params.selectedDependency,
     params.setAdoptScheduleError,
     params.setSelectedDependency,

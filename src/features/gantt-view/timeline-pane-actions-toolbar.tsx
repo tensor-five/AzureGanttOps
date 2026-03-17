@@ -5,6 +5,7 @@ import type { TimelineColorCoding, TimelineFieldColorCodingConfig } from "./time
 import type { DependencyViewMode } from "./use-dependency-editing.js";
 import type { OpenFilterDropdownState } from "./use-timeline-filters.js";
 import { TimelineLabelSettingsPanel } from "./timeline-label-settings-panel.js";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 type ColorCodingOption = {
   key: string;
@@ -67,8 +68,12 @@ export type TimelinePaneActionsToolbarProps = {
   onSyncLabelMenuScrollFromBar: () => void;
   onToggleTimelineSidebarField: (fieldRef: string) => void;
   onToggleTimelineLabelField: (fieldRef: string) => void;
-  workItemSyncState: "up_to_date" | "syncing" | "error";
+  workItemSyncState: WorkItemSyncState;
   workItemSyncError: string | null;
+  liveSyncEnabled: boolean;
+  pendingWorkItemSyncCount: number;
+  onSetLiveSyncEnabled: (enabled: boolean) => void;
+  onPushPendingWorkItemChanges: () => void;
 };
 
 export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProps): React.ReactElement {
@@ -114,6 +119,24 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
       window.removeEventListener("scroll", updateDropdownPosition, true);
     };
   }, [props.colorCodingDropdownOpen]);
+
+  const pushButtonLabel =
+    props.pendingWorkItemSyncCount > 0
+      ? `Push changes (${props.pendingWorkItemSyncCount})`
+      : "Push changes";
+  const shouldShowPushButton = !props.liveSyncEnabled && props.pendingWorkItemSyncCount > 0;
+  const statusLabel =
+    props.workItemSyncState === "syncing"
+      ? "Updating work items..."
+      : props.workItemSyncState === "error"
+        ? props.pendingWorkItemSyncCount > 0
+          ? `Sync failed, ${props.pendingWorkItemSyncCount} changes queued`
+          : "Work item update failed"
+        : !props.liveSyncEnabled
+          ? props.pendingWorkItemSyncCount > 0
+            ? `Live sync paused, ${props.pendingWorkItemSyncCount} changes queued`
+            : "Live sync paused"
+          : "Work items up to date";
 
   return React.createElement(
     React.Fragment,
@@ -394,6 +417,37 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
         "div",
         { className: "timeline-pane-actions-status" },
         React.createElement(
+          "label",
+          {
+            className: "timeline-live-sync-toggle",
+            title: props.liveSyncEnabled
+              ? "Pause automatic work item sync"
+              : "Resume automatic work item sync and flush queued changes"
+          },
+          React.createElement("input", {
+            type: "checkbox",
+            className: "timeline-live-sync-toggle-input",
+            checked: props.liveSyncEnabled,
+            onChange: (event) => {
+              props.onSetLiveSyncEnabled((event.target as HTMLInputElement).checked);
+            }
+          }),
+          React.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }),
+          React.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")
+        ),
+        shouldShowPushButton
+          ? React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "timeline-action-button timeline-action-button-primary",
+                disabled: props.workItemSyncState === "syncing",
+                onClick: props.onPushPendingWorkItemChanges
+              },
+              pushButtonLabel
+            )
+          : null,
+        React.createElement(
           "div",
           {
             className: "gantt-sync-status",
@@ -403,15 +457,7 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
             title: props.workItemSyncState === "error" ? props.workItemSyncError ?? undefined : undefined
           },
           React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
-          React.createElement(
-            "span",
-            null,
-            props.workItemSyncState === "syncing"
-              ? "Updating work items..."
-              : props.workItemSyncState === "error"
-                ? "Work item update failed"
-                : "Work items up to date"
-          )
+          React.createElement("span", null, statusLabel)
         )
       )
     )

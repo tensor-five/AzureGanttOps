@@ -42,6 +42,7 @@ export type SavedQueryPreference = {
 
 export type UserPreferences = {
   themeMode?: ThemeModePreference;
+  timelineLiveSyncEnabled?: boolean;
   timelineDensity?: TimelineDensityPreference;
   timelineColorCoding?: TimelineColorCodingPreference;
   timelineFieldColorCoding?: TimelineFieldColorCodingPreference;
@@ -69,6 +70,10 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
 
   if (candidate.themeMode === "system" || candidate.themeMode === "light" || candidate.themeMode === "dark") {
     next.themeMode = candidate.themeMode;
+  }
+
+  if (typeof candidate.timelineLiveSyncEnabled === "boolean") {
+    next.timelineLiveSyncEnabled = candidate.timelineLiveSyncEnabled;
   }
 
   if (candidate.timelineDensity === "comfortable" || candidate.timelineDensity === "compact") {

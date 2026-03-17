@@ -388,4 +388,21 @@ describe("timeline-pane dragging", () => {
 
     expect(onRetryRefresh).not.toHaveBeenCalled();
   });
+
+  it("pushes pending changes on Ctrl+S", () => {
+    const onPushPendingWorkItemChanges = vi.fn();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        pendingWorkItemSyncCount: 2,
+        onPushPendingWorkItemChanges
+      })
+    );
+
+    fireEvent.keyDown(window, { key: "s", ctrlKey: true, cancelable: true });
+
+    expect(onPushPendingWorkItemChanges).toHaveBeenCalledTimes(1);
+  });
 });

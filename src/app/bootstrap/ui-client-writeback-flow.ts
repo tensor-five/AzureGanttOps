@@ -2,8 +2,7 @@ import type React from "react";
 
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
-
-type WorkItemSyncState = "up_to_date" | "syncing" | "error";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 export function toWritebackError(reasonCode: string): Error {
   return new Error(reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");

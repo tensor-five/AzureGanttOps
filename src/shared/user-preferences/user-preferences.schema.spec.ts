@@ -47,6 +47,20 @@ describe("user-preferences.schema", () => {
     });
   });
 
+  it("keeps boolean timeline sync preferences", () => {
+    expect(
+      sanitizeUserPreferences({
+        timelineLiveSyncEnabled: false
+      }).timelineLiveSyncEnabled
+    ).toBe(false);
+
+    expect(
+      sanitizeUserPreferences({
+        timelineLiveSyncEnabled: "false"
+      }).timelineLiveSyncEnabled
+    ).toBeUndefined();
+  });
+
   it("sanitizes timeline sort preferences", () => {
     const sanitized = sanitizeUserPreferences({
       timelineSort: {

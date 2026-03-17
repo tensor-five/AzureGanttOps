@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import { TimelinePane, resolveTimelineVerticalLayoutMetrics } from "./timeline-pane.js";
@@ -136,5 +136,57 @@ describe("timeline-pane layout", () => {
     expect(nonEmptyState?.classList.contains("timeline-unschedulable-list-empty")).toBe(false);
     const nonEmptyChartScroll = container.querySelector(".timeline-chart-scroll");
     expect(nonEmptyChartScroll?.classList.contains("timeline-chart-scroll-unscheduled-empty")).toBe(false);
+  });
+
+  it("renders live sync controls next to the sync status", () => {
+    const onSetLiveSyncEnabled = vi.fn();
+    const onPushPendingWorkItemChanges = vi.fn();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        liveSyncEnabled: false,
+        pendingWorkItemSyncCount: 2,
+        workItemSyncState: "paused",
+        onSetLiveSyncEnabled,
+        onPushPendingWorkItemChanges
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Push changes (2)" }));
+    fireEvent.click(screen.getByLabelText("Live sync"));
+
+    expect(screen.getByText("Live sync paused, 2 changes queued")).toBeTruthy();
+    expect(onPushPendingWorkItemChanges).toHaveBeenCalledTimes(1);
+    expect(onSetLiveSyncEnabled).toHaveBeenCalledWith(true);
+  });
+
+  it("hides push changes while live sync is enabled", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        liveSyncEnabled: true,
+        pendingWorkItemSyncCount: 2,
+        workItemSyncState: "up_to_date"
+      })
+    );
+
+    expect(screen.queryByRole("button", { name: "Push changes (2)" })).toBeNull();
+  });
+
+  it("hides push changes when no pending changes exist", () => {
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        liveSyncEnabled: false,
+        pendingWorkItemSyncCount: 0,
+        workItemSyncState: "paused"
+      })
+    );
+
+    expect(screen.queryByRole("button", { name: "Push changes" })).toBeNull();
   });
 });

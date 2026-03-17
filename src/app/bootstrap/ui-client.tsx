@@ -15,6 +15,11 @@ import type { QueryIntakeResponse } from "../../features/query-switching/query-i
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
 import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
 import { createTimelineSelectionStore } from "../../features/gantt-view/selection-store.js";
+import {
+  hydrateTimelineLiveSyncEnabledPreference,
+  loadTimelineLiveSyncEnabledPreference,
+  saveTimelineLiveSyncEnabledPreference
+} from "../../features/gantt-view/timeline-live-sync-preference.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
@@ -49,8 +54,16 @@ import {
   runTrackedWorkItemSync,
   toWritebackError
 } from "./ui-client-writeback-flow.js";
+import {
+  applyPendingWorkItemMutationsToResponse,
+  createPendingWorkItemMutation,
+  flushPendingWorkItemMutations,
+  upsertPendingWorkItemMutation,
+  type PendingWorkItemMutation
+} from "./ui-client-work-item-sync.js";
 import { resolveHydratedHeaderQuerySelection } from "./ui-client-header-query-flow.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -58,8 +71,6 @@ const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
-
-type WorkItemSyncState = "up_to_date" | "syncing" | "error";
 
 function renderAdoCommLogPanel(params: {
   logs: AdoCommLogEntry[];
@@ -162,11 +173,18 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
     readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
   );
+  const [liveSyncEnabled, setLiveSyncEnabled] = React.useState<boolean>(() => loadTimelineLiveSyncEnabledPreference());
   const responseRef = React.useRef<QueryIntakeResponse | null>(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>("up_to_date");
+  const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>(() =>
+    loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused"
+  );
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = React.useState(0);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const workItemSyncInFlightRef = React.useRef(0);
+  const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
+  const flushPendingWorkItemMutationsPromiseRef = React.useRef<Promise<void> | null>(null);
+  const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
@@ -219,7 +237,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         mappingProfileId: request.mappingProfileId,
         mappingProfileUpsert: request.mappingProfileUpsert
       });
-      const submitted = await enrichRuntimeStateColors(result.response);
+      const submitted = applyPendingWorkItemMutationsToResponse(
+        await enrichRuntimeStateColors(result.response),
+        pendingWorkItemMutationsRef.current
+      );
       setResponse(submitted);
       setUiModel(mapQueryIntakeResponseToUiModel(submitted));
       setLastRunRequest({
@@ -301,10 +322,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
 
       if (result.kind === "refreshed") {
-        setResponse(result.response);
-        setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        const refreshedResponse = applyPendingWorkItemMutationsToResponse(
+          result.response,
+          pendingWorkItemMutationsRef.current
+        );
+        setResponse(refreshedResponse);
+        setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
         if (result.openMappingFix) {
-          setMappingFixResponse(result.response);
+          setMappingFixResponse(refreshedResponse);
           setActiveTab(result.activeTab);
           setControlsOpen(true);
         } else {
@@ -337,11 +362,106 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     []
   );
 
+  const flushQueuedWorkItemMutations = React.useCallback(async (): Promise<void> => {
+    if (flushPendingWorkItemMutationsPromiseRef.current) {
+      return flushPendingWorkItemMutationsPromiseRef.current;
+    }
+
+    const flushPromise = flushPendingWorkItemMutations({
+      queueRef: pendingWorkItemMutationsRef,
+      onPendingCountChange: setPendingWorkItemSyncCount,
+      runTrackedWorkItemSync: async (operation) => {
+        await runTrackedWorkItemUpdate(operation);
+      }
+    })
+      .then(() => {
+        setWorkItemSyncError(null);
+        setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+      })
+      .finally(() => {
+        flushPendingWorkItemMutationsPromiseRef.current = null;
+      });
+
+    flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
+    return flushPromise;
+  }, [runTrackedWorkItemUpdate]);
+
+  const enqueuePendingWorkItemMutation = React.useCallback((mutation: PendingWorkItemMutation) => {
+    pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
+    setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
+  }, []);
+
+  const scheduleWorkItemMutation = React.useCallback(
+    async (params: {
+      workItemId: number;
+      applyToTimeline: (timeline: QueryIntakeResponse["timeline"]) => QueryIntakeResponse["timeline"];
+      executeSchedule?: () => Promise<void>;
+      executeDetails?: () => Promise<void>;
+    }): Promise<void> => {
+      applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+      enqueuePendingWorkItemMutation(
+        createPendingWorkItemMutation({
+          kind: "work_item",
+          queryId: responseRef.current?.activeQueryId ?? null,
+          workItemId: params.workItemId,
+          applyToTimeline: params.applyToTimeline,
+          executeSchedule: params.executeSchedule,
+          executeDetails: params.executeDetails
+        })
+      );
+      setWorkItemSyncError(null);
+
+      if (!liveSyncEnabledRef.current) {
+        setWorkItemSyncState("paused");
+        return;
+      }
+
+      await flushQueuedWorkItemMutations();
+    },
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+  );
+
+  const scheduleDependencyMutation = React.useCallback(
+    async (params: {
+      predecessorWorkItemId: number;
+      successorWorkItemId: number;
+      dependencyAction: "add" | "remove";
+      applyToTimeline: (timeline: QueryIntakeResponse["timeline"]) => QueryIntakeResponse["timeline"];
+      execute: () => Promise<void>;
+    }): Promise<void> => {
+      applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+      enqueuePendingWorkItemMutation(
+        createPendingWorkItemMutation({
+          kind: "dependency",
+          queryId: responseRef.current?.activeQueryId ?? null,
+          predecessorWorkItemId: params.predecessorWorkItemId,
+          successorWorkItemId: params.successorWorkItemId,
+          dependencyAction: params.dependencyAction,
+          applyToTimeline: params.applyToTimeline,
+          execute: params.execute
+        })
+      );
+      setWorkItemSyncError(null);
+
+      if (!liveSyncEnabledRef.current) {
+        setWorkItemSyncState("paused");
+        return;
+      }
+
+      await flushQueuedWorkItemMutations();
+    },
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+  );
+
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
 
   React.useEffect(() => {
     responseRef.current = response;
   }, [response]);
+
+  React.useEffect(() => {
+    liveSyncEnabledRef.current = liveSyncEnabled;
+  }, [liveSyncEnabled]);
 
   React.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
@@ -362,7 +482,24 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         hydratedHeaderQuerySelection.selectedHeaderQueryId
       );
     });
+    hydrateTimelineLiveSyncEnabledPreference((enabled) => {
+      setLiveSyncEnabled(enabled);
+      setWorkItemSyncState((current) => (current === "syncing" ? current : enabled ? "up_to_date" : "paused"));
+    });
   }, [headerQueryFlow.hydrateSavedHeaderQueries]);
+
+  React.useEffect(() => {
+    if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
+      void flushQueuedWorkItemMutations();
+      return;
+    }
+
+    if (workItemSyncInFlightRef.current > 0 || workItemSyncState === "error") {
+      return;
+    }
+
+    setWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
+  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
 
   React.useEffect(() => {
     persistUserPreferencesPatch({
@@ -680,93 +817,109 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           isRefreshing,
           workItemSyncState,
           workItemSyncError,
+          liveSyncEnabled,
+          pendingWorkItemSyncCount,
           organization,
           project,
           selectionStore: timelineSelectionStoreRef.current,
+          onSetLiveSyncEnabled: (enabled) => {
+            setLiveSyncEnabled(enabled);
+            saveTimelineLiveSyncEnabledPreference(enabled);
+          },
+          onPushPendingWorkItemChanges: () => {
+            void flushQueuedWorkItemMutations();
+          },
           onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-            await runTrackedWorkItemUpdate(async () => {
-              const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-                targetWorkItemId,
-                startDate,
-                endDate
-              });
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate),
+              executeSchedule: async () => {
+                const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+                  targetWorkItemId,
+                  startDate,
+                  endDate
+                });
 
-              if (!writeResult.accepted) {
-                throw toWritebackError(writeResult.reasonCode);
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
               }
-
-              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
-                applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate)
-              );
             });
           },
           onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-            await runTrackedWorkItemUpdate(async () => {
-              const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-                targetWorkItemId,
-                startDate,
-                endDate
-              });
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate),
+              executeSchedule: async () => {
+                const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+                  targetWorkItemId,
+                  startDate,
+                  endDate
+                });
 
-              if (!writeResult.accepted) {
-                throw toWritebackError(writeResult.reasonCode);
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
               }
-
-              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
-                applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate)
-              );
             });
           },
           onCreateDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
-            await runTrackedWorkItemUpdate(async () => {
-              const writeResult = await props.composition.controller.linkDependency({
-                predecessorWorkItemId,
-                successorWorkItemId,
-                action: "add"
-              });
+            await scheduleDependencyMutation({
+              predecessorWorkItemId,
+              successorWorkItemId,
+              dependencyAction: "add",
+              applyToTimeline: (timeline) =>
+                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add"),
+              execute: async () => {
+                const writeResult = await props.composition.controller.linkDependency({
+                  predecessorWorkItemId,
+                  successorWorkItemId,
+                  action: "add"
+                });
 
-              if (!writeResult.accepted) {
-                throw toWritebackError(writeResult.reasonCode);
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
               }
-
-              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
-                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add")
-              );
             });
           },
           onRemoveDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
-            await runTrackedWorkItemUpdate(async () => {
-              const writeResult = await props.composition.controller.linkDependency({
-                predecessorWorkItemId,
-                successorWorkItemId,
-                action: "remove"
-              });
+            await scheduleDependencyMutation({
+              predecessorWorkItemId,
+              successorWorkItemId,
+              dependencyAction: "remove",
+              applyToTimeline: (timeline) =>
+                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove"),
+              execute: async () => {
+                const writeResult = await props.composition.controller.linkDependency({
+                  predecessorWorkItemId,
+                  successorWorkItemId,
+                  action: "remove"
+                });
 
-              if (!writeResult.accepted) {
-                throw toWritebackError(writeResult.reasonCode);
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
               }
-
-              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
-                applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove")
-              );
             });
           },
           onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state, stateColor }) => {
-            await runTrackedWorkItemUpdate(async () => {
-              const writeResult = await props.composition.controller.updateWorkItemDetails({
-                targetWorkItemId,
-                title,
-                descriptionHtml,
-                state
-              });
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) =>
+                applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state, stateColor),
+              executeDetails: async () => {
+                const writeResult = await props.composition.controller.updateWorkItemDetails({
+                  targetWorkItemId,
+                  title,
+                  descriptionHtml,
+                  state
+                });
 
-              if (!writeResult.accepted) {
-                throw toWritebackError(writeResult.reasonCode);
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
               }
-
-              applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) =>
-                applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state, stateColor)
-              );
             });
           },
           onFetchWorkItemStateOptions: fetchWorkItemStateOptions,

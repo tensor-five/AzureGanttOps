@@ -170,6 +170,16 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
         return;
       }
 
+      if (
+        !selected ||
+        !props.onUpdateSelectedWorkItemDetails ||
+        titleDraft.trim().length === 0 ||
+        stateDraft.trim().length === 0 ||
+        !isDirty
+      ) {
+        return;
+      }
+
       event.preventDefault();
       void saveDetails();
     };
@@ -178,7 +188,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [saveDetails]);
+  }, [isDirty, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
 
   return React.createElement(
     "aside",

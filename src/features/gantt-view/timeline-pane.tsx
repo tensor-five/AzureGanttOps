@@ -82,6 +82,7 @@ import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
 import { extractFilterMatchKeys, extractFilterValueTokens } from "./timeline-field-filtering.js";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -90,8 +91,10 @@ export type TimelinePaneProps = {
   activeQueryId?: string | null;
   showDependencies: boolean;
   isRefreshing?: boolean;
-  workItemSyncState?: "up_to_date" | "syncing" | "error";
+  workItemSyncState?: WorkItemSyncState;
   workItemSyncError?: string | null;
+  liveSyncEnabled?: boolean;
+  pendingWorkItemSyncCount?: number;
   organization?: string;
   project?: string;
   density?: TimelineDensity;
@@ -118,6 +121,8 @@ export type TimelinePaneProps = {
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
+  onSetLiveSyncEnabled?: (enabled: boolean) => void;
+  onPushPendingWorkItemChanges?: () => void;
 };
 
 type ActivePanDrag = {
@@ -900,12 +905,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   useTimelineKeyboardShortcuts({
     isRefreshing: props.isRefreshing,
+    onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges,
     onToggleTimelineFilters: toggleTimelineFilters,
     onToggleSortSettings: toggleSortSettings,
     onToggleLabelSettings: toggleLabelSettings,
     onRotateDependencyMode: rotateDependencyViewMode,
     onSelectMonthZoom: selectMonthZoom,
     onSelectWeekZoom: selectWeekZoom,
+    pendingWorkItemSyncCount: props.pendingWorkItemSyncCount,
     onRemoveDependency: props.onRemoveDependency,
     onRetryRefresh: props.onRetryRefresh,
     selectedDependency,
@@ -1916,7 +1923,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onToggleTimelineSidebarField: toggleTimelineSidebarField,
       onToggleTimelineLabelField: toggleTimelineLabelField,
       workItemSyncState: props.workItemSyncState ?? "up_to_date",
-      workItemSyncError: props.workItemSyncError ?? null
+      workItemSyncError: props.workItemSyncError ?? null,
+      liveSyncEnabled: props.liveSyncEnabled ?? true,
+      pendingWorkItemSyncCount: props.pendingWorkItemSyncCount ?? 0,
+      onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => undefined),
+      onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => undefined)
     }),
     React.createElement(TimelineFilterPanel, {
       open: timelineFiltersOpen,

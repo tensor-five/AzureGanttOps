@@ -113,7 +113,7 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     await waitFor(() => {
       expect(onUpdateSelectedWorkItemDetails).not.toHaveBeenCalled();
     });
-    expect(event.defaultPrevented).toBe(true);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("sanitizes unsafe description html before rendering and saving", async () => {
