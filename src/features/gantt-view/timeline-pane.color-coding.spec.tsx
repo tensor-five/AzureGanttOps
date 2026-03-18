@@ -31,6 +31,41 @@ describe("timeline-pane color coding", () => {
     expect((stateDot as SVGCircleElement).style.fill).toBe("rgb(47, 133, 90)");
   });
 
+  it("uses the selected bar color as the sidebar row highlight base", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("timeline-sidebar-row-11"));
+
+    const row = screen.getByLabelText("timeline-sidebar-row-11");
+    const bar = container.querySelector("rect.timeline-bar") as SVGRectElement | null;
+
+    expect(row.className).toContain("timeline-left-sidebar-row-selected");
+    expect(row.style.getPropertyValue("--timeline-row-selection-color")).toBe("#374151");
+    expect(bar).not.toBeNull();
+    expect(bar?.style.fill).toBe("rgb(55, 65, 81)");
+  });
+
+  it("highlights the full selected row in the chart using the bar color", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("timeline-sidebar-row-11"));
+
+    const rowHighlight = container.querySelector('rect[fill="color-mix(in srgb, #374151 14%, transparent)"]');
+    expect(rowHighlight).not.toBeNull();
+  });
+
   it("switches to status color coding from dropdown", async () => {
     const user = userEvent.setup();
     const { container } = render(

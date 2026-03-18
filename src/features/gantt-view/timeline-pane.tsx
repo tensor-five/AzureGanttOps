@@ -397,6 +397,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const labelMenuSidebarOptionsRef = React.useRef<HTMLDivElement | null>(null);
   const labelMenuBarOptionsRef = React.useRef<HTMLDivElement | null>(null);
   const labelMenuScrollSyncSourceRef = React.useRef<"sidebar" | "bar" | null>(null);
+  const barPointerSelectionIntentRef = React.useRef<{ workItemId: number; wasSelected: boolean } | null>(null);
+  const suppressNextBarClickRef = React.useRef(false);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -634,6 +636,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     (workItemId: number | null) => {
       selectionStore.select(workItemId);
       setSelectedWorkItemId(workItemId);
+    },
+    [selectionStore]
+  );
+  const toggleWorkItemSelection = React.useCallback(
+    (workItemId: number) => {
+      const nextWorkItemId = selectionStore.getSelectedWorkItemId() === workItemId ? null : workItemId;
+      selectionStore.select(nextWorkItemId);
+      setSelectedWorkItemId(nextWorkItemId);
     },
     [selectionStore]
   );
@@ -1292,6 +1302,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const activeDependency = activeDependencyDrag;
       if (activeDependency && event.pointerId === activeDependency.pointerId) {
         const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
+        if (svgPoint.x !== activeDependency.pointerX || svgPoint.y !== activeDependency.pointerY) {
+          suppressNextBarClickRef.current = true;
+        }
         const hoveredTargetWorkItemId = resolveHoveredDependencyTargetWorkItemId(
           geometryByWorkItemId,
           svgPoint.x,
@@ -1315,6 +1328,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const active = activeScheduleDrag;
       if (!active || event.pointerId !== active.pointerId) {
         return;
+      }
+
+      if (event.clientX !== active.originClientX) {
+        suppressNextBarClickRef.current = true;
       }
 
       const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
@@ -2154,10 +2171,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                               "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
                               style: {
                                 height: `${CHART_ROW_HEIGHT}px`,
-                                justifyContent: timelineSidebarRowJustify
+                                justifyContent: timelineSidebarRowJustify,
+                                "--timeline-row-selection-color": bar.color
                               },
                               onClick: () => {
-                                selectWorkItem(bar.workItemId);
+                                toggleWorkItemSelection(bar.workItemId);
                               }
                             },
                             buildTimelineSidebarLabel(bar, timelineSidebarFields)
@@ -2383,6 +2401,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     )
                   : null,
                 chartModel.bars.map((bar, index) => {
+                  if (selectedWorkItemId !== bar.workItemId) {
+                    return null;
+                  }
+                  return React.createElement("rect", {
+                    key: `timeline-row-highlight-${bar.workItemId}`,
+                    x: 0,
+                    y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+                    width: chartModel.width,
+                    height: CHART_ROW_HEIGHT,
+                    fill: `color-mix(in srgb, ${bar.color} 14%, transparent)`,
+                    pointerEvents: "none"
+                  });
+                }),
+                chartModel.bars.map((bar, index) => {
                   const y = resolveTimelineBarTopY(index);
                   const isSelected = selectedWorkItemId === bar.workItemId;
                   const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : ""]
@@ -2404,18 +2436,34 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       "aria-label": `timeline-bar-${bar.workItemId}`,
                       "aria-current": isSelected ? "true" : undefined,
                       onClick: () => {
-                        selectWorkItem(bar.workItemId);
+                        if (suppressNextBarClickRef.current) {
+                          suppressNextBarClickRef.current = false;
+                          barPointerSelectionIntentRef.current = null;
+                          return;
+                        }
+                        const pointerSelectionIntent = barPointerSelectionIntentRef.current;
+                        barPointerSelectionIntentRef.current = null;
+                        if (pointerSelectionIntent?.workItemId === bar.workItemId) {
+                          selectWorkItem(pointerSelectionIntent.wasSelected ? null : bar.workItemId);
+                          return;
+                        }
+                        toggleWorkItemSelection(bar.workItemId);
                       },
                       onKeyDown: (event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
-                          selectWorkItem(bar.workItemId);
+                          toggleWorkItemSelection(bar.workItemId);
                         }
                       },
                       onPointerDown: (event) => {
                         if (spacePanPressedRef.current) {
                           return;
                         }
+                        suppressNextBarClickRef.current = false;
+                        barPointerSelectionIntentRef.current = {
+                          workItemId: bar.workItemId,
+                          wasSelected: selectedWorkItemId === bar.workItemId
+                        };
                         if (dependencyMode) {
                           beginDependencyDrag({ event, sourceWorkItemId: bar.workItemId });
                           return;
@@ -2597,7 +2645,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                                 setAdoptScheduleError(message);
                               });
                             }
-                            selectWorkItem(item.workItemId);
+                            toggleWorkItemSelection(item.workItemId);
                           }
                         },
                         React.createElement(

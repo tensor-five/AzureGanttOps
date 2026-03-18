@@ -448,9 +448,10 @@ section[role="tabpanel"]:hover {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: 32px;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
-  padding: 4px 10px;
+  padding: 6px 10px;
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
   letter-spacing: 0.02em;
@@ -469,6 +470,7 @@ section[role="tabpanel"]:hover {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-height: 32px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   padding: 6px 10px;
@@ -1106,8 +1108,7 @@ button {
 }
 
 .timeline-left-sidebar-row-selected {
-  background: color-mix(in srgb, var(--color-primary-soft) 18%, transparent);
-  font-weight: var(--font-bold);
+  background: color-mix(in srgb, var(--timeline-row-selection-color, var(--color-primary-soft)) 16%, transparent);
 }
 
 .timeline-left-sidebar-tail-spacer {

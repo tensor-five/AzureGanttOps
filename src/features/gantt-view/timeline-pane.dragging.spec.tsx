@@ -47,6 +47,44 @@ describe("timeline-pane dragging", () => {
     expect(detailsText).toContain("- end: 2026-03-03T00:00:00.000Z");
   });
 
+  it("toggles a selected work item off when clicked again", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const bar = screen.getByLabelText("timeline-bar-11");
+    await user.click(bar);
+    expect(bar.getAttribute("aria-current")).toBe("true");
+
+    await user.click(bar);
+    expect(bar.getAttribute("aria-current")).toBeNull();
+    expect(screen.getByLabelText("timeline-details-panel").textContent).toContain(
+      "Select a work item to edit title and description."
+    );
+  });
+
+  it("keeps an editable bar selected after the first click", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const bar = screen.getByLabelText("timeline-bar-11");
+    await user.click(bar);
+
+    expect(bar.getAttribute("aria-current")).toBe("true");
+    expect(screen.getByLabelText("timeline-details-panel").textContent).toContain("- selected work item: #11");
+  });
+
   it("updates schedule when dragging a bar", async () => {
     const onUpdateWorkItemSchedule = vi.fn(async () => undefined);
     const user = userEvent.setup();
