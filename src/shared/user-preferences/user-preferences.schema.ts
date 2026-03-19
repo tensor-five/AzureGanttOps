@@ -12,7 +12,9 @@ export type TimelineFieldColorCodingPreference = {
 export type TimelineLabelFieldPreference = string;
 export type TimelineSortPreference = {
   primary?: string;
+  primaryDirection?: "asc" | "desc";
   secondary?: string | null;
+  secondaryDirection?: "asc" | "desc";
 };
 export type QueryScopedTimelinePreferences = {
   timelineDensity?: TimelineDensityPreference;
@@ -148,9 +150,13 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
           : sanitizeTimelineSortField(secondaryRaw);
 
     if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      const primaryDirection = sanitizeTimelineSortDirection(raw.primaryDirection) ?? "asc";
+      const secondaryDirection = sanitizeTimelineSortDirection(raw.secondaryDirection) ?? "asc";
       next.timelineSort = {
         primary,
-        secondary
+        primaryDirection,
+        secondary,
+        secondaryDirection
       };
     }
   }
@@ -328,9 +334,13 @@ function sanitizeQueryScopedTimelinePreferences(value: Record<string, unknown>):
           : sanitizeTimelineSortField(secondaryRaw);
 
     if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      const primaryDirection = sanitizeTimelineSortDirection(raw.primaryDirection) ?? "asc";
+      const secondaryDirection = sanitizeTimelineSortDirection(raw.secondaryDirection) ?? "asc";
       next.timelineSort = {
         primary,
-        secondary
+        primaryDirection,
+        secondary,
+        secondaryDirection
       };
     }
   }
@@ -410,4 +420,12 @@ function sanitizeTimelineSortField(value: unknown): string | null {
 
   const fieldRef = normalized.slice("field:".length).trim();
   return fieldRef.length > 0 ? `field:${fieldRef}` : null;
+}
+
+function sanitizeTimelineSortDirection(value: unknown): "asc" | "desc" | null {
+  if (value === "asc" || value === "desc") {
+    return value;
+  }
+
+  return null;
 }

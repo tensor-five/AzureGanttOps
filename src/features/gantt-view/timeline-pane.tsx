@@ -315,7 +315,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setSortSettingsOpen,
     timelineSortPreference,
     selectPrimarySortField,
-    selectSecondarySortField
+    selectSecondarySortField,
+    togglePrimarySortDirection,
+    toggleSecondarySortDirection
   } = timelineSorting;
   const sortedBaseTimeline = React.useMemo(
     () => applyTimelineSorting(props.timeline, timelineSortPreference),
@@ -1913,7 +1915,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         timelineSortPreference,
         onToggleSortSettings: toggleSortSettings,
         onSelectPrimarySortField: selectPrimarySortField,
-        onSelectSecondarySortField: selectSecondarySortField
+        onSelectSecondarySortField: selectSecondarySortField,
+        onTogglePrimarySortDirection: togglePrimarySortDirection,
+        onToggleSecondarySortDirection: toggleSecondarySortDirection
       }),
       labelToggleControlRef,
       labelSettingsOpen,

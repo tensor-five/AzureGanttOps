@@ -1641,9 +1641,58 @@ button {
   gap: 6px;
 }
 
+.timeline-sort-field-controls {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
 .timeline-sort-menu-field span {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
+}
+
+.timeline-sort-direction-toggle {
+  min-height: 34px;
+  width: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-duration-fast) var(--transition-easing-standard),
+    color var(--transition-duration-fast) var(--transition-easing-standard),
+    background var(--transition-duration-fast) var(--transition-easing-standard);
+}
+
+.timeline-sort-direction-toggle[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-elevated));
+  color: var(--color-primary);
+}
+
+.timeline-sort-direction-toggle:focus,
+.timeline-sort-direction-toggle:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.timeline-sort-direction-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.timeline-sort-direction-toggle-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
 .timeline-sort-select {

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { sanitizeTimelineSortField, sanitizeTimelineSortPreference } from "./timeline-sort-preference.js";
+import {
+  sanitizeTimelineSortDirection,
+  sanitizeTimelineSortField,
+  sanitizeTimelineSortPreference
+} from "./timeline-sort-preference.js";
 
 describe("timeline-sort-preference", () => {
   it("accepts built-in and field sort values", () => {
@@ -12,11 +16,35 @@ describe("timeline-sort-preference", () => {
     expect(
       sanitizeTimelineSortPreference({
         primary: "title",
-        secondary: "title"
+        primaryDirection: "desc",
+        secondary: "title",
+        secondaryDirection: "desc"
       })
     ).toEqual({
       primary: "title",
-      secondary: "startDate"
+      primaryDirection: "desc",
+      secondary: "startDate",
+      secondaryDirection: "desc"
     });
+  });
+
+  it("defaults missing sort directions to ascending", () => {
+    expect(
+      sanitizeTimelineSortPreference({
+        primary: "title",
+        secondary: null
+      })
+    ).toEqual({
+      primary: "title",
+      primaryDirection: "asc",
+      secondary: null,
+      secondaryDirection: "asc"
+    });
+  });
+
+  it("accepts ascending and descending directions", () => {
+    expect(sanitizeTimelineSortDirection("asc")).toBe("asc");
+    expect(sanitizeTimelineSortDirection("desc")).toBe("desc");
+    expect(sanitizeTimelineSortDirection("sideways")).toBeNull();
   });
 });

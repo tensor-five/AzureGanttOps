@@ -12,6 +12,8 @@ type TimelineSortControlProps = {
   onToggleSortSettings: () => void;
   onSelectPrimarySortField: (field: TimelineSortField) => void;
   onSelectSecondarySortField: (field: TimelineSortField | null) => void;
+  onTogglePrimarySortDirection: () => void;
+  onToggleSecondarySortDirection: () => void;
 };
 
 export function TimelineSortControl(props: TimelineSortControlProps): React.ReactElement {
@@ -96,67 +98,93 @@ export function TimelineSortControl(props: TimelineSortControlProps): React.Reac
               React.createElement("span", null, "Primary"),
               React.createElement(
                 "div",
-                { className: "timeline-filter-dropdown-anchor" },
+                { className: "timeline-sort-field-controls" },
                 React.createElement(
                   "button",
                   {
                     type: "button",
-                    className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
-                    "aria-label": "Timeline sort primary",
-                    "aria-haspopup": "listbox",
-                    "aria-expanded": openDropdown === "primary" ? "true" : "false",
-                    onClick: () => {
-                      setOpenDropdown((current) => (current === "primary" ? null : "primary"));
-                      setSearchDraft("");
-                    }
+                    className: "timeline-sort-direction-toggle",
+                    "aria-label": `Toggle primary sort direction (${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"})`,
+                    title: `Primary sort ${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"}`,
+                    "aria-pressed": props.timelineSortPreference.primaryDirection === "desc" ? "true" : "false",
+                    onClick: props.onTogglePrimarySortDirection
                   },
-                  primaryLabel
+                  React.createElement(
+                    "svg",
+                    {
+                      viewBox: "0 0 16 16",
+                      className: "timeline-sort-direction-toggle-icon",
+                      "aria-hidden": "true"
+                    },
+                    props.timelineSortPreference.primaryDirection === "asc"
+                      ? React.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" })
+                      : React.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" })
+                  )
                 ),
-                openDropdown === "primary"
-                  ? React.createElement(
-                      "div",
-                      {
-                        className: "timeline-color-coding-dropdown",
-                        role: "listbox",
-                        "aria-label": "Timeline sort primary options"
-                      },
-                      React.createElement("input", {
-                        type: "search",
-                        className: "timeline-color-coding-dropdown-search",
-                        "aria-label": "Search timeline sort primary",
-                        placeholder: "Search field",
-                        value: searchDraft,
-                        onChange: (event) => {
-                          setSearchDraft((event.target as HTMLInputElement).value);
-                        }
-                      }),
-                      React.createElement(
+                React.createElement(
+                  "div",
+                  { className: "timeline-filter-dropdown-anchor" },
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
+                      "aria-label": "Timeline sort primary",
+                      "aria-haspopup": "listbox",
+                      "aria-expanded": openDropdown === "primary" ? "true" : "false",
+                      onClick: () => {
+                        setOpenDropdown((current) => (current === "primary" ? null : "primary"));
+                        setSearchDraft("");
+                      }
+                    },
+                    primaryLabel
+                  ),
+                  openDropdown === "primary"
+                    ? React.createElement(
                         "div",
-                        { className: "timeline-color-coding-dropdown-options" },
-                        filteredPrimaryOptions.length === 0
-                          ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                          : filteredPrimaryOptions.map((option) =>
-                              React.createElement(
-                                "button",
-                                {
-                                  key: `timeline-sort-primary-${option.value}`,
-                                  type: "button",
-                                  className:
-                                    option.value === props.timelineSortPreference.primary
-                                      ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                      : "timeline-color-coding-option",
-                                  onClick: () => {
-                                    props.onSelectPrimarySortField(option.value);
-                                    setOpenDropdown(null);
-                                  }
-                                },
-                                React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
-                                React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                        {
+                          className: "timeline-color-coding-dropdown",
+                          role: "listbox",
+                          "aria-label": "Timeline sort primary options"
+                        },
+                        React.createElement("input", {
+                          type: "search",
+                          className: "timeline-color-coding-dropdown-search",
+                          "aria-label": "Search timeline sort primary",
+                          placeholder: "Search field",
+                          value: searchDraft,
+                          onChange: (event) => {
+                            setSearchDraft((event.target as HTMLInputElement).value);
+                          }
+                        }),
+                        React.createElement(
+                          "div",
+                          { className: "timeline-color-coding-dropdown-options" },
+                          filteredPrimaryOptions.length === 0
+                            ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                            : filteredPrimaryOptions.map((option) =>
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: `timeline-sort-primary-${option.value}`,
+                                    type: "button",
+                                    className:
+                                      option.value === props.timelineSortPreference.primary
+                                        ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                        : "timeline-color-coding-option",
+                                    onClick: () => {
+                                      props.onSelectPrimarySortField(option.value);
+                                      setOpenDropdown(null);
+                                    }
+                                  },
+                                  React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
+                                  React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                                )
                               )
-                            )
+                        )
                       )
-                    )
-                  : null
+                    : null
+                )
               )
             ),
             React.createElement(
@@ -165,83 +193,110 @@ export function TimelineSortControl(props: TimelineSortControlProps): React.Reac
               React.createElement("span", null, "Secondary"),
               React.createElement(
                 "div",
-                { className: "timeline-filter-dropdown-anchor" },
+                { className: "timeline-sort-field-controls" },
                 React.createElement(
                   "button",
                   {
                     type: "button",
-                    className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
-                    "aria-label": "Timeline sort secondary",
-                    "aria-haspopup": "listbox",
-                    "aria-expanded": openDropdown === "secondary" ? "true" : "false",
-                    onClick: () => {
-                      setOpenDropdown((current) => (current === "secondary" ? null : "secondary"));
-                      setSearchDraft("");
-                    }
+                    className: "timeline-sort-direction-toggle",
+                    "aria-label": `Toggle secondary sort direction (${props.timelineSortPreference.secondaryDirection === "asc" ? "ascending" : "descending"})`,
+                    title: `Secondary sort ${props.timelineSortPreference.secondaryDirection === "asc" ? "ascending" : "descending"}`,
+                    "aria-pressed": props.timelineSortPreference.secondaryDirection === "desc" ? "true" : "false",
+                    disabled: props.timelineSortPreference.secondary === null,
+                    onClick: props.onToggleSecondarySortDirection
                   },
-                  secondaryLabel
+                  React.createElement(
+                    "svg",
+                    {
+                      viewBox: "0 0 16 16",
+                      className: "timeline-sort-direction-toggle-icon",
+                      "aria-hidden": "true"
+                    },
+                    props.timelineSortPreference.secondaryDirection === "asc"
+                      ? React.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" })
+                      : React.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" })
+                  )
                 ),
-                openDropdown === "secondary"
-                  ? React.createElement(
-                      "div",
-                      {
-                        className: "timeline-color-coding-dropdown",
-                        role: "listbox",
-                        "aria-label": "Timeline sort secondary options"
-                      },
-                      React.createElement("input", {
-                        type: "search",
-                        className: "timeline-color-coding-dropdown-search",
-                        "aria-label": "Search timeline sort secondary",
-                        placeholder: "Search field",
-                        value: searchDraft,
-                        onChange: (event) => {
-                          setSearchDraft((event.target as HTMLInputElement).value);
-                        }
-                      }),
-                      React.createElement(
+                React.createElement(
+                  "div",
+                  { className: "timeline-filter-dropdown-anchor" },
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
+                      "aria-label": "Timeline sort secondary",
+                      "aria-haspopup": "listbox",
+                      "aria-expanded": openDropdown === "secondary" ? "true" : "false",
+                      onClick: () => {
+                        setOpenDropdown((current) => (current === "secondary" ? null : "secondary"));
+                        setSearchDraft("");
+                      }
+                    },
+                    secondaryLabel
+                  ),
+                  openDropdown === "secondary"
+                    ? React.createElement(
                         "div",
-                        { className: "timeline-color-coding-dropdown-options" },
+                        {
+                          className: "timeline-color-coding-dropdown",
+                          role: "listbox",
+                          "aria-label": "Timeline sort secondary options"
+                        },
+                        React.createElement("input", {
+                          type: "search",
+                          className: "timeline-color-coding-dropdown-search",
+                          "aria-label": "Search timeline sort secondary",
+                          placeholder: "Search field",
+                          value: searchDraft,
+                          onChange: (event) => {
+                            setSearchDraft((event.target as HTMLInputElement).value);
+                          }
+                        }),
                         React.createElement(
-                          "button",
-                          {
-                            type: "button",
-                            className:
-                              props.timelineSortPreference.secondary === null
-                                ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                : "timeline-color-coding-option",
-                            onClick: () => {
-                              props.onSelectSecondarySortField(null);
-                              setOpenDropdown(null);
-                            }
-                          },
-                          React.createElement("span", { className: "timeline-color-coding-option-label" }, "None"),
-                          React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")
-                        ),
-                        filteredSecondaryOptions.length === 0
-                          ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
-                          : filteredSecondaryOptions.map((option) =>
-                              React.createElement(
-                                "button",
-                                {
-                                  key: `timeline-sort-secondary-${option.value}`,
-                                  type: "button",
-                                  className:
-                                    option.value === props.timelineSortPreference.secondary
-                                      ? "timeline-color-coding-option timeline-color-coding-option-active"
-                                      : "timeline-color-coding-option",
-                                  onClick: () => {
-                                    props.onSelectSecondarySortField(option.value);
-                                    setOpenDropdown(null);
-                                  }
-                                },
-                                React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
-                                React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                          "div",
+                          { className: "timeline-color-coding-dropdown-options" },
+                          React.createElement(
+                            "button",
+                            {
+                              type: "button",
+                              className:
+                                props.timelineSortPreference.secondary === null
+                                  ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                  : "timeline-color-coding-option",
+                              onClick: () => {
+                                props.onSelectSecondarySortField(null);
+                                setOpenDropdown(null);
+                              }
+                            },
+                            React.createElement("span", { className: "timeline-color-coding-option-label" }, "None"),
+                            React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")
+                          ),
+                          filteredSecondaryOptions.length === 0
+                            ? React.createElement("p", { className: "timeline-details-muted" }, "No matching field.")
+                            : filteredSecondaryOptions.map((option) =>
+                                React.createElement(
+                                  "button",
+                                  {
+                                    key: `timeline-sort-secondary-${option.value}`,
+                                    type: "button",
+                                    className:
+                                      option.value === props.timelineSortPreference.secondary
+                                        ? "timeline-color-coding-option timeline-color-coding-option-active"
+                                        : "timeline-color-coding-option",
+                                    onClick: () => {
+                                      props.onSelectSecondarySortField(option.value);
+                                      setOpenDropdown(null);
+                                    }
+                                  },
+                                  React.createElement("span", { className: "timeline-color-coding-option-label" }, option.label),
+                                  React.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle)
+                                )
                               )
-                            )
+                        )
                       )
-                    )
-                  : null
+                    : null
+                )
               )
             )
           )

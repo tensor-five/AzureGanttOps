@@ -43,7 +43,9 @@ describe("timeline-sorting", () => {
   it("sorts by primary then secondary fields", () => {
     const sorted = applyTimelineSorting(makeTimeline(), {
       primary: "title",
-      secondary: "startDate"
+      primaryDirection: "asc",
+      secondary: "startDate",
+      secondaryDirection: "asc"
     });
 
     expect(sorted?.bars.map((bar) => bar.workItemId)).toEqual([1, 2]);
@@ -76,10 +78,23 @@ describe("timeline-sorting", () => {
 
     const sorted = applyTimelineSorting(timeline, {
       primary: "startDate",
-      secondary: null
+      primaryDirection: "asc",
+      secondary: null,
+      secondaryDirection: "asc"
     });
 
     expect(sorted?.bars.map((bar) => bar.workItemId)).toEqual([1, 2]);
+  });
+
+  it("supports descending primary sorting", () => {
+    const sorted = applyTimelineSorting(makeTimeline(), {
+      primary: "title",
+      primaryDirection: "desc",
+      secondary: null,
+      secondaryDirection: "asc"
+    });
+
+    expect(sorted?.bars.map((bar) => bar.workItemId)).toEqual([2, 1]);
   });
 
   it("exposes built-in and dynamic sort options", () => {

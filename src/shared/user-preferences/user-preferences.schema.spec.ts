@@ -65,13 +65,17 @@ describe("user-preferences.schema", () => {
     const sanitized = sanitizeUserPreferences({
       timelineSort: {
         primary: " title ",
-        secondary: " field:Custom.Team "
+        primaryDirection: "desc",
+        secondary: " field:Custom.Team ",
+        secondaryDirection: "asc"
       }
     });
 
     expect(sanitized.timelineSort).toEqual({
       primary: "title",
-      secondary: "field:Custom.Team"
+      primaryDirection: "desc",
+      secondary: "field:Custom.Team",
+      secondaryDirection: "asc"
     });
 
     expect(
@@ -82,6 +86,19 @@ describe("user-preferences.schema", () => {
         }
       }).timelineSort
     ).toBeUndefined();
+
+    expect(
+      sanitizeUserPreferences({
+        timelineSort: {
+          primary: "title"
+        }
+      }).timelineSort
+    ).toEqual({
+      primary: "title",
+      primaryDirection: "asc",
+      secondary: undefined,
+      secondaryDirection: "asc"
+    });
   });
 
   it("deduplicates saved queries by id and keeps first valid entry", () => {

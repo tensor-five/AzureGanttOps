@@ -361,7 +361,9 @@ describe("timeline-pane layout and labels", () => {
     const user = userEvent.setup();
     saveTimelineSortPreference({
       primary: "startDate",
-      secondary: null
+      primaryDirection: "asc",
+      secondary: null,
+      secondaryDirection: "asc"
     });
     const timeline = makeFieldFilterTimeline();
     timeline.bars = [
@@ -441,6 +443,76 @@ describe("timeline-pane layout and labels", () => {
     const label = container.querySelector("text.timeline-bar-label");
     expect(label).not.toBeNull();
     expect((label as SVGTextElement).textContent).toBe("Alpha Platform - Alpha - Platform");
+  });
+
+  it("toggles primary sort direction from the sorting menu", async () => {
+    const user = userEvent.setup();
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline sorting"));
+    const directionToggle = screen.getByLabelText("Toggle primary sort direction (ascending)");
+    expect(directionToggle.getAttribute("aria-pressed")).toBe("false");
+
+    await user.click(directionToggle);
+
+    expect(screen.getByLabelText("Toggle primary sort direction (descending)").getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("applies descending primary sorting immediately", async () => {
+    const user = userEvent.setup();
+    saveTimelineSortPreference({
+      primary: "title",
+      primaryDirection: "asc",
+      secondary: null,
+      secondaryDirection: "asc"
+    });
+    const timeline = makeFieldFilterTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        workItemId: 11,
+        title: "Alpha",
+        schedule: {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-03T00:00:00.000Z",
+          missingBoundary: null
+        }
+      },
+      {
+        ...timeline.bars[0],
+        workItemId: 12,
+        title: "Zulu",
+        schedule: {
+          startDate: "2026-03-05T00:00:00.000Z",
+          endDate: "2026-03-07T00:00:00.000Z",
+          missingBoundary: null
+        }
+      }
+    ];
+    timeline.unschedulable = [];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const before11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const before12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(before11Y).toBeLessThan(before12Y);
+
+    await user.click(screen.getByLabelText("Toggle timeline sorting"));
+    await user.click(screen.getByLabelText("Toggle primary sort direction (ascending)"));
+
+    const after11Y = Number(screen.getByLabelText("timeline-bar-11").getAttribute("y"));
+    const after12Y = Number(screen.getByLabelText("timeline-bar-12").getAttribute("y"));
+    expect(after11Y).toBeGreaterThan(after12Y);
   });
 
   it("can hide all bar labels via label settings", async () => {

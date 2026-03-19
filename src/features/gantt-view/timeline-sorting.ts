@@ -1,5 +1,5 @@
 import type { TimelineReadModel, TimelineBar, TimelineUnschedulableItem } from "../../application/dto/timeline-read-model.js";
-import type { TimelineSortField, TimelineSortPreference } from "./timeline-sort-preference.js";
+import type { TimelineSortDirection, TimelineSortField, TimelineSortPreference } from "./timeline-sort-preference.js";
 
 export type TimelineSortOption = {
   value: TimelineSortField;
@@ -64,13 +64,13 @@ export function resolveTimelineSortFieldLabel(field: TimelineSortField): string 
 
 function buildTimelineSortComparator(preference: TimelineSortPreference): (left: TimelineSortableItem, right: TimelineSortableItem) => number {
   return (left, right) => {
-    const primaryResult = compareTimelineSortableValues(left, right, preference.primary);
+    const primaryResult = compareTimelineSortableValues(left, right, preference.primary, preference.primaryDirection);
     if (primaryResult !== 0) {
       return primaryResult;
     }
 
     if (preference.secondary) {
-      const secondaryResult = compareTimelineSortableValues(left, right, preference.secondary);
+      const secondaryResult = compareTimelineSortableValues(left, right, preference.secondary, preference.secondaryDirection);
       if (secondaryResult !== 0) {
         return secondaryResult;
       }
@@ -83,11 +83,17 @@ function buildTimelineSortComparator(preference: TimelineSortPreference): (left:
 function compareTimelineSortableValues(
   left: TimelineSortableItem,
   right: TimelineSortableItem,
-  field: TimelineSortField
+  field: TimelineSortField,
+  direction: TimelineSortDirection
 ): number {
   const leftValue = extractSortValue(left, field);
   const rightValue = extractSortValue(right, field);
+  const ascendingResult = compareSortValuesAscending(leftValue, rightValue);
 
+  return direction === "desc" ? ascendingResult * -1 : ascendingResult;
+}
+
+function compareSortValuesAscending(leftValue: string | number | null, rightValue: string | number | null): number {
   if (leftValue === null && rightValue === null) {
     return 0;
   }

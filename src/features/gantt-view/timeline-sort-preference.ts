@@ -14,14 +14,20 @@ export type TimelineSortField =
   | "parentWorkItemId"
   | `field:${string}`;
 
+export type TimelineSortDirection = "asc" | "desc";
+
 export type TimelineSortPreference = {
   primary: TimelineSortField;
+  primaryDirection: TimelineSortDirection;
   secondary: TimelineSortField | null;
+  secondaryDirection: TimelineSortDirection;
 };
 
 export const DEFAULT_TIMELINE_SORT_PREFERENCE: TimelineSortPreference = {
   primary: "startDate",
-  secondary: null
+  primaryDirection: "asc",
+  secondary: null,
+  secondaryDirection: "asc"
 };
 
 const STORAGE_KEY = "azure-ganttops.timeline-sort.v1";
@@ -36,7 +42,9 @@ const store = createUserPreferenceStore<TimelineSortPreference>({
       key: "timelineSort",
       value: {
         primary: preference.primary,
-        secondary: preference.secondary
+        primaryDirection: preference.primaryDirection,
+        secondary: preference.secondary,
+        secondaryDirection: preference.secondaryDirection
       },
       cachedPreferences,
       scopeKey
@@ -83,13 +91,17 @@ export function sanitizeTimelineSortPreference(value: unknown): TimelineSortPref
   if (secondary === primary) {
     return {
       primary,
-      secondary: primary === "startDate" ? null : "startDate"
+      primaryDirection: sanitizeTimelineSortDirection(candidate.primaryDirection) ?? "asc",
+      secondary: primary === "startDate" ? null : "startDate",
+      secondaryDirection: sanitizeTimelineSortDirection(candidate.secondaryDirection) ?? "asc"
     };
   }
 
   return {
     primary,
-    secondary: secondary ?? null
+    primaryDirection: sanitizeTimelineSortDirection(candidate.primaryDirection) ?? "asc",
+    secondary: secondary ?? null,
+    secondaryDirection: sanitizeTimelineSortDirection(candidate.secondaryDirection) ?? "asc"
   };
 }
 
@@ -121,4 +133,12 @@ export function sanitizeTimelineSortField(value: unknown): TimelineSortField | n
   }
 
   return `field:${fieldRef}`;
+}
+
+export function sanitizeTimelineSortDirection(value: unknown): TimelineSortDirection | null {
+  if (value === "asc" || value === "desc") {
+    return value;
+  }
+
+  return null;
 }

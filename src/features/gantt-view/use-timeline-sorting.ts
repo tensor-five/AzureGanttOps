@@ -5,6 +5,7 @@ import {
   hydrateTimelineSortPreference,
   loadLastTimelineSortPreference,
   saveTimelineSortPreference,
+  type TimelineSortDirection,
   type TimelineSortField,
   type TimelineSortPreference
 } from "./timeline-sort-preference.js";
@@ -15,6 +16,8 @@ type UseTimelineSortingResult = {
   timelineSortPreference: TimelineSortPreference;
   selectPrimarySortField: (field: TimelineSortField) => void;
   selectSecondarySortField: (field: TimelineSortField | null) => void;
+  togglePrimarySortDirection: () => void;
+  toggleSecondarySortDirection: () => void;
 };
 
 export function useTimelineSorting(queryId?: string | null): UseTimelineSortingResult {
@@ -38,20 +41,35 @@ export function useTimelineSorting(queryId?: string | null): UseTimelineSortingR
     (field: TimelineSortField) => {
       setAndPersist({
         primary: field,
-        secondary: field === "startDate" ? null : "startDate"
+        primaryDirection: timelineSortPreference.primaryDirection,
+        secondary: field === "startDate" ? null : "startDate",
+        secondaryDirection: timelineSortPreference.secondaryDirection
       });
     },
-    [setAndPersist]
+    [setAndPersist, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]
   );
 
   const selectSecondarySortField = React.useCallback(
     (field: TimelineSortField | null) => {
       setAndPersist({
         primary: timelineSortPreference.primary,
-        secondary: field
+        primaryDirection: timelineSortPreference.primaryDirection,
+        secondary: field,
+        secondaryDirection: timelineSortPreference.secondaryDirection
       });
     },
-    [setAndPersist, timelineSortPreference.primary]
+    [setAndPersist, timelineSortPreference.primary, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]
+  );
+
+  const toggleSortDirection = React.useCallback(
+    (key: "primaryDirection" | "secondaryDirection") => {
+      const nextDirection: TimelineSortDirection = timelineSortPreference[key] === "asc" ? "desc" : "asc";
+      setAndPersist({
+        ...timelineSortPreference,
+        [key]: nextDirection
+      });
+    },
+    [setAndPersist, timelineSortPreference]
   );
 
   return {
@@ -59,6 +77,8 @@ export function useTimelineSorting(queryId?: string | null): UseTimelineSortingR
     setSortSettingsOpen,
     timelineSortPreference,
     selectPrimarySortField,
-    selectSecondarySortField
+    selectSecondarySortField,
+    togglePrimarySortDirection: () => toggleSortDirection("primaryDirection"),
+    toggleSecondarySortDirection: () => toggleSortDirection("secondaryDirection")
   };
 }
