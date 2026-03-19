@@ -53,6 +53,7 @@
   --color-timeline-week-line: #b8b3ab;
   --color-timeline-axis-label: #78716c;
   --color-timeline-current-period: rgba(132, 44, 195, 0.1);
+  --color-timeline-weekend-fill: rgba(41, 37, 36, 0.03);
   --color-timeline-today-line: #c2410c;
   --color-timeline-today-label: #9a3412;
   --color-timeline-row-label: #57534e;
@@ -116,6 +117,7 @@
   --color-timeline-week-line: #57534e;
   --color-timeline-axis-label: #a8a29e;
   --color-timeline-current-period: rgba(167, 102, 213, 0.2);
+  --color-timeline-weekend-fill: rgba(250, 250, 249, 0.03);
   --color-timeline-today-line: #fb923c;
   --color-timeline-today-label: #fdba74;
   --color-timeline-row-label: #d6d3d1;
@@ -131,4 +133,3 @@
   --shadow-md: 0 18px 32px rgba(2, 8, 20, 0.5);
   --shadow-lg: 0 24px 44px -12px rgba(132, 44, 195, 0.22);
 }
-

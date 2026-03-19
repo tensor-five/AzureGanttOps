@@ -4,6 +4,13 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import {
+  BUILD_INPUT_PATHS,
+  BUILD_CACHE_REASONS,
+  createBuildStamp,
+  determineBuildAction,
+  getCommitHashFromBuildStamp
+} from "./one-click-build-cache.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.PORT ?? "8080");
@@ -111,54 +118,63 @@ async function ensureBuildArtifacts() {
   const hasServerArtifact = await canAccess(serverArtifact);
   const hasUiArtifact = await canAccess(uiArtifact);
 
-  // Wenn kritische Artefakte fehlen → immer bauen (defensiv)
-  if (!hasServerArtifact || !hasUiArtifact) {
-    log("Build-Artefakte fehlen, führe Build aus...");
-    await runBuild();
-    return;
-  }
-
-  // Artefakte existieren → Git-basiertes Smart-Caching
-  let currentCommit = "";
-  try {
-    const output = await run("git", ["rev-parse", "HEAD"], { stdio: "pipe" });
-    currentCommit = String(output).trim();
-  } catch {
-    log("Git-Commit konnte nicht gelesen werden, aber Artefakte existieren. Überspringe Build.");
-    return;
-  }
-
   let lastCommit = "";
   try {
     lastCommit = (await readFile(buildTagPath, "utf8")).trim();
-  } catch {
-    // Datei fehlt → aber Artefakte existieren, also bauen
-    log("Build-Marker fehlt → führe Build aus...");
-    await runBuild(currentCommit);
+  } catch {}
+
+  const currentBuildStamp = await getCurrentBuildStamp();
+  const buildAction = determineBuildAction({
+    hasServerArtifact,
+    hasUiArtifact,
+    currentBuildStamp,
+    lastBuildStamp: lastCommit
+  });
+
+  if (!buildAction.shouldBuild) {
+    if (buildAction.reason === BUILD_CACHE_REASONS.GIT_UNAVAILABLE) {
+      log("Git-Status konnte nicht gelesen werden, aber Artefakte existieren. Überspringe Build.");
+      return;
+    }
+
+    const currentCommitHash = getCommitHashFromBuildStamp(currentBuildStamp);
+    if (currentCommitHash) {
+      log(`Build ist aktuell (Commit ${currentCommitHash.slice(0, 8)}). Überspringe Build.`);
+      return;
+    }
+
+    log("Build ist aktuell. Überspringe Build.");
     return;
   }
 
-  // Wenn Commit unverändert → Build überspringen
-  if (currentCommit === lastCommit) {
-    log(`Build ist aktuell (Commit ${currentCommit.slice(0, 8)}). Überspringe Build.`);
-    return;
+  if (buildAction.reason === BUILD_CACHE_REASONS.MISSING_ARTIFACTS) {
+    log("Build-Artefakte fehlen, führe Build aus...");
+  } else if (buildAction.reason === BUILD_CACHE_REASONS.MISSING_MARKER) {
+    log("Build-Marker fehlt, führe Build aus...");
+  } else {
+    log("Build-Eingaben haben sich geändert. Führe Build aus...");
   }
 
-  // Commit hat sich geändert → Build durchführen
-  log(`Code hat sich geändert (${lastCommit.slice(0, 8)} → ${currentCommit.slice(0, 8)}). Führe Build aus...`);
-  await runBuild(currentCommit);
+  await runBuild(currentBuildStamp);
 }
 
-async function runBuild(commitHash) {
+async function runBuild(buildStamp) {
   await run("npm", ["run", "build"]);
-  
-  if (commitHash) {
+
+  if (buildStamp) {
     const buildTagPath = path.join(projectRoot, ".last_build_commit");
-    await writeFile(buildTagPath, commitHash, "utf8");
-    log(`Build abgeschlossen. Merke Commit ${commitHash.slice(0, 8)}.`);
+    await writeFile(buildTagPath, buildStamp, "utf8");
+    const commitHash = getCommitHashFromBuildStamp(buildStamp);
+    if (commitHash) {
+      log(`Build abgeschlossen. Merke Stand ${commitHash.slice(0, 8)}.`);
+      return;
+    }
   } else {
-    log("Build abgeschlossen.");
+    log("Build abgeschlossen. Build-Marker konnte nicht aktualisiert werden.");
+    return;
   }
+
+  log("Build abgeschlossen.");
 }
 
 // --------------------------------------------------
@@ -232,6 +248,22 @@ async function canAccess(filePath) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function getCurrentBuildStamp() {
+  try {
+    const commitHash = String(await run("git", ["rev-parse", "HEAD"], { stdio: "pipe" })).trim();
+    const statusOutput = String(
+      await run(
+        "git",
+        ["status", "--porcelain", "--untracked-files=normal", "--", ...BUILD_INPUT_PATHS],
+        { stdio: "pipe" }
+      )
+    );
+    return createBuildStamp(commitHash, statusOutput);
+  } catch {
+    return "";
   }
 }
 

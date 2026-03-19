@@ -2348,6 +2348,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       className: "timeline-current-period-highlight"
                     })
                   : null,
+                chartModel.weekendBands.map((band) =>
+                  React.createElement("rect", {
+                    key: `timeline-weekend-band-${band.date}`,
+                    x: CHART_LEFT_GUTTER + band.x,
+                    y: CHART_GRID_START_Y,
+                    width: band.width,
+                    height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
+                    className: "timeline-weekend-band",
+                    "data-date": band.date
+                  })
+                ),
                 chartModel.dailyGridLines.map((dayX) =>
                   React.createElement("line", {
                     key: `day-grid-${dayX}`,
@@ -2855,6 +2866,7 @@ type VisualChartModel = {
   tailHeightPx: number;
   dayWidthPx: number;
   bars: VisualTimelineBar[];
+  weekendBands: { x: number; width: number; date: string }[];
   weekMarkers: { x: number; label: string }[];
   dailyGridLines: number[];
   monthMarkers: { x: number; label: string }[];
@@ -2884,6 +2896,7 @@ function buildVisualChartModel(
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
+      weekendBands: [],
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
@@ -2926,6 +2939,7 @@ function buildVisualChartModel(
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
+      weekendBands: [],
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
@@ -2963,6 +2977,7 @@ function buildVisualChartModel(
           width: (visiblePeriodEndExclusive - visiblePeriodStart) * dayWidthPx
         }
       : null;
+  const weekendBands = buildWeekendBands(domainStart, totalDays, dayWidthPx);
 
   const bars = normalizedBars.map((bar) => {
     const startOffset = dayDiff(domainStart, bar.start);
@@ -2998,6 +3013,7 @@ function buildVisualChartModel(
     tailHeightPx: verticalLayout.tailHeightPx,
     dayWidthPx,
     bars,
+    weekendBands,
     weekMarkers,
     dailyGridLines,
     monthMarkers,
@@ -3909,6 +3925,28 @@ function buildDailyGridLines(totalDays: number, dayWidthPx: number): number[] {
   return lines;
 }
 
+function buildWeekendBands(
+  domainStart: Date,
+  totalDays: number,
+  dayWidthPx: number
+): { x: number; width: number; date: string }[] {
+  const bands: { x: number; width: number; date: string }[] = [];
+  for (let dayIndex = 0; dayIndex < totalDays; dayIndex += 1) {
+    const currentDay = addDays(domainStart, dayIndex);
+    if (!isWeekendUtc(currentDay)) {
+      continue;
+    }
+
+    bands.push({
+      x: dayIndex * dayWidthPx,
+      width: dayWidthPx,
+      date: formatTickDate(currentDay)
+    });
+  }
+
+  return bands;
+}
+
 function buildMonthAxisMarkers(
   domainStart: Date,
   totalDays: number,
@@ -3948,6 +3986,11 @@ function formatDayMonthLabel(value: Date): string {
   const month = String(value.getUTCMonth() + 1).padStart(2, "0");
   const weekNumber = String(resolveIsoWeekNumberUtc(value)).padStart(2, "0");
   return `${day}.${month}. (KW${weekNumber})`;
+}
+
+function isWeekendUtc(value: Date): boolean {
+  const weekday = value.getUTCDay();
+  return weekday === 0 || weekday === 6;
 }
 
 function resolveIsoWeekNumberUtc(value: Date): number {

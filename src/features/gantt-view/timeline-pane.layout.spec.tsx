@@ -138,6 +138,23 @@ describe("timeline-pane layout", () => {
     expect(nonEmptyChartScroll?.classList.contains("timeline-chart-scroll-unscheduled-empty")).toBe(false);
   });
 
+  it("renders subtle background bands for saturday and sunday", () => {
+    const { container } = render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const weekendBands = container.querySelectorAll("rect.timeline-weekend-band");
+
+    expect(weekendBands).toHaveLength(2);
+    expect(Array.from(weekendBands, (band) => band.getAttribute("data-date"))).toEqual([
+      "2026-02-28",
+      "2026-03-01"
+    ]);
+  });
+
   it("renders live sync controls next to the sync status", () => {
     const onSetLiveSyncEnabled = vi.fn();
     const onPushPendingWorkItemChanges = vi.fn();

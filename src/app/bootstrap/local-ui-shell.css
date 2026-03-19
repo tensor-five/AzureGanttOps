@@ -2194,6 +2194,10 @@ button {
   fill: var(--color-timeline-current-period);
 }
 
+.timeline-weekend-band {
+  fill: var(--color-timeline-weekend-fill);
+}
+
 .timeline-month-boundary-line {
   stroke: color-mix(in srgb, var(--color-timeline-grid-line) 35%, var(--color-primary) 65%);
   stroke-width: 1.7;
