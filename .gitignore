@@ -7,3 +7,4 @@ coverage/
 .claude/
 test-results/
 .idea/
+.last_build_commit

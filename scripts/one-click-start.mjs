@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -42,7 +42,7 @@ async function main() {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  const healthy = await waitForServer(25_000);
+  const healthy = await waitForServer(25000);
   if (healthy) {
     log(`Server bereit auf ${baseUrl}. Öffne Browser...`);
     await openBrowser(baseUrl);
@@ -62,6 +62,10 @@ async function main() {
     server.on("error", reject);
   });
 }
+
+// --------------------------------------------------
+// Hilfsfunktionen
+// --------------------------------------------------
 
 async function assertCommand(command, args, errorMessage) {
   await run(command, args, { stdio: "ignore" }).catch(() => {
@@ -96,20 +100,68 @@ async function ensureDependenciesInstalled() {
   await run("npm", ["install"]);
 }
 
+// --------------------------------------------------
+// NEUE VERSION: Robuster Build mit Git-basiertem Caching
+// --------------------------------------------------
 async function ensureBuildArtifacts() {
   const serverArtifact = path.join(projectRoot, "dist/src/app/bootstrap/local-server.js");
   const uiArtifact = path.join(projectRoot, "dist/src/app/bootstrap/local-ui-entry.browser.js");
+  const buildTagPath = path.join(projectRoot, ".last_build_commit");
 
   const hasServerArtifact = await canAccess(serverArtifact);
   const hasUiArtifact = await canAccess(uiArtifact);
 
-  if (hasServerArtifact && hasUiArtifact) {
+  // Wenn kritische Artefakte fehlen → immer bauen (defensiv)
+  if (!hasServerArtifact || !hasUiArtifact) {
+    log("Build-Artefakte fehlen, führe Build aus...");
+    await runBuild();
     return;
   }
 
-  log("Build-Artefakte fehlen, führe Build aus...");
-  await run("npm", ["run", "build"]);
+  // Artefakte existieren → Git-basiertes Smart-Caching
+  let currentCommit = "";
+  try {
+    const output = await run("git", ["rev-parse", "HEAD"], { stdio: "pipe" });
+    currentCommit = String(output).trim();
+  } catch {
+    log("Git-Commit konnte nicht gelesen werden, aber Artefakte existieren. Überspringe Build.");
+    return;
+  }
+
+  let lastCommit = "";
+  try {
+    lastCommit = (await readFile(buildTagPath, "utf8")).trim();
+  } catch {
+    // Datei fehlt → aber Artefakte existieren, also bauen
+    log("Build-Marker fehlt → führe Build aus...");
+    await runBuild(currentCommit);
+    return;
+  }
+
+  // Wenn Commit unverändert → Build überspringen
+  if (currentCommit === lastCommit) {
+    log(`Build ist aktuell (Commit ${currentCommit.slice(0, 8)}). Überspringe Build.`);
+    return;
+  }
+
+  // Commit hat sich geändert → Build durchführen
+  log(`Code hat sich geändert (${lastCommit.slice(0, 8)} → ${currentCommit.slice(0, 8)}). Führe Build aus...`);
+  await runBuild(currentCommit);
 }
+
+async function runBuild(commitHash) {
+  await run("npm", ["run", "build"]);
+  
+  if (commitHash) {
+    const buildTagPath = path.join(projectRoot, ".last_build_commit");
+    await writeFile(buildTagPath, commitHash, "utf8");
+    log(`Build abgeschlossen. Merke Commit ${commitHash.slice(0, 8)}.`);
+  } else {
+    log("Build abgeschlossen.");
+  }
+}
+
+// --------------------------------------------------
 
 async function isServerHealthy() {
   try {
@@ -144,9 +196,14 @@ function run(command, args, options = {}) {
       shell: process.platform === "win32"
     });
 
+    let output = "";
+    if (options.stdio === "pipe") {
+      child.stdout.on("data", (data) => (output += data.toString()));
+    }
+
     child.on("exit", (code) => {
       if (code === 0) {
-        resolve();
+        resolve(options.stdio === "pipe" ? output : undefined);
         return;
       }
       reject(new Error(`${command} ${args.join(" ")} failed with exit code ${code}`));
@@ -185,6 +242,8 @@ function log(message) {
 function warn(message) {
   console.warn(`[launcher] ${message}`);
 }
+
+// --------------------------------------------------
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
