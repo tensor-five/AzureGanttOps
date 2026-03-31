@@ -524,7 +524,16 @@ export function createHttpServer(params: {
       csrfToken
     );
   });
-  server.listen(params.port ?? 8080, "127.0.0.1");
+  const port = params.port ?? 8080;
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code === "EADDRINUSE") {
+      console.error(`[ado-runtime] Port ${port} is already in use. Stop the other process or set a different PORT.`);
+      process.exit(1);
+    }
+
+    throw error;
+  });
+  server.listen(port, "127.0.0.1");
 
   return {
     close: () =>

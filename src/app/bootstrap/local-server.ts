@@ -27,7 +27,13 @@ if (process.env.ADO_WRITE_ENABLED !== "1") {
 }
 
 async function main(): Promise<void> {
-  const detectedAzCliPath = await resolveAzCliExecutablePath();
+  let detectedAzCliPath = "az";
+  try {
+    detectedAzCliPath = await resolveAzCliExecutablePath();
+  } catch {
+    console.warn("[ado-runtime] Azure CLI not found — auth features will be unavailable until 'az' is installed.");
+  }
+
   if (!process.env.ADO_AZ_CLI_PATH && detectedAzCliPath !== "az") {
     process.env.ADO_AZ_CLI_PATH = detectedAzCliPath;
   }
