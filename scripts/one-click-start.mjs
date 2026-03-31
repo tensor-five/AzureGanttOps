@@ -24,6 +24,7 @@ async function main() {
   await assertCommand("az", ["--version"], "Azure CLI fehlt. Bitte Azure CLI installieren.");
 
   await ensureAzureDevOpsExtension();
+  await ensureAzureLogin();
   await ensureDependenciesInstalled();
   await ensureBuildArtifacts();
 
@@ -93,6 +94,22 @@ async function ensureAzureDevOpsExtension() {
 
   log("Azure DevOps CLI Extension fehlt, installiere sie jetzt...");
   await run("az", ["extension", "add", "--name", "azure-devops"]);
+}
+
+async function ensureAzureLogin() {
+  const isLoggedIn = await run("az", ["account", "show", "-o", "none"], {
+    stdio: "ignore"
+  })
+    .then(() => true)
+    .catch(() => false);
+
+  if (isLoggedIn) {
+    return;
+  }
+
+  log("Keine aktive Azure-Session gefunden. Starte 'az login'...");
+  await run("az", ["login"]);
+  log("Azure-Login erfolgreich.");
 }
 
 async function ensureDependenciesInstalled() {
