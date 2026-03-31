@@ -232,33 +232,49 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         };
       };
     }): Promise<QueryIntakeResponse> => {
-      const result = await props.composition.runQuerySelectionFlow({
-        queryId: request.queryId,
-        mappingProfileId: request.mappingProfileId,
-        mappingProfileUpsert: request.mappingProfileUpsert
-      });
-      const submitted = applyPendingWorkItemMutationsToResponse(
-        await enrichRuntimeStateColors(result.response),
-        pendingWorkItemMutationsRef.current
-      );
-      setResponse(submitted);
-      setUiModel(mapQueryIntakeResponseToUiModel(submitted));
-      setLastRunRequest({
-        queryInput: request.queryId,
-        mappingProfileId: request.mappingProfileId,
-        mappingProfileUpsert: request.mappingProfileUpsert
-      });
-      setBlockerMessage(null);
+      try {
+        const result = await props.composition.runQuerySelectionFlow({
+          queryId: request.queryId,
+          mappingProfileId: request.mappingProfileId,
+          mappingProfileUpsert: request.mappingProfileUpsert
+        });
+        const submitted = applyPendingWorkItemMutationsToResponse(
+          await enrichRuntimeStateColors(result.response),
+          pendingWorkItemMutationsRef.current
+        );
+        setResponse(submitted);
+        setUiModel(mapQueryIntakeResponseToUiModel(submitted));
+        setLastRunRequest({
+          queryInput: request.queryId,
+          mappingProfileId: request.mappingProfileId,
+          mappingProfileUpsert: request.mappingProfileUpsert
+        });
+        setBlockerMessage(null);
 
-      if (shouldOpenMappingFixTab(submitted)) {
-        setMappingFixResponse(submitted);
-        setActiveTab(deriveActiveTabForQueryResponse(submitted));
-      } else {
-        setMappingFixResponse(null);
-        setActiveTab(deriveActiveTabForQueryResponse(submitted));
+        if (shouldOpenMappingFixTab(submitted)) {
+          setMappingFixResponse(submitted);
+          setActiveTab(deriveActiveTabForQueryResponse(submitted));
+        } else {
+          setMappingFixResponse(null);
+          setActiveTab(deriveActiveTabForQueryResponse(submitted));
+        }
+
+        return submitted;
+      } catch (error: unknown) {
+        const reason = error instanceof Error ? error.message : "An unexpected error occurred.";
+        setBlockerMessage({
+          tab: "query",
+          reason,
+          nextAction: "Check that Azure CLI is installed and authenticated, then retry."
+        });
+        setUiModel((prev) => ({
+          ...prev,
+          uiState: "auth_failure",
+          trustState: "needs_attention",
+          guidance: reason
+        }));
+        throw error;
       }
-
-      return submitted;
     },
     [enrichRuntimeStateColors, props.composition]
   );

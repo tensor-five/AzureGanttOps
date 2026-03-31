@@ -55,17 +55,30 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
     return `${storagePrefix}${encodeURIComponent(scopeKey)}`;
   };
 
-  const readFromLocalStorage = (scopeKey: string | null): T | null => {
-    if (typeof globalThis.localStorage === "undefined") {
-      return null;
+  const isLocalStorageAvailable = (): boolean => {
+    try {
+      return (
+        typeof globalThis.localStorage !== "undefined" &&
+        globalThis.localStorage !== null &&
+        typeof globalThis.localStorage.getItem === "function" &&
+        typeof globalThis.localStorage.setItem === "function"
+      );
+    } catch {
+      return false;
     }
+  };
 
-    const raw = globalThis.localStorage.getItem(resolveStorageKey(scopeKey));
-    if (!raw) {
+  const readFromLocalStorage = (scopeKey: string | null): T | null => {
+    if (!isLocalStorageAvailable()) {
       return null;
     }
 
     try {
+      const raw = globalThis.localStorage.getItem(resolveStorageKey(scopeKey));
+      if (!raw) {
+        return null;
+      }
+
       return config.sanitize(deserialize(raw));
     } catch {
       return null;
@@ -73,11 +86,15 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
   };
 
   const writeToLocalStorage = (value: T, scopeKey: string | null): void => {
-    if (typeof globalThis.localStorage === "undefined") {
+    if (!isLocalStorageAvailable()) {
       return;
     }
 
-    globalThis.localStorage.setItem(resolveStorageKey(scopeKey), serialize(value));
+    try {
+      globalThis.localStorage.setItem(resolveStorageKey(scopeKey), serialize(value));
+    } catch {
+      // localStorage unavailable or quota exceeded — skip silently
+    }
   };
 
   const load = (scope?: UserPreferenceStoreScope): T | null => {
@@ -136,19 +153,23 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
     memoryValues.clear();
     hydratedScopes.clear();
 
-    if (typeof globalThis.localStorage !== "undefined") {
-      globalThis.localStorage.removeItem(config.storageKey);
-      const toRemove: string[] = [];
-      for (let index = 0; index < globalThis.localStorage.length; index += 1) {
-        const key = globalThis.localStorage.key(index);
-        if (key && key.startsWith(storagePrefix)) {
-          toRemove.push(key);
+    if (isLocalStorageAvailable()) {
+      try {
+        globalThis.localStorage.removeItem(config.storageKey);
+        const toRemove: string[] = [];
+        for (let index = 0; index < globalThis.localStorage.length; index += 1) {
+          const key = globalThis.localStorage.key(index);
+          if (key && key.startsWith(storagePrefix)) {
+            toRemove.push(key);
+          }
         }
-      }
 
-      toRemove.forEach((key) => {
-        globalThis.localStorage.removeItem(key);
-      });
+        toRemove.forEach((key) => {
+          globalThis.localStorage.removeItem(key);
+        });
+      } catch {
+        // localStorage unavailable — skip cleanup
+      }
     }
   };
 

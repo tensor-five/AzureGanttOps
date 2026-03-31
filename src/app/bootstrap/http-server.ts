@@ -637,21 +637,30 @@ async function handleQueryDomainRoute(
       return true;
     }
 
-    const result = await deps.controller.submit({
-      queryInput: payload.queryInput,
-      mappingProfileId: typeof payload.mappingProfileId === "string" ? payload.mappingProfileId : undefined,
-      mappingProfileUpsert: parseMappingProfileUpsert(payload.mappingProfileUpsert)
-    });
+    try {
+      const result = await deps.controller.submit({
+        queryInput: payload.queryInput,
+        mappingProfileId: typeof payload.mappingProfileId === "string" ? payload.mappingProfileId : undefined,
+        mappingProfileUpsert: parseMappingProfileUpsert(payload.mappingProfileUpsert)
+      });
 
-    logVerboseIntake(deps.verboseLogs, {
-      statusCode: result.statusCode,
-      preflightStatus: result.preflightStatus,
-      uiState: result.uiState,
-      activeQueryId: result.activeQueryId,
-      errorCode: result.errorCode
-    });
+      logVerboseIntake(deps.verboseLogs, {
+        statusCode: result.statusCode,
+        preflightStatus: result.preflightStatus,
+        uiState: result.uiState,
+        activeQueryId: result.activeQueryId,
+        errorCode: result.errorCode
+      });
 
-    writeJson(res, 200, result);
+      writeJson(res, 200, result);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown server error";
+      console.error("[ado-runtime] query-intake unhandled error:", message);
+      writeJson(res, 500, {
+        code: "INTERNAL_ERROR",
+        message: "An unexpected error occurred while processing the query intake."
+      });
+    }
     return true;
   }
 
