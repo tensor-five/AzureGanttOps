@@ -24,9 +24,10 @@ describe("timeline-pane dependencies", () => {
       })
     );
 
-    const connector = screen.getByLabelText("dependency-11-12");
-    expect(connector.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-/);
-    expect(connector.getAttribute("d")).toContain("L");
+    const connectorGroup = screen.getByLabelText("dependency-11-12");
+    const visiblePath = connectorGroup.querySelector("path.timeline-dependency-line")!;
+    expect(visiblePath.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-/);
+    expect(visiblePath.getAttribute("d")).toContain("L");
   });
 
   it("hides predecessor/successor connectors when dependency toggle is off", () => {
@@ -190,12 +191,13 @@ describe("timeline-pane dependencies", () => {
       })
     );
 
-    const connector = screen.getByLabelText("dependency-11-12");
-    expect(connector.getAttribute("class")).toContain("timeline-dependency-line-violated");
-    expect(connector.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-alert-/);
+    const connectorGroup = screen.getByLabelText("dependency-11-12");
+    const visiblePath = connectorGroup.querySelector("path.timeline-dependency-line")!;
+    expect(visiblePath.getAttribute("class")).toContain("timeline-dependency-line-violated");
+    expect(visiblePath.getAttribute("marker-end")).toMatch(/^url\(#timeline-dependency-arrowhead-alert-/);
   });
 
-  it("routes backward dependencies to enter successor from the left side", () => {
+  it("routes backward dependencies with a clean L-bend path", () => {
     render(
       React.createElement(TimelinePane, {
         timeline: makeViolatingDependencyTimeline(),
@@ -203,13 +205,14 @@ describe("timeline-pane dependencies", () => {
       })
     );
 
-    const connector = screen.getByLabelText("dependency-11-12");
-    const points = extractPathPoints(connector.getAttribute("d"));
-    expect(points.length).toBeGreaterThanOrEqual(5);
+    const connectorGroup = screen.getByLabelText("dependency-11-12");
+    const visiblePath = connectorGroup.querySelector("path.timeline-dependency-line")!;
+    const points = extractPathPoints(visiblePath.getAttribute("d"));
+    expect(points.length).toBeGreaterThanOrEqual(3);
 
-    const penultimate = points[points.length - 2];
+    const start = points[0];
     const endpoint = points[points.length - 1];
-    expect(penultimate.x).toBeLessThan(endpoint.x);
+    expect(start.y).not.toBe(endpoint.y);
   });
 
   it("renders duplicate dependencies only once", () => {
@@ -244,7 +247,7 @@ describe("timeline-pane dependencies", () => {
       })
     );
 
-    const pathBeforeMove = screen.getByLabelText("dependency-11-12").getAttribute("d");
+    const pathBeforeMove = screen.getByLabelText("dependency-11-12").querySelector("path.timeline-dependency-line")!.getAttribute("d");
     expect(pathBeforeMove).toBeTruthy();
 
     const timelineAfterMove: TimelineReadModel = {
@@ -270,7 +273,7 @@ describe("timeline-pane dependencies", () => {
       })
     );
 
-    const pathAfterMove = screen.getByLabelText("dependency-11-12").getAttribute("d");
+    const pathAfterMove = screen.getByLabelText("dependency-11-12").querySelector("path.timeline-dependency-line")!.getAttribute("d");
     expect(pathAfterMove).toBeTruthy();
     expect(pathAfterMove).not.toBe(pathBeforeMove);
   });

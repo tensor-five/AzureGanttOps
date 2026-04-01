@@ -330,6 +330,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const [selectedWorkItemId, setSelectedWorkItemId] = React.useState<number | null>(() =>
     selectionStore.getSelectedWorkItemId()
   );
+  const [hoveredDependencyKey, setHoveredDependencyKey] = React.useState<string | null>(null);
   const {
     dayWidthPx,
     setDayWidthPx,
@@ -1144,34 +1145,62 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     }
 
     const uniqueDependencies = deduplicateTimelineDependencies(visibleDependencies);
-    return uniqueDependencies.flatMap((dependency, index) => {
-      const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
-      const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
-      if (!from || !to) {
-        return [];
-      }
-      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
-      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
-      const isViolated = isDependencyViolated(predecessorBar, successorBar);
-      const predecessorToSuccessorGapDays =
-        predecessorBar !== undefined && successorBar !== undefined ? dayDiff(predecessorBar.end, successorBar.start) : null;
-      const forceNearGapDetour =
-        predecessorToSuccessorGapDays !== null &&
-        predecessorToSuccessorGapDays >= 1 &&
-        predecessorToSuccessorGapDays <= DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR;
 
-      return [
-        {
-          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${index}`,
-          path: buildDependencyConnectorPath(from, to, index, { forceNearGapDetour }),
+    const groupedByPredecessor = new Map<number, typeof uniqueDependencies>();
+    for (const dep of uniqueDependencies) {
+      const group = groupedByPredecessor.get(dep.predecessorWorkItemId);
+      if (group) {
+        group.push(dep);
+      } else {
+        groupedByPredecessor.set(dep.predecessorWorkItemId, [dep]);
+      }
+    }
+
+    const connectors: VisualDependencyConnector[] = [];
+
+    for (const [predecessorId, group] of groupedByPredecessor) {
+      const from = geometryByWorkItemId.get(predecessorId);
+      if (!from) {
+        continue;
+      }
+
+      const resolvedTargets: Array<{ dependency: (typeof uniqueDependencies)[number]; to: BarGeometry; isViolated: boolean }> = [];
+      for (const dependency of group) {
+        const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
+        if (!to) {
+          continue;
+        }
+        const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+        const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+        resolvedTargets.push({ dependency, to, isViolated: isDependencyViolated(predecessorBar, successorBar) });
+      }
+
+      if (resolvedTargets.length === 0) {
+        continue;
+      }
+
+      const baseBendX = resolvedTargets.length > 1
+        ? resolveStemBendX(from, resolvedTargets.map((t) => t.to), 0)
+        : null;
+
+      for (let i = 0; i < resolvedTargets.length; i++) {
+        const { dependency, to, isViolated } = resolvedTargets[i];
+        const bendX = baseBendX !== null ? baseBendX + i * DEPENDENCY_BEND_STAGGER_PX : null;
+        connectors.push({
+          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${i}`,
+          path: bendX !== null
+            ? buildDependencyConnectorPathWithBendX(from, to, bendX)
+            : buildDependencyConnectorPath(from, to, 0),
           markerEnd: `url(#${isViolated ? dependencyAlertMarkerId : dependencyMarkerId})`,
           predecessorWorkItemId: dependency.predecessorWorkItemId,
           successorWorkItemId: dependency.successorWorkItemId,
           dependencyType: dependency.dependencyType,
           isViolated
-        }
-      ];
-    });
+        });
+      }
+    }
+
+    return connectors;
   }, [
     chartBarByWorkItemId,
     dependencyAlertMarkerId,
@@ -1195,6 +1224,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       setSelectedDependency(null);
     }
   }, [dependencyConnectors, selectedDependency]);
+  const hoveredDependencyWorkItemIds = React.useMemo(() => {
+    if (!hoveredDependencyKey) {
+      return null;
+    }
+    const connector = dependencyConnectors.find((c) => c.key === hoveredDependencyKey);
+    if (!connector) {
+      return null;
+    }
+    return new Set([connector.predecessorWorkItemId, connector.successorWorkItemId]);
+  }, [hoveredDependencyKey, dependencyConnectors]);
   const activeDependencyDragPreview = React.useMemo(() => {
     if (!activeDependencyDrag) {
       return null;
@@ -2432,7 +2471,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 chartModel.bars.map((bar, index) => {
                   const y = resolveTimelineBarTopY(index);
                   const isSelected = selectedWorkItemId === bar.workItemId;
-                  const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : ""]
+                  const isDependencyHovered = hoveredDependencyWorkItemIds !== null && hoveredDependencyWorkItemIds.has(bar.workItemId);
+                  const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : "", isDependencyHovered ? "timeline-bar-dependency-hover" : ""]
                     .filter(Boolean)
                     .join(" ");
                   return React.createElement(
@@ -2570,27 +2610,44 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     selectedDependency?.predecessorWorkItemId === connector.predecessorWorkItemId &&
                     selectedDependency?.successorWorkItemId === connector.successorWorkItemId &&
                     selectedDependency?.dependencyType === connector.dependencyType;
+                  const isHovered = hoveredDependencyKey === connector.key;
                   const className = [
                     "timeline-dependency-line",
                     connector.isViolated ? "timeline-dependency-line-violated" : "",
-                    isSelected ? "timeline-dependency-line-selected" : ""
+                    isSelected ? "timeline-dependency-line-selected" : "",
+                    isHovered ? "timeline-dependency-line-hovered" : ""
                   ]
                     .filter(Boolean)
                     .join(" ");
-                  return React.createElement("path", {
-                    key: connector.key,
-                    d: connector.path,
-                    className,
-                    markerEnd: connector.markerEnd,
-                    "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
-                    onClick: () => {
-                      setSelectedDependency({
-                        predecessorWorkItemId: connector.predecessorWorkItemId,
-                        successorWorkItemId: connector.successorWorkItemId,
-                        dependencyType: connector.dependencyType
-                      });
-                    }
-                  });
+                  const hoverHandlers = {
+                    onPointerEnter: () => setHoveredDependencyKey(connector.key),
+                    onPointerLeave: () => setHoveredDependencyKey((prev) => prev === connector.key ? null : prev)
+                  };
+                  return React.createElement(
+                    "g",
+                    {
+                      key: connector.key,
+                      "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
+                      onClick: () => {
+                        setSelectedDependency({
+                          predecessorWorkItemId: connector.predecessorWorkItemId,
+                          successorWorkItemId: connector.successorWorkItemId,
+                          dependencyType: connector.dependencyType
+                        });
+                      }
+                    },
+                    React.createElement("path", {
+                      d: connector.path,
+                      className: "timeline-dependency-line-hitarea",
+                      ...hoverHandlers
+                    }),
+                    React.createElement("path", {
+                      d: connector.path,
+                      className,
+                      markerEnd: connector.markerEnd,
+                      pointerEvents: "none"
+                    })
+                  );
                 }),
                 activeDependencyDragPreview
                   ? React.createElement("path", {
@@ -2783,14 +2840,8 @@ const DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
 const OVERDUE_TIMELINE_COLOR = "#b91c1c";
 const OVERDUE_OK_TIMELINE_COLOR = "#475569";
 const DEPENDENCY_ENDPOINT_GAP_PX = 6;
-const DEPENDENCY_LEFT_APPROACH_PX = 16;
 const DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
-const DEPENDENCY_LANE_GAP_PX = 6;
-const DEPENDENCY_LANE_TOP_OFFSET_PX = 6;
 const DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
-const DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX = 4;
-const DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR = 2;
-const DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX = 9;
 const MAX_TIMELINE_FILTER_SLOTS = 5;
 const TIMELINE_FILTERS_QUERY_PARAM = "tf";
 const LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
@@ -2858,6 +2909,7 @@ type VisualDependencyConnector = {
   dependencyType: "FS";
   isViolated: boolean;
 };
+
 
 type VisualChartModel = {
   width: number;
@@ -4157,43 +4209,85 @@ function calculateDraggedSchedule(
   return { startDate: sourceStart, endDate: candidateEnd };
 }
 
-function buildDependencyConnectorPath(
-  from: BarGeometry,
-  to: BarGeometry,
-  laneSeed: number,
-  options?: { forceNearGapDetour?: boolean }
-): string {
+const DEPENDENCY_BEND_STAGGER_PX = 5;
+
+function resolveStemBendX(from: BarGeometry, targets: readonly BarGeometry[], laneSeed: number): number {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const minEndX = Math.min(...targets.map((t) => t.x - DEPENDENCY_ENDPOINT_GAP_PX));
+  const horizontalDistance = minEndX - startX;
+  const stagger = (laneSeed % 4) * DEPENDENCY_BEND_STAGGER_PX;
+  return startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2)) + stagger;
+}
+
+function buildDependencyConnectorPathWithBendX(from: BarGeometry, to: BarGeometry, bendX: number): string {
   const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
   const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
-  const horizontalDistance = endX - startX;
-  const minDirectDistance = options?.forceNearGapDetour ? 20 : 10;
-  const directLaneX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
 
-  if (horizontalDistance >= minDirectDistance) {
+  if (from.midY === to.midY) {
     return toDependencyPathString([
       { x: startX, y: from.midY },
-      { x: directLaneX, y: from.midY },
-      { x: directLaneX, y: to.midY },
       { x: endX, y: to.midY }
     ]);
   }
 
-  const laneY = resolveDependencyLaneY(laneSeed, {
-    fromTopY: from.y,
-    fromMidY: from.midY,
-    fromBottomY: from.y + BAR_HEIGHT,
-    toTopY: to.y,
-    toMidY: to.midY
-  });
-  const detourX = Math.max(startX, endX) + DEPENDENCY_LEFT_APPROACH_PX;
-  const approachX = endX - Math.max(4, options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 6);
+  if (endX < bendX) {
+    const approachX = endX - DEPENDENCY_ENDPOINT_GAP_PX * 3;
+    const verticalDirection = to.midY > from.midY ? 1 : -1;
+    const approachY = to.midY - verticalDirection * (BAR_HEIGHT / 2 + DEPENDENCY_ENDPOINT_GAP_PX);
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: approachY },
+      { x: approachX, y: approachY },
+      { x: approachX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
 
   return toDependencyPathString([
     { x: startX, y: from.midY },
-    { x: detourX, y: from.midY },
-    { x: detourX, y: laneY },
-    { x: approachX, y: laneY },
-    { x: approachX, y: to.midY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: to.midY },
+    { x: endX, y: to.midY }
+  ]);
+}
+
+function buildDependencyConnectorPath(
+  from: BarGeometry,
+  to: BarGeometry,
+  laneSeed: number
+): string {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
+  const horizontalDistance = endX - startX;
+  const stagger = (laneSeed % 4) * DEPENDENCY_BEND_STAGGER_PX;
+  const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2)) + stagger;
+
+  if (from.midY === to.midY) {
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+
+  if (endX < bendX) {
+    const approachX = endX - DEPENDENCY_ENDPOINT_GAP_PX * 3;
+    const verticalDirection = to.midY > from.midY ? 1 : -1;
+    const approachY = to.midY - verticalDirection * (BAR_HEIGHT / 2 + DEPENDENCY_ENDPOINT_GAP_PX);
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: approachY },
+      { x: approachX, y: approachY },
+      { x: approachX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: to.midY },
     { x: endX, y: to.midY }
   ]);
 }
@@ -4202,73 +4296,65 @@ function buildDependencyConnectorToPointPath(
   from: BarGeometry,
   targetX: number,
   targetY: number,
-  laneSeed: number
+  _laneSeed: number
 ): string {
   const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
   const safeTargetX = Number.isFinite(targetX) ? targetX : startX + DEPENDENCY_POINTER_SEGMENT_MIN_PX;
   const safeTargetY = Number.isFinite(targetY) ? targetY : from.midY;
   const horizontalDistance = safeTargetX - startX;
+  const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2));
 
-  if (horizontalDistance >= 10) {
-    const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+  if (from.midY === safeTargetY) {
     return toDependencyPathString([
       { x: startX, y: from.midY },
-      { x: bendX, y: from.midY },
-      { x: bendX, y: safeTargetY },
       { x: safeTargetX, y: safeTargetY }
     ]);
   }
 
-  const estimatedTargetTopY = safeTargetY - BAR_HEIGHT / 2;
-  const laneY = resolveDependencyLaneY(laneSeed, {
-    fromTopY: from.y,
-    fromMidY: from.midY,
-    fromBottomY: from.y + BAR_HEIGHT,
-    toTopY: estimatedTargetTopY,
-    toMidY: safeTargetY
-  });
-  const detourX = Math.max(startX, safeTargetX) + DEPENDENCY_LEFT_APPROACH_PX;
   return toDependencyPathString([
     { x: startX, y: from.midY },
-    { x: detourX, y: from.midY },
-    { x: detourX, y: laneY },
-    { x: safeTargetX, y: laneY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: safeTargetY },
     { x: safeTargetX, y: safeTargetY }
   ]);
 }
+
+const DEPENDENCY_CORNER_RADIUS_PX = 5;
 
 function toDependencyPathString(points: readonly PathPoint[]): string {
   if (points.length === 0) {
     return "";
   }
-  const [first, ...rest] = points;
-  return `M ${first.x} ${first.y}${rest.map((point) => ` L ${point.x} ${point.y}`).join("")}`;
-}
-
-function resolveDependencyLaneY(
-  seed: number,
-  input: {
-    fromTopY: number;
-    fromMidY: number;
-    fromBottomY: number;
-    toTopY: number;
-    toMidY: number;
+  if (points.length <= 2) {
+    const [first, ...rest] = points;
+    return `M ${first.x} ${first.y}${rest.map((p) => ` L ${p.x} ${p.y}`).join("")}`;
   }
-): number {
-  const normalizedSeed = Number.isFinite(seed) ? Math.abs(Math.trunc(seed)) : 0;
-  const laneOffset = DEPENDENCY_LANE_GAP_PX * ((normalizedSeed % 3) + 1);
-  if (input.toMidY > input.fromMidY) {
-    const lowerLaneY = input.fromBottomY + DEPENDENCY_LANE_TOP_OFFSET_PX;
-    const upperLaneY = input.toTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
-    if (upperLaneY > lowerLaneY) {
-      return Math.min(upperLaneY, lowerLaneY + laneOffset);
+  const r = DEPENDENCY_CORNER_RADIUS_PX;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const cur = points[i];
+    const next = points[i + 1];
+    const dxIn = cur.x - prev.x;
+    const dyIn = cur.y - prev.y;
+    const lenIn = Math.sqrt(dxIn * dxIn + dyIn * dyIn);
+    const dxOut = next.x - cur.x;
+    const dyOut = next.y - cur.y;
+    const lenOut = Math.sqrt(dxOut * dxOut + dyOut * dyOut);
+    const clampedR = Math.min(r, lenIn / 2, lenOut / 2);
+    if (clampedR < 1) {
+      d += ` L ${cur.x} ${cur.y}`;
+      continue;
     }
-    return input.fromMidY + (input.toMidY - input.fromMidY) / 2;
+    const beforeX = cur.x - (dxIn / lenIn) * clampedR;
+    const beforeY = cur.y - (dyIn / lenIn) * clampedR;
+    const afterX = cur.x + (dxOut / lenOut) * clampedR;
+    const afterY = cur.y + (dyOut / lenOut) * clampedR;
+    d += ` L ${beforeX} ${beforeY} Q ${cur.x} ${cur.y} ${afterX} ${afterY}`;
   }
-  const upperBarTopY = Math.min(input.fromTopY, input.toTopY);
-  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX - laneOffset;
-  const minLaneY = CHART_GRID_START_Y + DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX;
-  return Math.max(minLaneY, topLaneY);
+  const last = points[points.length - 1];
+  d += ` L ${last.x} ${last.y}`;
+  return d;
 }
 
 function deduplicateTimelineDependencies(
