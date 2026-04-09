@@ -93,9 +93,9 @@ export class AzureQueryRuntimeAdapter {
       throw new Error(buildHttpFailureCode("QUERY_EXECUTION_FAILED", wiqlResponse.response));
     }
 
-    const wiqlResult = normalizeExecutionPayload(wiqlResponse.response.json);
+    enforceFlatQueryShape(extractQueryType(wiqlResponse.response.json));
 
-    enforceFlatQueryShape(wiqlResult.queryType);
+    const wiqlResult = normalizeExecutionPayload(wiqlResponse.response.json);
 
     const hydration = await this.hydrateWorkItems(wiqlResult.workItemIds, activeContext);
     const relations = deduplicateRelations(
@@ -314,6 +314,14 @@ function flattenQueries(nodes: unknown[], parentPath = ""): SavedQuery[] {
   }
 
   return result;
+}
+
+function extractQueryType(payload: unknown): unknown {
+  if (!payload || typeof payload !== "object") {
+    return undefined;
+  }
+
+  return (payload as { queryType?: unknown }).queryType;
 }
 
 function normalizeExecutionPayload(payload: unknown): WiqlExecutionResult {

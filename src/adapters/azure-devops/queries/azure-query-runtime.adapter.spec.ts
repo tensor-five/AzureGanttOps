@@ -186,6 +186,73 @@ describe("AzureQueryRuntimeAdapter", () => {
     expect(hydrationCalls).toEqual([]);
   });
 
+  it("rejects tree query when API returns workItemRelations without workItems array", async () => {
+    const hydrationCalls: string[] = [];
+
+    const client = makeClient((url) => {
+      if (url.includes("/_apis/wit/wiql/")) {
+        return {
+          status: 200,
+          json: {
+            queryType: "tree",
+            queryResultType: "workItemLink",
+            workItemRelations: [
+              { source: null, target: { id: 101 }, rel: null },
+              { source: { id: 101 }, target: { id: 202 }, rel: "System.LinkTypes.Hierarchy-Forward" }
+            ]
+          }
+        };
+      }
+
+      if (url.includes("/_apis/wit/workitems")) {
+        hydrationCalls.push(url);
+      }
+
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const adapter = makeAdapter(client);
+
+    await expect(adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95")).rejects.toThrow(
+      "QRY_SHAPE_UNSUPPORTED"
+    );
+
+    expect(hydrationCalls).toEqual([]);
+  });
+
+  it("rejects oneHop query when API returns workItemRelations without workItems array", async () => {
+    const hydrationCalls: string[] = [];
+
+    const client = makeClient((url) => {
+      if (url.includes("/_apis/wit/wiql/")) {
+        return {
+          status: 200,
+          json: {
+            queryType: "oneHop",
+            queryResultType: "workItemLink",
+            workItemRelations: [
+              { source: { id: 101 }, target: { id: 202 }, rel: "System.LinkTypes.Dependency-Forward" }
+            ]
+          }
+        };
+      }
+
+      if (url.includes("/_apis/wit/workitems")) {
+        hydrationCalls.push(url);
+      }
+
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const adapter = makeAdapter(client);
+
+    await expect(adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95")).rejects.toThrow(
+      "QRY_SHAPE_UNSUPPORTED"
+    );
+
+    expect(hydrationCalls).toEqual([]);
+  });
+
   it("retries transient hydration failure then succeeds", async () => {
     vi.useFakeTimers();
 
