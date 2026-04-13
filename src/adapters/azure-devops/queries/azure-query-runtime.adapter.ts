@@ -1,11 +1,12 @@
 import type {
   IngestionHydrationMetadata,
+  IngestionQueryRelation,
   IngestionSnapshot,
   IngestionWorkItem
 } from "../../../application/dto/ingestion-snapshot.js";
 import type { AdoContext } from "../../../application/ports/context-settings.port.js";
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
-import { enforceFlatQueryShape } from "../../../domain/query-runtime/services/query-shape-policy.js";
+import { resolveQueryShape } from "../../../domain/query-runtime/services/query-shape-policy.js";
 import { filterRuntimeRelations } from "../../../domain/query-runtime/services/relation-filter-policy.js";
 
 const API_VERSION = "7.1";
@@ -41,6 +42,7 @@ type WiqlExecutionResult = {
   queryType: string;
   workItemIds: number[];
   workItemRelations: unknown[];
+  queryRelations: IngestionQueryRelation[];
 };
 
 type HydrationChunkResult = {
@@ -95,7 +97,7 @@ export class AzureQueryRuntimeAdapter {
 
     const wiqlResult = normalizeExecutionPayload(wiqlResponse.response.json);
 
-    enforceFlatQueryShape(wiqlResult.queryType);
+    const queryShape = resolveQueryShape(wiqlResult.queryType);
 
     const hydration = await this.hydrateWorkItems(wiqlResult.workItemIds, activeContext);
     const relations = deduplicateRelations(
@@ -103,10 +105,11 @@ export class AzureQueryRuntimeAdapter {
     );
 
     return {
-      queryType: "flat",
+      queryType: queryShape,
       workItemIds: wiqlResult.workItemIds,
       workItems: hydration.workItems,
       relations,
+      queryRelations: wiqlResult.queryRelations,
       hydration: hydration.metadata
     };
   }
@@ -326,6 +329,17 @@ function normalizeExecutionPayload(payload: unknown): WiqlExecutionResult {
     throw new Error("MALFORMED_PAYLOAD");
   }
 
+  const normalizedType = queryType.trim().toLowerCase();
+  const isRelational = normalizedType === "tree" || normalizedType === "onehop" || normalizedType === "one-hop";
+
+  if (isRelational) {
+    return normalizeRelationalExecutionPayload(payload, queryType);
+  }
+
+  return normalizeFlatExecutionPayload(payload, queryType);
+}
+
+function normalizeFlatExecutionPayload(payload: object, queryType: string): WiqlExecutionResult {
   const workItems = (payload as { workItems?: unknown }).workItems;
 
   if (!Array.isArray(workItems)) {
@@ -359,7 +373,70 @@ function normalizeExecutionPayload(payload: unknown): WiqlExecutionResult {
   return {
     queryType,
     workItemIds,
-    workItemRelations
+    workItemRelations,
+    queryRelations: []
+  };
+}
+
+function normalizeRelationalExecutionPayload(payload: object, queryType: string): WiqlExecutionResult {
+  const rawRelations = (payload as { workItemRelations?: unknown }).workItemRelations;
+
+  if (!Array.isArray(rawRelations)) {
+    throw new Error("MALFORMED_PAYLOAD");
+  }
+
+  const workItemIds: number[] = [];
+  const seen = new Set<number>();
+  const queryRelations: IngestionQueryRelation[] = [];
+  const workItemRelations: unknown[] = [];
+
+  for (const entry of rawRelations) {
+    if (!entry || typeof entry !== "object") {
+      continue;
+    }
+
+    const record = entry as Record<string, unknown>;
+    const source = record.source as { id?: unknown } | null | undefined;
+    const target = record.target as { id?: unknown } | null | undefined;
+    const rel = typeof record.rel === "string" ? record.rel : null;
+
+    const sourceId = source && typeof source.id === "number" ? source.id : null;
+    const targetId = target && typeof target.id === "number" ? target.id : null;
+
+    if (targetId === null) {
+      continue;
+    }
+
+    if (sourceId !== null && !seen.has(sourceId)) {
+      seen.add(sourceId);
+      workItemIds.push(sourceId);
+    }
+
+    if (!seen.has(targetId)) {
+      seen.add(targetId);
+      workItemIds.push(targetId);
+    }
+
+    queryRelations.push({
+      sourceWorkItemId: sourceId,
+      targetWorkItemId: targetId,
+      relationType: rel ?? ""
+    });
+
+    if (rel && sourceId !== null) {
+      workItemRelations.push({
+        rel,
+        source: { id: sourceId },
+        target: { id: targetId }
+      });
+    }
+  }
+
+  return {
+    queryType,
+    workItemIds,
+    workItemRelations,
+    queryRelations
   };
 }
 

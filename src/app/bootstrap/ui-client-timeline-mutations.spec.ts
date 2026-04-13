@@ -5,6 +5,7 @@ import { applyDependencyLinkUpdate, applyScheduleUpdate, applyWorkItemMetadataUp
 
 function makeTimeline(): TimelineReadModel {
   return {
+    queryType: "flat",
     bars: [
       {
         workItemId: 11,
@@ -35,6 +36,7 @@ function makeTimeline(): TimelineReadModel {
     ],
     dependencies: [],
     suppressedDependencies: [],
+    treeLayout: null,
     mappingValidation: {
       status: "valid",
       issues: []

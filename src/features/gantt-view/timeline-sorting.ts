@@ -1,5 +1,7 @@
-import type { TimelineReadModel, TimelineBar, TimelineUnschedulableItem } from "../../application/dto/timeline-read-model.js";
+import type { TimelineReadModel, TimelineBar, TimelineUnschedulableItem, TimelineTreeNodeMeta } from "../../application/dto/timeline-read-model.js";
 import type { TimelineSortDirection, TimelineSortField, TimelineSortPreference } from "./timeline-sort-preference.js";
+import type { TreeLayout, TreeNodeMeta } from "../../domain/planning-model/tree-structure.js";
+import { applyTreeLevelSorting } from "../../domain/planning-model/tree-level-sorting.js";
 
 export type TimelineSortOption = {
   value: TimelineSortField;
@@ -31,14 +33,117 @@ export function applyTimelineSorting(
     return null;
   }
 
+  if (timeline.queryType === "flat" || !timeline.treeLayout) {
+    const comparator = buildTimelineSortComparator(preference);
+    const bars = [...timeline.bars].sort(comparator);
+    const unschedulable = [...timeline.unschedulable].sort(comparator);
+
+    return {
+      ...timeline,
+      bars,
+      unschedulable
+    };
+  }
+
+  return applyTreeLevelSortedTimeline(timeline, preference);
+}
+
+function applyTreeLevelSortedTimeline(
+  timeline: TimelineReadModel,
+  preference: TimelineSortPreference
+): TimelineReadModel {
+  const treeLayout = recordToTreeLayout(timeline.treeLayout!);
   const comparator = buildTimelineSortComparator(preference);
-  const bars = [...timeline.bars].sort(comparator);
-  const unschedulable = [...timeline.unschedulable].sort(comparator);
+
+  const barResult = applyTreeLevelSorting(
+    timeline.bars,
+    treeLayout,
+    comparator
+  );
+
+  const unschedulableResult = applyTreeLevelSorting(
+    timeline.unschedulable,
+    treeLayout,
+    comparator
+  );
+
+  const mergedRecord: Record<string, TimelineTreeNodeMeta> = {};
+  for (const [id, meta] of barResult.updatedLayout.metaByWorkItemId) {
+    mergedRecord[String(id)] = toTimelineTreeNodeMeta(meta);
+  }
+  for (const [id, meta] of unschedulableResult.updatedLayout.metaByWorkItemId) {
+    if (!(String(id) in mergedRecord)) {
+      mergedRecord[String(id)] = toTimelineTreeNodeMeta(meta);
+    }
+  }
 
   return {
     ...timeline,
-    bars,
-    unschedulable
+    bars: barResult.sortedItems,
+    unschedulable: unschedulableResult.sortedItems,
+    treeLayout: mergedRecord
+  };
+}
+
+function recordToTreeLayout(record: Record<string, TimelineTreeNodeMeta>): TreeLayout {
+  const orderedIds: number[] = [];
+
+  const childrenByParent = new Map<number | null, number[]>();
+  for (const idStr of Object.keys(record)) {
+    const id = Number(idStr);
+    const node = record[idStr];
+    const parentId = node.parentWorkItemId;
+    const siblings = childrenByParent.get(parentId);
+    if (siblings) {
+      siblings.push(id);
+    } else {
+      childrenByParent.set(parentId, [id]);
+    }
+  }
+
+  const visited = new Set<number>();
+  const roots = childrenByParent.get(null) ?? [];
+  const stack: number[] = [...roots].reverse();
+
+  while (stack.length > 0) {
+    const id = stack.pop()!;
+    if (visited.has(id)) {
+      continue;
+    }
+    visited.add(id);
+    orderedIds.push(id);
+    const children = childrenByParent.get(id);
+    if (children) {
+      for (let i = children.length - 1; i >= 0; i--) {
+        stack.push(children[i]);
+      }
+    }
+  }
+
+  const metaByWorkItemId = new Map<number, TreeNodeMeta>();
+  for (const idStr of Object.keys(record)) {
+    const id = Number(idStr);
+    const node = record[idStr];
+    metaByWorkItemId.set(id, {
+      workItemId: id,
+      depth: node.depth,
+      parentWorkItemId: node.parentWorkItemId,
+      hasChildren: node.hasChildren,
+      isLastSibling: node.isLastSibling,
+      ancestorIsLastSibling: [...node.ancestorIsLastSibling]
+    });
+  }
+
+  return { orderedIds, metaByWorkItemId };
+}
+
+function toTimelineTreeNodeMeta(meta: TreeNodeMeta): TimelineTreeNodeMeta {
+  return {
+    depth: meta.depth,
+    parentWorkItemId: meta.parentWorkItemId,
+    hasChildren: meta.hasChildren,
+    isLastSibling: meta.isLastSibling,
+    ancestorIsLastSibling: [...meta.ancestorIsLastSibling]
   };
 }
 

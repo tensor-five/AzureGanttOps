@@ -23,7 +23,14 @@ export type DependencyLinkCommand = {
   action: "add" | "remove";
 };
 
-export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand;
+export type HierarchyLinkCommand = {
+  kind: "HIERARCHY_LINK";
+  childWorkItemId: number;
+  newParentWorkItemId: number | null;
+  action: "reparent";
+};
+
+export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | HierarchyLinkCommand;
 
 export type WriteCommandResult = {
   accepted: boolean;

@@ -74,6 +74,16 @@ export type QueryIntakeTransport = {
     operationCount: number;
     reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
   }>;
+  reparentWorkItem: (request: {
+    targetWorkItemId: number;
+    newParentId: number | null;
+  }) => Promise<{
+    accepted: boolean;
+    mode: "NO_OP" | "EXECUTED";
+    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
+    operationCount: number;
+    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  }>;
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
     states: WorkItemStateOption[];
   }>;
@@ -179,6 +189,13 @@ export function createLocalUiShellController(params: {
       accepted: false,
       mode: "NO_OP",
       commandKind: "WORK_ITEM_PATCH",
+      operationCount: 0,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    reparentWorkItem: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "HIERARCHY_LINK",
       operationCount: 0,
       reasonCode: "WRITE_DISABLED"
     }),

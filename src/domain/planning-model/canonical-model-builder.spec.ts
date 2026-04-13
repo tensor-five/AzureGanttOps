@@ -54,6 +54,7 @@ describe("buildCanonicalModel", () => {
           targetId: 202
         }
       ],
+      queryRelations: [],
       hydration: {
         maxIdsPerBatch: 200,
         requestedIds: 2,
@@ -133,6 +134,7 @@ describe("buildCanonicalModel", () => {
         } as unknown as IngestionSnapshot["workItems"][number]
       ],
       relations: [],
+      queryRelations: [],
       hydration: {
         maxIdsPerBatch: 200,
         requestedIds: 1,

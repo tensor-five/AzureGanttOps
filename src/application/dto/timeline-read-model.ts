@@ -1,4 +1,13 @@
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
+import type { IngestionQueryType } from "./ingestion-snapshot.js";
+
+export type TimelineTreeNodeMeta = {
+  depth: number;
+  parentWorkItemId: number | null;
+  hasChildren: boolean;
+  isLastSibling: boolean;
+  ancestorIsLastSibling: boolean[];
+};
 
 export type TimelineStateBadge = {
   code: string;
@@ -70,9 +79,11 @@ export type MappingValidationResult =
     };
 
 export type TimelineReadModel = {
+  queryType: IngestionQueryType;
   bars: TimelineBar[];
   unschedulable: TimelineUnschedulableItem[];
   dependencies: TimelineDependencyArrow[];
   suppressedDependencies: SuppressedTimelineDependency[];
   mappingValidation: MappingValidationResult;
+  treeLayout: Record<string, TimelineTreeNodeMeta> | null;
 };

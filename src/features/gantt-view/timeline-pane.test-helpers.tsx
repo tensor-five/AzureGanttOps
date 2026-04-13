@@ -28,6 +28,7 @@ export function registerTimelinePaneSpecCleanup(): void {
 
 export function makeTimeline(): TimelineReadModel {
   return {
+    queryType: "flat",
     bars: [
       {
         workItemId: 11,
@@ -52,6 +53,7 @@ export function makeTimeline(): TimelineReadModel {
     ],
     dependencies: [],
     suppressedDependencies: [],
+    treeLayout: null,
     mappingValidation: {
       status: "valid",
       issues: []
@@ -174,6 +176,7 @@ export function makeMixedDependencyTimeline(): TimelineReadModel {
 
 export function makeFieldFilterTimeline(): TimelineReadModel {
   return {
+    queryType: "flat",
     bars: [
       {
         workItemId: 11,
@@ -244,6 +247,7 @@ export function makeFieldFilterTimeline(): TimelineReadModel {
     ],
     dependencies: [],
     suppressedDependencies: [],
+    treeLayout: null,
     mappingValidation: {
       status: "valid",
       issues: []

@@ -155,23 +155,31 @@ describe("AzureQueryRuntimeAdapter", () => {
     expect(snapshot.workItems.map((item) => item.id)).toEqual(ids);
   });
 
-  it("rejects non-flat query types before hydration", async () => {
-    const hydrationCalls: string[] = [];
-
+  it("accepts tree query types and extracts IDs from workItemRelations", async () => {
     const client = makeClient((url) => {
       if (url.includes("/_apis/wit/wiql/")) {
         return {
           status: 200,
           json: {
             queryType: "tree",
-            workItems: [{ id: 101 }],
-            workItemRelations: []
+            workItemRelations: [
+              { source: null, target: { id: 101 }, rel: null },
+              { source: { id: 101 }, target: { id: 201 }, rel: "System.LinkTypes.Hierarchy-Forward" }
+            ]
           }
         };
       }
 
       if (url.includes("/_apis/wit/workitems")) {
-        hydrationCalls.push(url);
+        return {
+          status: 200,
+          json: {
+            value: [
+              { id: 101, fields: { "System.Title": "Parent" } },
+              { id: 201, fields: { "System.Title": "Child" } }
+            ]
+          }
+        };
       }
 
       throw new Error(`unexpected url ${url}`);
@@ -179,11 +187,14 @@ describe("AzureQueryRuntimeAdapter", () => {
 
     const adapter = makeAdapter(client);
 
-    await expect(adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95")).rejects.toThrow(
-      "QRY_SHAPE_UNSUPPORTED"
-    );
+    const snapshot = await adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
 
-    expect(hydrationCalls).toEqual([]);
+    expect(snapshot.queryType).toBe("tree");
+    expect(snapshot.workItemIds).toEqual([101, 201]);
+    expect(snapshot.queryRelations).toEqual([
+      { sourceWorkItemId: null, targetWorkItemId: 101, relationType: "" },
+      { sourceWorkItemId: 101, targetWorkItemId: 201, relationType: "System.LinkTypes.Hierarchy-Forward" }
+    ]);
   });
 
   it("retries transient hydration failure then succeeds", async () => {

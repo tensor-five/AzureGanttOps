@@ -20,6 +20,7 @@ import {
   parseAdoptSchedulePayload,
   parseAzCliPathPayload,
   parseDependencyLinkPayload,
+  parseReparentPayload,
   parseMappingProfileUpsert,
   parsePayload,
   parseQueryIdFromQuery,
@@ -133,6 +134,7 @@ const ADO_COMM_ORIGIN = "http://127.0.0.1";
 const ADO_COMM_ROUTE_PATH = "/phase2/ado-comm-logs";
 const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
 const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
+const REPARENT_ROUTE_PATH = "/phase2/work-item-reparent";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
@@ -160,7 +162,7 @@ const ADO_COMM_NEXT_SEQ_FROM_ENTRY = (entry: AdoCommLogEntry) => entry.seq;
 const ADO_COMM_DEFAULT_JSON_PREVIEW = (value: unknown) => JSON.stringify(value ?? ADO_COMM_PREVIEW_FALLBACK);
 const CONTENT_SECURITY_POLICY =
   "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
+  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://api.fontshare.com; img-src 'self' data:; font-src 'self' data: https://cdn.fontshare.com; connect-src 'self'";
 const ADO_COMM_ROUTE_QUERY_AFTER_SEQ = "afterSeq";
 const ADO_COMM_ROUTE_QUERY_LIMIT = "limit";
 const ADO_COMM_LOG_VERBOSE_PREFIX = "[ado-runtime]";
@@ -366,6 +368,10 @@ function isDependencyLinkRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === DEPENDENCY_LINK_ROUTE_PATH;
 }
 
+function isReparentRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === REPARENT_ROUTE_PATH;
+}
+
 function isUpdateDetailsRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_DETAILS_ROUTE_PATH;
 }
@@ -401,6 +407,7 @@ function isCsrfProtectedRoute(method: string, pathname: string): boolean {
     isUserPreferencesPostRoute(method, pathname) ||
     isAdoptScheduleRoute(method, pathname) ||
     isDependencyLinkRoute(method, pathname) ||
+    isReparentRoute(method, pathname) ||
     isUpdateDetailsRoute(method, pathname)
   );
 }
@@ -847,6 +854,50 @@ async function handleTimelineWritesRoute(
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to update dependency link."
+      });
+      return true;
+    }
+  }
+
+  if (isReparentRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const reparent = parseReparentPayload(payload);
+
+    if (!reparent) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId and newParentId (number or null)."
+      });
+      return true;
+    }
+
+    try {
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "HIERARCHY_LINK",
+          childWorkItemId: reparent.targetWorkItemId,
+          newParentWorkItemId: reparent.newParentId,
+          action: "reparent"
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeJson(res, 403, {
+          code: "WRITE_DISABLED",
+          message: "Writeback is disabled.",
+          result: writeResult
+        });
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to reparent work item."
       });
       return true;
     }

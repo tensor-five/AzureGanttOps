@@ -12,6 +12,7 @@ import type { TimelineReadModel } from "../../application/dto/timeline-read-mode
 
 function makeTimeline(title: string): TimelineReadModel {
   return {
+    queryType: "flat",
     bars: [
       {
         workItemId: 1,
@@ -28,6 +29,7 @@ function makeTimeline(title: string): TimelineReadModel {
     unschedulable: [],
     dependencies: [],
     suppressedDependencies: [],
+    treeLayout: null,
     mappingValidation: {
       status: "valid",
       issues: []

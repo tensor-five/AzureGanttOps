@@ -77,6 +77,8 @@ import { useTimelineKeyboardShortcuts } from "./use-timeline-keyboard-shortcuts.
 import { TimelineSortControl } from "./timeline-sort-control.js";
 import { applyTimelineSorting } from "./timeline-sorting.js";
 import { useTimelineSorting } from "./use-timeline-sorting.js";
+import { useTreeExpandCollapse, applyTreeVisibility } from "./use-tree-expand-collapse.js";
+import { useReparentDragging } from "./use-reparent-dragging.js";
 import { useTimelineResizing } from "./use-timeline-resizing.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
@@ -118,6 +120,7 @@ export type TimelinePaneProps = {
     state: string;
     stateColor: string | null;
   }) => Promise<void>;
+  onReparentWorkItem?: (input: { targetWorkItemId: number; newParentId: number | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
@@ -591,6 +594,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     () => listModeValueStats(effectiveTimeline, colorCoding),
     [effectiveTimeline, colorCoding]
   );
+  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null);
+  const reparentDrag = useReparentDragging(filteredTimeline?.treeLayout ?? null);
+  const isTreeQuery = filteredTimeline?.queryType !== "flat" && filteredTimeline?.treeLayout !== null;
+  const visibleTimeline = React.useMemo(
+    () => applyTreeVisibility(filteredTimeline, treeState.collapsedIds),
+    [filteredTimeline, treeState.collapsedIds]
+  );
   const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
   const colorByWorkItemId = React.useMemo(
     () => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding),
@@ -599,22 +609,24 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const chartModel = React.useMemo(
     () =>
       buildVisualChartModel(
-        filteredTimeline,
+        visibleTimeline,
         dayWidthPx,
         zoomLevel,
         colorByWorkItemId,
         chartViewportWidthPx,
         timelineLabelFields,
-        includeUnscheduledDropLane
+        includeUnscheduledDropLane,
+        treeState.collapsedIds
       ),
     [
-      filteredTimeline,
+      visibleTimeline,
       dayWidthPx,
       zoomLevel,
       colorByWorkItemId,
       chartViewportWidthPx,
       timelineLabelFields,
-      includeUnscheduledDropLane
+      includeUnscheduledDropLane,
+      treeState.collapsedIds
     ]
   );
   const filteredTimelineLabelFieldOptions = React.useMemo(
@@ -628,12 +640,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   React.useEffect(() => {
     const selectableItems = [
-      ...(filteredTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? []),
-      ...(filteredTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? [])
+      ...(visibleTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? []),
+      ...(visibleTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? [])
     ];
     const reconciled = selectionStore.reconcile(selectableItems);
     setSelectedWorkItemId(reconciled);
-  }, [filteredTimeline, selectionStore]);
+  }, [visibleTimeline, selectionStore]);
 
   const selectWorkItem = React.useCallback(
     (workItemId: number | null) => {
@@ -2207,11 +2219,21 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                             {
                               key: `timeline-sidebar-row-${bar.workItemId}`,
                               type: "button",
-                              className:
-                                selectedWorkItemId === bar.workItemId
-                                  ? "timeline-left-sidebar-row timeline-left-sidebar-row-selected"
-                                  : "timeline-left-sidebar-row",
+                              className: [
+                                "timeline-left-sidebar-row",
+                                selectedWorkItemId === bar.workItemId ? "timeline-left-sidebar-row-selected" : "",
+                                reparentDrag.dragState.sourceWorkItemId === bar.workItemId ? "timeline-sidebar-row-dragging" : "",
+                                reparentDrag.dragState.dropTargetWorkItemId === bar.workItemId && reparentDrag.dragState.isValid
+                                  ? "timeline-sidebar-row-drop-target"
+                                  : "",
+                                reparentDrag.dragState.dropTargetWorkItemId === bar.workItemId && !reparentDrag.dragState.isValid && reparentDrag.dragState.sourceWorkItemId !== null
+                                  ? "timeline-sidebar-row-drop-invalid"
+                                  : "",
+                                bar.treeBlockStart ? "timeline-sidebar-row-block-start" : "",
+                                bar.treeBlockEnd ? "timeline-sidebar-row-block-end" : ""
+                              ].filter(Boolean).join(" "),
                               "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
+                              draggable: isTreeQuery && Boolean(props.onReparentWorkItem),
                               style: {
                                 height: `${CHART_ROW_HEIGHT}px`,
                                 justifyContent: timelineSidebarRowJustify,
@@ -2219,8 +2241,60 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                               },
                               onClick: () => {
                                 toggleWorkItemSelection(bar.workItemId);
-                              }
+                              },
+                              onDragStart: isTreeQuery && props.onReparentWorkItem
+                                ? (event: React.DragEvent) => {
+                                    event.dataTransfer.effectAllowed = "move";
+                                    event.dataTransfer.setData("text/plain", String(bar.workItemId));
+                                    reparentDrag.startDrag(bar.workItemId);
+                                  }
+                                : undefined,
+                              onDragOver: isTreeQuery && props.onReparentWorkItem
+                                ? (event: React.DragEvent) => {
+                                    reparentDrag.updateDropTarget(bar.workItemId);
+                                    if (reparentDrag.dragState.isValid || reparentDrag.dragState.sourceWorkItemId === null) {
+                                      event.preventDefault();
+                                      event.dataTransfer.dropEffect = "move";
+                                    }
+                                  }
+                                : undefined,
+                              onDragLeave: isTreeQuery ? () => {
+                                reparentDrag.updateDropTarget(null);
+                              } : undefined,
+                              onDrop: isTreeQuery && props.onReparentWorkItem
+                                ? (event: React.DragEvent) => {
+                                    event.preventDefault();
+                                    const result = reparentDrag.executeDrop();
+                                    reparentDrag.clearDrag();
+                                    if (result && props.onReparentWorkItem) {
+                                      void props.onReparentWorkItem(result);
+                                    }
+                                  }
+                                : undefined,
+                              onDragEnd: isTreeQuery ? () => {
+                                reparentDrag.clearDrag();
+                              } : undefined
                             },
+                            bar.treeDepth !== null && bar.treeDepth > 0
+                              ? buildTreeIndentGuides(bar)
+                              : null,
+                            bar.treeHasChildren
+                              ? React.createElement(
+                                  "span",
+                                  {
+                                    className: "timeline-tree-toggle",
+                                    role: "button",
+                                    "aria-label": bar.treeIsCollapsed ? "Expand" : "Collapse",
+                                    onClick: (event: React.MouseEvent) => {
+                                      event.stopPropagation();
+                                      treeState.toggle(bar.workItemId);
+                                    }
+                                  },
+                                  bar.treeIsCollapsed ? "\u25B6" : "\u25BC"
+                                )
+                              : bar.treeDepth !== null
+                                ? React.createElement("span", { className: "timeline-tree-toggle-placeholder" })
+                                : null,
                             buildTimelineSidebarLabel(bar, timelineSidebarFields)
                           )
                         ),
@@ -2378,6 +2452,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     })
                   )
                 ),
+                buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width),
                 chartModel.currentPeriod
                   ? React.createElement("rect", {
                       x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
@@ -2666,7 +2741,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           {
             className: [
               "timeline-unschedulable-list",
-              filteredTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
+              visibleTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
             ]
               .filter(Boolean)
               .join(" ")
@@ -2676,14 +2751,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
             { className: "timeline-unschedulable-header" },
             React.createElement("h4", null, "Unscheduled")
           ),
-          filteredTimeline?.unschedulable.length
+          visibleTimeline?.unschedulable.length
             ? React.createElement(
                 "ul",
                 null,
-                ...filteredTimeline.unschedulable.map((item) =>
+                ...visibleTimeline.unschedulable.map((item) =>
                   React.createElement(
                     "li",
-                    { key: item.workItemId },
+                    {
+                      key: item.workItemId,
+                      style: (() => {
+                        const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
+                        return treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : undefined;
+                      })()
+                    },
                     (() => {
                       const label = `#${item.details.mappedId} ${item.title}`;
                       const minWidthPx = Math.round(dayWidthPx * 14);
@@ -2898,6 +2979,13 @@ type VisualTimelineBar = {
   width: number;
   start: Date;
   end: Date;
+  treeDepth: number | null;
+  treeHasChildren: boolean;
+  treeIsCollapsed: boolean;
+  treeIsLastSibling: boolean;
+  treeAncestorIsLastSibling: boolean[];
+  treeBlockStart: boolean;
+  treeBlockEnd: boolean;
 };
 
 type VisualDependencyConnector = {
@@ -2934,7 +3022,8 @@ function buildVisualChartModel(
   colorByWorkItemId: ReadonlyMap<number, string>,
   viewportWidthPx: number,
   timelineLabelFields: string[],
-  includeUnscheduledDropLane: boolean
+  includeUnscheduledDropLane: boolean,
+  collapsedIds?: ReadonlySet<number>
 ): VisualChartModel {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc = new Date();
@@ -3034,6 +3123,7 @@ function buildVisualChartModel(
   const bars = normalizedBars.map((bar) => {
     const startOffset = dayDiff(domainStart, bar.start);
     const spanDays = Math.max(1, dayDiffInclusive(bar.start, bar.end));
+    const treeMeta = timeline.treeLayout?.[bar.source.workItemId] ?? null;
     return {
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
@@ -3047,9 +3137,18 @@ function buildVisualChartModel(
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
-      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx)
+      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx),
+      treeDepth: treeMeta?.depth ?? null,
+      treeHasChildren: treeMeta?.hasChildren ?? false,
+      treeIsCollapsed: treeMeta?.hasChildren ? (collapsedIds?.has(bar.source.workItemId) ?? false) : false,
+      treeIsLastSibling: treeMeta?.isLastSibling ?? false,
+      treeAncestorIsLastSibling: treeMeta?.ancestorIsLastSibling ?? [],
+      treeBlockStart: false,
+      treeBlockEnd: false
     };
   });
+
+  assignTreeBlockFlags(bars);
 
   const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
@@ -3645,6 +3744,117 @@ function buildTimelineBarLabel(bar: TimelineReadModel["bars"][number], fieldRefs
   }
 
   return parts.join(" - ");
+}
+
+function assignTreeBlockFlags(bars: VisualTimelineBar[]): void {
+  const isPartOfTree = (bar: VisualTimelineBar): boolean =>
+    bar.treeDepth !== null && (bar.treeHasChildren || bar.treeDepth > 0);
+
+  for (let index = 0; index < bars.length; index++) {
+    const bar = bars[index];
+    if (!isPartOfTree(bar)) {
+      continue;
+    }
+
+    const prev = index > 0 ? bars[index - 1] : null;
+    const next = index + 1 < bars.length ? bars[index + 1] : null;
+
+    bar.treeBlockStart =
+      bar.treeDepth === 0 &&
+      bar.treeHasChildren &&
+      (!prev || !isPartOfTree(prev) || (prev.treeDepth === 0 && !prev.treeHasChildren));
+
+    bar.treeBlockEnd =
+      isPartOfTree(bar) &&
+      (!next || !isPartOfTree(next) || (next.treeDepth === 0 && next.treeHasChildren));
+  }
+}
+
+function buildTreeDepthBandsAndBorders(bars: VisualTimelineBar[], chartWidth: number): React.ReactNode[] {
+  const elements: React.ReactNode[] = [];
+
+  for (let index = 0; index < bars.length; index++) {
+    const bar = bars[index];
+    const isTree = bar.treeDepth !== null && (bar.treeHasChildren || bar.treeDepth > 0);
+    if (!isTree) {
+      continue;
+    }
+
+    elements.push(
+      React.createElement("rect", {
+        key: `tree-depth-band-${bar.workItemId}`,
+        x: 0,
+        y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+        width: chartWidth,
+        height: CHART_ROW_HEIGHT,
+        className: `timeline-tree-depth-band timeline-tree-depth-${Math.min(bar.treeDepth ?? 0, 4)}`
+      })
+    );
+
+    if (bar.treeBlockStart) {
+      elements.push(
+        React.createElement("rect", {
+          key: `tree-block-top-${bar.workItemId}`,
+          x: 0,
+          y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT - 1,
+          width: chartWidth,
+          height: 2,
+          className: "timeline-tree-block-border"
+        })
+      );
+    }
+
+    if (bar.treeBlockEnd) {
+      elements.push(
+        React.createElement("rect", {
+          key: `tree-block-bottom-${bar.workItemId}`,
+          x: 0,
+          y: CHART_TOP_PADDING + (index + 1) * CHART_ROW_HEIGHT - 1,
+          width: chartWidth,
+          height: 2,
+          className: "timeline-tree-block-border"
+        })
+      );
+    }
+  }
+
+  return elements;
+}
+
+function buildTreeIndentGuides(bar: VisualTimelineBar): React.ReactNode {
+  const depth = bar.treeDepth ?? 0;
+  if (depth === 0) {
+    return null;
+  }
+
+  const guides: React.ReactNode[] = [];
+
+  for (let level = 0; level < depth - 1; level++) {
+    const ancestorIsLast = bar.treeAncestorIsLastSibling[level + 1] ?? false;
+    guides.push(
+      React.createElement("span", {
+        key: `guide-${level}`,
+        className: ancestorIsLast
+          ? "timeline-tree-guide timeline-tree-guide-blank"
+          : "timeline-tree-guide timeline-tree-guide-pipe"
+      })
+    );
+  }
+
+  guides.push(
+    React.createElement("span", {
+      key: `guide-branch`,
+      className: bar.treeIsLastSibling
+        ? "timeline-tree-guide timeline-tree-guide-elbow"
+        : "timeline-tree-guide timeline-tree-guide-tee"
+    })
+  );
+
+  return React.createElement(
+    "span",
+    { className: "timeline-tree-guides", "aria-hidden": "true" },
+    ...guides
+  );
 }
 
 function buildTimelineSidebarLabel(bar: VisualTimelineBar, fieldRefs: string[]): string {

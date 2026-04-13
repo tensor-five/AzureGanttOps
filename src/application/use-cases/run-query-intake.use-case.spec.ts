@@ -50,6 +50,7 @@ describe("RunQueryIntakeUseCase", () => {
 
   function createTimeline(): TimelineReadModel {
     return {
+      queryType: "flat",
       bars: [
         {
           workItemId: 101,
@@ -72,6 +73,7 @@ describe("RunQueryIntakeUseCase", () => {
       unschedulable: [],
       dependencies: [],
       suppressedDependencies: [],
+      treeLayout: null,
       mappingValidation: {
         status: "valid",
         issues: []
@@ -109,6 +111,7 @@ describe("RunQueryIntakeUseCase", () => {
           workItemIds: [101],
           workItems: [{ id: 101, title: "Work item 101" }],
           relations: [],
+          queryRelations: [],
           hydration: {
             maxIdsPerBatch: 200,
             requestedIds: 1,
@@ -171,6 +174,7 @@ describe("RunQueryIntakeUseCase", () => {
           workItemIds: [101],
           workItems: [{ id: 101, title: "Work item 101" }],
           relations: [],
+          queryRelations: [],
           hydration: {
             maxIdsPerBatch: 200,
             requestedIds: 1,
@@ -223,6 +227,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -269,6 +274,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -319,6 +325,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -364,6 +371,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -408,6 +416,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -450,6 +459,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -501,6 +511,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [101],
         workItems: [{ id: 101, title: "Work item 101" }],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 1,
@@ -554,6 +565,7 @@ describe("RunQueryIntakeUseCase", () => {
         workItemIds: [],
         workItems: [],
         relations: [],
+        queryRelations: [],
         hydration: {
           maxIdsPerBatch: 200,
           requestedIds: 0,
@@ -614,6 +626,7 @@ describe("RunQueryIntakeUseCase", () => {
           workItemIds: [202],
           workItems: [{ id: 202, title: "Work item 202" }],
           relations: [],
+          queryRelations: [],
           hydration: {
             maxIdsPerBatch: 200,
             requestedIds: 1,
@@ -638,6 +651,7 @@ describe("RunQueryIntakeUseCase", () => {
       workItemIds: [101],
       workItems: [{ id: 101, title: "Work item 101" }],
       relations: [],
+      queryRelations: [],
       hydration: {
         maxIdsPerBatch: 200,
         requestedIds: 1,

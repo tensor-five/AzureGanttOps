@@ -1,5 +1,7 @@
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import type { TimelineTreeNodeMeta } from "../../application/dto/timeline-read-model.js";
 import { applyAdoptedSchedules } from "../../features/gantt-view/timeline-pane.js";
+import { buildTreeLayoutFromParentMap } from "../../domain/planning-model/tree-structure.js";
 
 export function applyScheduleUpdate(
   timeline: QueryIntakeResponse["timeline"],
@@ -129,6 +131,67 @@ export function applyDependencyLinkUpdate(
           dependency.dependencyType === "FS"
         )
     )
+  };
+}
+
+export function applyReparentUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  newParentId: number | null
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  const updatedBars = timeline.bars.map((bar) =>
+    bar.workItemId === targetWorkItemId
+      ? { ...bar, details: { ...bar.details, parentWorkItemId: newParentId } }
+      : bar
+  );
+  const updatedUnschedulable = timeline.unschedulable.map((item) =>
+    item.workItemId === targetWorkItemId
+      ? { ...item, details: { ...item.details, parentWorkItemId: newParentId } }
+      : item
+  );
+
+  const allItems = [
+    ...updatedBars.map((b) => ({ id: b.workItemId, parentId: b.details.parentWorkItemId ?? null })),
+    ...updatedUnschedulable.map((u) => ({ id: u.workItemId, parentId: u.details.parentWorkItemId ?? null }))
+  ];
+
+  const layout = buildTreeLayoutFromParentMap(allItems);
+
+  const barPosition = new Map<number, number>();
+  layout.orderedIds.forEach((id, index) => barPosition.set(id, index));
+
+  const reorderedBars = [...updatedBars].sort((a, b) => {
+    const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    return posA - posB;
+  });
+
+  const reorderedUnschedulable = [...updatedUnschedulable].sort((a, b) => {
+    const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    return posA - posB;
+  });
+
+  const treeLayoutRecord: Record<string, TimelineTreeNodeMeta> = {};
+  for (const [id, meta] of layout.metaByWorkItemId) {
+    treeLayoutRecord[String(id)] = {
+      depth: meta.depth,
+      parentWorkItemId: meta.parentWorkItemId,
+      hasChildren: meta.hasChildren,
+      isLastSibling: meta.isLastSibling,
+      ancestorIsLastSibling: [...meta.ancestorIsLastSibling]
+    };
+  }
+
+  return {
+    ...timeline,
+    bars: reorderedBars,
+    unschedulable: reorderedUnschedulable,
+    treeLayout: treeLayoutRecord
   };
 }
 

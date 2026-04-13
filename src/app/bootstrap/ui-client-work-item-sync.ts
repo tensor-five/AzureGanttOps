@@ -26,6 +26,15 @@ export type PendingWorkItemMutation =
       dependencyAction: "add" | "remove";
       applyToTimeline: TimelineMutation;
       execute: () => Promise<void>;
+    }
+  | {
+      kind: "reparent";
+      key: string;
+      queryId: string | null;
+      targetWorkItemId: number;
+      newParentId: number | null;
+      applyToTimeline: TimelineMutation;
+      execute: () => Promise<void>;
     };
 
 export type PendingWorkItemMutationDraft =
@@ -45,6 +54,14 @@ export type PendingWorkItemMutationDraft =
       dependencyAction: "add" | "remove";
       applyToTimeline: TimelineMutation;
       execute: () => Promise<void>;
+    }
+  | {
+      kind: "reparent";
+      queryId: string | null;
+      targetWorkItemId: number;
+      newParentId: number | null;
+      applyToTimeline: TimelineMutation;
+      execute: () => Promise<void>;
     };
 
 export function createPendingWorkItemMutation(draft: PendingWorkItemMutationDraft): PendingWorkItemMutation {
@@ -52,6 +69,13 @@ export function createPendingWorkItemMutation(draft: PendingWorkItemMutationDraf
     return {
       ...draft,
       key: `work_item::${draft.queryId ?? "__global__"}::${draft.workItemId}`
+    };
+  }
+
+  if (draft.kind === "reparent") {
+    return {
+      ...draft,
+      key: `reparent::${draft.queryId ?? "__global__"}::${draft.targetWorkItemId}::${draft.newParentId ?? "root"}`
     };
   }
 

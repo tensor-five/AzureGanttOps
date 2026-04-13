@@ -1,3 +1,5 @@
+export type IngestionQueryType = "flat" | "tree" | "oneHop";
+
 export type IngestionRelationType =
   | "System.LinkTypes.Dependency-Forward"
   | "System.LinkTypes.Dependency-Reverse"
@@ -8,6 +10,12 @@ export type IngestionRelation = {
   type: IngestionRelationType;
   sourceId: number;
   targetId: number;
+};
+
+export type IngestionQueryRelation = {
+  sourceWorkItemId: number | null;
+  targetWorkItemId: number;
+  relationType: string;
 };
 
 export type IngestionWorkItem = {
@@ -30,9 +38,10 @@ export type IngestionHydrationMetadata = {
 };
 
 export type IngestionSnapshot = {
-  queryType: "flat";
+  queryType: IngestionQueryType;
   workItemIds: number[];
   workItems: IngestionWorkItem[];
   relations: IngestionRelation[];
+  queryRelations: IngestionQueryRelation[];
   hydration: IngestionHydrationMetadata;
 };

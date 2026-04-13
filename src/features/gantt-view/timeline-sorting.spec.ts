@@ -5,6 +5,7 @@ import { applyTimelineSorting, buildTimelineSortOptions } from "./timeline-sorti
 
 function makeTimeline(): TimelineReadModel {
   return {
+    queryType: "flat",
     bars: [
       {
         workItemId: 2,
@@ -32,6 +33,7 @@ function makeTimeline(): TimelineReadModel {
     unschedulable: [],
     dependencies: [],
     suppressedDependencies: [],
+    treeLayout: null,
     mappingValidation: {
       status: "valid",
       issues: []

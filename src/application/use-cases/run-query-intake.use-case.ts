@@ -302,6 +302,7 @@ function createMissingMappingValidationResult(): TimelineReadModel {
   }));
 
   return {
+    queryType: "flat",
     bars: [],
     unschedulable: [],
     dependencies: [],
@@ -309,7 +310,8 @@ function createMissingMappingValidationResult(): TimelineReadModel {
     mappingValidation: {
       status: "invalid",
       issues
-    }
+    },
+    treeLayout: null
   };
 }
 

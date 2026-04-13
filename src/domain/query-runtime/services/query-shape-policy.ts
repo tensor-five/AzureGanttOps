@@ -1,20 +1,22 @@
-const FLAT_QUERY_TYPE = "flat";
+export type QueryShape = "flat" | "tree" | "oneHop";
 
-const UNSUPPORTED_TYPES = new Set(["tree", "onehop", "one-hop"]);
-
-export function enforceFlatQueryShape(queryType: unknown): void {
+export function resolveQueryShape(queryType: unknown): QueryShape {
   if (typeof queryType !== "string") {
     throw new Error("QRY_SHAPE_UNSUPPORTED");
   }
 
   const normalized = queryType.trim().toLowerCase();
 
-  if (normalized === FLAT_QUERY_TYPE) {
-    return;
+  if (normalized === "flat") {
+    return "flat";
   }
 
-  if (UNSUPPORTED_TYPES.has(normalized) || normalized.length > 0) {
-    throw new Error("QRY_SHAPE_UNSUPPORTED");
+  if (normalized === "tree") {
+    return "tree";
+  }
+
+  if (normalized === "onehop" || normalized === "one-hop") {
+    return "oneHop";
   }
 
   throw new Error("QRY_SHAPE_UNSUPPORTED");

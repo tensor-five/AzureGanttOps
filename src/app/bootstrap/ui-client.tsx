@@ -29,6 +29,7 @@ import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../
 import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyDependencyLinkUpdate,
+  applyReparentUpdate,
   applyScheduleUpdate,
   applyWorkItemMetadataUpdate
 } from "./ui-client-timeline-mutations.js";
@@ -453,6 +454,36 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           predecessorWorkItemId: params.predecessorWorkItemId,
           successorWorkItemId: params.successorWorkItemId,
           dependencyAction: params.dependencyAction,
+          applyToTimeline: params.applyToTimeline,
+          execute: params.execute
+        })
+      );
+      setWorkItemSyncError(null);
+
+      if (!liveSyncEnabledRef.current) {
+        setWorkItemSyncState("paused");
+        return;
+      }
+
+      await flushQueuedWorkItemMutations();
+    },
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+  );
+
+  const scheduleReparentMutation = React.useCallback(
+    async (params: {
+      targetWorkItemId: number;
+      newParentId: number | null;
+      applyToTimeline: (timeline: QueryIntakeResponse["timeline"]) => QueryIntakeResponse["timeline"];
+      execute: () => Promise<void>;
+    }): Promise<void> => {
+      applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+      enqueuePendingWorkItemMutation(
+        createPendingWorkItemMutation({
+          kind: "reparent",
+          queryId: responseRef.current?.activeQueryId ?? null,
+          targetWorkItemId: params.targetWorkItemId,
+          newParentId: params.newParentId,
           applyToTimeline: params.applyToTimeline,
           execute: params.execute
         })
@@ -967,6 +998,24 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                   title,
                   descriptionHtml,
                   state
+                });
+
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
+              }
+            });
+          },
+          onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
+            await scheduleReparentMutation({
+              targetWorkItemId,
+              newParentId,
+              applyToTimeline: (timeline) =>
+                applyReparentUpdate(timeline, targetWorkItemId, newParentId),
+              execute: async () => {
+                const writeResult = await props.composition.controller.reparentWorkItem({
+                  targetWorkItemId,
+                  newParentId
                 });
 
                 if (!writeResult.accepted) {

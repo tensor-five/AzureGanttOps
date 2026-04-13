@@ -131,6 +131,7 @@ function createSnapshot(
     workItemIds: workItems.map((item) => item.id),
     workItems: workItems as unknown as IngestionSnapshot["workItems"],
     relations,
+    queryRelations: [],
     hydration: {
       maxIdsPerBatch: 200,
       requestedIds: workItems.length,

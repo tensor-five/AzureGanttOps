@@ -79,6 +79,22 @@
 - Bei Timeline-Refactors immer relevante `timeline-pane` Regressionen mitlaufen lassen.
 - Testnamen beschreiben Verhalten, nicht Implementierungsdetails.
 
+## Azure CLI Zugriff (Work Items & Queries)
+
+- Voraussetzung: Der Nutzer ist lokal via `az login` angemeldet und hat die `azure-devops` Extension installiert.
+- Defaults setzen: `az devops configure --defaults organization=https://dev.azure.com/tensorfive project=tensorfive`
+- **Flat Queries abfragen**: `az boards query --id <query-guid>` — funktioniert für Flat-Queries.
+- **Tree-Queries**: `az boards query` gibt bei Tree-Queries leere Ergebnisse zurück. Stattdessen alle Work Items per WIQL laden:
+  ```bash
+  az boards query --wiql "SELECT [System.Id], [System.Title], [System.WorkItemType] FROM WorkItems WHERE [System.TeamProject] = 'tensorfive' ORDER BY [System.Id]"
+  ```
+- **Work Item Details**: `az boards work-item show --id <id> --output json` — enthält `fields` und `relations` (Parent/Child-Links).
+- **Parent-Child-Relationen anlegen**: `az boards work-item relation add --id <child-id> --relation-type parent --target-id <parent-id>`
+- **Parent-Child-Relationen erkennen**:
+  - `System.LinkTypes.Hierarchy-Reverse` = Parent-Link
+  - `System.LinkTypes.Hierarchy-Forward` = Child-Link
+  - Die verlinkte Work Item ID steht am Ende der `url` im Relations-Array.
+
 ## Guardrails gegen zukünftiges Chaos
 
 - Keine Datei gleichzeitig für mehrere große Refactoring-Pakete verwenden.

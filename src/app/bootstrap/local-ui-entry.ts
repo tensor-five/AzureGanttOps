@@ -210,6 +210,42 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
       };
     },
+    reparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
+      const response = await fetch("/phase2/work-item-reparent", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({ targetWorkItemId, newParentId })
+      });
+
+      const payload = (await response.json()) as
+        | {
+            accepted: boolean;
+            mode: "NO_OP" | "EXECUTED";
+            commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
+            operationCount: number;
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+          }
+        | { message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Reparent failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as {
+        accepted: boolean;
+        mode: "NO_OP" | "EXECUTED";
+        commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
+        operationCount: number;
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+      };
+    },
     fetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
       const response = await fetch(`/phase2/work-item-state-options?targetWorkItemId=${encodeURIComponent(String(targetWorkItemId))}`, {
         method: "GET",

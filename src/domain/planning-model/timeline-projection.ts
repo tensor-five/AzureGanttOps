@@ -5,6 +5,8 @@ import type {
   TimelineUnschedulableItem
 } from "../../application/dto/timeline-read-model.js";
 import type { CanonicalModel } from "./canonical-model-builder.js";
+import type { TreeLayout } from "./tree-structure.js";
+
 const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 const MS_PER_DAY = 86_400_000;
 
@@ -15,7 +17,7 @@ export type TimelineProjection = {
   suppressedDependencies: SuppressedTimelineDependency[];
 };
 
-export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
+export function projectTimeline(canonical: CanonicalModel, treeLayout?: TreeLayout | null): TimelineProjection {
   const bars: TimelineBar[] = [];
   const unschedulable: TimelineUnschedulableItem[] = [];
   const schedulableIds = new Set<number>();
@@ -71,7 +73,12 @@ export function projectTimeline(canonical: CanonicalModel): TimelineProjection {
     schedulableIds.add(task.workItemId);
   });
 
-  bars.sort((left, right) => compareBars(left, right));
+  if (treeLayout) {
+    reorderByTreeLayout(bars, treeLayout);
+    reorderByTreeLayout(unschedulable, treeLayout);
+  } else {
+    bars.sort((left, right) => compareBars(left, right));
+  }
 
   const dependencies: TimelineDependencyArrow[] = [];
   const suppressedDependencies: SuppressedTimelineDependency[] = [];
@@ -140,6 +147,19 @@ function resolveBarSortStartTimestamp(bar: TimelineBar): number | null {
   }
 
   return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY;
+}
+
+function reorderByTreeLayout<T extends { workItemId: number }>(items: T[], layout: TreeLayout): void {
+  const positionById = new Map<number, number>();
+  layout.orderedIds.forEach((id, index) => {
+    positionById.set(id, index);
+  });
+
+  items.sort((left, right) => {
+    const leftPos = positionById.get(left.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    const rightPos = positionById.get(right.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    return leftPos - rightPos;
+  });
 }
 
 function toTimestamp(value: string | null): number | null {

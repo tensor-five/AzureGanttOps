@@ -55,6 +55,10 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       };
     }
 
+    if (command.kind === "HIERARCHY_LINK") {
+      return this.submitHierarchyLink(command, context);
+    }
+
     const sourceWorkItemUrl = buildWorkItemUrl({
       organization: context.organization,
       project: context.project,
@@ -127,6 +131,86 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       reasonCode: "WRITE_ENABLED"
     };
   }
+  private async submitHierarchyLink(
+    command: Extract<WriteCommand, { kind: "HIERARCHY_LINK" }>,
+    context: { organization: string; project: string }
+  ): Promise<WriteCommandResult> {
+    if (!this.httpClient.get) {
+      throw new Error("HIERARCHY_LINK_UNSUPPORTED");
+    }
+
+    const childWorkItemUrl = buildWorkItemUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemId: command.childWorkItemId
+    });
+
+    const lookupUrl = buildWorkItemRelationLookupUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemId: command.childWorkItemId
+    });
+    const lookupResponse = await this.httpClient.get(lookupUrl, {
+      accept: "application/json"
+    });
+    if (lookupResponse.status < 200 || lookupResponse.status >= 300) {
+      throw new Error("HIERARCHY_LOOKUP_FAILED");
+    }
+
+    const operations: unknown[] = [];
+
+    const existingParentIndex = resolveRelationIndex(
+      lookupResponse.json,
+      null,
+      "System.LinkTypes.Hierarchy-Reverse"
+    );
+    if (existingParentIndex !== null) {
+      operations.push({ op: "remove", path: `/relations/${existingParentIndex}` });
+    }
+
+    if (command.newParentWorkItemId !== null) {
+      const parentReferenceUrl = buildWorkItemReferenceUrl({
+        organization: context.organization,
+        project: context.project,
+        workItemId: command.newParentWorkItemId
+      });
+      operations.push({
+        op: "add",
+        path: "/relations/-",
+        value: {
+          rel: "System.LinkTypes.Hierarchy-Reverse",
+          url: parentReferenceUrl
+        }
+      });
+    }
+
+    if (operations.length === 0) {
+      return {
+        accepted: true,
+        mode: "NO_OP",
+        commandKind: "HIERARCHY_LINK",
+        operationCount: 0,
+        reasonCode: "WRITE_ENABLED"
+      };
+    }
+
+    const response = await this.httpClient.patch(childWorkItemUrl, operations, {
+      "content-type": "application/json-patch+json",
+      accept: "application/json"
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error("HIERARCHY_LINK_FAILED");
+    }
+
+    return {
+      accepted: true,
+      mode: "EXECUTED",
+      commandKind: "HIERARCHY_LINK",
+      operationCount: operations.length,
+      reasonCode: "WRITE_ENABLED"
+    };
+  }
 }
 
 function buildWorkItemUrl(input: { organization: string; project: string; workItemId: number }): string {
@@ -169,6 +253,41 @@ function resolveDependencyRelationIndex(payload: unknown, targetId: number, rela
     const rel = (relationEntry as { rel?: unknown }).rel;
     if (rel !== relation) {
       continue;
+    }
+
+    const url = (relationEntry as { url?: unknown }).url;
+    const relationTargetId = parseRelationTargetWorkItemId(typeof url === "string" ? url : null);
+    if (relationTargetId === targetId) {
+      return index;
+    }
+  }
+
+  return null;
+}
+
+function resolveRelationIndex(payload: unknown, targetId: number | null, relation: string): number | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const relations = (payload as { relations?: unknown }).relations;
+  if (!Array.isArray(relations)) {
+    return null;
+  }
+
+  for (let index = 0; index < relations.length; index += 1) {
+    const relationEntry = relations[index];
+    if (!relationEntry || typeof relationEntry !== "object") {
+      continue;
+    }
+
+    const rel = (relationEntry as { rel?: unknown }).rel;
+    if (rel !== relation) {
+      continue;
+    }
+
+    if (targetId === null) {
+      return index;
     }
 
     const url = (relationEntry as { url?: unknown }).url;

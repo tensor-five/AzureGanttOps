@@ -113,6 +113,40 @@ export function parseDependencyLinkPayload(
   };
 }
 
+export function parseReparentPayload(
+  input: Record<string, unknown> | null
+): { targetWorkItemId: number; newParentId: number | null } | null {
+  if (!input) {
+    return null;
+  }
+
+  const targetWorkItemId = input.targetWorkItemId;
+  const newParentId = input.newParentId;
+
+  if (
+    typeof targetWorkItemId !== "number" ||
+    !Number.isFinite(targetWorkItemId) ||
+    targetWorkItemId <= 0
+  ) {
+    return null;
+  }
+
+  if (newParentId === null || newParentId === undefined) {
+    return { targetWorkItemId, newParentId: null };
+  }
+
+  if (
+    typeof newParentId !== "number" ||
+    !Number.isFinite(newParentId) ||
+    newParentId <= 0 ||
+    newParentId === targetWorkItemId
+  ) {
+    return null;
+  }
+
+  return { targetWorkItemId, newParentId };
+}
+
 export function parseUpdateDetailsPayload(
   input: Record<string, unknown> | null
 ): { targetWorkItemId: number; title: string; descriptionHtml: string; state: string } | null {

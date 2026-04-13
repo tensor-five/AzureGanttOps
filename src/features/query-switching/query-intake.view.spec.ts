@@ -45,6 +45,7 @@ describe("query-intake view", () => {
         issues: []
       },
       timeline: {
+        queryType: "flat",
         bars: [
           {
             workItemId: 101,
@@ -112,6 +113,7 @@ describe("query-intake view", () => {
             reason: "unschedulable-endpoint"
           }
         ],
+        treeLayout: null,
         mappingValidation: {
           status: "valid",
           issues: []
@@ -199,6 +201,7 @@ describe("query-intake view", () => {
         issues: []
       },
       timeline: {
+        queryType: "flat",
         bars: [],
         unschedulable: [],
         dependencies: [
@@ -210,6 +213,7 @@ describe("query-intake view", () => {
           }
         ],
         suppressedDependencies: [],
+        treeLayout: null,
         mappingValidation: {
           status: "valid",
           issues: []
@@ -260,10 +264,12 @@ describe("query-intake view", () => {
         issues: []
       },
       timeline: {
+        queryType: "flat",
         bars: [],
         unschedulable: [],
         dependencies: [],
         suppressedDependencies: [],
+        treeLayout: null,
         mappingValidation: {
           status: "valid",
           issues: []
@@ -323,10 +329,12 @@ describe("query-intake view", () => {
         issues: []
       },
       timeline: {
+        queryType: "flat",
         bars: [],
         unschedulable: [],
         dependencies: [],
         suppressedDependencies: [],
+        treeLayout: null,
         mappingValidation: {
           status: "valid",
           issues: []
