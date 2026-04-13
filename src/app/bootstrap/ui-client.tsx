@@ -704,6 +704,29 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                           "button",
                           {
                             type: "button",
+                            className: "header-query-dropdown-item-open",
+                            "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
+                            title: "Open in Azure DevOps",
+                            onClick: (event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              const entryOrg = entry.organization ?? organization;
+                              const entryProject = entry.project ?? project;
+                              if (entryOrg && entryProject) {
+                                window.open(
+                                  `https://dev.azure.com/${encodeURIComponent(entryOrg)}/${encodeURIComponent(entryProject)}/_queries/query/${encodeURIComponent(entry.id)}`,
+                                  "_blank",
+                                  "noopener,noreferrer"
+                                );
+                              }
+                            }
+                          },
+                          "\u2197"
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
                             className: "header-query-dropdown-item-select",
                             disabled: headerQueryFlow.headerQueryLoading,
                             onClick: () => {
