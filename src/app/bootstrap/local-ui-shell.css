@@ -269,7 +269,7 @@ section[role="tabpanel"]:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 4px;
 }
 
 .header-query-dropdown-item-select {
@@ -1131,6 +1131,76 @@ button {
   background: color-mix(in srgb, var(--timeline-row-selection-color, var(--color-primary-soft)) 16%, transparent);
 }
 
+.timeline-tree-guides {
+  display: inline-flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
+.timeline-tree-guide {
+  display: inline-block;
+  width: 20px;
+  min-width: 20px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.timeline-tree-guide-pipe::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.timeline-tree-guide-tee::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.timeline-tree-guide-tee::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.timeline-tree-guide-elbow::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  height: 50%;
+  width: 1px;
+  background: var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.timeline-tree-guide-elbow::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.timeline-tree-guide-blank {
+  /* No line — last-sibling ancestor, no continuation needed */
+}
+
 .timeline-tree-toggle {
   display: inline-flex;
   align-items: center;
@@ -1143,7 +1213,7 @@ button {
   cursor: pointer;
   color: var(--color-text-muted, #888);
   border-radius: 3px;
-  margin-right: 4px;
+  margin-right: 2px;
   user-select: none;
   flex-shrink: 0;
 }
@@ -1158,7 +1228,7 @@ button {
   width: 16px;
   min-width: 16px;
   height: 16px;
-  margin-right: 4px;
+  margin-right: 2px;
   flex-shrink: 0;
 }
 
