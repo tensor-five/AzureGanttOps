@@ -192,7 +192,7 @@ describe("timeline-pane dragging", () => {
       });
 
       await waitFor(() => {
-        expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(84);
+        expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(108.75);
       });
     } finally {
       chartRectSpy.mockRestore();

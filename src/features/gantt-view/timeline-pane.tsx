@@ -195,6 +195,16 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
   const viewportPersistDebounceRef = React.useRef<number | null>(null);
   const spacePanPressedRef = React.useRef(false);
   const initialViewportAppliedRef = React.useRef(false);
+  const lastZoomLevelRef = React.useRef<TimelineZoomLevel>(
+    resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX)
+  );
+
+  const zoomLevel = React.useMemo(() => {
+    const prev = lastZoomLevelRef.current;
+    const next = resolveZoomLevelWithHysteresis(dayWidthPx, prev);
+    lastZoomLevelRef.current = next;
+    return next;
+  }, [dayWidthPx]);
 
   return {
     dayWidthPx,
@@ -218,13 +228,7 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
     viewportPersistDebounceRef,
     spacePanPressedRef,
     initialViewportAppliedRef,
-    zoomLevel: dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX
-      ? "week"
-      : dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX
-        ? "month"
-        : dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX
-          ? "quarter"
-          : "year"
+    zoomLevel
   };
 }
 
@@ -2958,6 +2962,7 @@ const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
 const DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 const DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
 const DAY_WIDTH_QUARTER_YEAR_SWITCH_PX = (DAY_WIDTH_QUARTER_PX + DAY_WIDTH_YEAR_PX) / 2;
+const ZOOM_LEVEL_HYSTERESIS_PX = 0.6;
 const FIT_TO_VIEW_INSET_PX = 20;
 const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
@@ -4510,6 +4515,49 @@ function clamp(value: number, min: number, max: number): number {
 function quantizeDayWidth(value: number): number {
   const step = value < 1 ? 0.01 : value < 4 ? 0.05 : value < 10 ? 0.1 : ZOOM_DAY_WIDTH_STEP_PX;
   return Math.round(value / step) * step;
+}
+
+function resolveZoomLevelWithoutHysteresis(dayWidthPx: number): TimelineZoomLevel {
+  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX) {
+    return "week";
+  }
+  if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX) {
+    return "month";
+  }
+  if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX) {
+    return "quarter";
+  }
+  return "year";
+}
+
+function resolveZoomLevelWithHysteresis(
+  dayWidthPx: number,
+  previous: TimelineZoomLevel
+): TimelineZoomLevel {
+  const H = ZOOM_LEVEL_HYSTERESIS_PX;
+
+  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX + H) {
+    return "week";
+  }
+  if (dayWidthPx <= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX - H) {
+    return "year";
+  }
+
+  if (dayWidthPx < DAY_WIDTH_MONTH_QUARTER_SWITCH_PX - H) {
+    if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX + H) {
+      return "quarter";
+    }
+    return previous === "year" ? "year" : "quarter";
+  }
+
+  if (dayWidthPx < DAY_WIDTH_WEEK_MONTH_SWITCH_PX - H) {
+    if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX + H) {
+      return "month";
+    }
+    return previous === "quarter" || previous === "year" ? "quarter" : "month";
+  }
+
+  return previous === "month" || previous === "quarter" || previous === "year" ? "month" : "week";
 }
 
 function normalizeWheelDelta(event: WheelEvent): number {
