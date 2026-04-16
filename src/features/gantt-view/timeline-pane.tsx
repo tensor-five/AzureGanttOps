@@ -136,7 +136,7 @@ type ActivePanDrag = {
   originScrollTop: number;
 };
 
-type TimelineZoomLevel = "week" | "month";
+type TimelineZoomLevel = "week" | "month" | "quarter" | "year";
 
 type TimelineLabelFieldOption = {
   fieldRef: string;
@@ -216,7 +216,13 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
     viewportPersistDebounceRef,
     spacePanPressedRef,
     initialViewportAppliedRef,
-    zoomLevel: dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month"
+    zoomLevel: dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX
+      ? "week"
+      : dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX
+        ? "month"
+        : dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX
+          ? "quarter"
+          : "year"
   };
 }
 
@@ -879,6 +885,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setDayWidthPx(DAY_WIDTH_MONTH_PX);
   }, [setDayWidthPx]);
 
+  const selectQuarterZoom = React.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_QUARTER_PX);
+  }, [setDayWidthPx]);
+
+  const selectYearZoom = React.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_YEAR_PX);
+  }, [setDayWidthPx]);
+
   const applyDependencyViewModeChange = React.useCallback(
     (mode: DependencyViewMode) => {
       setDependencyViewMode(mode);
@@ -937,6 +951,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     onRotateDependencyMode: rotateDependencyViewMode,
     onSelectMonthZoom: selectMonthZoom,
     onSelectWeekZoom: selectWeekZoom,
+    onSelectQuarterZoom: selectQuarterZoom,
+    onSelectYearZoom: selectYearZoom,
     pendingWorkItemSyncCount: props.pendingWorkItemSyncCount,
     onRemoveDependency: props.onRemoveDependency,
     onRetryRefresh: props.onRetryRefresh,
@@ -1929,6 +1945,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       zoomLevel,
       onSelectWeekZoom: selectWeekZoom,
       onSelectMonthZoom: selectMonthZoom,
+      onSelectQuarterZoom: selectQuarterZoom,
+      onSelectYearZoom: selectYearZoom,
       dependencyViewMode,
       dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
       onChangeDependencyMode: applyDependencyViewModeChange,
@@ -2356,19 +2374,31 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     preserveAspectRatio: "none",
                     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
                   },
-                  chartModel.monthMarkers.map((month) =>
+                  (zoomLevel === "year"
+                    ? chartModel.yearMarkers
+                    : zoomLevel === "quarter"
+                      ? chartModel.yearMarkers
+                      : chartModel.monthMarkers
+                  ).map((marker) =>
                     React.createElement(
                       "text",
                       {
-                        key: `sticky-month-label-${month.x}-${month.label}`,
-                        x: CHART_LEFT_GUTTER + month.x,
+                        key: `sticky-top-label-${marker.x}-${marker.label}`,
+                        x: CHART_LEFT_GUTTER + marker.x,
                         y: CHART_AXIS_MONTH_LABEL_Y,
                         className: "timeline-axis-month-label"
                       },
-                      month.label
+                      marker.label
                     )
                   ),
-                  (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) =>
+                  (zoomLevel === "week"
+                    ? chartModel.weekMarkers
+                    : zoomLevel === "quarter"
+                      ? chartModel.quarterMarkers
+                      : zoomLevel === "year"
+                        ? chartModel.quarterMarkers
+                        : []
+                  ).map((tick) =>
                     React.createElement(
                       "text",
                       {
@@ -2462,7 +2492,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       className: "timeline-current-period-highlight"
                     })
                   : null,
-                chartModel.weekendBands.map((band) =>
+                (zoomLevel === "week" || zoomLevel === "month"
+                  ? chartModel.weekendBands
+                  : []
+                ).map((band) =>
                   React.createElement("rect", {
                     key: `timeline-weekend-band-${band.date}`,
                     x: CHART_LEFT_GUTTER + band.x,
@@ -2493,12 +2526,30 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     className: "timeline-grid-line-weekly"
                   })
                 ),
-                chartModel.monthMarkers.map((month) =>
+                (zoomLevel === "quarter" || zoomLevel === "year"
+                  ? chartModel.monthMarkers
+                  : []
+                ).map((month) =>
                   React.createElement("line", {
-                    key: `month-boundary-${month.x}`,
+                    key: `quarter-month-grid-${month.x}`,
                     x1: CHART_LEFT_GUTTER + month.x,
                     y1: CHART_GRID_START_Y,
                     x2: CHART_LEFT_GUTTER + month.x,
+                    y2: chartModel.height - CHART_BOTTOM_PADDING,
+                    className: "timeline-grid-line-weekly"
+                  })
+                ),
+                (zoomLevel === "year"
+                  ? chartModel.quarterMarkers
+                  : zoomLevel === "quarter"
+                    ? chartModel.quarterMarkers
+                    : chartModel.monthMarkers
+                ).map((marker) =>
+                  React.createElement("line", {
+                    key: `boundary-${marker.x}-${marker.label}`,
+                    x1: CHART_LEFT_GUTTER + marker.x,
+                    y1: CHART_GRID_START_Y,
+                    x2: CHART_LEFT_GUTTER + marker.x,
                     y2: chartModel.height - CHART_BOTTOM_PADDING,
                     className: "timeline-month-boundary-line"
                   })
@@ -2893,11 +2944,15 @@ const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 const TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
+const DAY_WIDTH_QUARTER_PX = 3;
+const DAY_WIDTH_YEAR_PX = 1;
 const DAY_WIDTH_MAX_PX = 40;
-const DAY_WIDTH_MIN_PX = 4;
+const DAY_WIDTH_MIN_PX = 0.5;
 const ZOOM_WHEEL_SENSITIVITY = 0.0024;
 const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
-const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+const DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+const DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
+const DAY_WIDTH_QUARTER_YEAR_SWITCH_PX = (DAY_WIDTH_QUARTER_PX + DAY_WIDTH_YEAR_PX) / 2;
 const FIT_TO_VIEW_INSET_PX = 20;
 const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
@@ -3010,6 +3065,8 @@ type VisualChartModel = {
   weekMarkers: { x: number; label: string }[];
   dailyGridLines: number[];
   monthMarkers: { x: number; label: string }[];
+  quarterMarkers: { x: number; label: string }[];
+  yearMarkers: { x: number; label: string }[];
   domainStart: Date;
   currentPeriod: { x: number; width: number } | null;
   todayX: number | null;
@@ -3041,6 +3098,8 @@ function buildVisualChartModel(
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
+      quarterMarkers: [],
+      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
@@ -3084,6 +3143,8 @@ function buildVisualChartModel(
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
+      quarterMarkers: [],
+      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
@@ -3150,9 +3211,13 @@ function buildVisualChartModel(
 
   assignTreeBlockFlags(bars);
 
-  const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const weekMarkers = zoomLevel === "week" || zoomLevel === "month"
+    ? buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx)
+    : [];
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
   const monthMarkers = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const quarterMarkers = buildQuarterAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const yearMarkers = buildYearAxisMarkers(domainStart, totalDays, dayWidthPx);
 
   const timelineWidth = totalDays * dayWidthPx;
   const verticalLayout = resolveTimelineVerticalLayoutMetrics(bars.length, includeUnscheduledDropLane);
@@ -3168,6 +3233,8 @@ function buildVisualChartModel(
     weekMarkers,
     dailyGridLines,
     monthMarkers,
+    quarterMarkers,
+    yearMarkers,
     domainStart,
     currentPeriod,
     todayX
@@ -4239,6 +4306,69 @@ function buildMonthAxisMarkers(
   return markers;
 }
 
+function buildQuarterAxisMarkers(
+  domainStart: Date,
+  totalDays: number,
+  dayWidthPx: number
+): { x: number; label: string }[] {
+  const domainEndExclusive = addDays(domainStart, totalDays + 1);
+  const startMonth = domainStart.getUTCMonth();
+  const quarterStartMonth = startMonth - (startMonth % 3);
+  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), quarterStartMonth, 1));
+  const markers: { x: number; label: string }[] = [];
+  const seenX = new Set<number>();
+
+  while (cursor.getTime() < domainEndExclusive.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    if (offset <= totalDays) {
+      const markerOffsetDays = clamp(offset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        const quarter = Math.floor(cursor.getUTCMonth() / 3) + 1;
+        markers.push({
+          x,
+          label: `Q${quarter} ${cursor.getUTCFullYear()}`
+        });
+      }
+    }
+
+    cursor = addMonthsUtc(cursor, 3);
+  }
+
+  return markers;
+}
+
+function buildYearAxisMarkers(
+  domainStart: Date,
+  totalDays: number,
+  dayWidthPx: number
+): { x: number; label: string }[] {
+  const domainEndExclusive = addDays(domainStart, totalDays + 1);
+  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), 0, 1));
+  const markers: { x: number; label: string }[] = [];
+  const seenX = new Set<number>();
+
+  while (cursor.getTime() < domainEndExclusive.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    if (offset <= totalDays) {
+      const markerOffsetDays = clamp(offset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        markers.push({
+          x,
+          label: String(cursor.getUTCFullYear())
+        });
+      }
+    }
+
+    cursor = new Date(Date.UTC(cursor.getUTCFullYear() + 1, 0, 1));
+  }
+
+  return markers;
+}
+
 function formatTickDate(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
@@ -4373,7 +4503,8 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function quantizeDayWidth(value: number): number {
-  return Math.round(value / ZOOM_DAY_WIDTH_STEP_PX) * ZOOM_DAY_WIDTH_STEP_PX;
+  const step = value < 2 ? 0.05 : ZOOM_DAY_WIDTH_STEP_PX;
+  return Math.round(value / step) * step;
 }
 
 function normalizeWheelDelta(event: WheelEvent): number {

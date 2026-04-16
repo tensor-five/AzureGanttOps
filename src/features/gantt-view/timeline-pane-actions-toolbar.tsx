@@ -25,9 +25,11 @@ type TimelineLabelFieldOption = {
 export type TimelinePaneActionsToolbarProps = {
   isRefreshing: boolean;
   onRetryRefresh: () => void;
-  zoomLevel: "week" | "month";
+  zoomLevel: "week" | "month" | "quarter" | "year";
   onSelectWeekZoom: () => void;
   onSelectMonthZoom: () => void;
+  onSelectQuarterZoom: () => void;
+  onSelectYearZoom: () => void;
   dependencyViewMode: DependencyViewMode;
   dependencyModeOptions: ReadonlyArray<{ value: DependencyViewMode; label: string }>;
   onChangeDependencyMode: (mode: DependencyViewMode) => void;
@@ -205,6 +207,34 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
               onClick: props.onSelectMonthZoom
             },
             "Month"
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className:
+                props.zoomLevel === "quarter"
+                  ? "timeline-density-button timeline-density-button-active"
+                  : "timeline-density-button",
+              "aria-pressed": props.zoomLevel === "quarter",
+              "aria-label": "Zoom out to quarter view",
+              onClick: props.onSelectQuarterZoom
+            },
+            "Quarter"
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className:
+                props.zoomLevel === "year"
+                  ? "timeline-density-button timeline-density-button-active"
+                  : "timeline-density-button",
+              "aria-pressed": props.zoomLevel === "year",
+              "aria-label": "Zoom out to year view",
+              onClick: props.onSelectYearZoom
+            },
+            "Year"
           )
         ),
         React.createElement(
