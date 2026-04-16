@@ -80,6 +80,7 @@ import { useTimelineSorting } from "./use-timeline-sorting.js";
 import { useTreeExpandCollapse, applyTreeVisibility } from "./use-tree-expand-collapse.js";
 import { useReparentDragging } from "./use-reparent-dragging.js";
 import { useTimelineResizing } from "./use-timeline-resizing.js";
+import { useDragAutoScroll } from "./use-drag-auto-scroll.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
@@ -365,6 +366,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     initialViewportAppliedRef,
     zoomLevel
   } = useTimelineViewport(initialViewportPreference);
+  const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
@@ -991,7 +993,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
       const nextDayWidth = quantizeDayWidth(clamp(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
 
-      if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
+      if (nextDayWidth === dayWidthPx) {
         return;
       }
 
@@ -1009,7 +1011,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           return;
         }
 
-        setDayWidthPx((current) => (Math.abs(current - pendingDayWidth) < 0.01 ? current : pendingDayWidth));
+        setDayWidthPx((current) => (current === pendingDayWidth ? current : pendingDayWidth));
       });
     },
     [chartModel.dayWidthPx, dayWidthPx]
@@ -1404,6 +1406,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         suppressNextBarClickRef.current = true;
       }
 
+      updateDragAutoScroll(event.clientX, event.clientY);
+
       const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
       if (deltaDays === active.lastDayDelta) {
         return;
@@ -1413,7 +1417,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
       updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
     },
-    [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateEditedSchedule]
+    [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateDragAutoScroll, updateEditedSchedule]
   );
 
   const persistDraggedSchedule = React.useCallback(
@@ -2014,7 +2018,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onToggleTimelineSidebarField: toggleTimelineSidebarField,
       onToggleTimelineLabelField: toggleTimelineLabelField,
       workItemSyncState: props.workItemSyncState ?? "up_to_date",
-      workItemSyncError: props.workItemSyncError ?? null,
       liveSyncEnabled: props.liveSyncEnabled ?? true,
       pendingWorkItemSyncCount: props.pendingWorkItemSyncCount ?? 0,
       onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => undefined),
@@ -2950,7 +2953,7 @@ const DAY_WIDTH_QUARTER_PX = 3;
 const DAY_WIDTH_YEAR_PX = 1;
 const DAY_WIDTH_MAX_PX = 40;
 const DAY_WIDTH_MIN_PX = 0.5;
-const ZOOM_WHEEL_SENSITIVITY = 0.0024;
+const ZOOM_WHEEL_SENSITIVITY = 0.005;
 const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
 const DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 const DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
@@ -4505,7 +4508,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function quantizeDayWidth(value: number): number {
-  const step = value < 2 ? 0.05 : ZOOM_DAY_WIDTH_STEP_PX;
+  const step = value < 1 ? 0.01 : value < 4 ? 0.05 : value < 10 ? 0.1 : ZOOM_DAY_WIDTH_STEP_PX;
   return Math.round(value / step) * step;
 }
 
