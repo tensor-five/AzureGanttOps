@@ -161,10 +161,13 @@ type TimelineViewportState = {
   setChartViewportHeightPx: React.Dispatch<React.SetStateAction<number>>;
   chartScrollRef: React.RefObject<HTMLDivElement | null>;
   chartSvgRef: React.RefObject<SVGSVGElement | null>;
+  mainLaneRef: React.RefObject<HTMLDivElement | null>;
   zoomAnchorRef: React.RefObject<{ dayOffset: number; pointerOffsetX: number } | null>;
   wheelZoomFrameRef: React.RefObject<number | null>;
   pendingWheelDayWidthRef: React.RefObject<number | null>;
   liveDayWidthRef: React.RefObject<number>;
+  committedDayWidthRef: React.RefObject<number>;
+  zoomCommitTimerRef: React.RefObject<number | null>;
   pendingFitRangeRef: React.RefObject<{ start: Date; end: Date } | null>;
   pendingViewportRestoreRef: React.RefObject<TimelineViewportPreference | null>;
   viewportPersistDebounceRef: React.RefObject<number | null>;
@@ -187,10 +190,13 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
   const [chartViewportHeightPx, setChartViewportHeightPx] = React.useState<number>(0);
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
+  const mainLaneRef = React.useRef<HTMLDivElement | null>(null);
   const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
   const wheelZoomFrameRef = React.useRef<number | null>(null);
   const pendingWheelDayWidthRef = React.useRef<number | null>(null);
   const liveDayWidthRef = React.useRef(dayWidthPx);
+  const committedDayWidthRef = React.useRef(dayWidthPx);
+  const zoomCommitTimerRef = React.useRef<number | null>(null);
   const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
   const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
   const viewportPersistDebounceRef = React.useRef<number | null>(null);
@@ -220,10 +226,13 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
     setChartViewportHeightPx,
     chartScrollRef,
     chartSvgRef,
+    mainLaneRef,
     zoomAnchorRef,
     wheelZoomFrameRef,
     pendingWheelDayWidthRef,
     liveDayWidthRef,
+    committedDayWidthRef,
+    zoomCommitTimerRef,
     pendingFitRangeRef,
     pendingViewportRestoreRef,
     viewportPersistDebounceRef,
@@ -360,10 +369,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setChartViewportHeightPx,
     chartScrollRef,
     chartSvgRef,
+    mainLaneRef,
     zoomAnchorRef,
     wheelZoomFrameRef,
     pendingWheelDayWidthRef,
     liveDayWidthRef,
+    committedDayWidthRef,
+    zoomCommitTimerRef,
     pendingFitRangeRef,
     pendingViewportRestoreRef,
     viewportPersistDebounceRef,
@@ -826,6 +838,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   React.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
+    committedDayWidthRef.current = dayWidthPx;
     persistTimelineViewportSoon();
   }, [dayWidthPx, persistTimelineViewportSoon]);
 
@@ -982,6 +995,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
       const svg = chartSvgRef.current;
       const scrollElement = chartScrollRef.current;
+      const mainLane = mainLaneRef.current;
       if (!svg || !scrollElement) {
         return;
       }
@@ -1001,26 +1015,36 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
       const nextDayWidth = quantizeDayWidth(clamp(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
 
-      if (nextDayWidth === dayWidthPx) {
-        return;
-      }
-
       zoomAnchorRef.current = { dayOffset, pointerOffsetX };
       pendingWheelDayWidthRef.current = nextDayWidth;
-      if (wheelZoomFrameRef.current !== null) {
-        return;
+
+      if (mainLane) {
+        const ratio = nextDayWidth / committedDayWidthRef.current;
+        const originX = scrollElement.scrollLeft + pointerOffsetX;
+        mainLane.style.transformOrigin = `${originX}px 0px`;
+        mainLane.style.transform = `scaleX(${ratio})`;
+        mainLane.style.willChange = "transform";
       }
 
-      wheelZoomFrameRef.current = window.requestAnimationFrame(() => {
-        wheelZoomFrameRef.current = null;
+      if (zoomCommitTimerRef.current !== null) {
+        clearTimeout(zoomCommitTimerRef.current);
+      }
+      zoomCommitTimerRef.current = window.setTimeout(() => {
+        zoomCommitTimerRef.current = null;
         const pendingDayWidth = pendingWheelDayWidthRef.current;
         pendingWheelDayWidthRef.current = null;
         if (pendingDayWidth === null) {
           return;
         }
 
+        if (mainLane) {
+          mainLane.style.transform = "";
+          mainLane.style.transformOrigin = "";
+          mainLane.style.willChange = "";
+        }
+        committedDayWidthRef.current = pendingDayWidth;
         setDayWidthPx((current) => (current === pendingDayWidth ? current : pendingDayWidth));
-      });
+      }, ZOOM_COMMIT_DELAY_MS);
     },
     [chartModel.dayWidthPx, dayWidthPx]
   );
@@ -2392,6 +2416,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 "div",
                 {
                   className: "timeline-chart-main-lane",
+                  ref: mainLaneRef,
                   style: { width: `${chartModel.width}px` }
                 },
               React.createElement(
@@ -2987,6 +3012,7 @@ const DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) 
 const DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
 const DAY_WIDTH_QUARTER_YEAR_SWITCH_PX = (DAY_WIDTH_QUARTER_PX + DAY_WIDTH_YEAR_PX) / 2;
 const ZOOM_LEVEL_HYSTERESIS_PX = 0.6;
+const ZOOM_COMMIT_DELAY_MS = 120;
 const FIT_TO_VIEW_INSET_PX = 20;
 const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
