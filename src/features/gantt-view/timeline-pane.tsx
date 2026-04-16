@@ -126,6 +126,7 @@ export type TimelinePaneProps = {
   onRetryRefresh?: () => void;
   onSetLiveSyncEnabled?: (enabled: boolean) => void;
   onPushPendingWorkItemChanges?: () => void;
+  onClearPendingWorkItemChanges?: () => void;
 };
 
 type ActivePanDrag = {
@@ -2017,7 +2018,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       liveSyncEnabled: props.liveSyncEnabled ?? true,
       pendingWorkItemSyncCount: props.pendingWorkItemSyncCount ?? 0,
       onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => undefined),
-      onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => undefined)
+      onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => undefined),
+      onClearPendingWorkItemChanges: props.onClearPendingWorkItemChanges ?? (() => undefined)
     }),
     React.createElement(TimelineFilterPanel, {
       open: timelineFiltersOpen,

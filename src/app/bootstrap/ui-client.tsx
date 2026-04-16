@@ -182,6 +182,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = React.useState(0);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
   const flushPendingWorkItemMutationsPromiseRef = React.useRef<Promise<void> | null>(null);
@@ -316,11 +317,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]
   );
 
-  const retryRefresh = React.useCallback(async () => {
-    if (isRefreshing) {
-      return;
-    }
-
+  const executeRefresh = React.useCallback(async (discardPendingChanges: boolean) => {
     setIsRefreshing(true);
 
     try {
@@ -339,14 +336,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
 
       if (result.kind === "refreshed") {
-        const refreshedResponse = applyPendingWorkItemMutationsToResponse(
-          result.response,
-          pendingWorkItemMutationsRef.current
-        );
-        setResponse(refreshedResponse);
-        setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
+        if (discardPendingChanges) {
+          pendingWorkItemMutationsRef.current = [];
+          setPendingWorkItemSyncCount(0);
+          setResponse(result.response);
+          setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        } else {
+          const refreshedResponse = applyPendingWorkItemMutationsToResponse(
+            result.response,
+            pendingWorkItemMutationsRef.current
+          );
+          setResponse(refreshedResponse);
+          setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
+        }
         if (result.openMappingFix) {
-          setMappingFixResponse(refreshedResponse);
+          setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
           setControlsOpen(true);
         } else {
@@ -356,7 +360,20 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     } finally {
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller.submit, runQuery]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery]);
+
+  const retryRefresh = React.useCallback(async () => {
+    if (isRefreshing) {
+      return;
+    }
+
+    if (pendingWorkItemMutationsRef.current.length > 0) {
+      setShowRefreshDiscardWarning(true);
+      return;
+    }
+
+    await executeRefresh(false);
+  }, [executeRefresh, isRefreshing]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -913,6 +930,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           onPushPendingWorkItemChanges: () => {
             void flushQueuedWorkItemMutations();
           },
+          onClearPendingWorkItemChanges: () => {
+            pendingWorkItemMutationsRef.current = [];
+            setPendingWorkItemSyncCount(0);
+            setWorkItemSyncError(null);
+            setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+            void retryRefresh();
+          },
           onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
             await scheduleWorkItemMutation({
               workItemId: targetWorkItemId,
@@ -1044,7 +1068,61 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         },
         "TensorFive GmbH"
       )
-    )
+    ),
+    showRefreshDiscardWarning
+      ? React.createElement(
+          "div",
+          {
+            className: "refresh-discard-warning-backdrop",
+            onClick: () => setShowRefreshDiscardWarning(false)
+          },
+          React.createElement(
+            "div",
+            {
+              className: "refresh-discard-warning-dialog",
+              role: "alertdialog",
+              "aria-labelledby": "refresh-discard-warning-title",
+              "aria-describedby": "refresh-discard-warning-desc",
+              onClick: (e: React.MouseEvent) => e.stopPropagation()
+            },
+            React.createElement(
+              "h3",
+              { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" },
+              "Achtung: Ungespeicherte Änderungen"
+            ),
+            React.createElement(
+              "p",
+              { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" },
+              `Es gibt ${pendingWorkItemSyncCount} ungespeicherte Änderung${pendingWorkItemSyncCount === 1 ? "" : "en"}, die noch nicht synchronisiert wurde${pendingWorkItemSyncCount === 1 ? "" : "n"}. Beim Aktualisieren gehen diese verloren.`
+            ),
+            React.createElement(
+              "div",
+              { className: "refresh-discard-warning-actions" },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "refresh-discard-warning-cancel",
+                  onClick: () => setShowRefreshDiscardWarning(false)
+                },
+                "Abbrechen"
+              ),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "refresh-discard-warning-confirm",
+                  onClick: () => {
+                    setShowRefreshDiscardWarning(false);
+                    void executeRefresh(true);
+                  }
+                },
+                "Verwerfen & Aktualisieren"
+              )
+            )
+          )
+        )
+      : null
   );
 }
 

@@ -76,6 +76,7 @@ export type TimelinePaneActionsToolbarProps = {
   pendingWorkItemSyncCount: number;
   onSetLiveSyncEnabled: (enabled: boolean) => void;
   onPushPendingWorkItemChanges: () => void;
+  onClearPendingWorkItemChanges: () => void;
 };
 
 export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProps): React.ReactElement {
@@ -475,6 +476,19 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
                 onClick: props.onPushPendingWorkItemChanges
               },
               pushButtonLabel
+            )
+          : null,
+        shouldShowPushButton
+          ? React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "timeline-action-button",
+                disabled: props.workItemSyncState === "syncing",
+                title: "Discard queued changes and revert to server state",
+                onClick: props.onClearPendingWorkItemChanges
+              },
+              "Clear changes"
             )
           : null,
         React.createElement(
