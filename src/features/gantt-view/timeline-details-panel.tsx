@@ -17,6 +17,7 @@ export type TimelineDetailsPanelProps = {
     stateColor: string | null;
   }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
@@ -107,6 +108,10 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const baselineState = selected?.state ?? "";
   const isDirty =
     titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+
+  React.useEffect(() => {
+    props.onDirtyChange?.(isDirty);
+  }, [isDirty]);
 
   const azureLink = selected
     ? buildAzureWorkItemUrl({

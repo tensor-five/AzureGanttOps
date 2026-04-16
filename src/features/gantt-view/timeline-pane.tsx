@@ -128,6 +128,7 @@ export type TimelinePaneProps = {
   onSetLiveSyncEnabled?: (enabled: boolean) => void;
   onPushPendingWorkItemChanges?: () => void;
   onClearPendingWorkItemChanges?: () => void;
+  onDetailsDirtyChange?: (dirty: boolean) => void;
 };
 
 type ActivePanDrag = {
@@ -370,7 +371,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     initialViewportAppliedRef,
     zoomLevel
   } = useTimelineViewport(initialViewportPreference);
-  const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null);
+  const autoScrollCallbackRef = React.useRef<() => void>(() => {});
+  const stableAutoScrollCallback = React.useCallback(() => autoScrollCallbackRef.current(), []);
+  const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null, stableAutoScrollCallback);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
@@ -418,6 +421,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const labelMenuScrollSyncSourceRef = React.useRef<"sidebar" | "bar" | null>(null);
   const barPointerSelectionIntentRef = React.useRef<{ workItemId: number; wasSelected: boolean } | null>(null);
   const suppressNextBarClickRef = React.useRef(false);
+  const lastDragClientXRef = React.useRef<number>(0);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -1332,12 +1336,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         pointerId: input.event.pointerId,
         workItemId: input.bar.workItemId,
         originClientX: input.event.clientX,
+        originScrollLeft: chartScrollRef.current?.scrollLeft ?? 0,
         startDate: input.bar.start,
         endDate: input.bar.end,
         lastDayDelta: 0
       });
     },
-    [canEditSchedule, selectWorkItem]
+    [canEditSchedule, chartScrollRef, selectWorkItem]
   );
   const beginDependencyDrag = React.useCallback(
     (input: {
@@ -1372,6 +1377,31 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     },
     [dependencyMode, geometryByWorkItemId, selectWorkItem]
   );
+
+  const applyDragDelta = React.useCallback(
+    (active: ActiveScheduleDrag, clientX: number) => {
+      const scrollDelta = (chartScrollRef.current?.scrollLeft ?? 0) - active.originScrollLeft;
+      const effectiveClientDelta = clientX - active.originClientX + scrollDelta;
+      const deltaDays = clientDeltaToDays(effectiveClientDelta, chartSvgRef.current, chartModel.dayWidthPx);
+      if (deltaDays === active.lastDayDelta) {
+        return;
+      }
+
+      const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
+      setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
+      updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
+    },
+    [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]
+  );
+
+  const handleAutoScroll = React.useCallback(() => {
+    const active = activeScheduleDrag;
+    if (!active) {
+      return;
+    }
+    applyDragDelta(active, lastDragClientXRef.current);
+  }, [activeScheduleDrag, applyDragDelta]);
+  autoScrollCallbackRef.current = handleAutoScroll;
 
   const handleChartPointerMove = React.useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
@@ -1410,18 +1440,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         suppressNextBarClickRef.current = true;
       }
 
+      lastDragClientXRef.current = event.clientX;
       updateDragAutoScroll(event.clientX, event.clientY);
-
-      const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
-      if (deltaDays === active.lastDayDelta) {
-        return;
-      }
-
-      const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
-      setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
-      updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
+      applyDragDelta(active, event.clientX);
     },
-    [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateDragAutoScroll, updateEditedSchedule]
+    [activeDependencyDrag, activeScheduleDrag, applyDragDelta, geometryByWorkItemId, updateDragAutoScroll]
   );
 
   const persistDraggedSchedule = React.useCallback(
@@ -1920,7 +1943,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     organization: props.organization,
     project: props.project,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
-    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+    onDirtyChange: props.onDetailsDirtyChange
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,

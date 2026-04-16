@@ -183,8 +183,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = React.useState(0);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = React.useState(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
+  const preOptimisticResponseSnapshotRef = React.useRef<QueryIntakeResponse | null>(null);
   const flushPendingWorkItemMutationsPromiseRef = React.useRef<Promise<void> | null>(null);
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
@@ -367,13 +369,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return;
     }
 
-    if (pendingWorkItemMutationsRef.current.length > 0) {
+    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty) {
       setShowRefreshDiscardWarning(true);
       return;
     }
 
     await executeRefresh(false);
-  }, [executeRefresh, isRefreshing]);
+  }, [detailsPanelDirty, executeRefresh, isRefreshing]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -403,7 +405,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
     const flushPromise = flushPendingWorkItemMutations({
       queueRef: pendingWorkItemMutationsRef,
-      onPendingCountChange: setPendingWorkItemSyncCount,
+      onPendingCountChange: (count) => {
+        setPendingWorkItemSyncCount(count);
+        if (count === 0) {
+          preOptimisticResponseSnapshotRef.current = null;
+        }
+      },
       runTrackedWorkItemSync: async (operation) => {
         await runTrackedWorkItemUpdate(operation);
       }
@@ -421,6 +428,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [runTrackedWorkItemUpdate]);
 
   const enqueuePendingWorkItemMutation = React.useCallback((mutation: PendingWorkItemMutation) => {
+    if (pendingWorkItemMutationsRef.current.length === 0) {
+      preOptimisticResponseSnapshotRef.current = responseRef.current;
+    }
     pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
   }, []);
@@ -930,12 +940,20 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           onPushPendingWorkItemChanges: () => {
             void flushQueuedWorkItemMutations();
           },
+          onDetailsDirtyChange: setDetailsPanelDirty,
           onClearPendingWorkItemChanges: () => {
+            const snapshot = preOptimisticResponseSnapshotRef.current;
             pendingWorkItemMutationsRef.current = [];
+            preOptimisticResponseSnapshotRef.current = null;
             setPendingWorkItemSyncCount(0);
             setWorkItemSyncError(null);
             setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
-            void retryRefresh();
+            if (snapshot) {
+              setResponse(snapshot);
+              setUiModel(mapQueryIntakeResponseToUiModel(snapshot));
+            } else {
+              void executeRefresh(true);
+            }
           },
           onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
             await scheduleWorkItemMutation({
@@ -1093,7 +1111,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             React.createElement(
               "p",
               { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" },
-              `Es gibt ${pendingWorkItemSyncCount} ungespeicherte Änderung${pendingWorkItemSyncCount === 1 ? "" : "en"}, die noch nicht synchronisiert wurde${pendingWorkItemSyncCount === 1 ? "" : "n"}. Beim Aktualisieren gehen diese verloren.`
+              "Es gibt ungespeicherte Änderungen, die beim Aktualisieren verloren gehen."
             ),
             React.createElement(
               "div",
