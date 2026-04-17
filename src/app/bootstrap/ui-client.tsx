@@ -184,6 +184,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
   const [detailsPanelDirty, setDetailsPanelDirty] = React.useState(false);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = React.useState(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
   const preOptimisticResponseSnapshotRef = React.useRef<QueryIntakeResponse | null>(null);
@@ -359,6 +360,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           setActiveTab("timeline");
         }
       }
+      setHasOptimisticChanges(false);
     } finally {
       setIsRefreshing(false);
     }
@@ -369,13 +371,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return;
     }
 
-    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty) {
+    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges) {
       setShowRefreshDiscardWarning(true);
       return;
     }
 
     await executeRefresh(false);
-  }, [detailsPanelDirty, executeRefresh, isRefreshing]);
+  }, [detailsPanelDirty, executeRefresh, hasOptimisticChanges, isRefreshing]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -433,6 +435,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     }
     pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
+    setHasOptimisticChanges(true);
   }, []);
 
   const scheduleWorkItemMutation = React.useCallback(
@@ -946,6 +949,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             pendingWorkItemMutationsRef.current = [];
             preOptimisticResponseSnapshotRef.current = null;
             setPendingWorkItemSyncCount(0);
+            setHasOptimisticChanges(false);
             setWorkItemSyncError(null);
             setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
             if (snapshot) {
