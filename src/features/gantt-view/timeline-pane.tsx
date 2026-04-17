@@ -4388,7 +4388,7 @@ function buildQuarterAxisMarkers(
         const quarter = Math.floor(cursor.getUTCMonth() / 3) + 1;
         markers.push({
           x,
-          label: `Q${quarter} ${cursor.getUTCFullYear()}`
+          label: `Q${quarter}/${String(cursor.getUTCFullYear()).slice(2)}`
         });
       }
     }
