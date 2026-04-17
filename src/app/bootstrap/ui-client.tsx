@@ -573,6 +573,20 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
 
   React.useEffect(() => {
+    const hasUnsavedChanges = () =>
+      pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges;
+
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [detailsPanelDirty, hasOptimisticChanges]);
+
+  React.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
