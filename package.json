@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run build:ui-shell",
     "start:local": "node dist/src/app/bootstrap/local-server.js",
