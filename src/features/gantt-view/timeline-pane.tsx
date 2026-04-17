@@ -95,7 +95,6 @@ export type TimelinePaneProps = {
   showDependencies: boolean;
   isRefreshing?: boolean;
   workItemSyncState?: WorkItemSyncState;
-  workItemSyncError?: string | null;
   liveSyncEnabled?: boolean;
   pendingWorkItemSyncCount?: number;
   organization?: string;

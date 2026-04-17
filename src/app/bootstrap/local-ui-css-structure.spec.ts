@@ -25,7 +25,6 @@ describe("local UI CSS structure", () => {
   it("retains required shell selectors after css split", () => {
     const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
 
-    expect(shellCss).toContain(".gantt-sync-status");
     expect(shellCss).toContain(".timeline-pane-actions");
     expect(shellCss).toContain(".timeline-details-input");
   });

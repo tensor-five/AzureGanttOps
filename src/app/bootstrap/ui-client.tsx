@@ -179,7 +179,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>(() =>
     loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused"
   );
-  const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = React.useState(0);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
@@ -393,8 +392,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return runTrackedWorkItemSync({
         operation,
         inFlightRef: workItemSyncInFlightRef,
-        setWorkItemSyncState,
-        setWorkItemSyncError
+        setWorkItemSyncState
       });
     },
     []
@@ -418,7 +416,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
     })
       .then(() => {
-        setWorkItemSyncError(null);
         setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
       })
       .finally(() => {
@@ -456,7 +453,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           executeDetails: params.executeDetails
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -488,7 +484,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           execute: params.execute
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -518,7 +513,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           execute: params.execute
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -930,7 +924,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           showDependencies: true,
           isRefreshing,
           workItemSyncState,
-          workItemSyncError,
           liveSyncEnabled,
           pendingWorkItemSyncCount,
           organization,
@@ -950,7 +943,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             preOptimisticResponseSnapshotRef.current = null;
             setPendingWorkItemSyncCount(0);
             setHasOptimisticChanges(false);
-            setWorkItemSyncError(null);
             setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
             if (snapshot) {
               setResponse(snapshot);
