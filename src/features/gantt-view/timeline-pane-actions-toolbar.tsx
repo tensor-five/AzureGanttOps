@@ -25,11 +25,9 @@ type TimelineLabelFieldOption = {
 export type TimelinePaneActionsToolbarProps = {
   isRefreshing: boolean;
   onRetryRefresh: () => void;
-  zoomLevel: "week" | "month" | "quarter" | "year";
+  zoomLevel: "week" | "month";
   onSelectWeekZoom: () => void;
   onSelectMonthZoom: () => void;
-  onSelectQuarterZoom: () => void;
-  onSelectYearZoom: () => void;
   dependencyViewMode: DependencyViewMode;
   dependencyModeOptions: ReadonlyArray<{ value: DependencyViewMode; label: string }>;
   onChangeDependencyMode: (mode: DependencyViewMode) => void;
@@ -71,11 +69,11 @@ export type TimelinePaneActionsToolbarProps = {
   onToggleTimelineSidebarField: (fieldRef: string) => void;
   onToggleTimelineLabelField: (fieldRef: string) => void;
   workItemSyncState: WorkItemSyncState;
+  workItemSyncError: string | null;
   liveSyncEnabled: boolean;
   pendingWorkItemSyncCount: number;
   onSetLiveSyncEnabled: (enabled: boolean) => void;
   onPushPendingWorkItemChanges: () => void;
-  onClearPendingWorkItemChanges: () => void;
 };
 
 export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProps): React.ReactElement {
@@ -127,6 +125,18 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
       ? `Push changes (${props.pendingWorkItemSyncCount})`
       : "Push changes";
   const shouldShowPushButton = !props.liveSyncEnabled && props.pendingWorkItemSyncCount > 0;
+  const statusLabel =
+    props.workItemSyncState === "syncing"
+      ? "Updating work items..."
+      : props.workItemSyncState === "error"
+        ? props.pendingWorkItemSyncCount > 0
+          ? `Sync failed, ${props.pendingWorkItemSyncCount} changes queued`
+          : "Work item update failed"
+        : !props.liveSyncEnabled
+          ? props.pendingWorkItemSyncCount > 0
+            ? `Live sync paused, ${props.pendingWorkItemSyncCount} changes queued`
+            : "Live sync paused"
+          : "Work items up to date";
 
   return React.createElement(
     React.Fragment,
@@ -195,34 +205,6 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
               onClick: props.onSelectMonthZoom
             },
             "Month"
-          ),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className:
-                props.zoomLevel === "quarter"
-                  ? "timeline-density-button timeline-density-button-active"
-                  : "timeline-density-button",
-              "aria-pressed": props.zoomLevel === "quarter",
-              "aria-label": "Zoom out to quarter view",
-              onClick: props.onSelectQuarterZoom
-            },
-            "Quarter"
-          ),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className:
-                props.zoomLevel === "year"
-                  ? "timeline-density-button timeline-density-button-active"
-                  : "timeline-density-button",
-              "aria-pressed": props.zoomLevel === "year",
-              "aria-label": "Zoom out to year view",
-              onClick: props.onSelectYearZoom
-            },
-            "Year"
           )
         ),
         React.createElement(
@@ -465,19 +447,18 @@ export function TimelinePaneActionsToolbar(props: TimelinePaneActionsToolbarProp
               pushButtonLabel
             )
           : null,
-        shouldShowPushButton
-          ? React.createElement(
-              "button",
-              {
-                type: "button",
-                className: "timeline-action-button",
-                disabled: props.workItemSyncState === "syncing",
-                title: "Discard queued changes and revert to server state",
-                onClick: props.onClearPendingWorkItemChanges
-              },
-              "Clear changes"
-            )
-          : null
+        React.createElement(
+          "div",
+          {
+            className: "gantt-sync-status",
+            "data-state": props.workItemSyncState,
+            role: "status",
+            "aria-live": "polite",
+            title: props.workItemSyncState === "error" ? props.workItemSyncError ?? undefined : undefined
+          },
+          React.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }),
+          React.createElement("span", null, statusLabel)
+        )
       )
     )
   );

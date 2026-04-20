@@ -47,7 +47,7 @@ export function makeTimeline(): TimelineReadModel {
         workItemId: 22,
         title: "Target Item",
         state: { code: "New", badge: "N", color: "#2b6cb0" },
-        details: { mappedId: "22" },
+        details: { mappedId: "22", parentWorkItemId: 11 },
         reason: "missing-both-dates"
       }
     ],

@@ -188,4 +188,163 @@ describe("projectTimeline", () => {
 
     expect(projection.bars.map((bar) => bar.workItemId)).toEqual([10, 20]);
   });
+
+  it("uses iteration dates as fallback when explicit dates are missing", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 100,
+            mappedId: "WI-100",
+            title: "No explicit dates but has iteration",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Sprint 1"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: null,
+            endDate: null,
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(1);
+    expect(projection.bars[0]).toMatchObject({
+      workItemId: 100,
+      title: "No explicit dates but has iteration",
+      schedule: {
+        startDate: "2026-03-01T00:00:00.000Z",
+        endDate: "2026-03-14T00:00:00.000Z",
+        missingBoundary: null
+      }
+    });
+    expect(projection.unschedulable).toHaveLength(0);
+  });
+
+  it("prefers explicit dates over iteration dates", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 101,
+            mappedId: "WI-101",
+            title: "Has both explicit and iteration dates",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Sprint 1"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: "2026-03-05T00:00:00.000Z",
+            endDate: "2026-03-08T00:00:00.000Z",
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(1);
+    expect(projection.bars[0]).toMatchObject({
+      workItemId: 101,
+      title: "Has both explicit and iteration dates",
+      schedule: {
+        startDate: "2026-03-05T00:00:00.000Z",
+        endDate: "2026-03-08T00:00:00.000Z",
+        missingBoundary: null
+      }
+    });
+  });
+
+  it("remains unschedulable when iteration dates unavailable", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 102,
+            mappedId: "WI-102",
+            title: "Has iteration path but no date metadata",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Future Sprint"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: null,
+            endDate: null,
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(0);
+    expect(projection.unschedulable).toHaveLength(1);
+    expect(projection.unschedulable[0]).toMatchObject({
+      workItemId: 102,
+      title: "Has iteration path but no date metadata",
+      reason: "missing-both-dates"
+    });
+  });
+
+  it("remains unschedulable when no iteration dates provided", () => {
+    const projection = projectTimeline({
+      tasks: [
+        {
+          workItemId: 103,
+          mappedId: "WI-103",
+          title: "No dates, no iteration dates map",
+          descriptionHtml: null,
+          workItemType: "Task",
+          fieldValues: {
+            "System.IterationPath": "MyProject\\Sprint 1"
+          },
+          assignedTo: null,
+          parentWorkItemId: null,
+          startDate: null,
+          endDate: null,
+          state: { code: "Active", badge: "A", color: "#1d4ed8" }
+        }
+      ],
+      dependencies: []
+    });
+
+    expect(projection.bars).toHaveLength(0);
+    expect(projection.unschedulable).toHaveLength(1);
+    expect(projection.unschedulable[0]).toMatchObject({
+      workItemId: 103,
+      title: "No dates, no iteration dates map",
+      reason: "missing-both-dates"
+    });
+  });
 });
+

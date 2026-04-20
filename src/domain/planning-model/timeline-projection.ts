@@ -6,6 +6,7 @@ import type {
 } from "../../application/dto/timeline-read-model.js";
 import type { CanonicalModel } from "./canonical-model-builder.js";
 import type { TreeLayout } from "./tree-structure.js";
+import { extractIterationPath } from "../../shared/utils/iteration-scheduling.js";
 
 const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 const MS_PER_DAY = 86_400_000;
@@ -17,7 +18,17 @@ export type TimelineProjection = {
   suppressedDependencies: SuppressedTimelineDependency[];
 };
 
-export function projectTimeline(canonical: CanonicalModel, treeLayout?: TreeLayout | null): TimelineProjection {
+/**
+ * Optional iteration dates map: iteration path -> {startDate, endDate}
+ * Used to visually schedule items that lack explicit dates but have iterations
+ */
+export type IterationDatesMap = Record<string, { startDate: string; endDate: string }>;
+
+export function projectTimeline(
+  canonical: CanonicalModel,
+  treeLayout?: TreeLayout | null,
+  iterationDates?: IterationDatesMap | null
+): TimelineProjection {
   const bars: TimelineBar[] = [];
   const unschedulable: TimelineUnschedulableItem[] = [];
   const schedulableIds = new Set<number>();
@@ -27,6 +38,61 @@ export function projectTimeline(canonical: CanonicalModel, treeLayout?: TreeLayo
     const missingEnd = task.endDate === null;
 
     if (missingStart && missingEnd) {
+      // Check if item has iteration dates as fallback
+      if (iterationDates) {
+        const iterationPathInfo = extractIterationPath(task.fieldValues);
+        if (iterationPathInfo) {
+          // Try exact match first
+          let iterationDatesForPath = iterationDates[iterationPathInfo.iterationPath];
+          
+          // If no exact match, try matching just the sprint part (without project)
+          if (!iterationDatesForPath && iterationPathInfo.iterationPath.includes("\\")) {
+            const sprintPart = iterationPathInfo.iterationPath.split("\\").slice(1).join("\\");
+            iterationDatesForPath = iterationDates[sprintPart];
+          }
+          
+          // If still no match, try all keys and find partial matches
+          if (!iterationDatesForPath) {
+            const mapKeys = Object.keys(iterationDates);
+            for (const k of mapKeys) {
+              if (k.endsWith(iterationPathInfo.iterationPath) || iterationPathInfo.iterationPath.endsWith(k)) {
+                iterationDatesForPath = iterationDates[k];
+                break;
+              }
+            }
+          }
+          
+          if (!iterationDatesForPath) {
+            console.warn(`[iteration-match-fail] WI#${task.workItemId} has iteration "${iterationPathInfo.iterationPath}" but no dates found in map keys: ${Object.keys(iterationDates).join(", ")}`);
+          }
+          
+          if (iterationDatesForPath) {
+            // Add to unschedulable but with fallback schedule for display
+            unschedulable.push({
+              workItemId: task.workItemId,
+              title: task.title,
+              state: task.state,
+              schedule: {
+                startDate: iterationDatesForPath.startDate,
+                endDate: iterationDatesForPath.endDate,
+                missingBoundary: null
+              },
+              details: {
+                mappedId: task.mappedId,
+                descriptionHtml: task.descriptionHtml,
+                workItemType: task.workItemType,
+                fieldValues: task.fieldValues,
+                assignedTo: task.assignedTo,
+                parentWorkItemId: task.parentWorkItemId
+              },
+              reason: "missing-both-dates"
+            });
+            return;
+          }
+        }
+      }
+
+      // No iteration dates available; mark as unschedulable
       unschedulable.push({
         workItemId: task.workItemId,
         title: task.title,

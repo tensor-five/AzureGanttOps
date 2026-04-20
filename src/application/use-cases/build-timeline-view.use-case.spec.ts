@@ -5,7 +5,7 @@ import type { FieldMappingProfile } from "../../domain/mapping/field-mapping.js"
 import { BuildTimelineViewUseCase } from "./build-timeline-view.use-case.js";
 
 describe("BuildTimelineViewUseCase", () => {
-  it("returns projected timeline with state metadata and dependency suppression", () => {
+  it("returns projected timeline with state metadata and dependency suppression", async () => {
     const useCase = new BuildTimelineViewUseCase();
     const profile: FieldMappingProfile = {
       id: "profile-a",
@@ -59,7 +59,7 @@ describe("BuildTimelineViewUseCase", () => {
       }
     ]);
 
-    const result = useCase.execute({ snapshot, mappingProfile: profile });
+    const result = await useCase.execute({ snapshot, mappingProfile: profile });
 
     expect(result.mappingValidation).toEqual({ status: "valid", issues: [] });
     expect(result.bars).toHaveLength(2);
@@ -91,7 +91,7 @@ describe("BuildTimelineViewUseCase", () => {
     ]);
   });
 
-  it("short-circuits with deterministic mapping guidance when required mappings are invalid", () => {
+  it("short-circuits with deterministic mapping guidance when required mappings are invalid", async () => {
     const useCase = new BuildTimelineViewUseCase();
     const invalidProfile: FieldMappingProfile = {
       id: "profile-b",
@@ -104,13 +104,13 @@ describe("BuildTimelineViewUseCase", () => {
       }
     };
 
-    const result = useCase.execute({
+    const result = await useCase.execute({
       snapshot: createSnapshot([], []),
       mappingProfile: invalidProfile
     });
 
     expect(result.mappingValidation.status).toBe("invalid");
-    expect(result.mappingValidation.issues.map((issue) => issue.code)).toEqual([
+    expect(result.mappingValidation.issues.map((issue: unknown) => (issue as Record<string, unknown>).code)).toEqual([
       "MAP_REQUIRED_BLANK",
       "MAP_REQUIRED_DUPLICATE",
       "MAP_REQUIRED_DUPLICATE"

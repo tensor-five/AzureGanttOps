@@ -1,11 +1,13 @@
 import type { TimelineReadModel } from "../dto/timeline-read-model.js";
 import type { IngestionSnapshot } from "../dto/ingestion-snapshot.js";
 import type { FieldMappingProfile } from "../../domain/mapping/field-mapping.js";
+import type { IterationsPort } from "../../adapters/azure-devops/iterations/azure-iterations.adapter.js";
 import { MappingValidationFailedError } from "../../domain/mapping/mapping-errors.js";
 import { validateRequiredMappings } from "../../domain/mapping/mapping-validator.js";
 import { buildCanonicalModel } from "../../domain/planning-model/canonical-model-builder.js";
 import { projectTimeline } from "../../domain/planning-model/timeline-projection.js";
 import { buildTreeLayout } from "../../domain/planning-model/tree-structure.js";
+import { buildIterationDatesMap } from "../../shared/utils/iteration-scheduling.js";
 
 export type BuildTimelineViewInput = {
   snapshot: IngestionSnapshot;
@@ -13,7 +15,9 @@ export type BuildTimelineViewInput = {
 };
 
 export class BuildTimelineViewUseCase {
-  public execute(input: BuildTimelineViewInput): TimelineReadModel {
+  public constructor(private readonly iterationsPort?: IterationsPort | null) {}
+
+  public async execute(input: BuildTimelineViewInput): Promise<TimelineReadModel> {
     try {
       const requiredMappings = validateRequiredMappings(input.mappingProfile);
       const canonical = buildCanonicalModel(input.snapshot, requiredMappings);
@@ -22,7 +26,30 @@ export class BuildTimelineViewUseCase {
         ? buildTreeLayout(canonical, input.snapshot.queryRelations)
         : null;
 
-      const projection = projectTimeline(canonical, treeLayout);
+      // Fetch iteration dates if iterations adapter available
+      let iterationDates: Record<string, { startDate: string; endDate: string }> | null = null;
+      if (this.iterationsPort) {
+        try {
+          const iterations = await this.iterationsPort.listIterations();
+          if (iterations.length === 0) {
+            console.warn("[iteration-fetch] No iterations returned from API");
+          } else {
+            console.log(`[iteration-fetch] Found ${iterations.length} iterations with dates`);
+          }
+          iterationDates = buildIterationDatesMap(
+            iterations.map((iter) => ({
+              path: iter.path,
+              startDate: iter.startDate,
+              endDate: iter.endDate
+            }))
+          );
+        } catch (error) {
+          // Gracefully degrade: if iteration fetch fails, continue without iteration dates
+          console.error("[iteration-fetch-error]", error instanceof Error ? error.message : error);
+        }
+      }
+
+      const projection = projectTimeline(canonical, treeLayout, iterationDates);
 
       return {
         queryType: input.snapshot.queryType,

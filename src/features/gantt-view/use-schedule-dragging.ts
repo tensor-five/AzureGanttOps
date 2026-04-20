@@ -7,7 +7,6 @@ export type ActiveScheduleDrag = {
   pointerId: number;
   workItemId: number;
   originClientX: number;
-  originScrollLeft: number;
   startDate: Date;
   endDate: Date;
   lastDayDelta: number;

@@ -25,7 +25,7 @@ describe("timeline-pane dragging", () => {
     expect(adopted?.schedule.endDate).toBe("2026-03-03T00:00:00.000Z");
   });
 
-  it("copies start/end from selected schedulable item when unschedulable is clicked", async () => {
+  it("adopts unschedulable item from its parent when 'adopt from above' button is clicked in details panel", async () => {
     const user = userEvent.setup();
 
     render(
@@ -35,14 +35,18 @@ describe("timeline-pane dragging", () => {
       })
     );
 
-    await user.click(screen.getByLabelText("timeline-bar-11"));
+    // Click the unschedulable item to select it and show details panel
     await user.click(screen.getByRole("button", { name: /#22 Target Item/ }));
+
+    // Click the "adopt from above?" button in the details panel
+    await user.click(screen.getByRole("button", { name: "adopt from above?" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: /#22 Target Item/ })).toBeNull();
     });
     const detailsText = screen.getByLabelText("timeline-details-panel").textContent ?? "";
     expect(detailsText).toContain("- selected work item: #22");
+    // Should have adopted dates from its parent (which is #11 with these dates)
     expect(detailsText).toContain("- start: 2026-03-01T00:00:00.000Z");
     expect(detailsText).toContain("- end: 2026-03-03T00:00:00.000Z");
   });
@@ -192,7 +196,7 @@ describe("timeline-pane dragging", () => {
       });
 
       await waitFor(() => {
-        expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(108.75);
+        expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(84);
       });
     } finally {
       chartRectSpy.mockRestore();

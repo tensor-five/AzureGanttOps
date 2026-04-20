@@ -26,5 +26,5 @@ Date: 2026-03-11
 
 - `src/app/bootstrap/local-ui-css-structure.spec.ts` checks:
   - entrypoint import order,
-  - required selectors (`.timeline-pane-actions`, `.timeline-details-input`),
+  - required selectors (`.timeline-pane-actions`, `.gantt-sync-status`, `.timeline-details-input`),
   - required token contract presence (`--color-bg`, `--color-text`, `--space-2`).

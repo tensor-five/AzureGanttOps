@@ -3,6 +3,7 @@ import path from "node:path";
 import { AzureCliPreflightAdapter } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { AzureQueryRuntimeAdapter, type HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { AzureIterationsAdapter } from "../../adapters/azure-devops/iterations/azure-iterations.adapter.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
 import { AdoContextStore } from "../config/ado-context.store.js";
@@ -36,7 +37,8 @@ export function createPhase1QueryFlow(params: {
   const contextStore = new AdoContextStore(settingsAdapter);
   const authPreflight = new AzureCliPreflightAdapter(params.authPreflightRunner);
   const queryRuntime = new AzureQueryRuntimeAdapter(params.httpClient, contextStore);
-  const buildTimelineView = new BuildTimelineViewUseCase();
+  const iterationsAdapter = new AzureIterationsAdapter(params.httpClient, contextStore);
+  const buildTimelineView = new BuildTimelineViewUseCase(iterationsAdapter);
   const mappingSettings = new FileMappingSettingsAdapter(
     params.mappingFilePath ?? path.join(path.dirname(params.contextFilePath), "mapping-settings.json")
   );

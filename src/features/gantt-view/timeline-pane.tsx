@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import type { TimelineReadModel, TimelineTreeNodeMeta } from "../../application/dto/timeline-read-model.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
   DEFAULT_OVERDUE_EXCLUDED_STATE_CODES,
@@ -80,7 +80,6 @@ import { useTimelineSorting } from "./use-timeline-sorting.js";
 import { useTreeExpandCollapse, applyTreeVisibility } from "./use-tree-expand-collapse.js";
 import { useReparentDragging } from "./use-reparent-dragging.js";
 import { useTimelineResizing } from "./use-timeline-resizing.js";
-import { useDragAutoScroll } from "./use-drag-auto-scroll.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
@@ -95,6 +94,7 @@ export type TimelinePaneProps = {
   showDependencies: boolean;
   isRefreshing?: boolean;
   workItemSyncState?: WorkItemSyncState;
+  workItemSyncError?: string | null;
   liveSyncEnabled?: boolean;
   pendingWorkItemSyncCount?: number;
   organization?: string;
@@ -126,8 +126,6 @@ export type TimelinePaneProps = {
   onRetryRefresh?: () => void;
   onSetLiveSyncEnabled?: (enabled: boolean) => void;
   onPushPendingWorkItemChanges?: () => void;
-  onClearPendingWorkItemChanges?: () => void;
-  onDetailsDirtyChange?: (dirty: boolean) => void;
 };
 
 type ActivePanDrag = {
@@ -138,7 +136,7 @@ type ActivePanDrag = {
   originScrollTop: number;
 };
 
-type TimelineZoomLevel = "week" | "month" | "quarter" | "year";
+type TimelineZoomLevel = "week" | "month";
 
 type TimelineLabelFieldOption = {
   fieldRef: string;
@@ -160,13 +158,10 @@ type TimelineViewportState = {
   setChartViewportHeightPx: React.Dispatch<React.SetStateAction<number>>;
   chartScrollRef: React.RefObject<HTMLDivElement | null>;
   chartSvgRef: React.RefObject<SVGSVGElement | null>;
-  mainLaneRef: React.RefObject<HTMLDivElement | null>;
   zoomAnchorRef: React.RefObject<{ dayOffset: number; pointerOffsetX: number } | null>;
   wheelZoomFrameRef: React.RefObject<number | null>;
   pendingWheelDayWidthRef: React.RefObject<number | null>;
   liveDayWidthRef: React.RefObject<number>;
-  committedDayWidthRef: React.RefObject<number>;
-  zoomCommitTimerRef: React.RefObject<number | null>;
   pendingFitRangeRef: React.RefObject<{ start: Date; end: Date } | null>;
   pendingViewportRestoreRef: React.RefObject<TimelineViewportPreference | null>;
   viewportPersistDebounceRef: React.RefObject<number | null>;
@@ -189,28 +184,15 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
   const [chartViewportHeightPx, setChartViewportHeightPx] = React.useState<number>(0);
   const chartScrollRef = React.useRef<HTMLDivElement | null>(null);
   const chartSvgRef = React.useRef<SVGSVGElement | null>(null);
-  const mainLaneRef = React.useRef<HTMLDivElement | null>(null);
   const zoomAnchorRef = React.useRef<{ dayOffset: number; pointerOffsetX: number } | null>(null);
   const wheelZoomFrameRef = React.useRef<number | null>(null);
   const pendingWheelDayWidthRef = React.useRef<number | null>(null);
   const liveDayWidthRef = React.useRef(dayWidthPx);
-  const committedDayWidthRef = React.useRef(dayWidthPx);
-  const zoomCommitTimerRef = React.useRef<number | null>(null);
   const pendingFitRangeRef = React.useRef<{ start: Date; end: Date } | null>(null);
   const pendingViewportRestoreRef = React.useRef<TimelineViewportPreference | null>(initialViewportPreference);
   const viewportPersistDebounceRef = React.useRef<number | null>(null);
   const spacePanPressedRef = React.useRef(false);
   const initialViewportAppliedRef = React.useRef(false);
-  const lastZoomLevelRef = React.useRef<TimelineZoomLevel>(
-    resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX)
-  );
-
-  const zoomLevel = React.useMemo(() => {
-    const prev = lastZoomLevelRef.current;
-    const next = resolveZoomLevelWithHysteresis(dayWidthPx, prev);
-    lastZoomLevelRef.current = next;
-    return next;
-  }, [dayWidthPx]);
 
   return {
     dayWidthPx,
@@ -225,19 +207,16 @@ function useTimelineViewport(initialViewportPreference: TimelineViewportPreferen
     setChartViewportHeightPx,
     chartScrollRef,
     chartSvgRef,
-    mainLaneRef,
     zoomAnchorRef,
     wheelZoomFrameRef,
     pendingWheelDayWidthRef,
     liveDayWidthRef,
-    committedDayWidthRef,
-    zoomCommitTimerRef,
     pendingFitRangeRef,
     pendingViewportRestoreRef,
     viewportPersistDebounceRef,
     spacePanPressedRef,
     initialViewportAppliedRef,
-    zoomLevel
+    zoomLevel: dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month"
   };
 }
 
@@ -368,13 +347,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setChartViewportHeightPx,
     chartScrollRef,
     chartSvgRef,
-    mainLaneRef,
     zoomAnchorRef,
     wheelZoomFrameRef,
     pendingWheelDayWidthRef,
     liveDayWidthRef,
-    committedDayWidthRef,
-    zoomCommitTimerRef,
     pendingFitRangeRef,
     pendingViewportRestoreRef,
     viewportPersistDebounceRef,
@@ -382,9 +358,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     initialViewportAppliedRef,
     zoomLevel
   } = useTimelineViewport(initialViewportPreference);
-  const autoScrollCallbackRef = React.useRef<() => void>(() => {});
-  const stableAutoScrollCallback = React.useCallback(() => autoScrollCallbackRef.current(), []);
-  const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null, stableAutoScrollCallback);
   const [detailsWidthPx, setDetailsWidthPx] = React.useState<number>(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
@@ -432,7 +405,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const labelMenuScrollSyncSourceRef = React.useRef<"sidebar" | "bar" | null>(null);
   const barPointerSelectionIntentRef = React.useRef<{ workItemId: number; wasSelected: boolean } | null>(null);
   const suppressNextBarClickRef = React.useRef(false);
-  const lastDragClientXRef = React.useRef<number>(0);
   const dependencyMarkerReactId = React.useId();
   const dependencyMarkerId = React.useMemo(
     () => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`,
@@ -837,7 +809,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   React.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
-    committedDayWidthRef.current = dayWidthPx;
     persistTimelineViewportSoon();
   }, [dayWidthPx, persistTimelineViewportSoon]);
 
@@ -908,14 +879,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setDayWidthPx(DAY_WIDTH_MONTH_PX);
   }, [setDayWidthPx]);
 
-  const selectQuarterZoom = React.useCallback(() => {
-    setDayWidthPx(DAY_WIDTH_QUARTER_PX);
-  }, [setDayWidthPx]);
-
-  const selectYearZoom = React.useCallback(() => {
-    setDayWidthPx(DAY_WIDTH_YEAR_PX);
-  }, [setDayWidthPx]);
-
   const applyDependencyViewModeChange = React.useCallback(
     (mode: DependencyViewMode) => {
       setDependencyViewMode(mode);
@@ -974,8 +937,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     onRotateDependencyMode: rotateDependencyViewMode,
     onSelectMonthZoom: selectMonthZoom,
     onSelectWeekZoom: selectWeekZoom,
-    onSelectQuarterZoom: selectQuarterZoom,
-    onSelectYearZoom: selectYearZoom,
     pendingWorkItemSyncCount: props.pendingWorkItemSyncCount,
     onRemoveDependency: props.onRemoveDependency,
     onRetryRefresh: props.onRetryRefresh,
@@ -994,7 +955,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
       const svg = chartSvgRef.current;
       const scrollElement = chartScrollRef.current;
-      const mainLane = mainLaneRef.current;
       if (!svg || !scrollElement) {
         return;
       }
@@ -1014,36 +974,26 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
       const nextDayWidth = quantizeDayWidth(clamp(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
 
+      if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
+        return;
+      }
+
       zoomAnchorRef.current = { dayOffset, pointerOffsetX };
       pendingWheelDayWidthRef.current = nextDayWidth;
-
-      if (mainLane) {
-        const ratio = nextDayWidth / committedDayWidthRef.current;
-        const originX = scrollElement.scrollLeft + pointerOffsetX;
-        mainLane.style.transformOrigin = `${originX}px 0px`;
-        mainLane.style.transform = `scaleX(${ratio})`;
-        mainLane.style.willChange = "transform";
+      if (wheelZoomFrameRef.current !== null) {
+        return;
       }
 
-      if (zoomCommitTimerRef.current !== null) {
-        clearTimeout(zoomCommitTimerRef.current);
-      }
-      zoomCommitTimerRef.current = window.setTimeout(() => {
-        zoomCommitTimerRef.current = null;
+      wheelZoomFrameRef.current = window.requestAnimationFrame(() => {
+        wheelZoomFrameRef.current = null;
         const pendingDayWidth = pendingWheelDayWidthRef.current;
         pendingWheelDayWidthRef.current = null;
         if (pendingDayWidth === null) {
           return;
         }
 
-        if (mainLane) {
-          mainLane.style.transform = "";
-          mainLane.style.transformOrigin = "";
-          mainLane.style.willChange = "";
-        }
-        committedDayWidthRef.current = pendingDayWidth;
-        setDayWidthPx((current) => (current === pendingDayWidth ? current : pendingDayWidth));
-      }, ZOOM_COMMIT_DELAY_MS);
+        setDayWidthPx((current) => (Math.abs(current - pendingDayWidth) < 0.01 ? current : pendingDayWidth));
+      });
     },
     [chartModel.dayWidthPx, dayWidthPx]
   );
@@ -1359,13 +1309,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         pointerId: input.event.pointerId,
         workItemId: input.bar.workItemId,
         originClientX: input.event.clientX,
-        originScrollLeft: chartScrollRef.current?.scrollLeft ?? 0,
         startDate: input.bar.start,
         endDate: input.bar.end,
         lastDayDelta: 0
       });
     },
-    [canEditSchedule, chartScrollRef, selectWorkItem]
+    [canEditSchedule, selectWorkItem]
   );
   const beginDependencyDrag = React.useCallback(
     (input: {
@@ -1400,31 +1349,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     },
     [dependencyMode, geometryByWorkItemId, selectWorkItem]
   );
-
-  const applyDragDelta = React.useCallback(
-    (active: ActiveScheduleDrag, clientX: number) => {
-      const scrollDelta = (chartScrollRef.current?.scrollLeft ?? 0) - active.originScrollLeft;
-      const effectiveClientDelta = clientX - active.originClientX + scrollDelta;
-      const deltaDays = clientDeltaToDays(effectiveClientDelta, chartSvgRef.current, chartModel.dayWidthPx);
-      if (deltaDays === active.lastDayDelta) {
-        return;
-      }
-
-      const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
-      setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
-      updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
-    },
-    [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]
-  );
-
-  const handleAutoScroll = React.useCallback(() => {
-    const active = activeScheduleDrag;
-    if (!active) {
-      return;
-    }
-    applyDragDelta(active, lastDragClientXRef.current);
-  }, [activeScheduleDrag, applyDragDelta]);
-  autoScrollCallbackRef.current = handleAutoScroll;
 
   const handleChartPointerMove = React.useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
@@ -1463,11 +1387,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         suppressNextBarClickRef.current = true;
       }
 
-      lastDragClientXRef.current = event.clientX;
-      updateDragAutoScroll(event.clientX, event.clientY);
-      applyDragDelta(active, event.clientX);
+      const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
+      if (deltaDays === active.lastDayDelta) {
+        return;
+      }
+
+      const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
+      setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
+      updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
     },
-    [activeDependencyDrag, activeScheduleDrag, applyDragDelta, geometryByWorkItemId, updateDragAutoScroll]
+    [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateEditedSchedule]
   );
 
   const persistDraggedSchedule = React.useCallback(
@@ -1959,6 +1888,27 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     );
   }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
 
+  const handleAdoptFromParent = React.useCallback(
+    async (input: { targetWorkItemId: number; startDate: string; endDate: string }) => {
+      if (props.onAdoptUnschedulableSchedule) {
+        await props.onAdoptUnschedulableSchedule({
+          targetWorkItemId: input.targetWorkItemId,
+          startDate: input.startDate,
+          endDate: input.endDate
+        });
+      }
+
+      setAdoptedSchedulesByWorkItemId((current) => ({
+        ...current,
+        [input.targetWorkItemId]: {
+          startDate: input.startDate,
+          endDate: input.endDate
+        }
+      }));
+    },
+    [props]
+  );
+
   const detailProps: TimelineDetailsPanelProps = {
     timeline: filteredTimeline,
     selectedWorkItemId,
@@ -1967,7 +1917,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     project: props.project,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
-    onDirtyChange: props.onDetailsDirtyChange
+    onAdoptUnschedulableFromParent: handleAdoptFromParent
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
@@ -2001,8 +1951,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       zoomLevel,
       onSelectWeekZoom: selectWeekZoom,
       onSelectMonthZoom: selectMonthZoom,
-      onSelectQuarterZoom: selectQuarterZoom,
-      onSelectYearZoom: selectYearZoom,
       dependencyViewMode,
       dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
       onChangeDependencyMode: applyDependencyViewModeChange,
@@ -2069,11 +2017,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onToggleTimelineSidebarField: toggleTimelineSidebarField,
       onToggleTimelineLabelField: toggleTimelineLabelField,
       workItemSyncState: props.workItemSyncState ?? "up_to_date",
+      workItemSyncError: props.workItemSyncError ?? null,
       liveSyncEnabled: props.liveSyncEnabled ?? true,
       pendingWorkItemSyncCount: props.pendingWorkItemSyncCount ?? 0,
       onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => undefined),
-      onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => undefined),
-      onClearPendingWorkItemChanges: props.onClearPendingWorkItemChanges ?? (() => undefined)
+      onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => undefined)
     }),
     React.createElement(TimelineFilterPanel, {
       open: timelineFiltersOpen,
@@ -2415,7 +2363,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                 "div",
                 {
                   className: "timeline-chart-main-lane",
-                  ref: mainLaneRef,
                   style: { width: `${chartModel.width}px` }
                 },
               React.createElement(
@@ -2431,31 +2378,19 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     preserveAspectRatio: "none",
                     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
                   },
-                  (zoomLevel === "year"
-                    ? chartModel.yearMarkers
-                    : zoomLevel === "quarter"
-                      ? chartModel.yearMarkers
-                      : chartModel.monthMarkers
-                  ).map((marker) =>
+                  chartModel.monthMarkers.map((month) =>
                     React.createElement(
                       "text",
                       {
-                        key: `sticky-top-label-${marker.x}-${marker.label}`,
-                        x: CHART_LEFT_GUTTER + marker.x,
+                        key: `sticky-month-label-${month.x}-${month.label}`,
+                        x: CHART_LEFT_GUTTER + month.x,
                         y: CHART_AXIS_MONTH_LABEL_Y,
                         className: "timeline-axis-month-label"
                       },
-                      marker.label
+                      month.label
                     )
                   ),
-                  (zoomLevel === "week"
-                    ? chartModel.weekMarkers
-                    : zoomLevel === "quarter"
-                      ? chartModel.quarterMarkers
-                      : zoomLevel === "year"
-                        ? chartModel.quarterMarkers
-                        : []
-                  ).map((tick) =>
+                  (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) =>
                     React.createElement(
                       "text",
                       {
@@ -2549,10 +2484,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       className: "timeline-current-period-highlight"
                     })
                   : null,
-                (zoomLevel === "week" || zoomLevel === "month"
-                  ? chartModel.weekendBands
-                  : []
-                ).map((band) =>
+                chartModel.weekendBands.map((band) =>
                   React.createElement("rect", {
                     key: `timeline-weekend-band-${band.date}`,
                     x: CHART_LEFT_GUTTER + band.x,
@@ -2583,30 +2515,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     className: "timeline-grid-line-weekly"
                   })
                 ),
-                (zoomLevel === "quarter" || zoomLevel === "year"
-                  ? chartModel.monthMarkers
-                  : []
-                ).map((month) =>
+                chartModel.monthMarkers.map((month) =>
                   React.createElement("line", {
-                    key: `quarter-month-grid-${month.x}`,
+                    key: `month-boundary-${month.x}`,
                     x1: CHART_LEFT_GUTTER + month.x,
                     y1: CHART_GRID_START_Y,
                     x2: CHART_LEFT_GUTTER + month.x,
-                    y2: chartModel.height - CHART_BOTTOM_PADDING,
-                    className: "timeline-grid-line-weekly"
-                  })
-                ),
-                (zoomLevel === "year"
-                  ? chartModel.quarterMarkers
-                  : zoomLevel === "quarter"
-                    ? chartModel.quarterMarkers
-                    : chartModel.monthMarkers
-                ).map((marker) =>
-                  React.createElement("line", {
-                    key: `boundary-${marker.x}-${marker.label}`,
-                    x1: CHART_LEFT_GUTTER + marker.x,
-                    y1: CHART_GRID_START_Y,
-                    x2: CHART_LEFT_GUTTER + marker.x,
                     y2: chartModel.height - CHART_BOTTOM_PADDING,
                     className: "timeline-month-boundary-line"
                   })
@@ -2900,12 +2814,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           },
                           onClick: () => {
                             setAdoptScheduleError(null);
-                            if (!dependencyMode && selectedWorkItemId !== null) {
-                              void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
-                                const message = error instanceof Error ? error.message : "Unknown error";
-                                setAdoptScheduleError(message);
-                              });
-                            }
                             toggleWorkItemSelection(item.workItemId);
                           }
                         },
@@ -3001,17 +2909,11 @@ const CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 const TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 const DAY_WIDTH_WEEK_PX = 22;
 const DAY_WIDTH_MONTH_PX = 8;
-const DAY_WIDTH_QUARTER_PX = 3;
-const DAY_WIDTH_YEAR_PX = 1;
 const DAY_WIDTH_MAX_PX = 40;
-const DAY_WIDTH_MIN_PX = 0.5;
-const ZOOM_WHEEL_SENSITIVITY = 0.005;
+const DAY_WIDTH_MIN_PX = 4;
+const ZOOM_WHEEL_SENSITIVITY = 0.0024;
 const ZOOM_DAY_WIDTH_STEP_PX = 0.25;
-const DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
-const DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
-const DAY_WIDTH_QUARTER_YEAR_SWITCH_PX = (DAY_WIDTH_QUARTER_PX + DAY_WIDTH_YEAR_PX) / 2;
-const ZOOM_LEVEL_HYSTERESIS_PX = 0.6;
-const ZOOM_COMMIT_DELAY_MS = 120;
+const DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
 const FIT_TO_VIEW_INSET_PX = 20;
 const FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 const VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
@@ -3124,12 +3026,64 @@ type VisualChartModel = {
   weekMarkers: { x: number; label: string }[];
   dailyGridLines: number[];
   monthMarkers: { x: number; label: string }[];
-  quarterMarkers: { x: number; label: string }[];
-  yearMarkers: { x: number; label: string }[];
   domainStart: Date;
   currentPeriod: { x: number; width: number } | null;
   todayX: number | null;
 };
+
+/**
+ * Merges bars and unschedulable items with fallback schedules, respecting tree order.
+ * If tree layout is available, sorts by tree depth to maintain hierarchy.
+ */
+function mergeTreeOrderedItems(
+  bars: TimelineReadModel["bars"],
+  unschedulableWithFallback: TimelineReadModel["unschedulable"],
+  treeLayout: Record<string, TimelineTreeNodeMeta> | null
+): (TimelineReadModel["bars"][number] | TimelineReadModel["unschedulable"][number])[] {
+  // If no unschedulable items, just return bars
+  if (unschedulableWithFallback.length === 0) {
+    return [...bars];
+  }
+
+  // If no tree layout, concatenate both arrays
+  if (!treeLayout) {
+    return [...bars, ...unschedulableWithFallback];
+  }
+
+  // Group unschedulable items by their parent ID
+  const unschedulableByParent = new Map<number | null, TimelineReadModel["unschedulable"][number][]>();
+  for (const item of unschedulableWithFallback) {
+    const parentId = treeLayout[String(item.workItemId)]?.parentWorkItemId ?? null;
+    if (!unschedulableByParent.has(parentId)) {
+      unschedulableByParent.set(parentId, []);
+    }
+    unschedulableByParent.get(parentId)!.push(item);
+  }
+
+  // Result array: insert unschedulable items right after their parent
+  const result: (TimelineReadModel["bars"][number] | TimelineReadModel["unschedulable"][number])[] = [];
+  const processedUnschedulableIds = new Set<number>();
+
+  for (const bar of bars) {
+    result.push(bar);
+
+    // Add any unschedulable children of this item
+    const unschedulableChildren = unschedulableByParent.get(bar.workItemId) ?? [];
+    for (const child of unschedulableChildren) {
+      result.push(child);
+      processedUnschedulableIds.add(child.workItemId);
+    }
+  }
+
+  // Add any orphaned unschedulable items (those without a parent in bars)
+  for (const item of unschedulableWithFallback) {
+    if (!processedUnschedulableIds.has(item.workItemId)) {
+      result.push(item);
+    }
+  }
+
+  return result;
+}
 
 function buildVisualChartModel(
   timeline: TimelineReadModel | null,
@@ -3141,7 +3095,18 @@ function buildVisualChartModel(
   includeUnscheduledDropLane: boolean,
   collapsedIds?: ReadonlySet<number>
 ): VisualChartModel {
-  if (!timeline || timeline.bars.length === 0) {
+  // Combine bars with unschedulable items that have fallback schedules
+  // Both are already tree-ordered from projection, but we need to merge them
+  // respecting the tree hierarchy (children should follow parents)
+  const allScheduledItems = timeline
+    ? mergeTreeOrderedItems(
+        timeline.bars,
+        timeline.unschedulable.filter((item) => item.schedule?.startDate && item.schedule?.endDate),
+        timeline.treeLayout ?? null
+      )
+    : [];
+
+  if (!timeline || allScheduledItems.length === 0) {
     const todayUtc = new Date();
     const normalizedTodayUtc = new Date(
       Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate())
@@ -3157,18 +3122,18 @@ function buildVisualChartModel(
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
-      quarterMarkers: [],
-      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
     };
   }
 
-  const normalizedBars = timeline.bars
-    .map((bar) => {
-      const start = parseIso(bar.schedule.startDate);
-      const end = parseIso(bar.schedule.endDate);
+  const normalizedBars = allScheduledItems
+    .map((item) => {
+      const startDate = item.schedule?.startDate ?? null;
+      const endDate = item.schedule?.endDate ?? null;
+      const start = parseIso(startDate);
+      const end = parseIso(endDate);
       if (!start && !end) {
         return null;
       }
@@ -3179,12 +3144,12 @@ function buildVisualChartModel(
       const rangeEnd = normalizedEnd.getTime() >= normalizedStart.getTime() ? normalizedEnd : normalizedStart;
 
       return {
-        source: bar,
+        source: item,
         start: rangeStart,
         end: rangeEnd
       };
     })
-    .filter((bar): bar is { source: TimelineReadModel["bars"][number]; start: Date; end: Date } => bar !== null);
+    .filter((item): item is { source: typeof allScheduledItems[number]; start: Date; end: Date } => item !== null);
 
   if (normalizedBars.length === 0) {
     const todayUtc = new Date();
@@ -3202,8 +3167,6 @@ function buildVisualChartModel(
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
-      quarterMarkers: [],
-      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc, -1),
       currentPeriod: null,
       todayX: null
@@ -3270,13 +3233,9 @@ function buildVisualChartModel(
 
   assignTreeBlockFlags(bars);
 
-  const weekMarkers = zoomLevel === "week" || zoomLevel === "month"
-    ? buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx)
-    : [];
+  const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
   const monthMarkers = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
-  const quarterMarkers = buildQuarterAxisMarkers(domainStart, totalDays, dayWidthPx);
-  const yearMarkers = buildYearAxisMarkers(domainStart, totalDays, dayWidthPx);
 
   const timelineWidth = totalDays * dayWidthPx;
   const verticalLayout = resolveTimelineVerticalLayoutMetrics(bars.length, includeUnscheduledDropLane);
@@ -3292,8 +3251,6 @@ function buildVisualChartModel(
     weekMarkers,
     dailyGridLines,
     monthMarkers,
-    quarterMarkers,
-    yearMarkers,
     domainStart,
     currentPeriod,
     todayX
@@ -3410,14 +3367,26 @@ function buildColorByWorkItemId(
 }
 
 function resolveTimelineVisibleRange(timeline: TimelineReadModel | null): { start: Date; end: Date } | null {
-  if (!timeline || timeline.bars.length === 0) {
+  if (!timeline) {
     return null;
   }
 
-  const normalizedRanges = timeline.bars
-    .map((bar) => {
-      const start = parseIso(bar.schedule.startDate);
-      const end = parseIso(bar.schedule.endDate);
+  // Include both explicit bars and unschedulable items with fallback schedules
+  const allScheduledItems = [
+    ...timeline.bars,
+    ...timeline.unschedulable.filter((item) => item.schedule?.startDate && item.schedule?.endDate)
+  ];
+
+  if (allScheduledItems.length === 0) {
+    return null;
+  }
+
+  const normalizedRanges = allScheduledItems
+    .map((item) => {
+      const startDate = item.schedule?.startDate ?? null;
+      const endDate = item.schedule?.endDate ?? null;
+      const start = parseIso(startDate);
+      const end = parseIso(endDate);
       if (!start && !end) {
         return null;
       }
@@ -3860,7 +3829,10 @@ function getFieldDisplayName(fieldRef: string): string {
   return lastPart && lastPart.length > 0 ? lastPart : trimmed;
 }
 
-function buildTimelineBarLabel(bar: TimelineReadModel["bars"][number], fieldRefs: string[]): string {
+function buildTimelineBarLabel(
+  bar: TimelineReadModel["bars"][number] | TimelineReadModel["unschedulable"][number],
+  fieldRefs: string[]
+): string {
   const parts = sanitizeTimelineFieldRefList(fieldRefs)
     .map((fieldRef) => timelineBarLabelValueForFieldRef(bar, fieldRef))
     .filter((value): value is string => value !== null && value.length > 0);
@@ -4012,7 +3984,7 @@ function timelineSidebarLabelValueForFieldRef(bar: VisualTimelineBar, fieldRef: 
 }
 
 function timelineBarLabelValueForFieldRef(
-  bar: TimelineReadModel["bars"][number],
+  bar: TimelineReadModel["bars"][number] | TimelineReadModel["unschedulable"][number],
   fieldRef: string
 ): string | null {
   if (fieldRef === TIMELINE_LABEL_SPECIAL_FIELD_REFS.title) {
@@ -4365,69 +4337,6 @@ function buildMonthAxisMarkers(
   return markers;
 }
 
-function buildQuarterAxisMarkers(
-  domainStart: Date,
-  totalDays: number,
-  dayWidthPx: number
-): { x: number; label: string }[] {
-  const domainEndExclusive = addDays(domainStart, totalDays + 1);
-  const startMonth = domainStart.getUTCMonth();
-  const quarterStartMonth = startMonth - (startMonth % 3);
-  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), quarterStartMonth, 1));
-  const markers: { x: number; label: string }[] = [];
-  const seenX = new Set<number>();
-
-  while (cursor.getTime() < domainEndExclusive.getTime()) {
-    const offset = dayDiff(domainStart, cursor);
-    if (offset <= totalDays) {
-      const markerOffsetDays = clamp(offset, 0, totalDays);
-      const x = markerOffsetDays * dayWidthPx;
-      if (!seenX.has(x)) {
-        seenX.add(x);
-        const quarter = Math.floor(cursor.getUTCMonth() / 3) + 1;
-        markers.push({
-          x,
-          label: `Q${quarter}/${String(cursor.getUTCFullYear()).slice(2)}`
-        });
-      }
-    }
-
-    cursor = addMonthsUtc(cursor, 3);
-  }
-
-  return markers;
-}
-
-function buildYearAxisMarkers(
-  domainStart: Date,
-  totalDays: number,
-  dayWidthPx: number
-): { x: number; label: string }[] {
-  const domainEndExclusive = addDays(domainStart, totalDays + 1);
-  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), 0, 1));
-  const markers: { x: number; label: string }[] = [];
-  const seenX = new Set<number>();
-
-  while (cursor.getTime() < domainEndExclusive.getTime()) {
-    const offset = dayDiff(domainStart, cursor);
-    if (offset <= totalDays) {
-      const markerOffsetDays = clamp(offset, 0, totalDays);
-      const x = markerOffsetDays * dayWidthPx;
-      if (!seenX.has(x)) {
-        seenX.add(x);
-        markers.push({
-          x,
-          label: String(cursor.getUTCFullYear())
-        });
-      }
-    }
-
-    cursor = new Date(Date.UTC(cursor.getUTCFullYear() + 1, 0, 1));
-  }
-
-  return markers;
-}
-
 function formatTickDate(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
@@ -4562,51 +4471,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function quantizeDayWidth(value: number): number {
-  const step = value < 1 ? 0.01 : value < 4 ? 0.05 : value < 10 ? 0.1 : ZOOM_DAY_WIDTH_STEP_PX;
-  return Math.round(value / step) * step;
-}
-
-function resolveZoomLevelWithoutHysteresis(dayWidthPx: number): TimelineZoomLevel {
-  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX) {
-    return "week";
-  }
-  if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX) {
-    return "month";
-  }
-  if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX) {
-    return "quarter";
-  }
-  return "year";
-}
-
-function resolveZoomLevelWithHysteresis(
-  dayWidthPx: number,
-  previous: TimelineZoomLevel
-): TimelineZoomLevel {
-  const H = ZOOM_LEVEL_HYSTERESIS_PX;
-
-  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX + H) {
-    return "week";
-  }
-  if (dayWidthPx <= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX - H) {
-    return "year";
-  }
-
-  if (dayWidthPx < DAY_WIDTH_MONTH_QUARTER_SWITCH_PX - H) {
-    if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX + H) {
-      return "quarter";
-    }
-    return previous === "year" ? "year" : "quarter";
-  }
-
-  if (dayWidthPx < DAY_WIDTH_WEEK_MONTH_SWITCH_PX - H) {
-    if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX + H) {
-      return "month";
-    }
-    return previous === "quarter" || previous === "year" ? "quarter" : "month";
-  }
-
-  return previous === "month" || previous === "quarter" || previous === "year" ? "month" : "week";
+  return Math.round(value / ZOOM_DAY_WIDTH_STEP_PX) * ZOOM_DAY_WIDTH_STEP_PX;
 }
 
 function normalizeWheelDelta(event: WheelEvent): number {

@@ -99,7 +99,7 @@ export class RunQueryIntakeUseCase {
         this.queryRuntime.executeByQueryId(selectedQueryId, context)
       ]);
       const stale = this.isStale(runVersion);
-      const timeline = stale ? null : this.buildTimeline(snapshot);
+      const timeline = stale ? null : await this.buildTimeline(snapshot);
       const stableSnapshot = stale ? null : snapshot;
       const reload = this.currentMetadata(runVersion, stale ? "stale_discarded" : "full_reload");
 
@@ -240,7 +240,7 @@ export class RunQueryIntakeUseCase {
     this.activeMappingProfile = profile;
   }
 
-  private buildTimeline(snapshot: IngestionSnapshot): TimelineReadModel | null {
+  private async buildTimeline(snapshot: IngestionSnapshot): Promise<TimelineReadModel | null> {
     if (!this.buildTimelineView) {
       return null;
     }
