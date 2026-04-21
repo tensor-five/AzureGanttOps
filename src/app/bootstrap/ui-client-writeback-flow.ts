@@ -31,18 +31,14 @@ export async function runTrackedWorkItemSync<T>(params: {
   operation: () => Promise<T>;
   inFlightRef: React.MutableRefObject<number>;
   setWorkItemSyncState: React.Dispatch<React.SetStateAction<WorkItemSyncState>>;
-  setWorkItemSyncError: React.Dispatch<React.SetStateAction<string | null>>;
 }): Promise<T> {
   params.inFlightRef.current += 1;
   params.setWorkItemSyncState("syncing");
-  params.setWorkItemSyncError(null);
 
   try {
     return await params.operation();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Write failed.";
     params.setWorkItemSyncState("error");
-    params.setWorkItemSyncError(message);
     throw error;
   } finally {
     params.inFlightRef.current = Math.max(0, params.inFlightRef.current - 1);

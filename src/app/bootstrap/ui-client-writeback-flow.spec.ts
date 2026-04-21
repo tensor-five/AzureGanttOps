@@ -64,25 +64,21 @@ describe("ui-client-writeback-flow", () => {
   it("tracks sync state lifecycle around successful operation", async () => {
     const inFlightRef = { current: 0 };
     const setState = vi.fn();
-    const setError = vi.fn();
 
     const result = await runTrackedWorkItemSync({
       operation: async () => 42,
       inFlightRef,
-      setWorkItemSyncState: setState,
-      setWorkItemSyncError: setError
+      setWorkItemSyncState: setState
     });
 
     expect(result).toBe(42);
     expect(inFlightRef.current).toBe(0);
     expect(setState).toHaveBeenCalledWith("syncing");
-    expect(setError).toHaveBeenCalledWith(null);
   });
 
   it("tracks error state and rethrows on failed operation", async () => {
     const inFlightRef = { current: 0 };
     const setState = vi.fn();
-    const setError = vi.fn();
 
     await expect(
       runTrackedWorkItemSync({
@@ -90,13 +86,11 @@ describe("ui-client-writeback-flow", () => {
           throw new Error("boom");
         },
         inFlightRef,
-        setWorkItemSyncState: setState,
-        setWorkItemSyncError: setError
+        setWorkItemSyncState: setState
       })
     ).rejects.toThrow("boom");
 
     expect(inFlightRef.current).toBe(0);
     expect(setState).toHaveBeenCalledWith("error");
-    expect(setError).toHaveBeenCalledWith("boom");
   });
 });
