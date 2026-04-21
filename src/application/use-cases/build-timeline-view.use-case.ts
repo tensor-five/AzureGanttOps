@@ -1,7 +1,7 @@
 import type { TimelineReadModel } from "../dto/timeline-read-model.js";
 import type { IngestionSnapshot } from "../dto/ingestion-snapshot.js";
 import type { FieldMappingProfile } from "../../domain/mapping/field-mapping.js";
-import type { IterationsPort } from "../../adapters/azure-devops/iterations/azure-iterations.adapter.js";
+import type { IterationsPort } from "../ports/iterations.port.js";
 import { MappingValidationFailedError } from "../../domain/mapping/mapping-errors.js";
 import { validateRequiredMappings } from "../../domain/mapping/mapping-validator.js";
 import { buildCanonicalModel } from "../../domain/planning-model/canonical-model-builder.js";
@@ -14,7 +14,13 @@ export type BuildTimelineViewInput = {
   mappingProfile: FieldMappingProfile;
 };
 
+type IterationDatesMap = Record<string, { startDate: string; endDate: string }>;
+
+const ITERATION_CACHE_TTL_MS = 60_000;
+
 export class BuildTimelineViewUseCase {
+  private iterationCache: { value: IterationDatesMap; fetchedAt: number } | null = null;
+
   public constructor(private readonly iterationsPort?: IterationsPort | null) {}
 
   public async execute(input: BuildTimelineViewInput): Promise<TimelineReadModel> {
@@ -26,29 +32,7 @@ export class BuildTimelineViewUseCase {
         ? buildTreeLayout(canonical, input.snapshot.queryRelations)
         : null;
 
-      // Fetch iteration dates if iterations adapter available
-      let iterationDates: Record<string, { startDate: string; endDate: string }> | null = null;
-      if (this.iterationsPort) {
-        try {
-          const iterations = await this.iterationsPort.listIterations();
-          if (iterations.length === 0) {
-            console.warn("[iteration-fetch] No iterations returned from API");
-          } else {
-            console.log(`[iteration-fetch] Found ${iterations.length} iterations with dates`);
-          }
-          iterationDates = buildIterationDatesMap(
-            iterations.map((iter) => ({
-              path: iter.path,
-              startDate: iter.startDate,
-              endDate: iter.endDate
-            }))
-          );
-        } catch (error) {
-          // Gracefully degrade: if iteration fetch fails, continue without iteration dates
-          console.error("[iteration-fetch-error]", error instanceof Error ? error.message : error);
-        }
-      }
-
+      const iterationDates = await this.resolveIterationDates();
       const projection = projectTimeline(canonical, treeLayout, iterationDates);
 
       return {
@@ -87,6 +71,36 @@ export class BuildTimelineViewUseCase {
       }
 
       throw error;
+    }
+  }
+
+  public invalidateIterationCache(): void {
+    this.iterationCache = null;
+  }
+
+  private async resolveIterationDates(): Promise<IterationDatesMap | null> {
+    if (!this.iterationsPort) {
+      return null;
+    }
+
+    const now = Date.now();
+    if (this.iterationCache && now - this.iterationCache.fetchedAt < ITERATION_CACHE_TTL_MS) {
+      return this.iterationCache.value;
+    }
+
+    try {
+      const iterations = await this.iterationsPort.listIterations();
+      const map = buildIterationDatesMap(
+        iterations.map((iter) => ({
+          path: iter.path,
+          startDate: iter.startDate,
+          endDate: iter.endDate
+        }))
+      );
+      this.iterationCache = { value: map, fetchedAt: now };
+      return map;
+    } catch {
+      return this.iterationCache?.value ?? null;
     }
   }
 }
