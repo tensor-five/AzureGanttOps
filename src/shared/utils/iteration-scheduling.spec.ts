@@ -108,5 +108,32 @@ describe("iteration-scheduling", () => {
 
       expect(result).toEqual({});
     });
+
+    it("omits ambiguous short-name keys when the last segment is reused across iterations", () => {
+      const result = buildIterationDatesMap([
+        {
+          path: "ProjectA\\Release 1\\Sprint 2",
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        },
+        {
+          path: "ProjectA\\Release 2\\Sprint 2",
+          startDate: "2026-06-01T00:00:00.000Z",
+          endDate: "2026-06-14T00:00:00.000Z"
+        }
+      ]);
+
+      expect(result).toEqual({
+        "ProjectA\\Release 1\\Sprint 2": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        },
+        "ProjectA\\Release 2\\Sprint 2": {
+          startDate: "2026-06-01T00:00:00.000Z",
+          endDate: "2026-06-14T00:00:00.000Z"
+        }
+      });
+      expect(result["Sprint 2"]).toBeUndefined();
+    });
   });
 });

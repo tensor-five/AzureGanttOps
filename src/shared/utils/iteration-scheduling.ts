@@ -31,23 +31,26 @@ export function buildIterationDatesMap(
   iterations: Array<{ path: string; startDate: string | null; endDate: string | null }>
 ): Record<string, { startDate: string; endDate: string }> {
   const result: Record<string, { startDate: string; endDate: string }> = {};
+  const shortNameOccurrences = new Map<string, number>();
 
-  for (const iter of iterations) {
-    if (!iter.path || !iter.startDate || !iter.endDate) {
-      continue;
+  const usable = iterations.filter(
+    (iter): iter is { path: string; startDate: string; endDate: string } =>
+      Boolean(iter.path && iter.startDate && iter.endDate)
+  );
+
+  for (const iter of usable) {
+    const shortName = iter.path.split("\\").pop();
+    if (shortName && shortName !== iter.path) {
+      shortNameOccurrences.set(shortName, (shortNameOccurrences.get(shortName) ?? 0) + 1);
     }
+  }
 
-    result[iter.path] = {
-      startDate: iter.startDate,
-      endDate: iter.endDate
-    };
+  for (const iter of usable) {
+    result[iter.path] = { startDate: iter.startDate, endDate: iter.endDate };
 
-    const lastSegment = iter.path.split("\\").pop();
-    if (lastSegment && lastSegment !== iter.path) {
-      result[lastSegment] = {
-        startDate: iter.startDate,
-        endDate: iter.endDate
-      };
+    const shortName = iter.path.split("\\").pop();
+    if (shortName && shortName !== iter.path && shortNameOccurrences.get(shortName) === 1) {
+      result[shortName] = { startDate: iter.startDate, endDate: iter.endDate };
     }
   }
 
