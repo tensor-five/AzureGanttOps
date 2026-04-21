@@ -17,11 +17,7 @@ export type TimelineDetailsPanelProps = {
     stateColor: string | null;
   }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
-  onAdoptUnschedulableFromParent?: (input: {
-    targetWorkItemId: number;
-    startDate: string;
-    endDate: string;
-  }) => Promise<void>;
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
@@ -94,89 +90,28 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
 
   const lines = buildTimelineDetailsLines(props);
-  const selectedUnschedulable = props.timeline?.unschedulable.find(
-    (item) => item.workItemId === props.selectedWorkItemId
-  );
-
-  // Find parent from tree layout first (works for any relationship type),
-  // then fall back to parentWorkItemId from details (for hierarchy relationships)
-  const treeLayout = props.timeline?.treeLayout;
-  const treeNodeMeta = selectedUnschedulable && treeLayout ? treeLayout[selectedUnschedulable.workItemId] : null;
-  const parentWorkItemIdFromTree = treeNodeMeta?.parentWorkItemId ?? null;
-  const parentWorkItemIdFromDetails = selectedUnschedulable?.details.parentWorkItemId ?? null;
-  const parentWorkItemId = parentWorkItemIdFromTree ?? parentWorkItemIdFromDetails;
-
-  // Find the parent bar
-  const parentBar =
-    parentWorkItemId && props.timeline
-      ? props.timeline.bars.find((bar) => bar.workItemId === parentWorkItemId)
-      : null;
-
-  // Button shows if:
-  // - Current selection is an unschedulable item
-  // - AND it has a parent in the visual hierarchy (from tree layout or work item details)
-  // - AND that parent is scheduled (has both start and end dates)
-  const canAdoptFromParent =
-    parentBar && parentBar.schedule.startDate && parentBar.schedule.endDate ? true : false;
-
-  const adoptCapability = canAdoptFromParent && parentBar
-    ? {
-        parentStartDate: parentBar.schedule.startDate,
-        parentEndDate: parentBar.schedule.endDate
-      }
-    : null;
-
   const entries = lines
     .map((line) => parseTimelineDetailLine(line))
     .filter((entry): entry is { label: string; value: string } => entry !== null)
     .filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase()))
-    .map((entry, index) => {
-      const isReasonRow = entry.label.toLowerCase() === "reason";
-      const showAdoptButton = isReasonRow && canAdoptFromParent && props.onAdoptUnschedulableFromParent && selectedUnschedulable;
-
-      return React.createElement(
+    .map((entry, index) =>
+      React.createElement(
         "div",
         { key: `${index}-${entry.label}`, className: "timeline-details-row" },
         React.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`),
-        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value)),
-        showAdoptButton
-          ? React.createElement(
-              "button",
-              {
-                type: "button",
-                className: "timeline-details-adopt-button",
-                title: "Adopt dates from parent work item",
-                onClick: async () => {
-                  if (
-                    !adoptCapability?.parentStartDate ||
-                    !adoptCapability?.parentEndDate ||
-                    !props.onAdoptUnschedulableFromParent ||
-                    !selectedUnschedulable
-                  ) {
-                    return;
-                  }
-                  try {
-                    await props.onAdoptUnschedulableFromParent({
-                      targetWorkItemId: selectedUnschedulable.workItemId,
-                      startDate: adoptCapability.parentStartDate,
-                      endDate: adoptCapability.parentEndDate
-                    });
-                  } catch (error) {
-                    console.error("Failed to adopt from parent", error);
-                  }
-                }
-              },
-              "adopt from above?"
-            )
-          : null
-      );
-    });
+        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value))
+      )
+    );
 
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
   const baselineState = selected?.state ?? "";
   const isDirty =
     titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+
+  React.useEffect(() => {
+    props.onDirtyChange?.(isDirty);
+  }, [isDirty]);
 
   const azureLink = selected
     ? buildAzureWorkItemUrl({

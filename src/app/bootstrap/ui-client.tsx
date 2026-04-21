@@ -179,11 +179,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>(() =>
     loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused"
   );
-  const [workItemSyncError, setWorkItemSyncError] = React.useState<string | null>(null);
   const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = React.useState(0);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = React.useState(false);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = React.useState(false);
   const workItemSyncInFlightRef = React.useRef(0);
   const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
+  const preOptimisticResponseSnapshotRef = React.useRef<QueryIntakeResponse | null>(null);
   const flushPendingWorkItemMutationsPromiseRef = React.useRef<Promise<void> | null>(null);
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
@@ -316,11 +319,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]
   );
 
-  const retryRefresh = React.useCallback(async () => {
-    if (isRefreshing) {
-      return;
-    }
-
+  const executeRefresh = React.useCallback(async (discardPendingChanges: boolean) => {
     setIsRefreshing(true);
 
     try {
@@ -339,24 +338,45 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
 
       if (result.kind === "refreshed") {
-        const refreshedResponse = applyPendingWorkItemMutationsToResponse(
-          result.response,
-          pendingWorkItemMutationsRef.current
-        );
-        setResponse(refreshedResponse);
-        setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
+        if (discardPendingChanges) {
+          pendingWorkItemMutationsRef.current = [];
+          setPendingWorkItemSyncCount(0);
+          setResponse(result.response);
+          setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        } else {
+          const refreshedResponse = applyPendingWorkItemMutationsToResponse(
+            result.response,
+            pendingWorkItemMutationsRef.current
+          );
+          setResponse(refreshedResponse);
+          setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
+        }
         if (result.openMappingFix) {
-          setMappingFixResponse(refreshedResponse);
+          setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
           setControlsOpen(true);
         } else {
           setActiveTab("timeline");
         }
       }
+      setHasOptimisticChanges(false);
     } finally {
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller.submit, runQuery]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery]);
+
+  const retryRefresh = React.useCallback(async () => {
+    if (isRefreshing) {
+      return;
+    }
+
+    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges) {
+      setShowRefreshDiscardWarning(true);
+      return;
+    }
+
+    await executeRefresh(false);
+  }, [detailsPanelDirty, executeRefresh, hasOptimisticChanges, isRefreshing]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -372,8 +392,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return runTrackedWorkItemSync({
         operation,
         inFlightRef: workItemSyncInFlightRef,
-        setWorkItemSyncState,
-        setWorkItemSyncError
+        setWorkItemSyncState
       });
     },
     []
@@ -386,13 +405,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
     const flushPromise = flushPendingWorkItemMutations({
       queueRef: pendingWorkItemMutationsRef,
-      onPendingCountChange: setPendingWorkItemSyncCount,
+      onPendingCountChange: (count) => {
+        setPendingWorkItemSyncCount(count);
+        if (count === 0) {
+          preOptimisticResponseSnapshotRef.current = null;
+        }
+      },
       runTrackedWorkItemSync: async (operation) => {
         await runTrackedWorkItemUpdate(operation);
       }
     })
       .then(() => {
-        setWorkItemSyncError(null);
         setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
       })
       .finally(() => {
@@ -404,8 +427,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [runTrackedWorkItemUpdate]);
 
   const enqueuePendingWorkItemMutation = React.useCallback((mutation: PendingWorkItemMutation) => {
+    if (pendingWorkItemMutationsRef.current.length === 0) {
+      preOptimisticResponseSnapshotRef.current = responseRef.current;
+    }
     pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
+    setHasOptimisticChanges(true);
   }, []);
 
   const scheduleWorkItemMutation = React.useCallback(
@@ -426,7 +453,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           executeDetails: params.executeDetails
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -458,7 +484,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           execute: params.execute
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -488,7 +513,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           execute: params.execute
         })
       );
-      setWorkItemSyncError(null);
 
       if (!liveSyncEnabledRef.current) {
         setWorkItemSyncState("paused");
@@ -547,6 +571,20 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
     setWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
+
+  React.useEffect(() => {
+    const hasUnsavedChanges = () =>
+      pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges;
+
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [detailsPanelDirty, hasOptimisticChanges]);
 
   React.useEffect(() => {
     persistUserPreferencesPatch({
@@ -900,7 +938,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           showDependencies: true,
           isRefreshing,
           workItemSyncState,
-          workItemSyncError,
           liveSyncEnabled,
           pendingWorkItemSyncCount,
           organization,
@@ -912,6 +949,21 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           },
           onPushPendingWorkItemChanges: () => {
             void flushQueuedWorkItemMutations();
+          },
+          onDetailsDirtyChange: setDetailsPanelDirty,
+          onClearPendingWorkItemChanges: () => {
+            const snapshot = preOptimisticResponseSnapshotRef.current;
+            pendingWorkItemMutationsRef.current = [];
+            preOptimisticResponseSnapshotRef.current = null;
+            setPendingWorkItemSyncCount(0);
+            setHasOptimisticChanges(false);
+            setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+            if (snapshot) {
+              setResponse(snapshot);
+              setUiModel(mapQueryIntakeResponseToUiModel(snapshot));
+            } else {
+              void executeRefresh(true);
+            }
           },
           onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
             await scheduleWorkItemMutation({
@@ -1044,7 +1096,61 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         },
         "TensorFive GmbH"
       )
-    )
+    ),
+    showRefreshDiscardWarning
+      ? React.createElement(
+          "div",
+          {
+            className: "refresh-discard-warning-backdrop",
+            onClick: () => setShowRefreshDiscardWarning(false)
+          },
+          React.createElement(
+            "div",
+            {
+              className: "refresh-discard-warning-dialog",
+              role: "alertdialog",
+              "aria-labelledby": "refresh-discard-warning-title",
+              "aria-describedby": "refresh-discard-warning-desc",
+              onClick: (e: React.MouseEvent) => e.stopPropagation()
+            },
+            React.createElement(
+              "h3",
+              { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" },
+              "Achtung: Ungespeicherte Änderungen"
+            ),
+            React.createElement(
+              "p",
+              { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" },
+              "Es gibt ungespeicherte Änderungen, die beim Aktualisieren verloren gehen."
+            ),
+            React.createElement(
+              "div",
+              { className: "refresh-discard-warning-actions" },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "refresh-discard-warning-cancel",
+                  onClick: () => setShowRefreshDiscardWarning(false)
+                },
+                "Abbrechen"
+              ),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "refresh-discard-warning-confirm",
+                  onClick: () => {
+                    setShowRefreshDiscardWarning(false);
+                    void executeRefresh(true);
+                  }
+                },
+                "Verwerfen & Aktualisieren"
+              )
+            )
+          )
+        )
+      : null
   );
 }
 

@@ -169,14 +169,14 @@ describe("timeline-pane layout", () => {
         pendingWorkItemSyncCount: 2,
         workItemSyncState: "paused",
         onSetLiveSyncEnabled,
-        onPushPendingWorkItemChanges
+        onPushPendingWorkItemChanges,
+        onClearPendingWorkItemChanges: vi.fn()
       })
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Push changes (2)" }));
     fireEvent.click(screen.getByLabelText("Live sync"));
 
-    expect(screen.getByText("Live sync paused, 2 changes queued")).toBeTruthy();
     expect(onPushPendingWorkItemChanges).toHaveBeenCalledTimes(1);
     expect(onSetLiveSyncEnabled).toHaveBeenCalledWith(true);
   });

@@ -464,20 +464,6 @@ section[role="tabpanel"]:hover {
   font-size: 1.22rem;
 }
 
-.gantt-sync-status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 32px;
-  border-radius: var(--radius-pill);
-  border: 1px solid transparent;
-  padding: 6px 10px;
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.02em;
-  line-height: 1.25;
-}
-
 .timeline-pane-actions-status {
   display: inline-flex;
   align-items: center;
@@ -542,38 +528,6 @@ section[role="tabpanel"]:hover {
 
 .timeline-live-sync-toggle-label {
   white-space: nowrap;
-}
-
-.gantt-sync-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 22%, transparent);
-}
-
-.gantt-sync-status[data-state="up_to_date"] {
-  color: color-mix(in srgb, #166534 65%, var(--color-text));
-  border-color: color-mix(in srgb, #22c55e 42%, var(--color-border));
-  background: color-mix(in srgb, #22c55e 14%, var(--color-surface-elevated));
-}
-
-.gantt-sync-status[data-state="syncing"] {
-  color: color-mix(in srgb, #1e40af 70%, var(--color-text));
-  border-color: color-mix(in srgb, #3b82f6 44%, var(--color-border));
-  background: color-mix(in srgb, #3b82f6 14%, var(--color-surface-elevated));
-}
-
-.gantt-sync-status[data-state="error"] {
-  color: color-mix(in srgb, #991b1b 64%, var(--color-text));
-  border-color: color-mix(in srgb, #ef4444 44%, var(--color-border));
-  background: color-mix(in srgb, #ef4444 14%, var(--color-surface-elevated));
-}
-
-.gantt-sync-status[data-state="paused"] {
-  color: color-mix(in srgb, #92400e 70%, var(--color-text));
-  border-color: color-mix(in srgb, #f59e0b 44%, var(--color-border));
-  background: color-mix(in srgb, #f59e0b 14%, var(--color-surface-elevated));
 }
 
 .ui-shell-workspace {
@@ -3024,30 +2978,6 @@ button {
   flex: 1;
 }
 
-.timeline-details-adopt-button {
-  padding: 2px 6px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 3px;
-  background-color: var(--color-surface-secondary);
-  color: var(--color-text);
-  font-size: 9px;
-  font-weight: var(--font-medium);
-  white-space: nowrap;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.timeline-details-adopt-button:hover {
-  background-color: var(--color-surface-tertiary);
-  color: var(--color-text);
-}
-
-.timeline-details-adopt-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(132, 44, 195, 0.2);
-}
-
 .timeline-details-raw {
   position: absolute;
   width: 1px;
@@ -3412,4 +3342,78 @@ input {
     min-width: min(280px, 90vw);
     max-width: min(320px, 92vw);
   }
+}
+
+/* --- Refresh discard warning dialog --- */
+
+.refresh-discard-warning-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(28, 25, 23, 0.42);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.refresh-discard-warning-dialog {
+  width: min(440px, 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.refresh-discard-warning-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-warning, #d97706);
+}
+
+.refresh-discard-warning-desc {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.refresh-discard-warning-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.refresh-discard-warning-cancel {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.refresh-discard-warning-cancel:hover {
+  background: var(--color-surface-hover, var(--color-surface));
+  border-color: var(--color-text-secondary);
+}
+
+.refresh-discard-warning-confirm {
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-danger, #dc2626);
+  color: #ffffff;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.refresh-discard-warning-confirm:hover {
+  background: var(--color-danger-dark, #b91c1c);
 }

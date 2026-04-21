@@ -17,6 +17,8 @@ type UseTimelineKeyboardShortcutsParams = {
   onRotateDependencyMode: () => void;
   onSelectMonthZoom: () => void;
   onSelectWeekZoom: () => void;
+  onSelectQuarterZoom: () => void;
+  onSelectYearZoom: () => void;
   pendingWorkItemSyncCount?: number;
   selectedDependency: SelectedDependency | null;
   setSelectedDependency: React.Dispatch<React.SetStateAction<SelectedDependency | null>>;
@@ -107,6 +109,18 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
         return;
       }
 
+      if (key === "q") {
+        params.onSelectQuarterZoom();
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "y") {
+        params.onSelectYearZoom();
+        event.preventDefault();
+        return;
+      }
+
       if (key !== "r" || params.isRefreshing === true) {
         return;
       }
@@ -144,6 +158,8 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
     params.onRetryRefresh,
     params.onSelectMonthZoom,
     params.onSelectWeekZoom,
+    params.onSelectQuarterZoom,
+    params.onSelectYearZoom,
     params.onToggleLabelSettings,
     params.onToggleSortSettings,
     params.onToggleTimelineFilters,
