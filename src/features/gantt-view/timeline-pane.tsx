@@ -312,6 +312,31 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     unscheduledDropPreview,
     setUnscheduledDropPreview
   } = scheduleDragging;
+  const [editMode, setEditMode] = React.useState(false);
+  const [editInfoOpen, setEditInfoOpen] = React.useState(false);
+  const editInfoRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!editInfoOpen) {
+      return;
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      if (editInfoRef.current && !editInfoRef.current.contains(event.target as Node)) {
+        setEditInfoOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setEditInfoOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [editInfoOpen]);
   const {
     activeDependencyDrag,
     setActiveDependencyDrag,
@@ -1959,6 +1984,24 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     );
   }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
 
+  const handleAdoptFromParent = React.useCallback(
+    async (input: { targetWorkItemId: number; startDate: string; endDate: string }) => {
+      if (props.onAdoptUnschedulableSchedule) {
+        await props.onAdoptUnschedulableSchedule(input);
+      }
+      setAdoptedSchedulesByWorkItemId((current) => ({
+        ...current,
+        [input.targetWorkItemId]: {
+          startDate: input.startDate,
+          endDate: input.endDate
+        }
+      }));
+    },
+    [props, setAdoptedSchedulesByWorkItemId]
+  );
+
+  const adoptSourceSchedule = resolveAdoptSourceSchedule(visibleTimeline, selectedWorkItemId);
+
   const detailProps: TimelineDetailsPanelProps = {
     timeline: filteredTimeline,
     selectedWorkItemId,
@@ -2857,71 +2900,195 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
           React.createElement(
             "div",
             { className: "timeline-unschedulable-header" },
-            React.createElement("h4", null, "Unscheduled")
+            React.createElement("h4", null, "Unscheduled tasks"),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: editMode
+                  ? "timeline-unschedulable-edit-toggle timeline-unschedulable-edit-toggle-active"
+                  : "timeline-unschedulable-edit-toggle",
+                "aria-pressed": editMode,
+                onClick: () => setEditMode((current) => !current)
+              },
+              "Edit mode"
+            ),
+            React.createElement(
+              "div",
+              {
+                ref: editInfoRef,
+                className: "timeline-unschedulable-edit-info-wrap"
+              },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: editInfoOpen
+                    ? "timeline-unschedulable-edit-info timeline-unschedulable-edit-info-open"
+                    : "timeline-unschedulable-edit-info",
+                  "aria-label": "Show edit help",
+                  "aria-expanded": editInfoOpen,
+                  onClick: () => setEditInfoOpen((current) => !current)
+                },
+                "i"
+              ),
+              editInfoOpen
+                ? React.createElement(
+                    "div",
+                    {
+                      className: "timeline-unschedulable-edit-info-popover",
+                      role: "tooltip"
+                    },
+                    React.createElement(
+                      "p",
+                      { className: "timeline-unschedulable-edit-info-popover-title" },
+                      "How to schedule unscheduled tasks"
+                    ),
+                    React.createElement(
+                      "ol",
+                      { className: "timeline-unschedulable-edit-info-popover-steps" },
+                      React.createElement(
+                        "li",
+                        null,
+                        "Turn on ",
+                        React.createElement("strong", null, "Edit mode"),
+                        " to enable changes."
+                      ),
+                      React.createElement(
+                        "li",
+                        null,
+                        React.createElement("strong", null, "Drag"),
+                        " any item from the Unscheduled list into the chart to place it."
+                      ),
+                      React.createElement(
+                        "li",
+                        null,
+                        "Or ",
+                        React.createElement("strong", null, "select a scheduled task"),
+                        " above, then click the purple ↑ next to an unscheduled item to copy that task's dates."
+                      )
+                    )
+                  )
+                : null
+            ),
+            editMode && adoptSourceSchedule
+              ? React.createElement(
+                  "span",
+                  { className: "timeline-unschedulable-edit-hint" },
+                  "click ",
+                  React.createElement(
+                    "svg",
+                    {
+                      className: "timeline-unschedulable-edit-hint-icon",
+                      viewBox: "0 0 16 16",
+                      "aria-hidden": "true"
+                    },
+                    React.createElement("path", {
+                      d: "M8 13V3M8 3l-4 4M8 3l4 4",
+                      fill: "none",
+                      stroke: "currentColor",
+                      strokeWidth: "2",
+                      strokeLinecap: "round",
+                      strokeLinejoin: "round"
+                    })
+                  ),
+                  ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} → ${formatAdoptDate(adoptSourceSchedule.endDate)})`
+                )
+              : null
           ),
           visibleTimeline?.unschedulable.length
             ? React.createElement(
                 "ul",
                 null,
-                ...visibleTimeline.unschedulable.map((item) =>
-                  React.createElement(
+                ...visibleTimeline.unschedulable.map((item) => {
+                  const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
+                  const label = `#${item.details.mappedId} ${item.title}`;
+                  const minWidthPx = Math.round(dayWidthPx * 14);
+                  const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
+                  const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
+                  const showAdoptArrow = editMode && adoptSourceSchedule !== null;
+
+                  return React.createElement(
                     "li",
                     {
                       key: item.workItemId,
-                      style: (() => {
-                        const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
-                        return treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : undefined;
-                      })()
+                      className: "timeline-unschedulable-row",
+                      style: treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : undefined
                     },
-                    (() => {
-                      const label = `#${item.details.mappedId} ${item.title}`;
-                      const minWidthPx = Math.round(dayWidthPx * 14);
-                      const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
-                      const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
-
-                      return React.createElement(
-                        "button",
-                        {
-                          type: "button",
-                          className: "timeline-unschedulable-button",
-                          style: {
-                            backgroundColor: colorByWorkItemId.get(item.workItemId) ?? item.state.color,
-                            width: `${buttonWidthPx}px`,
-                            maxWidth: "100%"
-                          },
-                          "aria-label": label,
-                          "aria-pressed": selectedWorkItemId === item.workItemId,
-                          draggable: !dependencyMode,
-                          onDragStart: (event) => {
-                            startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
-                          },
-                          onDragEnd: () => {
-                            clearUnscheduledDrag();
-                          },
-                          onClick: () => {
-                            setAdoptScheduleError(null);
-                            if (!dependencyMode && selectedWorkItemId !== null) {
-                              void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
-                                const message = error instanceof Error ? error.message : "Unknown error";
-                                setAdoptScheduleError(message);
-                              });
-                            }
-                            toggleWorkItemSelection(item.workItemId);
-                          }
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "timeline-unschedulable-button",
+                        style: {
+                          backgroundColor: colorByWorkItemId.get(item.workItemId) ?? item.state.color,
+                          width: `${buttonWidthPx}px`,
+                          maxWidth: "100%"
                         },
+                        "aria-label": label,
+                        "aria-pressed": selectedWorkItemId === item.workItemId,
+                        draggable: !dependencyMode && editMode,
+                        onDragStart: (event) => {
+                          startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
+                        },
+                        onDragEnd: () => {
+                          clearUnscheduledDrag();
+                        },
+                        onClick: () => {
+                          setAdoptScheduleError(null);
+                          toggleWorkItemSelection(item.workItemId);
+                        }
+                      },
+                      React.createElement(
+                        "span",
+                        { className: "timeline-unschedulable-button-main" },
                         React.createElement(
                           "span",
-                          { className: "timeline-unschedulable-button-main" },
+                          { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" },
+                          label
+                        )
+                      )
+                    ),
+                    showAdoptArrow
+                      ? React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "timeline-unschedulable-adopt-arrow",
+                            "aria-label": `Adopt selected schedule onto ${label}`,
+                            title: `Apply ${formatAdoptDate(adoptSourceSchedule!.startDate)} → ${formatAdoptDate(adoptSourceSchedule!.endDate)}`,
+                            onClick: (event: React.MouseEvent) => {
+                              event.stopPropagation();
+                              if (!adoptSourceSchedule) {
+                                return;
+                              }
+                              void handleAdoptFromParent({
+                                targetWorkItemId: item.workItemId,
+                                startDate: adoptSourceSchedule.startDate,
+                                endDate: adoptSourceSchedule.endDate
+                              });
+                            }
+                          },
                           React.createElement(
-                            "span",
-                            { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" },
-                            label
+                            "svg",
+                            {
+                              className: "timeline-unschedulable-adopt-arrow-icon",
+                              viewBox: "0 0 16 16",
+                              "aria-hidden": "true"
+                            },
+                            React.createElement("path", {
+                              d: "M8 12V4M8 4l-4 4M8 4l4 4",
+                              fill: "none",
+                              stroke: "currentColor",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              strokeLinejoin: "round"
+                            })
                           )
                         )
-                      );
-                    })()
-                  )
-                )
+                      : null
+                  );
+                })
               )
             : React.createElement("p", { className: "timeline-unschedulable-empty" }, "None")
         )
@@ -4237,6 +4404,35 @@ function normalizeUtcDate(value: Date): Date {
 
 function resolveUnschedulableFixedEndDate(item: TimelineReadModel["unschedulable"][number]): Date | null {
   return parseIso(item.schedule?.endDate ?? null);
+}
+
+function resolveAdoptSourceSchedule(
+  timeline: TimelineReadModel | null,
+  selectedWorkItemId: number | null
+): { sourceWorkItemId: number; startDate: string; endDate: string } | null {
+  if (!timeline || selectedWorkItemId === null) {
+    return null;
+  }
+  const selectedBar = timeline.bars.find((bar) => bar.workItemId === selectedWorkItemId);
+  if (!selectedBar?.schedule.startDate || !selectedBar.schedule.endDate) {
+    return null;
+  }
+  return {
+    sourceWorkItemId: selectedBar.workItemId,
+    startDate: selectedBar.schedule.startDate,
+    endDate: selectedBar.schedule.endDate
+  };
+}
+
+function formatAdoptDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = String(parsed.getFullYear()).slice(2);
+  return `${day}.${month}.${year}`;
 }
 
 function resolveUnscheduledDropRange(startDate: Date, fixedEndDate: Date | null): { startDate: Date; endDate: Date } {
