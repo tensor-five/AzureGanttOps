@@ -48,6 +48,76 @@ describe("timeline-pane dragging", () => {
     expect(detailsText).toContain("- end: 2026-03-03T00:00:00.000Z");
   });
 
+  it("hides per-item adopt arrows while edit mode is off", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("timeline-bar-11"));
+
+    expect(screen.queryByRole("button", { name: /Adopt selected schedule onto/i })).toBeNull();
+  });
+
+  it("hides per-item adopt arrows while edit mode is on but no scheduled bar is selected", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByRole("button", { name: /Edit mode/i }));
+
+    expect(screen.queryByRole("button", { name: /Adopt selected schedule onto/i })).toBeNull();
+  });
+
+  it("gates drag-and-drop on the edit-mode toggle", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const unscheduledButton = screen.getByRole("button", { name: /#22 Target Item/ });
+    expect(unscheduledButton.getAttribute("draggable")).toBe("false");
+
+    await user.click(screen.getByRole("button", { name: /Edit mode/i }));
+
+    expect(unscheduledButton.getAttribute("draggable")).toBe("true");
+  });
+
+  it("toggles the edit-mode help popover on click and dismisses it on Escape", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const infoButton = screen.getByRole("button", { name: /Show edit help/i });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+
+    await user.click(infoButton);
+    expect(screen.getByRole("tooltip")).toBeTruthy();
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).toBeNull();
+    });
+  });
+
   it("toggles a selected work item off when clicked again", async () => {
     const user = userEvent.setup();
 
