@@ -1984,7 +1984,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     );
   }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
 
-  const handleAdoptFromParent = React.useCallback(
+  const handleAdoptSelectedSchedule = React.useCallback(
     async (input: { targetWorkItemId: number; startDate: string; endDate: string }) => {
       if (props.onAdoptUnschedulableSchedule) {
         await props.onAdoptUnschedulableSchedule(input);
@@ -3062,7 +3062,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                               if (!adoptSourceSchedule) {
                                 return;
                               }
-                              void handleAdoptFromParent({
+                              void handleAdoptSelectedSchedule({
                                 targetWorkItemId: item.workItemId,
                                 startDate: adoptSourceSchedule.startDate,
                                 endDate: adoptSourceSchedule.endDate
