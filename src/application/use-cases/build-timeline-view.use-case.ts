@@ -16,12 +16,22 @@ export type BuildTimelineViewInput = {
 
 type IterationDatesMap = Record<string, { startDate: string; endDate: string }>;
 
-const ITERATION_CACHE_TTL_MS = 60_000;
+export type BuildTimelineViewOptions = {
+  iterationCacheTtlMs?: number;
+};
+
+const DEFAULT_ITERATION_CACHE_TTL_MS = 60_000;
 
 export class BuildTimelineViewUseCase {
   private iterationCache: { value: IterationDatesMap; fetchedAt: number } | null = null;
+  private readonly iterationCacheTtlMs: number;
 
-  public constructor(private readonly iterationsPort?: IterationsPort | null) {}
+  public constructor(
+    private readonly iterationsPort?: IterationsPort | null,
+    options?: BuildTimelineViewOptions
+  ) {
+    this.iterationCacheTtlMs = options?.iterationCacheTtlMs ?? DEFAULT_ITERATION_CACHE_TTL_MS;
+  }
 
   public async execute(input: BuildTimelineViewInput): Promise<TimelineReadModel> {
     try {
@@ -84,7 +94,7 @@ export class BuildTimelineViewUseCase {
     }
 
     const now = Date.now();
-    if (this.iterationCache && now - this.iterationCache.fetchedAt < ITERATION_CACHE_TTL_MS) {
+    if (this.iterationCache && now - this.iterationCache.fetchedAt < this.iterationCacheTtlMs) {
       return this.iterationCache.value;
     }
 

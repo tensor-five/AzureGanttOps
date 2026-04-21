@@ -14,6 +14,8 @@ import { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-wr
 import { WriteCommandNoopAdapter } from "../../adapters/azure-devops/work-items/write-command.noop.adapter.js";
 import { WriteCommandAzureAdapter } from "../../adapters/azure-devops/work-items/write-command.azure.adapter.js";
 
+const ITERATION_CACHE_TTL_MS = 60_000;
+
 export type Phase1QueryFlow = {
   runQueryIntake: RunQueryIntakeUseCase;
   submitWriteCommand: SubmitWriteCommandUseCase;
@@ -38,7 +40,9 @@ export function createPhase1QueryFlow(params: {
   const authPreflight = new AzureCliPreflightAdapter(params.authPreflightRunner);
   const queryRuntime = new AzureQueryRuntimeAdapter(params.httpClient, contextStore);
   const iterationsAdapter = new AzureIterationsAdapter(params.httpClient, contextStore);
-  const buildTimelineView = new BuildTimelineViewUseCase(iterationsAdapter);
+  const buildTimelineView = new BuildTimelineViewUseCase(iterationsAdapter, {
+    iterationCacheTtlMs: ITERATION_CACHE_TTL_MS
+  });
   const mappingSettings = new FileMappingSettingsAdapter(
     params.mappingFilePath ?? path.join(path.dirname(params.contextFilePath), "mapping-settings.json")
   );
