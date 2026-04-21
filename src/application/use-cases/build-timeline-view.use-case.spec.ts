@@ -110,7 +110,7 @@ describe("BuildTimelineViewUseCase", () => {
     });
 
     expect(result.mappingValidation.status).toBe("invalid");
-    expect(result.mappingValidation.issues.map((issue: unknown) => (issue as Record<string, unknown>).code)).toEqual([
+    expect(result.mappingValidation.issues.map((issue) => issue.code)).toEqual([
       "MAP_REQUIRED_BLANK",
       "MAP_REQUIRED_DUPLICATE",
       "MAP_REQUIRED_DUPLICATE"
