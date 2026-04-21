@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  extractIterationPath,
-  shouldUseIterationScheduling
-} from "./iteration-scheduling.js";
+import { buildIterationDatesMap, extractIterationPath } from "./iteration-scheduling.js";
 
 describe("iteration-scheduling", () => {
   describe("extractIterationPath", () => {
@@ -69,7 +66,7 @@ describe("iteration-scheduling", () => {
       expect(result).toBeNull();
     });
 
-    it("trims whitespace from iteration path", () => {
+    it("trims outer whitespace from iteration path", () => {
       const result = extractIterationPath({
         "System.IterationPath": "  ProjectC  \\  Sprint 3  "
       });
@@ -81,67 +78,35 @@ describe("iteration-scheduling", () => {
     });
   });
 
-  describe("shouldUseIterationScheduling", () => {
-    it("returns true when item has no dates but has iteration", () => {
-      const result = shouldUseIterationScheduling({
-        hasExplicitStartDate: false,
-        hasExplicitEndDate: false,
-        iterationPath: {
-          projectName: "ProjectA",
-          iterationPath: "ProjectA\\Sprint 1"
+  describe("buildIterationDatesMap", () => {
+    it("maps iterations with both dates by full path and last segment", () => {
+      const result = buildIterationDatesMap([
+        {
+          path: "ProjectA\\Release 1\\Sprint 1",
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      ]);
+
+      expect(result).toEqual({
+        "ProjectA\\Release 1\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        },
+        "Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
         }
       });
-
-      expect(result).toBe(true);
     });
 
-    it("returns false when item has start date", () => {
-      const result = shouldUseIterationScheduling({
-        hasExplicitStartDate: true,
-        hasExplicitEndDate: false,
-        iterationPath: {
-          projectName: "ProjectA",
-          iterationPath: "ProjectA\\Sprint 1"
-        }
-      });
+    it("skips iterations without both dates", () => {
+      const result = buildIterationDatesMap([
+        { path: "ProjectA\\Sprint 1", startDate: null, endDate: "2026-03-14T00:00:00.000Z" },
+        { path: "ProjectA\\Sprint 2", startDate: "2026-03-15T00:00:00.000Z", endDate: null }
+      ]);
 
-      expect(result).toBe(false);
-    });
-
-    it("returns false when item has end date", () => {
-      const result = shouldUseIterationScheduling({
-        hasExplicitStartDate: false,
-        hasExplicitEndDate: true,
-        iterationPath: {
-          projectName: "ProjectA",
-          iterationPath: "ProjectA\\Sprint 1"
-        }
-      });
-
-      expect(result).toBe(false);
-    });
-
-    it("returns false when item has both dates", () => {
-      const result = shouldUseIterationScheduling({
-        hasExplicitStartDate: true,
-        hasExplicitEndDate: true,
-        iterationPath: {
-          projectName: "ProjectA",
-          iterationPath: "ProjectA\\Sprint 1"
-        }
-      });
-
-      expect(result).toBe(false);
-    });
-
-    it("returns false when item has no iteration path", () => {
-      const result = shouldUseIterationScheduling({
-        hasExplicitStartDate: false,
-        hasExplicitEndDate: false,
-        iterationPath: null
-      });
-
-      expect(result).toBe(false);
+      expect(result).toEqual({});
     });
   });
 });
