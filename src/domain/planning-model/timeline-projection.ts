@@ -38,20 +38,16 @@ export function projectTimeline(
     const missingEnd = task.endDate === null;
 
     if (missingStart && missingEnd) {
-      // Check if item has iteration dates as fallback
       if (iterationDates) {
         const iterationPathInfo = extractIterationPath(task.fieldValues);
         if (iterationPathInfo) {
-          // Try exact match first
           let iterationDatesForPath = iterationDates[iterationPathInfo.iterationPath];
-          
-          // If no exact match, try matching just the sprint part (without project)
+
           if (!iterationDatesForPath && iterationPathInfo.iterationPath.includes("\\")) {
             const sprintPart = iterationPathInfo.iterationPath.split("\\").slice(1).join("\\");
             iterationDatesForPath = iterationDates[sprintPart];
           }
-          
-          // If still no match, try all keys and find partial matches
+
           if (!iterationDatesForPath) {
             const mapKeys = Object.keys(iterationDates);
             for (const k of mapKeys) {
@@ -61,14 +57,9 @@ export function projectTimeline(
               }
             }
           }
-          
-          if (!iterationDatesForPath) {
-            console.warn(`[iteration-match-fail] WI#${task.workItemId} has iteration "${iterationPathInfo.iterationPath}" but no dates found in map keys: ${Object.keys(iterationDates).join(", ")}`);
-          }
-          
+
           if (iterationDatesForPath) {
-            // Add to unschedulable but with fallback schedule for display
-            unschedulable.push({
+            bars.push({
               workItemId: task.workItemId,
               title: task.title,
               state: task.state,
@@ -84,15 +75,14 @@ export function projectTimeline(
                 fieldValues: task.fieldValues,
                 assignedTo: task.assignedTo,
                 parentWorkItemId: task.parentWorkItemId
-              },
-              reason: "missing-both-dates"
+              }
             });
+            schedulableIds.add(task.workItemId);
             return;
           }
         }
       }
 
-      // No iteration dates available; mark as unschedulable
       unschedulable.push({
         workItemId: task.workItemId,
         title: task.title,
