@@ -10,6 +10,7 @@ type UseTimelineKeyboardShortcutsParams = {
   isRefreshing?: boolean;
   onRemoveDependency?: (input: { predecessorWorkItemId: number; successorWorkItemId: number }) => Promise<void>;
   onPushPendingWorkItemChanges?: () => void;
+  onPrintCurrentView?: () => void;
   onRetryRefresh?: () => void;
   onToggleTimelineFilters: () => void;
   onToggleSortSettings: () => void;
@@ -38,6 +39,14 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
         if ((params.pendingWorkItemSyncCount ?? 0) > 0) {
           event.preventDefault();
           params.onPushPendingWorkItemChanges?.();
+        }
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "p") {
+        if (params.onPrintCurrentView) {
+          event.preventDefault();
+          params.onPrintCurrentView();
         }
         return;
       }
@@ -154,6 +163,7 @@ export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcut
     params.isRefreshing,
     params.onRemoveDependency,
     params.onPushPendingWorkItemChanges,
+    params.onPrintCurrentView,
     params.onRotateDependencyMode,
     params.onRetryRefresh,
     params.onSelectMonthZoom,

@@ -74,6 +74,10 @@ import {
 } from "./use-timeline-filters.js";
 import { useTimelineOverlayDismiss } from "./use-timeline-overlay-dismiss.js";
 import { useTimelineKeyboardShortcuts } from "./use-timeline-keyboard-shortcuts.js";
+import { usePrintCurrentView } from "./use-print-current-view.js";
+import { TimelinePrintHeader } from "./timeline-print-header.js";
+import { TimelinePrintFooter } from "./timeline-print-footer.js";
+import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js";
 import { TimelineSortControl } from "./timeline-sort-control.js";
 import { applyTimelineSorting } from "./timeline-sorting.js";
 import { useTimelineSorting } from "./use-timeline-sorting.js";
@@ -92,6 +96,7 @@ const MAX_PRIMARY_TITLE_LENGTH = 42;
 export type TimelinePaneProps = {
   timeline: TimelineReadModel | null;
   activeQueryId?: string | null;
+  activeQueryName?: string | null;
   showDependencies: boolean;
   isRefreshing?: boolean;
   workItemSyncState?: WorkItemSyncState;
@@ -990,9 +995,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setSidebarFieldSearchDraft("");
   }, [setLabelFieldSearchDraft, setLabelSettingsOpen, setSidebarFieldSearchDraft]);
 
+  const printCurrentView = usePrintCurrentView({ chartScrollRef });
+
   useTimelineKeyboardShortcuts({
     isRefreshing: props.isRefreshing,
     onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges,
+    onPrintCurrentView: printCurrentView.triggerPrint,
     onToggleTimelineFilters: toggleTimelineFilters,
     onToggleSortSettings: toggleSortSettings,
     onToggleLabelSettings: toggleLabelSettings,
@@ -2173,6 +2181,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       resolveSelectedColorCodingLabel,
       toScopedFieldValueColorKey
     }),
+    React.createElement(TimelinePrintHeader, {
+      queryName: props.activeQueryName ?? null,
+      queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
+      workItemCount: chartModel.bars.length,
+      printedAt: new Date(),
+      isPrintMode: printCurrentView.isPrintMode
+    }),
+    React.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }),
     React.createElement(
       "div",
       {
@@ -5153,6 +5169,7 @@ function truncateTitle(title: string): string {
 
   return `${title.slice(0, MAX_PRIMARY_TITLE_LENGTH - 1)}…`;
 }
+
 
 function truncateTitleToBarWidth(title: string, barWidth: number): string {
   const availableWidth = Math.max(0, barWidth - BAR_LABEL_HORIZONTAL_PADDING * 2);

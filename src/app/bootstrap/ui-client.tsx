@@ -63,6 +63,9 @@ import {
   type PendingWorkItemMutation
 } from "./ui-client-work-item-sync.js";
 import { resolveHydratedHeaderQuerySelection } from "./ui-client-header-query-flow.js";
+import { resolveActiveQueryName } from "./ui-client-header-query-service.js";
+import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js";
+import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
@@ -781,12 +784,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                               event.stopPropagation();
                               const entryOrg = entry.organization ?? organization;
                               const entryProject = entry.project ?? project;
-                              if (entryOrg && entryProject) {
-                                window.open(
-                                  `https://dev.azure.com/${encodeURIComponent(entryOrg)}/${encodeURIComponent(entryProject)}/_queries/query/${encodeURIComponent(entry.id)}`,
-                                  "_blank",
-                                  "noopener,noreferrer"
-                                );
+                              const queryUrl = buildAzureQueryUrl(entryOrg, entryProject, entry.id);
+                              if (queryUrl) {
+                                window.open(queryUrl, "_blank", "noopener,noreferrer");
                               }
                             }
                           },
@@ -934,6 +934,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         React.createElement(TimelinePane, {
           key: response?.activeQueryId ?? "timeline-no-query",
           activeQueryId: response?.activeQueryId ?? null,
+          activeQueryName: resolveActiveQueryName(
+            response?.activeQueryId ?? null,
+            response,
+            headerQueryFlow.savedHeaderQueries
+          ),
           timeline: uiModel.timeline,
           showDependencies: true,
           isRefreshing,
@@ -1089,21 +1094,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       React.createElement("span", null, "An "),
       React.createElement(
         "a",
-        {
-          href: "https://github.com/tensor-five/AzureGanttOps",
-          target: "_blank",
-          rel: "noreferrer"
-        },
+        { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" },
         "Open Source Project"
       ),
       React.createElement("span", null, " by Christian Betz @ "),
       React.createElement(
         "a",
-        {
-          href: "https://tensorfive.com",
-          target: "_blank",
-          rel: "noreferrer"
-        },
+        { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" },
         "TensorFive GmbH"
       )
     ),

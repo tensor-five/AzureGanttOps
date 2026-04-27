@@ -17,6 +17,29 @@ export function findAzureSavedQueryName(response: QueryIntakeResponse | null, qu
   return name.length > 0 ? name : null;
 }
 
+export function resolveActiveQueryName(
+  activeQueryId: string | null,
+  response: QueryIntakeResponse | null,
+  savedHeaderQueries: SavedQueryPreference[]
+): string | null {
+  if (!activeQueryId) {
+    return null;
+  }
+  const fromAzure = findAzureSavedQueryName(response, activeQueryId);
+  if (fromAzure) {
+    return fromAzure;
+  }
+  const normalizedQueryId = activeQueryId.trim().toLowerCase();
+  const headerMatch = savedHeaderQueries.find(
+    (entry) => entry.id.trim().toLowerCase() === normalizedQueryId
+  );
+  const headerName = headerMatch?.name.trim() ?? "";
+  if (headerName.length === 0 || headerName === activeQueryId) {
+    return null;
+  }
+  return headerName;
+}
+
 export function filterHeaderQueries(queries: SavedQueryPreference[], searchDraft: string): SavedQueryPreference[] {
   const search = searchDraft.trim().toLowerCase();
   if (!search) {

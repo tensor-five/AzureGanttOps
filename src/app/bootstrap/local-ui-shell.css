@@ -3601,3 +3601,186 @@ input {
 .refresh-discard-warning-confirm:hover {
   background: var(--color-danger-dark, #b91c1c);
 }
+
+.timeline-print-header,
+.timeline-print-footer {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body[data-print-mode="active"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
+  }
+
+  body[data-print-mode="active"] *,
+  body[data-print-mode="active"] *::before,
+  body[data-print-mode="active"] *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body[data-print-mode="active"] .timeline-pane-actions,
+  body[data-print-mode="active"] .timeline-filter-panel,
+  body[data-print-mode="active"] .timeline-color-coding-panel,
+  body[data-print-mode="active"] .timeline-update-error,
+  body[data-print-mode="active"] .timeline-chart-overlay-actions,
+  body[data-print-mode="active"] .timeline-main-splitter,
+  body[data-print-mode="active"] .timeline-details-panel-surface,
+  body[data-print-mode="active"] .timeline-sort-control-panel,
+  body[data-print-mode="active"] .timeline-label-panel,
+  body[data-print-mode="active"] .timeline-unschedulable-list,
+  body[data-print-mode="active"] .ui-shell-header,
+  body[data-print-mode="active"] .ui-shell-footer,
+  body[data-print-mode="active"] .ui-shell-sidebar,
+  body[data-print-mode="active"] .ui-shell-side-title,
+  body[data-print-mode="active"] .warning-banner {
+    display: none !important;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12mm;
+    padding: 0 0 3mm;
+    margin: 0 0 4mm;
+    font-size: 10pt;
+    color: #000000;
+    border-bottom: 1px solid #888888;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header-title-block {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header-title {
+    font-weight: 600;
+    font-size: 12pt;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid #888888;
+    color: #444444;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header-link-icon {
+    width: 10px;
+    height: 10px;
+  }
+
+  body[data-print-mode="active"] .timeline-print-footer {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    font-size: 7pt;
+    line-height: 1;
+    color: #888888;
+    opacity: 0.6;
+  }
+
+  body[data-print-mode="active"] .timeline-print-footer-link {
+    color: var(--color-primary, #2563eb);
+    text-decoration: none;
+  }
+
+  body[data-print-mode="active"] .timeline-print-header-meta {
+    font-variant-numeric: tabular-nums;
+    color: #444444;
+    flex-shrink: 0;
+  }
+
+  body[data-print-mode="active"] .ui-shell,
+  body[data-print-mode="active"] .ui-shell-content,
+  body[data-print-mode="active"] .gantt-primary-card,
+  body[data-print-mode="active"] .timeline-pane,
+  body[data-print-mode="active"] .timeline-main-grid,
+  body[data-print-mode="active"] .timeline-chart-surface,
+  body[data-print-mode="active"] .timeline-main-column {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    max-height: none !important;
+    height: auto !important;
+    width: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  body[data-print-mode="active"] .timeline-chart-viewport-shell {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    width: calc(var(--print-chart-width, 0px) * var(--print-scale, 1)) !important;
+    height: calc(var(--print-chart-height, 0px) * var(--print-scale, 1)) !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  body[data-print-mode="active"] .timeline-chart-scroll {
+    overflow: auto !important;
+    max-height: none !important;
+    width: var(--print-chart-width, auto) !important;
+    height: var(--print-chart-height, auto) !important;
+    border: 1px solid #cccccc !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    transform: scale(var(--print-scale, 1));
+    transform-origin: top left;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    scrollbar-width: none !important;
+  }
+
+  body[data-print-mode="active"] .timeline-left-sidebar {
+    position: relative !important;
+    background: #ffffff !important;
+  }
+
+  body[data-print-mode="active"] *,
+  body[data-print-mode="active"] *::before,
+  body[data-print-mode="active"] *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
