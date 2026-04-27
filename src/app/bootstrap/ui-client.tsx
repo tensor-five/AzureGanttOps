@@ -1086,7 +1086,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     React.createElement(
       "footer",
       { className: "ui-shell-footer" },
-      React.createElement("span", null, "An Open Source Project by Christian Betz @ "),
+      React.createElement("span", null, "An "),
+      React.createElement(
+        "a",
+        {
+          href: "https://github.com/tensor-five/AzureGanttOps",
+          target: "_blank",
+          rel: "noreferrer"
+        },
+        "Open Source Project"
+      ),
+      React.createElement("span", null, " by Christian Betz @ "),
       React.createElement(
         "a",
         {
