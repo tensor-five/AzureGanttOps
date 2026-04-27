@@ -90,8 +90,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
 
   const lines = buildTimelineDetailsLines(props);
-  const selectedBar = props.timeline?.bars.find((bar) => bar.workItemId === props.selectedWorkItemId) ?? null;
-  const datesFromIteration = selectedBar?.schedule.isIterationFallback === true;
+  const datesFromIteration = selected?.datesFromIteration === true;
   const entries = lines
     .map((line) => parseTimelineDetailLine(line))
     .filter((entry): entry is { label: string; value: string } => entry !== null)
@@ -99,7 +98,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     .map((entry, index) => {
       const normalizedLabel = entry.label.trim().toLowerCase();
       const isDateRow = normalizedLabel === "start" || normalizedLabel === "end";
-      const showIterationHint = datesFromIteration && isDateRow && entry.value !== "none";
+      const showIterationHint = datesFromIteration && isDateRow;
       return React.createElement(
         "div",
         { key: `${index}-${entry.label}`, className: "timeline-details-row" },
@@ -525,7 +524,13 @@ export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): str
 function resolveSelectedWorkItem(
   timeline: TimelineReadModel | null,
   selectedWorkItemId: number | null
-): { workItemId: number; title: string; descriptionHtml: string; state: string } | null {
+): {
+  workItemId: number;
+  title: string;
+  descriptionHtml: string;
+  state: string;
+  datesFromIteration: boolean;
+} | null {
   if (!timeline || selectedWorkItemId === null) {
     return null;
   }
@@ -536,7 +541,8 @@ function resolveSelectedWorkItem(
       workItemId: selectedBar.workItemId,
       title: selectedBar.title,
       descriptionHtml: selectedBar.details.descriptionHtml ?? "",
-      state: selectedBar.state.code
+      state: selectedBar.state.code,
+      datesFromIteration: selectedBar.schedule.isIterationFallback === true
     };
   }
 
@@ -546,7 +552,8 @@ function resolveSelectedWorkItem(
       workItemId: selectedUnschedulable.workItemId,
       title: selectedUnschedulable.title,
       descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
-      state: selectedUnschedulable.state.code
+      state: selectedUnschedulable.state.code,
+      datesFromIteration: false
     };
   }
 
