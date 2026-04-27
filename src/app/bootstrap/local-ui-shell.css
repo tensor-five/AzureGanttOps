@@ -3146,6 +3146,7 @@ button {
 }
 
 .timeline-details-row-hint {
+  flex: 0 0 auto;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
