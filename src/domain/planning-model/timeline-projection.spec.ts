@@ -228,7 +228,7 @@ describe("projectTimeline", () => {
         startDate: "2026-03-01T00:00:00.000Z",
         endDate: "2026-03-14T00:00:00.000Z",
         missingBoundary: null,
-        isIterationFallback: true
+        iterationFallback: "both"
       }
     });
     expect(projection.unschedulable).toHaveLength(0);
@@ -275,7 +275,7 @@ describe("projectTimeline", () => {
         missingBoundary: null
       }
     });
-    expect(projection.bars[0].schedule.isIterationFallback).toBeUndefined();
+    expect(projection.bars[0].schedule.iterationFallback).toBeUndefined();
   });
 
   it("remains unschedulable when iteration dates unavailable", () => {
@@ -316,6 +316,126 @@ describe("projectTimeline", () => {
       title: "Has iteration path but no date metadata",
       reason: "missing-both-dates"
     });
+  });
+
+  it("fills missing start from iteration when end is set", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 200,
+            mappedId: "WI-200",
+            title: "End-only with iteration",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Sprint 1"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: null,
+            endDate: "2026-03-10T00:00:00.000Z",
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(1);
+    expect(projection.bars[0].schedule).toMatchObject({
+      startDate: "2026-03-01T00:00:00.000Z",
+      endDate: "2026-03-10T00:00:00.000Z",
+      missingBoundary: null,
+      iterationFallback: "start"
+    });
+  });
+
+  it("fills missing end from iteration when start is set", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 201,
+            mappedId: "WI-201",
+            title: "Start-only with iteration",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Sprint 1"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: "2026-03-05T00:00:00.000Z",
+            endDate: null,
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(1);
+    expect(projection.bars[0].schedule).toMatchObject({
+      startDate: "2026-03-05T00:00:00.000Z",
+      endDate: "2026-03-14T00:00:00.000Z",
+      missingBoundary: null,
+      iterationFallback: "end"
+    });
+  });
+
+  it("keeps half-open marker when only one date is set and iteration is unavailable", () => {
+    const projection = projectTimeline(
+      {
+        tasks: [
+          {
+            workItemId: 202,
+            mappedId: "WI-202",
+            title: "End-only without iteration match",
+            descriptionHtml: null,
+            workItemType: "Task",
+            fieldValues: {
+              "System.IterationPath": "MyProject\\Unknown Sprint"
+            },
+            assignedTo: null,
+            parentWorkItemId: null,
+            startDate: null,
+            endDate: "2026-03-10T00:00:00.000Z",
+            state: { code: "Active", badge: "A", color: "#1d4ed8" }
+          }
+        ],
+        dependencies: []
+      },
+      undefined,
+      {
+        "MyProject\\Sprint 1": {
+          startDate: "2026-03-01T00:00:00.000Z",
+          endDate: "2026-03-14T00:00:00.000Z"
+        }
+      }
+    );
+
+    expect(projection.bars).toHaveLength(1);
+    expect(projection.bars[0].schedule).toMatchObject({
+      startDate: null,
+      endDate: "2026-03-10T00:00:00.000Z",
+      missingBoundary: "start"
+    });
+    expect(projection.bars[0].schedule.iterationFallback).toBeUndefined();
   });
 
   it("remains unschedulable when no iteration dates provided", () => {

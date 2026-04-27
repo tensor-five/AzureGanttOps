@@ -10,6 +10,13 @@ afterEach(() => {
   cleanup();
 });
 
+function rowLabelsWithIterationHint(container: HTMLElement): string[] {
+  const rows = Array.from(container.querySelectorAll(".timeline-details-row"));
+  return rows
+    .filter((row) => row.querySelector(".timeline-details-row-hint-iteration") !== null)
+    .map((row) => row.querySelector(".timeline-details-row-label")?.textContent?.trim() ?? "");
+}
+
 function makeTimeline(): TimelineReadModel {
   return {
     queryType: "flat",
@@ -118,9 +125,9 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it("marks start and end dates with an iteration hint when dates were inherited from the iteration", () => {
+  it("marks start and end dates with an iteration hint when both dates were inherited from the iteration", () => {
     const timeline = makeTimeline();
-    timeline.bars[0].schedule.isIterationFallback = true;
+    timeline.bars[0].schedule.iterationFallback = "both";
 
     const { container } = render(
       React.createElement(TimelineDetailsPanel, {
@@ -135,6 +142,34 @@ describe("timeline-details-panel keyboard shortcuts", () => {
       expect(hint.textContent).toBe("from iteration");
       expect(hint.getAttribute("title")).toContain("iteration");
     });
+  });
+
+  it("marks only the start row when only the start was filled from the iteration", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.iterationFallback = "start";
+
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11
+      })
+    );
+
+    expect(rowLabelsWithIterationHint(container)).toEqual(["start:"]);
+  });
+
+  it("marks only the end row when only the end was filled from the iteration", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.iterationFallback = "end";
+
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11
+      })
+    );
+
+    expect(rowLabelsWithIterationHint(container)).toEqual(["end:"]);
   });
 
   it("does not show the iteration hint when dates come from the work item", () => {

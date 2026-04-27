@@ -90,15 +90,18 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
 
   const lines = buildTimelineDetailsLines(props);
-  const datesFromIteration = selected?.datesFromIteration === true;
+  const iterationFallback = selected?.iterationFallback ?? null;
   const entries = lines
     .map((line) => parseTimelineDetailLine(line))
     .filter((entry): entry is { label: string; value: string } => entry !== null)
     .filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase()))
     .map((entry, index) => {
       const normalizedLabel = entry.label.trim().toLowerCase();
-      const isDateRow = normalizedLabel === "start" || normalizedLabel === "end";
-      const showIterationHint = datesFromIteration && isDateRow;
+      const isStartRow = normalizedLabel === "start";
+      const isEndRow = normalizedLabel === "end";
+      const showIterationHint =
+        (isStartRow && (iterationFallback === "start" || iterationFallback === "both")) ||
+        (isEndRow && (iterationFallback === "end" || iterationFallback === "both"));
       return React.createElement(
         "div",
         { key: `${index}-${entry.label}`, className: "timeline-details-row" },
@@ -529,7 +532,7 @@ function resolveSelectedWorkItem(
   title: string;
   descriptionHtml: string;
   state: string;
-  datesFromIteration: boolean;
+  iterationFallback: "start" | "end" | "both" | null;
 } | null {
   if (!timeline || selectedWorkItemId === null) {
     return null;
@@ -542,7 +545,7 @@ function resolveSelectedWorkItem(
       title: selectedBar.title,
       descriptionHtml: selectedBar.details.descriptionHtml ?? "",
       state: selectedBar.state.code,
-      datesFromIteration: selectedBar.schedule.isIterationFallback === true
+      iterationFallback: selectedBar.schedule.iterationFallback ?? null
     };
   }
 
@@ -553,7 +556,7 @@ function resolveSelectedWorkItem(
       title: selectedUnschedulable.title,
       descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
       state: selectedUnschedulable.state.code,
-      datesFromIteration: false
+      iterationFallback: null
     };
   }
 

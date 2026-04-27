@@ -23,7 +23,7 @@ export type TimelineBar = {
     startDate: string | null;
     endDate: string | null;
     missingBoundary: "start" | "end" | null;
-    isIterationFallback?: boolean;
+    iterationFallback?: "start" | "end" | "both";
   };
   details: {
     mappedId: string;

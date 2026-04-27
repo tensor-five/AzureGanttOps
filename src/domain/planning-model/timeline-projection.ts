@@ -36,76 +36,63 @@ export function projectTimeline(
   canonical.tasks.forEach((task) => {
     const missingStart = task.startDate === null;
     const missingEnd = task.endDate === null;
+    const iterationDatesForTask = resolveIterationDatesForTask(task.fieldValues, iterationDates);
+    const details = {
+      mappedId: task.mappedId,
+      descriptionHtml: task.descriptionHtml,
+      workItemType: task.workItemType,
+      fieldValues: task.fieldValues,
+      assignedTo: task.assignedTo,
+      parentWorkItemId: task.parentWorkItemId
+    };
 
     if (missingStart && missingEnd) {
-      if (iterationDates) {
-        const iterationPathInfo = extractIterationPath(task.fieldValues);
-        if (iterationPathInfo) {
-          let iterationDatesForPath = iterationDates[iterationPathInfo.iterationPath];
-
-          if (!iterationDatesForPath && iterationPathInfo.iterationPath.includes("\\")) {
-            const sprintPart = iterationPathInfo.iterationPath.split("\\").slice(1).join("\\");
-            iterationDatesForPath = iterationDates[sprintPart];
-          }
-
-          if (!iterationDatesForPath) {
-            const mapKeys = Object.keys(iterationDates);
-            for (const k of mapKeys) {
-              if (k.endsWith(iterationPathInfo.iterationPath) || iterationPathInfo.iterationPath.endsWith(k)) {
-                iterationDatesForPath = iterationDates[k];
-                break;
-              }
-            }
-          }
-
-          if (iterationDatesForPath) {
-            bars.push({
-              workItemId: task.workItemId,
-              title: task.title,
-              state: task.state,
-              schedule: {
-                startDate: iterationDatesForPath.startDate,
-                endDate: iterationDatesForPath.endDate,
-                missingBoundary: null,
-                isIterationFallback: true
-              },
-              details: {
-                mappedId: task.mappedId,
-                descriptionHtml: task.descriptionHtml,
-                workItemType: task.workItemType,
-                fieldValues: task.fieldValues,
-                assignedTo: task.assignedTo,
-                parentWorkItemId: task.parentWorkItemId
-              }
-            });
-            schedulableIds.add(task.workItemId);
-            return;
-          }
-        }
+      if (iterationDatesForTask) {
+        bars.push({
+          workItemId: task.workItemId,
+          title: task.title,
+          state: task.state,
+          schedule: {
+            startDate: iterationDatesForTask.startDate,
+            endDate: iterationDatesForTask.endDate,
+            missingBoundary: null,
+            iterationFallback: "both"
+          },
+          details
+        });
+        schedulableIds.add(task.workItemId);
+        return;
       }
 
       unschedulable.push({
         workItemId: task.workItemId,
         title: task.title,
         state: task.state,
-        details: {
-          mappedId: task.mappedId,
-          descriptionHtml: task.descriptionHtml,
-          workItemType: task.workItemType,
-          fieldValues: task.fieldValues,
-          assignedTo: task.assignedTo,
-          parentWorkItemId: task.parentWorkItemId
-        },
+        details,
         reason: "missing-both-dates"
       });
       return;
     }
 
+    let scheduleStart = task.startDate;
+    let scheduleEnd = task.endDate;
     let missingBoundary: "start" | "end" | null = null;
+    let iterationFallback: "start" | "end" | "both" | undefined;
+
     if (missingStart) {
-      missingBoundary = "start";
+      if (iterationDatesForTask) {
+        scheduleStart = iterationDatesForTask.startDate;
+        iterationFallback = "start";
+      } else {
+        missingBoundary = "start";
+      }
     } else if (missingEnd) {
-      missingBoundary = "end";
+      if (iterationDatesForTask) {
+        scheduleEnd = iterationDatesForTask.endDate;
+        iterationFallback = "end";
+      } else {
+        missingBoundary = "end";
+      }
     }
 
     bars.push({
@@ -113,18 +100,12 @@ export function projectTimeline(
       title: task.title,
       state: task.state,
       schedule: {
-        startDate: task.startDate,
-        endDate: task.endDate,
-        missingBoundary
+        startDate: scheduleStart,
+        endDate: scheduleEnd,
+        missingBoundary,
+        ...(iterationFallback ? { iterationFallback } : {})
       },
-      details: {
-        mappedId: task.mappedId,
-        descriptionHtml: task.descriptionHtml,
-        workItemType: task.workItemType,
-        fieldValues: task.fieldValues,
-        assignedTo: task.assignedTo,
-        parentWorkItemId: task.parentWorkItemId
-      }
+      details
     });
 
     schedulableIds.add(task.workItemId);
@@ -217,6 +198,41 @@ function reorderByTreeLayout<T extends { workItemId: number }>(items: T[], layou
     const rightPos = positionById.get(right.workItemId) ?? Number.MAX_SAFE_INTEGER;
     return leftPos - rightPos;
   });
+}
+
+function resolveIterationDatesForTask(
+  fieldValues: Record<string, string | number | null>,
+  iterationDates: IterationDatesMap | null | undefined
+): { startDate: string; endDate: string } | null {
+  if (!iterationDates) {
+    return null;
+  }
+
+  const iterationPathInfo = extractIterationPath(fieldValues);
+  if (!iterationPathInfo) {
+    return null;
+  }
+
+  const directMatch = iterationDates[iterationPathInfo.iterationPath];
+  if (directMatch) {
+    return directMatch;
+  }
+
+  if (iterationPathInfo.iterationPath.includes("\\")) {
+    const sprintPart = iterationPathInfo.iterationPath.split("\\").slice(1).join("\\");
+    const sprintMatch = iterationDates[sprintPart];
+    if (sprintMatch) {
+      return sprintMatch;
+    }
+  }
+
+  for (const key of Object.keys(iterationDates)) {
+    if (key.endsWith(iterationPathInfo.iterationPath) || iterationPathInfo.iterationPath.endsWith(key)) {
+      return iterationDates[key];
+    }
+  }
+
+  return null;
 }
 
 function toTimestamp(value: string | null): number | null {
