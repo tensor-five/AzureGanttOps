@@ -66,7 +66,8 @@ export function projectTimeline(
               schedule: {
                 startDate: iterationDatesForPath.startDate,
                 endDate: iterationDatesForPath.endDate,
-                missingBoundary: null
+                missingBoundary: null,
+                isIterationFallback: true
               },
               details: {
                 mappedId: task.mappedId,

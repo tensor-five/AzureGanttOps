@@ -90,18 +90,33 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
 
   const lines = buildTimelineDetailsLines(props);
+  const selectedBar = props.timeline?.bars.find((bar) => bar.workItemId === props.selectedWorkItemId) ?? null;
+  const datesFromIteration = selectedBar?.schedule.isIterationFallback === true;
   const entries = lines
     .map((line) => parseTimelineDetailLine(line))
     .filter((entry): entry is { label: string; value: string } => entry !== null)
     .filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase()))
-    .map((entry, index) =>
-      React.createElement(
+    .map((entry, index) => {
+      const normalizedLabel = entry.label.trim().toLowerCase();
+      const isDateRow = normalizedLabel === "start" || normalizedLabel === "end";
+      const showIterationHint = datesFromIteration && isDateRow && entry.value !== "none";
+      return React.createElement(
         "div",
         { key: `${index}-${entry.label}`, className: "timeline-details-row" },
         React.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`),
-        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value))
-      )
-    );
+        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value)),
+        showIterationHint
+          ? React.createElement(
+              "span",
+              {
+                className: "timeline-details-row-hint timeline-details-row-hint-iteration",
+                title: "Date inherited from the iteration; not set on this work item"
+              },
+              "from iteration"
+            )
+          : null
+      );
+    });
 
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");

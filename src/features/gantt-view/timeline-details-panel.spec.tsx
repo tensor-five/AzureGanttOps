@@ -118,6 +118,37 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
+  it("marks start and end dates with an iteration hint when dates were inherited from the iteration", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.isIterationFallback = true;
+
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11
+      })
+    );
+
+    const hints = container.querySelectorAll(".timeline-details-row-hint-iteration");
+    expect(hints).toHaveLength(2);
+    hints.forEach((hint) => {
+      expect(hint.textContent).toBe("from iteration");
+      expect(hint.getAttribute("title")).toContain("iteration");
+    });
+  });
+
+  it("does not show the iteration hint when dates come from the work item", () => {
+    const { container } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeTimeline(),
+        selectedWorkItemId: 11
+      })
+    );
+
+    const hints = container.querySelectorAll(".timeline-details-row-hint-iteration");
+    expect(hints).toHaveLength(0);
+  });
+
   it("sanitizes unsafe description html before rendering and saving", async () => {
     const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
     const timeline = makeTimeline();

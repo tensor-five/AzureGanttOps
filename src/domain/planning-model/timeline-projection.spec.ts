@@ -227,7 +227,8 @@ describe("projectTimeline", () => {
       schedule: {
         startDate: "2026-03-01T00:00:00.000Z",
         endDate: "2026-03-14T00:00:00.000Z",
-        missingBoundary: null
+        missingBoundary: null,
+        isIterationFallback: true
       }
     });
     expect(projection.unschedulable).toHaveLength(0);
@@ -274,6 +275,7 @@ describe("projectTimeline", () => {
         missingBoundary: null
       }
     });
+    expect(projection.bars[0].schedule.isIterationFallback).toBeUndefined();
   });
 
   it("remains unschedulable when iteration dates unavailable", () => {

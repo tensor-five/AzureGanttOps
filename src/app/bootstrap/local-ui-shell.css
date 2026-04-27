@@ -3145,6 +3145,22 @@ button {
   flex: 1;
 }
 
+.timeline-details-row-hint {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  cursor: help;
+}
+
+.timeline-details-row-hint-iteration {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border-subtle);
+}
+
 .timeline-details-raw {
   position: absolute;
   width: 1px;
