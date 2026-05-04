@@ -19,8 +19,8 @@ const TOKEN_REFRESH_SKEW_MS = 120_000;
 const TOKEN_COMMAND_TIMEOUT_MS = 60_000;
 const PORT = Number(process.env.PORT ?? "8080");
 
-if (process.env.ADO_VERBOSE_LOGS !== "1") {
-  process.env.ADO_VERBOSE_LOGS = "1";
+if (process.env.ADO_VERBOSE_LOGS !== "0") {
+  process.env.ADO_VERBOSE_LOGS = "0";
 }
 if (process.env.ADO_WRITE_ENABLED !== "1") {
   process.env.ADO_WRITE_ENABLED = "1";
