@@ -1,6 +1,7 @@
 import type { AdoContextStore } from "../../app/config/ado-context.store.js";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { RunQueryIntakeUseCase } from "../../application/use-cases/run-query-intake.use-case.js";
+import { extractAvailableFieldRefs } from "../../application/services/extract-available-field-refs.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import { parseQueryInput } from "../../domain/query-runtime/services/query-input-parser.js";
 import {
@@ -109,6 +110,7 @@ export type QueryIntakeResponse = {
     issues: MappingValidationIssue[];
   };
   activeMappingProfileId: string | null;
+  detectedFieldRefs: string[];
   view: string;
 };
 
@@ -188,6 +190,7 @@ export class QueryIntakeController {
           issues: []
         },
         activeMappingProfileId: null,
+        detectedFieldRefs: [],
         view: renderQueryIntakeView(model)
       };
 
@@ -354,6 +357,7 @@ export class QueryIntakeController {
         timeline: effectiveTimeline,
         mappingValidation: effectiveMappingValidation,
         activeMappingProfileId,
+        detectedFieldRefs: effectiveSnapshot ? extractAvailableFieldRefs(effectiveSnapshot) : [],
         view: renderQueryIntakeView(model)
       };
 
@@ -429,6 +433,7 @@ export class QueryIntakeController {
           issues: []
         },
         activeMappingProfileId: null,
+        detectedFieldRefs: [],
         view: renderQueryIntakeView(model)
       };
 

@@ -109,14 +109,14 @@ describe("top-tabs routed interactions", () => {
     expect(onBlockedAttempt).toHaveBeenCalledTimes(1);
     expect(onBlockedAttempt).toHaveBeenCalledWith({
       tab: "timeline",
-      reason: "Required mapping fields are invalid.",
-      nextAction: "Open Mapping and resolve required id/title/start/endOrTarget fields."
+      reason: "Field mapping needs your confirmation.",
+      nextAction: "Open Mapping to apply the standard Azure mapping or pick custom fields."
     });
 
     const blocker = resolveTabBlocker("timeline", blockedModel);
     expect(blocker.blocked).toBe(true);
-    expect(blocker.reason).toContain("Required mapping fields are invalid.");
-    expect(blocker.nextAction).toContain("resolve required id/title/start/endOrTarget fields");
+    expect(blocker.reason).toContain("Field mapping needs your confirmation.");
+    expect(blocker.nextAction).toContain("apply the standard Azure mapping or pick custom fields");
   });
 
   it("allows diagnostics navigation after query run and does not emit blocker event", async () => {

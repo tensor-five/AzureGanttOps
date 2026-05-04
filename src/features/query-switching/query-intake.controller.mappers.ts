@@ -82,7 +82,7 @@ export function guidanceForMappingIssues(issues: MappingValidationIssue[]): stri
   }
 
   const guidanceSteps = issues.map((issue) => `${issue.field}: ${issue.guidance}`);
-  return `Fix required mapping fields before rendering timeline: ${guidanceSteps.join(" | ")}`;
+  return `Confirm field mapping before rendering timeline: ${guidanceSteps.join(" | ")}`;
 }
 
 export function toTrustState(uiState: TimelineUiState): QueryIntakeTrustState {

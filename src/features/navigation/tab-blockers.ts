@@ -84,8 +84,8 @@ export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlo
     if (model.mapping.status === "invalid") {
       return {
         blocked: true,
-        reason: "Required mapping fields are invalid.",
-        nextAction: "Open Mapping and resolve required id/title/start/endOrTarget fields."
+        reason: "Field mapping needs your confirmation.",
+        nextAction: "Open Mapping to apply the standard Azure mapping or pick custom fields."
       };
     }
 

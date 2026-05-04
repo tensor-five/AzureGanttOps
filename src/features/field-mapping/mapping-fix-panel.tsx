@@ -13,6 +13,7 @@ const REQUIRED_ORDER: Array<keyof typeof REQUIRED_LABELS> = ["id", "title", "sta
 
 export type MappingFixPanelProps = {
   requiredIssues: MappingValidationIssue[];
+  detectedFieldRefs?: ReadonlyArray<string>;
   onApply: (selection: {
     id: string;
     title: string;
@@ -38,10 +39,34 @@ export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement
       React.createElement(
         "span",
         null,
-        issue?.guidance ?? "Apply required defaults to continue."
+        issue?.guidance ?? "Apply standard Azure mapping to continue."
       )
     );
   });
+
+  const detectedRefs = props.detectedFieldRefs ?? [];
+  const detectedSection = detectedRefs.length > 0
+    ? React.createElement(
+        "section",
+        {
+          "aria-label": "mapping-fix-detected",
+          className: "mapping-fix-detected"
+        },
+        React.createElement("h4", null, "Detected in your snapshot"),
+        React.createElement(
+          "p",
+          { className: "mapping-fix-detected-hint" },
+          "These field references were found in the work items returned by your query. Use them to map manually if the standard mapping doesn't fit."
+        ),
+        React.createElement(
+          "ul",
+          { className: "mapping-fix-detected-list" },
+          ...detectedRefs.map((ref) =>
+            React.createElement("li", { key: ref, className: "mapping-fix-detected-item" }, ref)
+          )
+        )
+      )
+    : null;
 
   return React.createElement(
     "section",
@@ -52,8 +77,12 @@ export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement
     React.createElement(
       "header",
       { className: "mapping-fix-header" },
-      React.createElement("h3", null, "Fix required mapping fields"),
-      React.createElement("p", null, "These fields must be mapped before timeline rendering can continue.")
+      React.createElement("h3", null, "Set up field mapping"),
+      React.createElement(
+        "p",
+        null,
+        "Pick the Azure field references that drive your timeline. We couldn't auto-detect standard scheduling fields in this project's work items."
+      )
     ),
     React.createElement("ul", { className: "mapping-fix-list" }, ...required),
     React.createElement(
@@ -69,7 +98,8 @@ export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement
             endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
           })
       },
-      "Apply required defaults"
-    )
+      "Apply standard Azure mapping"
+    ),
+    detectedSection
   );
 }

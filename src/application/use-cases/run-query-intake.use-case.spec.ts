@@ -680,4 +680,201 @@ describe("RunQueryIntakeUseCase", () => {
     expect(firstRunResult.reload.source).toBe("stale_discarded");
     expect(firstRunResult.reload.lastRefreshAt).toBeNull();
   });
+
+  describe("auto-apply default mapping", () => {
+    function snapshotWithStandardFields() {
+      return {
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [
+          {
+            id: 101,
+            title: "Work item 101",
+            "Microsoft.VSTS.Scheduling.StartDate": "2026-01-01",
+            "Microsoft.VSTS.Scheduling.TargetDate": "2026-01-02"
+          }
+        ],
+        relations: [],
+        queryRelations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      };
+    }
+
+    it("persists and activates a default profile when no profile is configured and snapshot has standard fields", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => snapshotWithStandardFields())
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(async () => createTimeline())
+      } as never;
+
+      const mappingSettings = createMappingSettingsStub([], null);
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({ context: contextA });
+
+      expect(mappingSettings.saveProfiles).toHaveBeenCalledTimes(1);
+      expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith(`auto:${queryA.value}`);
+      expect(result.activeMappingProfileId).toBe(`auto:${queryA.value}`);
+      expect(result.timeline?.mappingValidation.status).toBe("valid");
+    });
+
+    it("does not auto-apply when caller passes a mapping mutation", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => snapshotWithStandardFields())
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(async () => createTimeline())
+      } as never;
+
+      const mappingSettings = createMappingSettingsStub([secondaryProfile], null);
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({
+        context: contextA,
+        mappingMutation: { selectProfileId: "profile-b" }
+      });
+
+      expect(result.activeMappingProfileId).toBe("profile-b");
+      expect(mappingSettings.saveProfiles).not.toHaveBeenCalled();
+    });
+
+    it("does not auto-apply when an active profile already resolves on initialization", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => snapshotWithStandardFields())
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(async () => createTimeline())
+      } as never;
+
+      const mappingSettings = createMappingSettingsStub([activeProfile], "profile-a");
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({ context: contextA });
+
+      expect(result.activeMappingProfileId).toBe("profile-a");
+      expect(mappingSettings.saveProfiles).not.toHaveBeenCalled();
+    });
+
+    it("does not auto-apply when snapshot lacks scheduling fields", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => ({
+          queryType: "flat" as const,
+          workItemIds: [101],
+          workItems: [{ id: 101, title: "Work item 101" }],
+          relations: [],
+          queryRelations: [],
+          hydration: {
+            maxIdsPerBatch: 200,
+            requestedIds: 1,
+            attemptedBatches: 1,
+            succeededBatches: 1,
+            retriedRequests: 0,
+            missingIds: [],
+            partial: false,
+            statusCode: "OK" as const
+          }
+        }))
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(() => createTimeline())
+      } as never;
+
+      const mappingSettings = createMappingSettingsStub([], null);
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({ context: contextA });
+
+      expect(mappingSettings.saveProfiles).not.toHaveBeenCalled();
+      expect(result.activeMappingProfileId).toBeNull();
+      expect(result.timeline?.mappingValidation.status).toBe("invalid");
+    });
+
+    it("reuses an existing auto-applied profile without rewriting it on subsequent runs", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => snapshotWithStandardFields())
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(async () => createTimeline())
+      } as never;
+
+      const existingAutoProfile: FieldMappingProfile = {
+        id: `auto:${queryA.value}`,
+        name: "Auto-applied Azure default",
+        fields: {
+          id: "System.Id",
+          title: "System.Title",
+          start: "Microsoft.VSTS.Scheduling.StartDate",
+          endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+        }
+      };
+      const mappingSettings = createMappingSettingsStub([existingAutoProfile], null);
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({ context: contextA });
+
+      expect(mappingSettings.saveProfiles).not.toHaveBeenCalled();
+      expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith(existingAutoProfile.id);
+      expect(result.activeMappingProfileId).toBe(existingAutoProfile.id);
+    });
+  });
 });

@@ -1222,18 +1222,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React37 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React43 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React37 = {
+      React43 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React37.react_stack_bottom_frame.bind(
-        React37,
+      var unknownOwnerDebugStack = React43.react_stack_bottom_frame.bind(
+        React43,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1597,7 +1597,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React37 = require_react(), Internals = {
+      var React43 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1615,7 +1615,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3150,7 +3150,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node.ownerDocument) === node || node.defaultValue === "" + value || (node.defaultValue = "" + value);
       }
       function validateOptionProps(element, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React37.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React43.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18782,14 +18782,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React37 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React43 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React37.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21577,7 +21577,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React37.version;
+        var isomorphicReactPackageVersion = React43.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -23794,7 +23794,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react24 = __toESM(require_react(), 1);
+var import_react28 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs
@@ -26407,8 +26407,8 @@ function resolveTabBlocker(tab, model) {
     if (model.mapping.status === "invalid") {
       return {
         blocked: true,
-        reason: "Required mapping fields are invalid.",
-        nextAction: "Open Mapping and resolve required id/title/start/endOrTarget fields."
+        reason: "Field mapping needs your confirmation.",
+        nextAction: "Open Mapping to apply the standard Azure mapping or pick custom fields."
       };
     }
     return {
@@ -26482,53 +26482,8 @@ function toLabel(tab) {
 // dist/src/features/query-switching/query-selector.js
 var import_react2 = __toESM(require_react(), 1);
 
-// dist/src/features/field-mapping/mapping-auto-apply.js
+// dist/src/features/field-mapping/query-profile-storage.js
 var QUERY_PROFILE_KEY = "azure-ganttops.query-profile-map";
-var DEFAULT_PROFILE_NAME = "Auto-applied Azure default";
-function proposeDefaultMappingForQuery(params) {
-  const normalized = new Set(params.availableFieldRefs.map((value) => value.trim()).filter(Boolean));
-  const id = firstExisting(normalized, ["System.Id", "Custom.ExternalId", "Custom.WorkItemId"]);
-  const title = firstExisting(normalized, ["System.Title"]);
-  const start = firstExisting(normalized, ["Microsoft.VSTS.Scheduling.StartDate", "Custom.StartDate"]);
-  const endOrTarget = firstExisting(normalized, [
-    "Microsoft.VSTS.Scheduling.TargetDate",
-    "Microsoft.VSTS.Scheduling.FinishDate",
-    "Custom.TargetDate"
-  ]);
-  const missingRequired = [];
-  if (!id) {
-    missingRequired.push("id");
-  }
-  if (!title) {
-    missingRequired.push("title");
-  }
-  if (!start) {
-    missingRequired.push("start");
-  }
-  if (!endOrTarget) {
-    missingRequired.push("endOrTarget");
-  }
-  if (missingRequired.length > 0) {
-    return {
-      status: "invalid",
-      missingRequired,
-      guidance: `Missing required mapping fields: ${missingRequired.join(", ")}. Open inline fix panel.`
-    };
-  }
-  return {
-    status: "valid",
-    profile: {
-      id: `auto-${params.queryId}`,
-      name: DEFAULT_PROFILE_NAME,
-      fields: {
-        id,
-        title,
-        start,
-        endOrTarget
-      }
-    }
-  };
-}
 function persistQueryMappingSelection(queryId, profileId) {
   const map = readMap();
   map[queryId] = profileId;
@@ -26537,14 +26492,6 @@ function persistQueryMappingSelection(queryId, profileId) {
 function readPersistedQueryMappingSelection(queryId) {
   const map = readMap();
   return map[queryId];
-}
-function firstExisting(pool, candidates) {
-  for (const candidate of candidates) {
-    if (pool.has(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
 }
 function readMap() {
   if (typeof localStorage === "undefined") {
@@ -26607,10 +26554,6 @@ function QuerySelector(props) {
     }
     setQueryInputError(null);
     const persisted = readPersistedQueryMappingSelection(parsed.queryId);
-    const proposal = proposeDefaultMappingForQuery({
-      queryId: parsed.queryId,
-      availableFieldRefs: props.availableFieldRefs
-    });
     const normalizedRawInput = rawInput.trim();
     const transportQueryInput = resolveQueryRunInput(rawInput, organization, project);
     if (!transportQueryInput) {
@@ -26618,8 +26561,7 @@ function QuerySelector(props) {
     }
     const response = await props.onRun({
       queryId: transportQueryInput,
-      mappingProfileId: persisted,
-      mappingProfileUpsert: proposal.status === "valid" ? proposal.profile : void 0
+      mappingProfileId: persisted
     });
     persistLocalStorage(QUERY_INPUT_KEY, normalizedRawInput);
     if (parsed.organization) {
@@ -26637,7 +26579,7 @@ function QuerySelector(props) {
     if (response.activeMappingProfileId) {
       persistQueryMappingSelection(parsed.queryId, response.activeMappingProfileId);
     }
-    if (response.preflightStatus === "READY" && response.statusCode === "OK" && (response.mappingValidation.status === "invalid" || proposal.status === "invalid")) {
+    if (response.preflightStatus === "READY" && response.statusCode === "OK" && response.mappingValidation.status === "invalid") {
       props.onNeedsFix(response);
     }
   }, [organization, project, props, queryInputError]);
@@ -26857,12 +26799,17 @@ function MappingFixPanel(props) {
   }
   const required = REQUIRED_ORDER.map((field) => {
     const issue = issueByField.get(field);
-    return import_react3.default.createElement("li", { key: field, className: "mapping-fix-item" }, import_react3.default.createElement("strong", null, REQUIRED_LABELS[field]), import_react3.default.createElement("span", null, issue?.guidance ?? "Apply required defaults to continue."));
+    return import_react3.default.createElement("li", { key: field, className: "mapping-fix-item" }, import_react3.default.createElement("strong", null, REQUIRED_LABELS[field]), import_react3.default.createElement("span", null, issue?.guidance ?? "Apply standard Azure mapping to continue."));
   });
+  const detectedRefs = props.detectedFieldRefs ?? [];
+  const detectedSection = detectedRefs.length > 0 ? import_react3.default.createElement("section", {
+    "aria-label": "mapping-fix-detected",
+    className: "mapping-fix-detected"
+  }, import_react3.default.createElement("h4", null, "Detected in your snapshot"), import_react3.default.createElement("p", { className: "mapping-fix-detected-hint" }, "These field references were found in the work items returned by your query. Use them to map manually if the standard mapping doesn't fit."), import_react3.default.createElement("ul", { className: "mapping-fix-detected-list" }, ...detectedRefs.map((ref) => import_react3.default.createElement("li", { key: ref, className: "mapping-fix-detected-item" }, ref)))) : null;
   return import_react3.default.createElement("section", {
     "aria-label": "mapping-fix-panel",
     className: "mapping-fix-panel"
-  }, import_react3.default.createElement("header", { className: "mapping-fix-header" }, import_react3.default.createElement("h3", null, "Fix required mapping fields"), import_react3.default.createElement("p", null, "These fields must be mapped before timeline rendering can continue.")), import_react3.default.createElement("ul", { className: "mapping-fix-list" }, ...required), import_react3.default.createElement("button", {
+  }, import_react3.default.createElement("header", { className: "mapping-fix-header" }, import_react3.default.createElement("h3", null, "Set up field mapping"), import_react3.default.createElement("p", null, "Pick the Azure field references that drive your timeline. We couldn't auto-detect standard scheduling fields in this project's work items.")), import_react3.default.createElement("ul", { className: "mapping-fix-list" }, ...required), import_react3.default.createElement("button", {
     type: "button",
     className: "mapping-fix-primary",
     onClick: () => props.onApply({
@@ -26871,11 +26818,11 @@ function MappingFixPanel(props) {
       start: "Microsoft.VSTS.Scheduling.StartDate",
       endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
     })
-  }, "Apply required defaults"));
+  }, "Apply standard Azure mapping"), detectedSection);
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
-var import_react18 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 
 // dist/src/shared/user-preferences/user-preferences.schema.js
 function sanitizeUserPreferences(value) {
@@ -26887,6 +26834,9 @@ function sanitizeUserPreferences(value) {
   if (candidate.themeMode === "system" || candidate.themeMode === "light" || candidate.themeMode === "dark") {
     next.themeMode = candidate.themeMode;
   }
+  if (typeof candidate.timelineLiveSyncEnabled === "boolean") {
+    next.timelineLiveSyncEnabled = candidate.timelineLiveSyncEnabled;
+  }
   if (candidate.timelineDensity === "comfortable" || candidate.timelineDensity === "compact") {
     next.timelineDensity = candidate.timelineDensity;
   }
@@ -26897,7 +26847,9 @@ function sanitizeUserPreferences(value) {
     const raw = candidate.timelineFieldColorCoding;
     const fieldRef = typeof raw.fieldRef === "string" ? raw.fieldRef.trim() : "";
     const valueColorsRaw = isPlainRecord(raw.valueColors) ? raw.valueColors : null;
+    const overdueExcludedStateCodesRaw = Array.isArray(raw.overdueExcludedStateCodes) ? raw.overdueExcludedStateCodes : null;
     const valueColors = {};
+    const overdueExcludedStateCodes = overdueExcludedStateCodesRaw ? [...new Set(overdueExcludedStateCodesRaw)].map((entry) => typeof entry === "string" ? entry.trim().toLowerCase() : "").filter((entry) => entry.length > 0) : void 0;
     if (valueColorsRaw) {
       Object.entries(valueColorsRaw).forEach(([key, entry]) => {
         if (typeof entry !== "string") {
@@ -26911,7 +26863,8 @@ function sanitizeUserPreferences(value) {
     }
     next.timelineFieldColorCoding = {
       fieldRef: fieldRef.length > 0 ? fieldRef : void 0,
-      valueColors: Object.keys(valueColors).length > 0 ? valueColors : void 0
+      valueColors: Object.keys(valueColors).length > 0 ? valueColors : void 0,
+      ...overdueExcludedStateCodes ? { overdueExcludedStateCodes } : {}
     };
   }
   if (Array.isArray(candidate.timelineLabelFields)) {
@@ -26928,9 +26881,13 @@ function sanitizeUserPreferences(value) {
     const secondaryRaw = raw.secondary;
     const secondary = secondaryRaw === null ? null : typeof secondaryRaw === "undefined" ? void 0 : sanitizeTimelineSortField(secondaryRaw);
     if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      const primaryDirection = sanitizeTimelineSortDirection(raw.primaryDirection) ?? "asc";
+      const secondaryDirection = sanitizeTimelineSortDirection(raw.secondaryDirection) ?? "asc";
       next.timelineSort = {
         primary,
-        secondary
+        primaryDirection,
+        secondary,
+        secondaryDirection
       };
     }
   }
@@ -26942,6 +26899,21 @@ function sanitizeUserPreferences(value) {
   }
   if (candidate.timelineSidebarRowJustify === "flex-start" || candidate.timelineSidebarRowJustify === "flex-end") {
     next.timelineSidebarRowJustify = candidate.timelineSidebarRowJustify;
+  }
+  if (isPlainRecord(candidate.queryScopedTimelinePreferencesByQueryId)) {
+    const normalizedByQueryId = {};
+    Object.entries(candidate.queryScopedTimelinePreferencesByQueryId).forEach(([queryId, value2]) => {
+      const normalizedQueryId = normalizeQueryScopedKey(queryId);
+      if (!normalizedQueryId || !isPlainRecord(value2)) {
+        return;
+      }
+      const scoped = sanitizeQueryScopedTimelinePreferences(value2);
+      if (Object.keys(scoped).length === 0) {
+        return;
+      }
+      normalizedByQueryId[normalizedQueryId] = scoped;
+    });
+    next.queryScopedTimelinePreferencesByQueryId = Object.keys(normalizedByQueryId).length > 0 ? normalizedByQueryId : void 0;
   }
   if (Array.isArray(candidate.savedQueries)) {
     const deduped = /* @__PURE__ */ new Map();
@@ -26992,6 +26964,102 @@ function sanitizeSavedQueryPreference(value) {
 function isPlainRecord(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
+function normalizeQueryScopedKey(value) {
+  return value.trim();
+}
+function sanitizeQueryScopedTimelinePreferences(value) {
+  const next = {};
+  if (value.timelineDensity === "comfortable" || value.timelineDensity === "compact") {
+    next.timelineDensity = value.timelineDensity;
+  }
+  if (value.timelineColorCoding === "none" || value.timelineColorCoding === "status" || value.timelineColorCoding === "parent" || value.timelineColorCoding === "overdue" || value.timelineColorCoding === "field") {
+    next.timelineColorCoding = value.timelineColorCoding;
+  }
+  if (isPlainRecord(value.timelineFieldColorCoding)) {
+    const raw = value.timelineFieldColorCoding;
+    const fieldRef = typeof raw.fieldRef === "string" ? raw.fieldRef.trim() : "";
+    const valueColorsRaw = isPlainRecord(raw.valueColors) ? raw.valueColors : null;
+    const overdueExcludedStateCodesRaw = Array.isArray(raw.overdueExcludedStateCodes) ? raw.overdueExcludedStateCodes : null;
+    const valueColors = {};
+    const overdueExcludedStateCodes = overdueExcludedStateCodesRaw ? [...new Set(overdueExcludedStateCodesRaw)].map((entry) => typeof entry === "string" ? entry.trim().toLowerCase() : "").filter((entry) => entry.length > 0) : void 0;
+    if (valueColorsRaw) {
+      Object.entries(valueColorsRaw).forEach(([key, entry]) => {
+        if (typeof entry !== "string") {
+          return;
+        }
+        const normalized = entry.trim();
+        if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+          valueColors[key] = normalized.toLowerCase();
+        }
+      });
+    }
+    next.timelineFieldColorCoding = {
+      fieldRef: fieldRef.length > 0 ? fieldRef : void 0,
+      valueColors: Object.keys(valueColors).length > 0 ? valueColors : void 0,
+      ...overdueExcludedStateCodes ? { overdueExcludedStateCodes } : {}
+    };
+  }
+  if (Array.isArray(value.timelineLabelFields)) {
+    const normalized = [...new Set(value.timelineLabelFields)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+    next.timelineLabelFields = normalized;
+  }
+  if (Array.isArray(value.timelineSidebarFields)) {
+    const normalized = [...new Set(value.timelineSidebarFields)].map((entry) => typeof entry === "string" ? entry.trim() : "").filter((entry) => entry.length > 0);
+    next.timelineSidebarFields = normalized;
+  }
+  if (isPlainRecord(value.timelineSort)) {
+    const raw = value.timelineSort;
+    const primary = sanitizeTimelineSortField(raw.primary);
+    const secondaryRaw = raw.secondary;
+    const secondary = secondaryRaw === null ? null : typeof secondaryRaw === "undefined" ? void 0 : sanitizeTimelineSortField(secondaryRaw);
+    if (primary && (secondaryRaw === null || typeof secondaryRaw === "undefined" || secondary)) {
+      const primaryDirection = sanitizeTimelineSortDirection(raw.primaryDirection) ?? "asc";
+      const secondaryDirection = sanitizeTimelineSortDirection(raw.secondaryDirection) ?? "asc";
+      next.timelineSort = {
+        primary,
+        primaryDirection,
+        secondary,
+        secondaryDirection
+      };
+    }
+  }
+  if (typeof value.timelineSidebarWidthPx === "number" && Number.isFinite(value.timelineSidebarWidthPx)) {
+    next.timelineSidebarWidthPx = clamp(Math.round(value.timelineSidebarWidthPx), 160, 640);
+  }
+  if (typeof value.timelineDetailsWidthPx === "number" && Number.isFinite(value.timelineDetailsWidthPx)) {
+    next.timelineDetailsWidthPx = clamp(Math.round(value.timelineDetailsWidthPx), 0, 900);
+  }
+  if (value.timelineSidebarRowJustify === "flex-start" || value.timelineSidebarRowJustify === "flex-end") {
+    next.timelineSidebarRowJustify = value.timelineSidebarRowJustify;
+  }
+  const timelineViewport = sanitizeTimelineViewportPreference(value.timelineViewport);
+  if (timelineViewport) {
+    next.timelineViewport = timelineViewport;
+  }
+  return next;
+}
+function sanitizeTimelineViewportPreference(value) {
+  if (!isPlainRecord(value)) {
+    return null;
+  }
+  const dayWidthPx = toFiniteNonNegative(value.dayWidthPx);
+  const scrollLeftPx = toFiniteNonNegative(value.scrollLeftPx);
+  const scrollTopPx = toFiniteNonNegative(value.scrollTopPx);
+  if (dayWidthPx === null || scrollLeftPx === null || scrollTopPx === null) {
+    return null;
+  }
+  return {
+    dayWidthPx,
+    scrollLeftPx,
+    scrollTopPx
+  };
+}
+function toFiniteNonNegative(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return value >= 0 ? value : 0;
+}
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -27008,6 +27076,12 @@ function sanitizeTimelineSortField(value) {
   }
   const fieldRef = normalized.slice("field:".length).trim();
   return fieldRef.length > 0 ? `field:${fieldRef}` : null;
+}
+function sanitizeTimelineSortDirection(value) {
+  if (value === "asc" || value === "desc") {
+    return value;
+  }
+  return null;
 }
 
 // dist/src/shared/user-preferences/user-preferences.client.js
@@ -27095,73 +27169,120 @@ function readCsrfTokenFromMeta() {
 
 // dist/src/features/gantt-view/create-user-preference-store.js
 function createUserPreferenceStore(config) {
-  let memoryValue = null;
-  let hydrationStarted = false;
+  const memoryValues = /* @__PURE__ */ new Map();
+  const hydratedScopes = /* @__PURE__ */ new Set();
   const serialize = config.serialize ?? ((value) => JSON.stringify(value));
   const deserialize = config.deserialize ?? ((raw) => JSON.parse(raw));
-  const readFromLocalStorage = () => {
-    if (typeof globalThis.localStorage === "undefined") {
+  const storagePrefix = `${config.storageKey}::`;
+  const normalizeScopeKey = (scope) => {
+    const raw = scope?.scopeKey;
+    if (typeof raw !== "string") {
       return null;
     }
-    const raw = globalThis.localStorage.getItem(config.storageKey);
-    if (!raw) {
+    const normalized = raw.trim();
+    return normalized.length > 0 ? normalized : null;
+  };
+  const toMemoryScopeKey = (scopeKey) => {
+    return scopeKey ?? "__global__";
+  };
+  const resolveStorageKey = (scopeKey) => {
+    if (!scopeKey) {
+      return config.storageKey;
+    }
+    return `${storagePrefix}${encodeURIComponent(scopeKey)}`;
+  };
+  const isLocalStorageAvailable = () => {
+    try {
+      return typeof globalThis.localStorage !== "undefined" && globalThis.localStorage !== null && typeof globalThis.localStorage.getItem === "function" && typeof globalThis.localStorage.setItem === "function";
+    } catch {
+      return false;
+    }
+  };
+  const readFromLocalStorage = (scopeKey) => {
+    if (!isLocalStorageAvailable()) {
       return null;
     }
     try {
+      const raw = globalThis.localStorage.getItem(resolveStorageKey(scopeKey));
+      if (!raw) {
+        return null;
+      }
       return config.sanitize(deserialize(raw));
     } catch {
       return null;
     }
   };
-  const writeToLocalStorage = (value) => {
-    if (typeof globalThis.localStorage === "undefined") {
+  const writeToLocalStorage = (value, scopeKey) => {
+    if (!isLocalStorageAvailable()) {
       return;
     }
-    globalThis.localStorage.setItem(config.storageKey, serialize(value));
+    try {
+      globalThis.localStorage.setItem(resolveStorageKey(scopeKey), serialize(value));
+    } catch {
+    }
   };
-  const load = () => {
-    const fromStorage = readFromLocalStorage();
+  const load = (scope) => {
+    const scopeKey = normalizeScopeKey(scope);
+    const memoryScopeKey = toMemoryScopeKey(scopeKey);
+    const fromStorage = readFromLocalStorage(scopeKey);
     if (fromStorage !== null) {
-      memoryValue = fromStorage;
+      memoryValues.set(memoryScopeKey, fromStorage);
       return fromStorage;
     }
-    const fromCache = config.sanitize(config.readFromServerCache(getCachedUserPreferences()));
+    const fromCache = config.sanitize(config.readFromServerCache(getCachedUserPreferences(), scopeKey));
     if (fromCache !== null) {
-      memoryValue = fromCache;
-      writeToLocalStorage(fromCache);
+      memoryValues.set(memoryScopeKey, fromCache);
+      writeToLocalStorage(fromCache, scopeKey);
       return fromCache;
     }
-    return memoryValue;
+    return memoryValues.get(memoryScopeKey) ?? null;
   };
-  const save = (value) => {
+  const save = (value, scope) => {
+    const scopeKey = normalizeScopeKey(scope);
+    const memoryScopeKey = toMemoryScopeKey(scopeKey);
     const sanitized = config.sanitize(value);
     if (sanitized === null) {
       return;
     }
-    memoryValue = sanitized;
-    writeToLocalStorage(sanitized);
-    persistUserPreferencesPatch(config.buildPatch(sanitized, getCachedUserPreferences()));
+    memoryValues.set(memoryScopeKey, sanitized);
+    writeToLocalStorage(sanitized, scopeKey);
+    persistUserPreferencesPatch(config.buildPatch(sanitized, getCachedUserPreferences(), scopeKey));
   };
-  const hydrate = (onHydrated) => {
-    if (hydrationStarted) {
+  const hydrate = (onHydrated, scope) => {
+    const scopeKey = normalizeScopeKey(scope);
+    const memoryScopeKey = toMemoryScopeKey(scopeKey);
+    if (hydratedScopes.has(memoryScopeKey)) {
       return;
     }
-    hydrationStarted = true;
+    hydratedScopes.add(memoryScopeKey);
     void hydrateUserPreferences().then((preferences) => {
-      const value = config.sanitize(config.readFromServerCache(preferences));
+      const value = config.sanitize(config.readFromServerCache(preferences, scopeKey));
       if (value === null) {
         return;
       }
-      memoryValue = value;
-      writeToLocalStorage(value);
+      memoryValues.set(memoryScopeKey, value);
+      writeToLocalStorage(value, scopeKey);
       onHydrated?.(value);
     });
   };
   const clearForTests = () => {
-    memoryValue = null;
-    hydrationStarted = false;
-    if (typeof globalThis.localStorage !== "undefined") {
-      globalThis.localStorage.removeItem(config.storageKey);
+    memoryValues.clear();
+    hydratedScopes.clear();
+    if (isLocalStorageAvailable()) {
+      try {
+        globalThis.localStorage.removeItem(config.storageKey);
+        const toRemove = [];
+        for (let index = 0; index < globalThis.localStorage.length; index += 1) {
+          const key = globalThis.localStorage.key(index);
+          if (key && key.startsWith(storagePrefix)) {
+            toRemove.push(key);
+          }
+        }
+        toRemove.forEach((key) => {
+          globalThis.localStorage.removeItem(key);
+        });
+      } catch {
+      }
     }
   };
   return {
@@ -27172,45 +27293,82 @@ function createUserPreferenceStore(config) {
   };
 }
 
+// dist/src/features/gantt-view/query-scoped-timeline-preferences.js
+function readQueryScopedTimelinePreference(preferences, scopeKey, key) {
+  if (scopeKey) {
+    return preferences.queryScopedTimelinePreferencesByQueryId?.[scopeKey]?.[key];
+  }
+  return preferences[key];
+}
+function buildQueryScopedTimelinePreferencePatch(params) {
+  const { key, value, cachedPreferences: cachedPreferences2, scopeKey } = params;
+  if (!scopeKey) {
+    return {
+      [key]: value
+    };
+  }
+  const current = cachedPreferences2.queryScopedTimelinePreferencesByQueryId;
+  const nextByQueryId = isPlainRecord2(current) ? { ...current } : {};
+  const existingForQuery = isPlainRecord2(nextByQueryId[scopeKey]) ? nextByQueryId[scopeKey] : {};
+  nextByQueryId[scopeKey] = {
+    ...existingForQuery,
+    [key]: value
+  };
+  return {
+    queryScopedTimelinePreferencesByQueryId: nextByQueryId
+  };
+}
+function isPlainRecord2(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
 // dist/src/features/gantt-view/timeline-color-coding-preference.js
+var DEFAULT_OVERDUE_EXCLUDED_STATE_CODES = ["closed", "done", "removed", "completed"];
 var STORAGE_KEY = "azure-ganttops.timeline-color-coding";
 var FIELD_STORAGE_KEY = "azure-ganttops.timeline-field-color-coding";
 var modeStore = createUserPreferenceStore({
   storageKey: STORAGE_KEY,
-  readFromServerCache: (preferences) => preferences.timelineColorCoding,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineColorCoding"),
   sanitize: sanitizeTimelineColorCoding,
-  buildPatch: (mode) => ({
-    timelineColorCoding: mode
+  buildPatch: (mode, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineColorCoding",
+    value: mode,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   }),
   serialize: (mode) => mode,
   deserialize: (raw) => raw
 });
 var fieldConfigStore = createUserPreferenceStore({
   storageKey: FIELD_STORAGE_KEY,
-  readFromServerCache: (preferences) => preferences.timelineFieldColorCoding,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineFieldColorCoding"),
   sanitize: sanitizeFieldConfig,
-  buildPatch: (config, cachedPreferences2) => ({
-    timelineFieldColorCoding: buildTimelineFieldColorCodingPatch(config, cachedPreferences2)
+  buildPatch: (config, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineFieldColorCoding",
+    value: buildTimelineFieldColorCodingPatch(config, cachedPreferences2),
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   })
 });
-function loadLastTimelineColorCoding() {
-  return modeStore.load();
+function loadLastTimelineColorCoding(queryId) {
+  return modeStore.load({ scopeKey: queryId });
 }
-function saveLastTimelineColorCoding(mode) {
-  modeStore.save(mode);
+function saveLastTimelineColorCoding(mode, queryId) {
+  modeStore.save(mode, { scopeKey: queryId });
 }
-function loadTimelineFieldColorCodingConfig() {
-  return fieldConfigStore.load() ?? {
+function loadTimelineFieldColorCodingConfig(queryId) {
+  return fieldConfigStore.load({ scopeKey: queryId }) ?? {
     fieldRef: null,
-    valueColors: {}
+    valueColors: {},
+    overdueExcludedStateCodes: [...DEFAULT_OVERDUE_EXCLUDED_STATE_CODES]
   };
 }
-function saveTimelineFieldColorCodingConfig(config) {
-  fieldConfigStore.save(config);
+function saveTimelineFieldColorCodingConfig(config, queryId) {
+  fieldConfigStore.save(config, { scopeKey: queryId });
 }
-function hydrateTimelineColorCodingPreference(onHydrated) {
-  modeStore.hydrate(onHydrated);
-  fieldConfigStore.hydrate();
+function hydrateTimelineColorCodingPreference(onHydrated, queryId) {
+  modeStore.hydrate(onHydrated, { scopeKey: queryId });
+  fieldConfigStore.hydrate(void 0, { scopeKey: queryId });
 }
 function sanitizeTimelineColorCoding(value) {
   if (value === "none" || value === "status" || value === "parent" || value === "overdue" || value === "field") {
@@ -27221,7 +27379,8 @@ function sanitizeTimelineColorCoding(value) {
 function buildTimelineFieldColorCodingPatch(config, _cachedPreferences) {
   return {
     fieldRef: config.fieldRef ?? void 0,
-    valueColors: Object.keys(config.valueColors).length > 0 ? config.valueColors : void 0
+    valueColors: Object.keys(config.valueColors).length > 0 ? config.valueColors : void 0,
+    overdueExcludedStateCodes: config.overdueExcludedStateCodes
   };
 }
 function sanitizeFieldConfig(value) {
@@ -27232,6 +27391,7 @@ function sanitizeFieldConfig(value) {
   const fieldRefRaw = candidate.fieldRef;
   const fieldRef = typeof fieldRefRaw === "string" && fieldRefRaw.trim().length > 0 ? fieldRefRaw.trim() : null;
   const valueColorsRaw = candidate.valueColors && typeof candidate.valueColors === "object" && !Array.isArray(candidate.valueColors) ? candidate.valueColors : {};
+  const overdueExcludedStateCodesRaw = Array.isArray(candidate.overdueExcludedStateCodes) ? candidate.overdueExcludedStateCodes : null;
   const valueColors = {};
   Object.entries(valueColorsRaw).forEach(([key, color]) => {
     if (typeof color !== "string") {
@@ -27242,10 +27402,18 @@ function sanitizeFieldConfig(value) {
       valueColors[key] = normalized;
     }
   });
+  const overdueExcludedStateCodes = sanitizeOverdueExcludedStateCodes(overdueExcludedStateCodesRaw);
   return {
     fieldRef,
-    valueColors
+    valueColors,
+    overdueExcludedStateCodes
   };
+}
+function sanitizeOverdueExcludedStateCodes(value) {
+  if (!value) {
+    return [...DEFAULT_OVERDUE_EXCLUDED_STATE_CODES];
+  }
+  return [...new Set(value)].map((entry) => typeof entry === "string" ? entry.trim().toLowerCase() : "").filter((entry) => entry.length > 0);
 }
 
 // dist/src/features/gantt-view/timeline-details-panel.js
@@ -27506,14 +27674,14 @@ function createDOMPurify() {
     DocumentFragment,
     HTMLTemplateElement,
     Node,
-    Element,
+    Element: Element2,
     NodeFilter,
     NamedNodeMap = window2.NamedNodeMap || window2.MozNamedAttrMap,
     HTMLFormElement,
     DOMParser,
     trustedTypes
   } = window2;
-  const ElementPrototype = Element.prototype;
+  const ElementPrototype = Element2.prototype;
   const cloneNode = lookupGetter(ElementPrototype, "cloneNode");
   const remove = lookupGetter(ElementPrototype, "remove");
   const getNextSibling = lookupGetter(ElementPrototype, "nextSibling");
@@ -27973,7 +28141,7 @@ function createDOMPurify() {
       _forceRemove(currentNode);
       return true;
     }
-    if (currentNode instanceof Element && !_checkValidNamespace(currentNode)) {
+    if (currentNode instanceof Element2 && !_checkValidNamespace(currentNode)) {
       _forceRemove(currentNode);
       return true;
     }
@@ -28341,6 +28509,7 @@ function TimelineDetailsPanel(props) {
   const [stateDraft, setStateDraft] = import_react4.default.useState("");
   const [serverStateOptions, setServerStateOptions] = import_react4.default.useState([]);
   const [isDescriptionEditing, setIsDescriptionEditing] = import_react4.default.useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = import_react4.default.useState(false);
   const [saveError, setSaveError] = import_react4.default.useState(null);
   const [isSaving, setIsSaving] = import_react4.default.useState(false);
   const descriptionFieldRef = import_react4.default.useRef(null);
@@ -28352,6 +28521,7 @@ function TimelineDetailsPanel(props) {
       setDescriptionDraft("");
       setStateDraft("");
       setIsDescriptionEditing(false);
+      setIsDescriptionExpanded(false);
       setSaveError(null);
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
@@ -28363,6 +28533,7 @@ function TimelineDetailsPanel(props) {
     setDescriptionDraft(sanitizedDescription);
     setStateDraft(selected.state);
     setIsDescriptionEditing(false);
+    setIsDescriptionExpanded(false);
     setSaveError(null);
     if (descriptionRef.current) {
       descriptionRef.current.innerHTML = sanitizedDescription;
@@ -28389,11 +28560,24 @@ function TimelineDetailsPanel(props) {
     };
   }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
   const lines = buildTimelineDetailsLines(props);
-  const entries2 = lines.map((line) => parseTimelineDetailLine(line)).filter((entry) => entry !== null).filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase())).map((entry, index) => import_react4.default.createElement("div", { key: `${index}-${entry.label}`, className: "timeline-details-row" }, import_react4.default.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`), import_react4.default.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value))));
+  const iterationFallback = selected?.iterationFallback ?? null;
+  const entries2 = lines.map((line) => parseTimelineDetailLine(line)).filter((entry) => entry !== null).filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase())).map((entry, index) => {
+    const normalizedLabel = entry.label.trim().toLowerCase();
+    const isStartRow = normalizedLabel === "start";
+    const isEndRow = normalizedLabel === "end";
+    const showIterationHint = isStartRow && (iterationFallback === "start" || iterationFallback === "both") || isEndRow && (iterationFallback === "end" || iterationFallback === "both");
+    return import_react4.default.createElement("div", { key: `${index}-${entry.label}`, className: "timeline-details-row" }, import_react4.default.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`), import_react4.default.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value)), showIterationHint ? import_react4.default.createElement("span", {
+      className: "timeline-details-row-hint timeline-details-row-hint-iteration",
+      title: "Date inherited from the iteration; not set on this work item"
+    }, "from iteration") : null);
+  });
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
   const baselineState = selected?.state ?? "";
   const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+  import_react4.default.useEffect(() => {
+    props.onDirtyChange?.(isDirty);
+  }, [isDirty]);
   const azureLink = selected ? buildAzureWorkItemUrl({
     organization: props.organization,
     project: props.project,
@@ -28401,6 +28585,7 @@ function TimelineDetailsPanel(props) {
   }) : null;
   const stateOptions = import_react4.default.useMemo(() => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions), [props.timeline, selected?.state, serverStateOptions]);
   const selectedStateColor = stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
+  const hasDescriptionContent = stripHtmlToText(descriptionDraft).length > 0;
   const applyDescriptionCommand = (command, value) => {
     if (!descriptionRef.current) {
       return;
@@ -28435,6 +28620,9 @@ function TimelineDetailsPanel(props) {
       if (event.key.toLowerCase() !== "s" || !event.ctrlKey && !event.metaKey) {
         return;
       }
+      if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
+        return;
+      }
       event.preventDefault();
       void saveDetails();
     };
@@ -28442,7 +28630,7 @@ function TimelineDetailsPanel(props) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [saveDetails]);
+  }, [isDirty, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
   return import_react4.default.createElement("aside", {
     "aria-label": "timeline-details-panel",
     className: contentHidden ? "timeline-details-panel-surface timeline-details-panel-surface-content-hidden" : "timeline-details-panel-surface"
@@ -28458,7 +28646,18 @@ function TimelineDetailsPanel(props) {
     href: azureLink,
     target: "_blank",
     rel: "noreferrer"
-  }, `#${selected.workItemId}`) : import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)) : null), contentHidden ? import_react4.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
+  }, `#${selected.workItemId}`, import_react4.default.createElement("svg", {
+    className: "timeline-details-work-item-link-icon",
+    viewBox: "0 0 16 16",
+    "aria-hidden": "true"
+  }, import_react4.default.createElement("path", {
+    d: "M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }))) : import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)) : null), contentHidden ? import_react4.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
     type: "text",
     className: "timeline-details-input",
     value: titleDraft,
@@ -28496,9 +28695,21 @@ function TimelineDetailsPanel(props) {
         applyDescriptionCommand("createLink", url.trim());
       }
     }
-  }, "Link"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("removeFormat") }, "Clear")) : import_react4.default.createElement("p", { className: "timeline-details-muted timeline-description-edit-hint" }, "Click description to edit"), import_react4.default.createElement("div", {
+  }, "Link"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("removeFormat") }, "Clear")) : import_react4.default.createElement("div", { className: "timeline-description-readonly-head" }, import_react4.default.createElement("p", { className: "timeline-details-muted timeline-description-edit-hint" }, "Click description to edit"), hasDescriptionContent ? import_react4.default.createElement("button", {
+    type: "button",
+    className: "timeline-description-toggle",
+    "aria-expanded": isDescriptionExpanded,
+    onClick: (event) => {
+      event.stopPropagation();
+      setIsDescriptionExpanded((current) => !current);
+    }
+  }, isDescriptionExpanded ? "Show less" : "Show more") : null), import_react4.default.createElement("div", {
     ref: descriptionRef,
-    className: isDescriptionEditing ? "timeline-details-richtext timeline-details-richtext-editing" : "timeline-details-richtext timeline-details-richtext-readonly",
+    className: [
+      "timeline-details-richtext",
+      isDescriptionEditing ? "timeline-details-richtext-editing" : "timeline-details-richtext-readonly",
+      !isDescriptionEditing && !isDescriptionExpanded ? "timeline-details-richtext-collapsed" : null
+    ].filter(Boolean).join(" "),
     contentEditable: isDescriptionEditing,
     suppressContentEditableWarning: true,
     onClick: () => {
@@ -28572,7 +28783,8 @@ function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
       workItemId: selectedBar.workItemId,
       title: selectedBar.title,
       descriptionHtml: selectedBar.details.descriptionHtml ?? "",
-      state: selectedBar.state.code
+      state: selectedBar.state.code,
+      iterationFallback: selectedBar.schedule.iterationFallback ?? null
     };
   }
   const selectedUnschedulable = timeline.unschedulable.find((item) => item.workItemId === selectedWorkItemId);
@@ -28581,7 +28793,8 @@ function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
       workItemId: selectedUnschedulable.workItemId,
       title: selectedUnschedulable.title,
       descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
-      state: selectedUnschedulable.state.code
+      state: selectedUnschedulable.state.code,
+      iterationFallback: null
     };
   }
   return null;
@@ -28603,6 +28816,9 @@ function parseTimelineDetailLine(line) {
     label: match[1],
     value: match[2]
   };
+}
+function stripHtmlToText(value) {
+  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 function formatTimelineDetailValue(label, value) {
   const normalizedLabel = label.trim().toLowerCase();
@@ -28661,45 +28877,33 @@ function resolveStateOptions(timeline, selectedState, serverStateOptions) {
 
 // dist/src/features/gantt-view/timeline-viewport-preference.js
 var STORAGE_KEY2 = "azure-ganttops.timeline-viewport";
-var VIEW_KEY = "timelineViewport";
 var store = createUserPreferenceStore({
   storageKey: STORAGE_KEY2,
-  readFromServerCache: (preferences) => readFromViews(preferences.views),
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineViewport"),
   sanitize: normalizeViewport,
-  buildPatch: (viewport, cachedPreferences2) => {
-    const cachedViews = cachedPreferences2.views;
-    const baseViews = isPlainRecord2(cachedViews) ? cachedViews : {};
-    return {
-      views: {
-        ...baseViews,
-        [VIEW_KEY]: viewport
-      }
-    };
-  }
+  buildPatch: (viewport, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineViewport",
+    value: viewport,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
+  })
 });
-function loadLastTimelineViewportPreference() {
-  return store.load();
+function loadLastTimelineViewportPreference(queryId) {
+  return store.load({ scopeKey: queryId });
 }
-function saveTimelineViewportPreference(viewport) {
-  store.save(viewport);
+function saveTimelineViewportPreference(viewport, queryId) {
+  store.save(viewport, { scopeKey: queryId });
 }
-function hydrateTimelineViewportPreference(onHydrated) {
-  store.hydrate(onHydrated);
-}
-function readFromViews(views) {
-  if (!isPlainRecord2(views)) {
-    return null;
-  }
-  const candidate = views[VIEW_KEY];
-  return normalizeViewport(candidate);
+function hydrateTimelineViewportPreference(onHydrated, queryId) {
+  store.hydrate(onHydrated, { scopeKey: queryId });
 }
 function normalizeViewport(value) {
-  if (!isPlainRecord2(value)) {
+  if (!isPlainRecord3(value)) {
     return null;
   }
-  const dayWidthPx = toFiniteNonNegative(value.dayWidthPx);
-  const scrollLeftPx = toFiniteNonNegative(value.scrollLeftPx);
-  const scrollTopPx = toFiniteNonNegative(value.scrollTopPx);
+  const dayWidthPx = toFiniteNonNegative2(value.dayWidthPx);
+  const scrollLeftPx = toFiniteNonNegative2(value.scrollLeftPx);
+  const scrollTopPx = toFiniteNonNegative2(value.scrollTopPx);
   if (dayWidthPx === null || scrollLeftPx === null || scrollTopPx === null) {
     return null;
   }
@@ -28709,13 +28913,13 @@ function normalizeViewport(value) {
     scrollTopPx
   };
 }
-function toFiniteNonNegative(value) {
+function toFiniteNonNegative2(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return null;
   }
   return value >= 0 ? value : 0;
 }
-function isPlainRecord2(value) {
+function isPlainRecord3(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
@@ -28724,20 +28928,23 @@ var STORAGE_KEY3 = "azure-ganttops.timeline-label-fields.v1";
 var DEFAULT_TIMELINE_LABEL_FIELDS = ["title"];
 var store2 = createUserPreferenceStore({
   storageKey: STORAGE_KEY3,
-  readFromServerCache: (preferences) => preferences.timelineLabelFields,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineLabelFields"),
   sanitize: sanitizeTimelineLabelFields,
-  buildPatch: (fieldRefs) => ({
-    timelineLabelFields: fieldRefs
+  buildPatch: (fieldRefs, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineLabelFields",
+    value: fieldRefs,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   })
 });
-function loadLastTimelineLabelFields() {
-  return store2.load();
+function loadLastTimelineLabelFields(queryId) {
+  return store2.load({ scopeKey: queryId });
 }
-function saveTimelineLabelFields(fieldRefs) {
-  store2.save(sanitizeTimelineLabelFields(fieldRefs) ?? []);
+function saveTimelineLabelFields(fieldRefs, queryId) {
+  store2.save(sanitizeTimelineLabelFields(fieldRefs) ?? [], { scopeKey: queryId });
 }
-function hydrateTimelineLabelFieldsPreference(onHydrated) {
-  store2.hydrate(onHydrated);
+function hydrateTimelineLabelFieldsPreference(onHydrated, queryId) {
+  store2.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeTimelineLabelFields(value) {
   if (!Array.isArray(value)) {
@@ -28751,20 +28958,23 @@ var STORAGE_KEY4 = "azure-ganttops.timeline-sidebar-fields.v1";
 var DEFAULT_TIMELINE_SIDEBAR_FIELDS = ["title"];
 var store3 = createUserPreferenceStore({
   storageKey: STORAGE_KEY4,
-  readFromServerCache: (preferences) => preferences.timelineSidebarFields,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineSidebarFields"),
   sanitize: sanitizeTimelineSidebarFields,
-  buildPatch: (fieldRefs) => ({
-    timelineSidebarFields: fieldRefs
+  buildPatch: (fieldRefs, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineSidebarFields",
+    value: fieldRefs,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   })
 });
-function loadLastTimelineSidebarFields() {
-  return store3.load();
+function loadLastTimelineSidebarFields(queryId) {
+  return store3.load({ scopeKey: queryId });
 }
-function saveTimelineSidebarFields(fieldRefs) {
-  store3.save(sanitizeTimelineSidebarFields(fieldRefs) ?? []);
+function saveTimelineSidebarFields(fieldRefs, queryId) {
+  store3.save(sanitizeTimelineSidebarFields(fieldRefs) ?? [], { scopeKey: queryId });
 }
-function hydrateTimelineSidebarFieldsPreference(onHydrated) {
-  store3.hydrate(onHydrated);
+function hydrateTimelineSidebarFieldsPreference(onHydrated, queryId) {
+  store3.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeTimelineSidebarFields(value) {
   if (!Array.isArray(value)) {
@@ -28779,22 +28989,25 @@ var MIN_WIDTH_PX = 160;
 var MAX_WIDTH_PX = 640;
 var store4 = createUserPreferenceStore({
   storageKey: STORAGE_KEY5,
-  readFromServerCache: (preferences) => preferences.timelineSidebarWidthPx,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineSidebarWidthPx"),
   sanitize: sanitizeWidthPx,
-  buildPatch: (widthPx) => ({
-    timelineSidebarWidthPx: widthPx
+  buildPatch: (widthPx, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineSidebarWidthPx",
+    value: widthPx,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   }),
   serialize: (widthPx) => String(widthPx),
   deserialize: (raw) => Number(raw)
 });
-function loadLastTimelineSidebarWidthPx() {
-  return store4.load();
+function loadLastTimelineSidebarWidthPx(queryId) {
+  return store4.load({ scopeKey: queryId });
 }
-function saveTimelineSidebarWidthPx(widthPx) {
-  store4.save(widthPx);
+function saveTimelineSidebarWidthPx(widthPx, queryId) {
+  store4.save(widthPx, { scopeKey: queryId });
 }
-function hydrateTimelineSidebarWidthPreference(onHydrated) {
-  store4.hydrate(onHydrated);
+function hydrateTimelineSidebarWidthPreference(onHydrated, queryId) {
+  store4.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeWidthPx(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -28810,22 +29023,25 @@ function clamp2(value, min, max) {
 var STORAGE_KEY6 = "azure-ganttops.timeline-sidebar-row-justify.v1";
 var store5 = createUserPreferenceStore({
   storageKey: STORAGE_KEY6,
-  readFromServerCache: (preferences) => preferences.timelineSidebarRowJustify,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineSidebarRowJustify"),
   sanitize: sanitizeTimelineSidebarRowJustify,
-  buildPatch: (justify) => ({
-    timelineSidebarRowJustify: justify
+  buildPatch: (justify, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineSidebarRowJustify",
+    value: justify,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   }),
   serialize: (justify) => justify,
   deserialize: (raw) => raw
 });
-function loadLastTimelineSidebarRowJustify() {
-  return store5.load();
+function loadLastTimelineSidebarRowJustify(queryId) {
+  return store5.load({ scopeKey: queryId });
 }
-function saveTimelineSidebarRowJustify(justify) {
-  store5.save(justify);
+function saveTimelineSidebarRowJustify(justify, queryId) {
+  store5.save(justify, { scopeKey: queryId });
 }
-function hydrateTimelineSidebarRowJustifyPreference(onHydrated) {
-  store5.hydrate(onHydrated);
+function hydrateTimelineSidebarRowJustifyPreference(onHydrated, queryId) {
+  store5.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeTimelineSidebarRowJustify(value) {
   return value === "flex-start" || value === "flex-end" ? value : null;
@@ -28837,22 +29053,25 @@ var MIN_WIDTH_PX2 = 0;
 var MAX_WIDTH_PX2 = 900;
 var store6 = createUserPreferenceStore({
   storageKey: STORAGE_KEY7,
-  readFromServerCache: (preferences) => preferences.timelineDetailsWidthPx,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineDetailsWidthPx"),
   sanitize: sanitizeWidthPx2,
-  buildPatch: (widthPx) => ({
-    timelineDetailsWidthPx: widthPx
+  buildPatch: (widthPx, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineDetailsWidthPx",
+    value: widthPx,
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   }),
   serialize: (widthPx) => String(widthPx),
   deserialize: (raw) => Number(raw)
 });
-function loadLastTimelineDetailsWidthPx() {
-  return store6.load();
+function loadLastTimelineDetailsWidthPx(queryId) {
+  return store6.load({ scopeKey: queryId });
 }
-function saveTimelineDetailsWidthPx(widthPx) {
-  store6.save(widthPx);
+function saveTimelineDetailsWidthPx(widthPx, queryId) {
+  store6.save(widthPx, { scopeKey: queryId });
 }
-function hydrateTimelineDetailsWidthPreference(onHydrated) {
-  store6.hydrate(onHydrated);
+function hydrateTimelineDetailsWidthPreference(onHydrated, queryId) {
+  store6.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeWidthPx2(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -28995,6 +29214,12 @@ function useTimelineOverlayDismiss(params) {
       if (!target) {
         return;
       }
+      if (target instanceof Element && target.closest("[data-timeline-color-coding-overlay='true']")) {
+        return;
+      }
+      if (target instanceof Element && target.closest("[data-timeline-filter-overlay='true']")) {
+        return;
+      }
       const control = params.colorCodingControlRef.current;
       if (control && control.contains(target)) {
         return;
@@ -29067,6 +29292,23 @@ var import_react10 = __toESM(require_react(), 1);
 function useTimelineKeyboardShortcuts(params) {
   import_react10.default.useEffect(() => {
     const onKeyDown = (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === "s") {
+        if ((params.pendingWorkItemSyncCount ?? 0) > 0) {
+          event.preventDefault();
+          params.onPushPendingWorkItemChanges?.();
+        }
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "p") {
+        if (params.onPrintCurrentView) {
+          event.preventDefault();
+          params.onPrintCurrentView();
+        }
+        return;
+      }
       if (event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
@@ -29091,7 +29333,48 @@ function useTimelineKeyboardShortcuts(params) {
         params.setSelectedDependency(null);
         return;
       }
-      if (event.key.toLowerCase() !== "r" || params.isRefreshing === true) {
+      const key = event.key.toLowerCase();
+      if (key === "f") {
+        params.onToggleTimelineFilters();
+        event.preventDefault();
+        return;
+      }
+      if (key === "s") {
+        params.onToggleSortSettings();
+        event.preventDefault();
+        return;
+      }
+      if (key === "l") {
+        params.onToggleLabelSettings();
+        event.preventDefault();
+        return;
+      }
+      if (key === "d") {
+        params.onRotateDependencyMode();
+        event.preventDefault();
+        return;
+      }
+      if (key === "m") {
+        params.onSelectMonthZoom();
+        event.preventDefault();
+        return;
+      }
+      if (key === "w") {
+        params.onSelectWeekZoom();
+        event.preventDefault();
+        return;
+      }
+      if (key === "q") {
+        params.onSelectQuarterZoom();
+        event.preventDefault();
+        return;
+      }
+      if (key === "y") {
+        params.onSelectYearZoom();
+        event.preventDefault();
+        return;
+      }
+      if (key !== "r" || params.isRefreshing === true) {
         return;
       }
       params.onRetryRefresh?.();
@@ -29118,7 +29401,18 @@ function useTimelineKeyboardShortcuts(params) {
   }, [
     params.isRefreshing,
     params.onRemoveDependency,
+    params.onPushPendingWorkItemChanges,
+    params.onPrintCurrentView,
+    params.onRotateDependencyMode,
     params.onRetryRefresh,
+    params.onSelectMonthZoom,
+    params.onSelectWeekZoom,
+    params.onSelectQuarterZoom,
+    params.onSelectYearZoom,
+    params.onToggleLabelSettings,
+    params.onToggleSortSettings,
+    params.onToggleTimelineFilters,
+    params.pendingWorkItemSyncCount,
     params.selectedDependency,
     params.setAdoptScheduleError,
     params.setSelectedDependency,
@@ -29137,10 +29431,280 @@ function isEditableTarget(target) {
   return target.isContentEditable || Boolean(target.closest("[contenteditable='true']"));
 }
 
-// dist/src/features/gantt-view/timeline-sort-control.js
+// dist/src/features/gantt-view/use-print-current-view.js
 var import_react11 = __toESM(require_react(), 1);
 
+// dist/src/features/gantt-view/print-snapshot.js
+var PRINT_CSS_VARS = {
+  chartWidth: "--print-chart-width",
+  chartHeight: "--print-chart-height",
+  scrollLeft: "--print-scroll-left",
+  scrollTop: "--print-scroll-top",
+  scale: "--print-scale"
+};
+var A4_LANDSCAPE_CONTENT_WIDTH_MM = 277;
+var A4_LANDSCAPE_CONTENT_HEIGHT_MM = 190;
+var MM_TO_PX_AT_96_DPI = 96 / 25.4;
+var PRINT_HEADER_RESERVED_PX = 56;
+var PRINT_FOOTER_RESERVED_PX = 24;
+function computePrintSnapshot(input) {
+  if (input.visibleWidthPx <= 0 || input.visibleHeightPx <= 0) {
+    return null;
+  }
+  const pageWidthPx = A4_LANDSCAPE_CONTENT_WIDTH_MM * MM_TO_PX_AT_96_DPI;
+  const pageHeightPx = A4_LANDSCAPE_CONTENT_HEIGHT_MM * MM_TO_PX_AT_96_DPI;
+  const usableHeightPx = Math.max(pageHeightPx - PRINT_HEADER_RESERVED_PX - PRINT_FOOTER_RESERVED_PX, 1);
+  const scale = Math.min(pageWidthPx / input.visibleWidthPx, 1);
+  const remainingContentHeightPx = Math.max(input.scrollHeightPx - input.scrollTopPx, input.visibleHeightPx);
+  const maxRenderHeightAtScalePx = usableHeightPx / scale;
+  const chartHeightPx = Math.min(remainingContentHeightPx, maxRenderHeightAtScalePx);
+  return {
+    chartWidthPx: input.visibleWidthPx,
+    chartHeightPx,
+    scrollLeftPx: input.scrollLeftPx,
+    scrollTopPx: input.scrollTopPx,
+    scale
+  };
+}
+
+// dist/src/features/gantt-view/use-print-current-view.js
+function usePrintCurrentView(params) {
+  const [isPrintMode, setIsPrintMode] = import_react11.default.useState(false);
+  const ownsPrintRequestRef = import_react11.default.useRef(false);
+  const pendingFrameRef = import_react11.default.useRef(null);
+  const activeSnapshotRef = import_react11.default.useRef(null);
+  const chartScrollRef = params.chartScrollRef;
+  const resetPrintLayout = import_react11.default.useCallback(() => {
+    const root = document.documentElement;
+    Object.values(PRINT_CSS_VARS).forEach((cssVar) => root.style.removeProperty(cssVar));
+    delete document.body.dataset.printMode;
+    activeSnapshotRef.current = null;
+    ownsPrintRequestRef.current = false;
+    setIsPrintMode(false);
+  }, []);
+  const triggerPrint = import_react11.default.useCallback(() => {
+    const scrollElement = chartScrollRef.current;
+    if (!scrollElement) {
+      window.print();
+      return;
+    }
+    const snapshot = computePrintSnapshot({
+      visibleWidthPx: scrollElement.clientWidth,
+      visibleHeightPx: scrollElement.clientHeight,
+      scrollHeightPx: scrollElement.scrollHeight,
+      scrollLeftPx: scrollElement.scrollLeft,
+      scrollTopPx: scrollElement.scrollTop
+    });
+    if (!snapshot) {
+      window.print();
+      return;
+    }
+    const root = document.documentElement;
+    root.style.setProperty(PRINT_CSS_VARS.chartWidth, `${snapshot.chartWidthPx}px`);
+    root.style.setProperty(PRINT_CSS_VARS.chartHeight, `${snapshot.chartHeightPx}px`);
+    root.style.setProperty(PRINT_CSS_VARS.scrollLeft, `${snapshot.scrollLeftPx}px`);
+    root.style.setProperty(PRINT_CSS_VARS.scrollTop, `${snapshot.scrollTopPx}px`);
+    root.style.setProperty(PRINT_CSS_VARS.scale, `${snapshot.scale}`);
+    document.body.dataset.printMode = "active";
+    activeSnapshotRef.current = snapshot;
+    ownsPrintRequestRef.current = true;
+    setIsPrintMode(true);
+  }, [chartScrollRef]);
+  import_react11.default.useEffect(() => {
+    if (!isPrintMode) {
+      return;
+    }
+    const scrollElement = chartScrollRef.current;
+    const snapshot = activeSnapshotRef.current;
+    const restoreScroll = () => {
+      if (!scrollElement || !snapshot) {
+        return;
+      }
+      scrollElement.scrollLeft = snapshot.scrollLeftPx;
+      scrollElement.scrollTop = snapshot.scrollTopPx;
+    };
+    const firstFrame = window.requestAnimationFrame(() => {
+      restoreScroll();
+      const secondFrame = window.requestAnimationFrame(() => {
+        restoreScroll();
+        window.print();
+      });
+      pendingFrameRef.current = secondFrame;
+    });
+    pendingFrameRef.current = firstFrame;
+    return () => {
+      if (pendingFrameRef.current !== null) {
+        window.cancelAnimationFrame(pendingFrameRef.current);
+        pendingFrameRef.current = null;
+      }
+    };
+  }, [isPrintMode, chartScrollRef]);
+  import_react11.default.useEffect(() => {
+    const onAfterPrint = () => {
+      if (ownsPrintRequestRef.current) {
+        resetPrintLayout();
+      }
+    };
+    window.addEventListener("afterprint", onAfterPrint);
+    return () => {
+      window.removeEventListener("afterprint", onAfterPrint);
+    };
+  }, [resetPrintLayout]);
+  return { isPrintMode, triggerPrint };
+}
+
+// dist/src/features/gantt-view/timeline-print-header.js
+var import_react12 = __toESM(require_react(), 1);
+function TimelinePrintHeader(props) {
+  const trimmedName = props.queryName?.trim() ?? "";
+  const titleText = trimmedName.length > 0 ? `AzureGanttOps \u2013 ${trimmedName}` : "AzureGanttOps";
+  return import_react12.default.createElement("div", { className: "timeline-print-header", "aria-hidden": !props.isPrintMode }, import_react12.default.createElement("div", { className: "timeline-print-header-title-block" }, import_react12.default.createElement("span", { className: "timeline-print-header-title" }, titleText), props.queryUrl ? renderQueryLinkIcon(props.queryUrl) : null), import_react12.default.createElement("div", { className: "timeline-print-header-meta" }, `${props.workItemCount} work items \xB7 ${formatPrintTimestamp(props.printedAt)}`));
+}
+function renderQueryLinkIcon(href) {
+  return import_react12.default.createElement("a", {
+    className: "timeline-print-header-link",
+    href,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Open query in Azure DevOps",
+    title: "Open query in Azure DevOps"
+  }, import_react12.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-print-header-link-icon",
+    "aria-hidden": "true"
+  }, import_react12.default.createElement("path", {
+    d: "M14 3h7v7M21 3l-9 9M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
+}
+function formatPrintTimestamp(when) {
+  const pad = (value) => value.toString().padStart(2, "0");
+  const year = when.getFullYear();
+  const month = pad(when.getMonth() + 1);
+  const day = pad(when.getDate());
+  const hours = pad(when.getHours());
+  const minutes = pad(when.getMinutes());
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+// dist/src/features/gantt-view/timeline-print-footer.js
+var import_react13 = __toESM(require_react(), 1);
+
+// dist/src/shared/project-meta/project-meta.js
+var GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
+var TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
+
+// dist/src/features/gantt-view/timeline-print-footer.js
+function TimelinePrintFooter(props) {
+  return import_react13.default.createElement("div", { className: "timeline-print-footer", "aria-hidden": !props.isPrintMode }, "An ", import_react13.default.createElement("a", {
+    className: "timeline-print-footer-link",
+    href: GITHUB_REPO_URL,
+    target: "_blank",
+    rel: "noopener noreferrer"
+  }, "Open Source Project"), " by Christian Betz @ ", import_react13.default.createElement("a", {
+    className: "timeline-print-footer-link",
+    href: TENSORFIVE_WEBSITE_URL,
+    target: "_blank",
+    rel: "noopener noreferrer"
+  }, "TensorFive GmbH"));
+}
+
+// dist/src/shared/azure-devops/azure-query-url.js
+function buildAzureQueryUrl(organization, project, queryId) {
+  const trimmedOrg = organization?.trim();
+  const trimmedProject = project?.trim();
+  const trimmedQueryId = queryId?.trim();
+  if (!trimmedOrg || !trimmedProject || !trimmedQueryId) {
+    return null;
+  }
+  return `https://dev.azure.com/${encodeURIComponent(trimmedOrg)}/${encodeURIComponent(trimmedProject)}/_queries/query/${encodeURIComponent(trimmedQueryId)}`;
+}
+
+// dist/src/features/gantt-view/timeline-sort-control.js
+var import_react14 = __toESM(require_react(), 1);
+
+// dist/src/domain/planning-model/tree-level-sorting.js
+function applyTreeLevelSorting(items, treeLayout, comparator) {
+  const itemById = /* @__PURE__ */ new Map();
+  for (const item of items) {
+    itemById.set(item.workItemId, item);
+  }
+  const childrenByParent = /* @__PURE__ */ new Map();
+  for (const id of treeLayout.orderedIds) {
+    const meta = treeLayout.metaByWorkItemId.get(id);
+    if (!meta) {
+      continue;
+    }
+    const parentId = meta.parentWorkItemId;
+    const siblings = childrenByParent.get(parentId);
+    if (siblings) {
+      siblings.push(id);
+    } else {
+      childrenByParent.set(parentId, [id]);
+    }
+  }
+  for (const [parentId, childIds] of childrenByParent) {
+    childIds.sort((aId, bId) => {
+      const aItem = itemById.get(aId);
+      const bItem = itemById.get(bId);
+      if (!aItem || !bItem) {
+        return 0;
+      }
+      return comparator(aItem, bItem);
+    });
+  }
+  const sortedItems = [];
+  const updatedMeta = /* @__PURE__ */ new Map();
+  const orderedIds = [];
+  dfsCollect(null, 0, [], childrenByParent, treeLayout.metaByWorkItemId, itemById, sortedItems, updatedMeta, orderedIds);
+  return {
+    sortedItems,
+    updatedLayout: {
+      orderedIds,
+      metaByWorkItemId: updatedMeta
+    }
+  };
+}
+function dfsCollect(parentId, depth, ancestorIsLastSibling, childrenByParent, originalMeta, itemById, sortedItems, updatedMeta, orderedIds) {
+  const children = childrenByParent.get(parentId);
+  if (!children) {
+    return;
+  }
+  for (let index = 0; index < children.length; index++) {
+    const id = children[index];
+    const original = originalMeta.get(id);
+    if (!original) {
+      continue;
+    }
+    const isLast = index === children.length - 1;
+    const childChildren = childrenByParent.get(id);
+    const hasChildren = childChildren !== void 0 && childChildren.length > 0;
+    updatedMeta.set(id, {
+      workItemId: id,
+      depth,
+      parentWorkItemId: parentId,
+      hasChildren,
+      isLastSibling: isLast,
+      ancestorIsLastSibling: [...ancestorIsLastSibling]
+    });
+    orderedIds.push(id);
+    const item = itemById.get(id);
+    if (item) {
+      sortedItems.push(item);
+    }
+    if (hasChildren) {
+      dfsCollect(id, depth + 1, [...ancestorIsLastSibling, isLast], childrenByParent, originalMeta, itemById, sortedItems, updatedMeta, orderedIds);
+    }
+  }
+}
+
 // dist/src/features/gantt-view/timeline-sorting.js
+var DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
+var MS_PER_DAY = 864e5;
 var BUILT_IN_SORT_OPTIONS = [
   { value: "startDate", label: "Start date", subtitle: "Built-in" },
   { value: "endDate", label: "End date", subtitle: "Built-in" },
@@ -29155,13 +29719,92 @@ function applyTimelineSorting(timeline, preference) {
   if (!timeline) {
     return null;
   }
+  if (timeline.queryType === "flat" || !timeline.treeLayout) {
+    const comparator = buildTimelineSortComparator(preference);
+    const bars = [...timeline.bars].sort(comparator);
+    const unschedulable = [...timeline.unschedulable].sort(comparator);
+    return {
+      ...timeline,
+      bars,
+      unschedulable
+    };
+  }
+  return applyTreeLevelSortedTimeline(timeline, preference);
+}
+function applyTreeLevelSortedTimeline(timeline, preference) {
+  const treeLayout = recordToTreeLayout(timeline.treeLayout);
   const comparator = buildTimelineSortComparator(preference);
-  const bars = [...timeline.bars].sort(comparator);
-  const unschedulable = [...timeline.unschedulable].sort(comparator);
+  const barResult = applyTreeLevelSorting(timeline.bars, treeLayout, comparator);
+  const unschedulableResult = applyTreeLevelSorting(timeline.unschedulable, treeLayout, comparator);
+  const mergedRecord = {};
+  for (const [id, meta] of barResult.updatedLayout.metaByWorkItemId) {
+    mergedRecord[String(id)] = toTimelineTreeNodeMeta(meta);
+  }
+  for (const [id, meta] of unschedulableResult.updatedLayout.metaByWorkItemId) {
+    if (!(String(id) in mergedRecord)) {
+      mergedRecord[String(id)] = toTimelineTreeNodeMeta(meta);
+    }
+  }
   return {
     ...timeline,
-    bars,
-    unschedulable
+    bars: barResult.sortedItems,
+    unschedulable: unschedulableResult.sortedItems,
+    treeLayout: mergedRecord
+  };
+}
+function recordToTreeLayout(record) {
+  const orderedIds = [];
+  const childrenByParent = /* @__PURE__ */ new Map();
+  for (const idStr of Object.keys(record)) {
+    const id = Number(idStr);
+    const node = record[idStr];
+    const parentId = node.parentWorkItemId;
+    const siblings = childrenByParent.get(parentId);
+    if (siblings) {
+      siblings.push(id);
+    } else {
+      childrenByParent.set(parentId, [id]);
+    }
+  }
+  const visited = /* @__PURE__ */ new Set();
+  const roots = childrenByParent.get(null) ?? [];
+  const stack = [...roots].reverse();
+  while (stack.length > 0) {
+    const id = stack.pop();
+    if (visited.has(id)) {
+      continue;
+    }
+    visited.add(id);
+    orderedIds.push(id);
+    const children = childrenByParent.get(id);
+    if (children) {
+      for (let i = children.length - 1; i >= 0; i--) {
+        stack.push(children[i]);
+      }
+    }
+  }
+  const metaByWorkItemId = /* @__PURE__ */ new Map();
+  for (const idStr of Object.keys(record)) {
+    const id = Number(idStr);
+    const node = record[idStr];
+    metaByWorkItemId.set(id, {
+      workItemId: id,
+      depth: node.depth,
+      parentWorkItemId: node.parentWorkItemId,
+      hasChildren: node.hasChildren,
+      isLastSibling: node.isLastSibling,
+      ancestorIsLastSibling: [...node.ancestorIsLastSibling]
+    });
+  }
+  return { orderedIds, metaByWorkItemId };
+}
+function toTimelineTreeNodeMeta(meta) {
+  return {
+    depth: meta.depth,
+    parentWorkItemId: meta.parentWorkItemId,
+    hasChildren: meta.hasChildren,
+    isLastSibling: meta.isLastSibling,
+    ancestorIsLastSibling: [...meta.ancestorIsLastSibling]
   };
 }
 function buildTimelineSortOptions(availableFieldRefs) {
@@ -29182,12 +29825,12 @@ function resolveTimelineSortFieldLabel(field) {
 }
 function buildTimelineSortComparator(preference) {
   return (left, right) => {
-    const primaryResult = compareTimelineSortableValues(left, right, preference.primary);
+    const primaryResult = compareTimelineSortableValues(left, right, preference.primary, preference.primaryDirection);
     if (primaryResult !== 0) {
       return primaryResult;
     }
     if (preference.secondary) {
-      const secondaryResult = compareTimelineSortableValues(left, right, preference.secondary);
+      const secondaryResult = compareTimelineSortableValues(left, right, preference.secondary, preference.secondaryDirection);
       if (secondaryResult !== 0) {
         return secondaryResult;
       }
@@ -29195,9 +29838,13 @@ function buildTimelineSortComparator(preference) {
     return left.workItemId - right.workItemId;
   };
 }
-function compareTimelineSortableValues(left, right, field) {
+function compareTimelineSortableValues(left, right, field, direction) {
   const leftValue = extractSortValue(left, field);
   const rightValue = extractSortValue(right, field);
+  const ascendingResult = compareSortValuesAscending(leftValue, rightValue);
+  return direction === "desc" ? ascendingResult * -1 : ascendingResult;
+}
+function compareSortValuesAscending(leftValue, rightValue) {
   if (leftValue === null && rightValue === null) {
     return 0;
   }
@@ -29214,7 +29861,7 @@ function compareTimelineSortableValues(left, right, field) {
 }
 function extractSortValue(item, field) {
   if (field === "startDate") {
-    return toTimestamp(item.schedule?.startDate);
+    return resolveStartDateSortTimestamp(item);
   }
   if (field === "endDate") {
     return toTimestamp(item.schedule?.endDate);
@@ -29242,6 +29889,17 @@ function extractSortValue(item, field) {
   }
   return normalizeString(fieldValue ?? null);
 }
+function resolveStartDateSortTimestamp(item) {
+  const startTimestamp = toTimestamp(item.schedule?.startDate);
+  if (startTimestamp !== null) {
+    return startTimestamp;
+  }
+  const endTimestamp = toTimestamp(item.schedule?.endDate);
+  if (endTimestamp === null) {
+    return null;
+  }
+  return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY;
+}
 function normalizeString(value) {
   if (value === null || typeof value === "undefined") {
     return null;
@@ -29268,26 +29926,26 @@ function getFieldDisplayName(fieldRef) {
 
 // dist/src/features/gantt-view/timeline-sort-control.js
 function TimelineSortControl(props) {
-  const options = import_react11.default.useMemo(() => buildTimelineSortOptions(props.availableFieldRefs), [props.availableFieldRefs]);
-  const [openDropdown, setOpenDropdown] = import_react11.default.useState(null);
-  const [searchDraft, setSearchDraft] = import_react11.default.useState("");
-  const secondaryOptions = import_react11.default.useMemo(() => options.filter((option) => option.value !== props.timelineSortPreference.primary), [options, props.timelineSortPreference.primary]);
-  const selectedSummary = import_react11.default.useMemo(() => {
+  const options = import_react14.default.useMemo(() => buildTimelineSortOptions(props.availableFieldRefs), [props.availableFieldRefs]);
+  const [openDropdown, setOpenDropdown] = import_react14.default.useState(null);
+  const [searchDraft, setSearchDraft] = import_react14.default.useState("");
+  const secondaryOptions = import_react14.default.useMemo(() => options.filter((option) => option.value !== props.timelineSortPreference.primary), [options, props.timelineSortPreference.primary]);
+  const selectedSummary = import_react14.default.useMemo(() => {
     const primaryLabel2 = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
     const secondaryLabel2 = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
     return `${primaryLabel2} / ${secondaryLabel2}`;
   }, [props.timelineSortPreference.primary, props.timelineSortPreference.secondary]);
-  const filteredPrimaryOptions = import_react11.default.useMemo(() => filterSortOptionsBySearch(options, searchDraft), [options, searchDraft]);
-  const filteredSecondaryOptions = import_react11.default.useMemo(() => filterSortOptionsBySearch(secondaryOptions, searchDraft), [secondaryOptions, searchDraft]);
+  const filteredPrimaryOptions = import_react14.default.useMemo(() => filterSortOptionsBySearch(options, searchDraft), [options, searchDraft]);
+  const filteredSecondaryOptions = import_react14.default.useMemo(() => filterSortOptionsBySearch(secondaryOptions, searchDraft), [secondaryOptions, searchDraft]);
   const primaryLabel = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
   const secondaryLabel = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
-  import_react11.default.useEffect(() => {
+  import_react14.default.useEffect(() => {
     if (!props.sortSettingsOpen) {
       setOpenDropdown(null);
       setSearchDraft("");
     }
   }, [props.sortSettingsOpen]);
-  return import_react11.default.createElement("div", { className: "timeline-sort-control", ref: props.controlRef }, import_react11.default.createElement("button", {
+  return import_react14.default.createElement("div", { className: "timeline-sort-control", ref: props.controlRef }, import_react14.default.createElement("button", {
     type: "button",
     className: props.sortSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
     "aria-label": "Toggle timeline sorting",
@@ -29295,18 +29953,29 @@ function TimelineSortControl(props) {
     "aria-expanded": props.sortSettingsOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleSortSettings
-  }, import_react11.default.createElement("svg", {
+  }, import_react14.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react11.default.createElement("path", {
+  }, import_react14.default.createElement("path", {
     d: "M7 4h14v2H7V4Zm4 7h10v2H11v-2Zm4 7h6v2h-6v-2ZM3 6l2.5 3L8 6H6v12H5V6H3Z"
-  })), import_react11.default.createElement("span", { className: "timeline-label-toggle-count" }, "2")), props.sortSettingsOpen ? import_react11.default.createElement("div", {
+  })), import_react14.default.createElement("span", { className: "timeline-label-toggle-count" }, "2")), props.sortSettingsOpen ? import_react14.default.createElement("div", {
     className: "timeline-label-menu timeline-sort-menu",
     role: "group",
     "aria-label": "Timeline sorting",
     ref: props.panelRef
-  }, import_react11.default.createElement("h4", { className: "timeline-label-menu-title" }, "Sort work items"), import_react11.default.createElement("p", { className: "timeline-details-muted" }, `Current: ${selectedSummary}`), import_react11.default.createElement("div", { className: "timeline-sort-menu-grid" }, import_react11.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react11.default.createElement("span", null, "Primary"), import_react11.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react11.default.createElement("button", {
+  }, import_react14.default.createElement("h4", { className: "timeline-label-menu-title" }, "Sort work items"), import_react14.default.createElement("p", { className: "timeline-details-muted" }, `Current: ${selectedSummary}`), import_react14.default.createElement("div", { className: "timeline-sort-menu-grid" }, import_react14.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react14.default.createElement("span", null, "Primary"), import_react14.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react14.default.createElement("button", {
+    type: "button",
+    className: "timeline-sort-direction-toggle",
+    "aria-label": `Toggle primary sort direction (${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"})`,
+    title: `Primary sort ${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"}`,
+    "aria-pressed": props.timelineSortPreference.primaryDirection === "desc" ? "true" : "false",
+    onClick: props.onTogglePrimarySortDirection
+  }, import_react14.default.createElement("svg", {
+    viewBox: "0 0 16 16",
+    className: "timeline-sort-direction-toggle-icon",
+    "aria-hidden": "true"
+  }, props.timelineSortPreference.primaryDirection === "asc" ? import_react14.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react14.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react14.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react14.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
     "aria-label": "Timeline sort primary",
@@ -29316,11 +29985,11 @@ function TimelineSortControl(props) {
       setOpenDropdown((current) => current === "primary" ? null : "primary");
       setSearchDraft("");
     }
-  }, primaryLabel), openDropdown === "primary" ? import_react11.default.createElement("div", {
+  }, primaryLabel), openDropdown === "primary" ? import_react14.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     role: "listbox",
     "aria-label": "Timeline sort primary options"
-  }, import_react11.default.createElement("input", {
+  }, import_react14.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sort primary",
@@ -29329,7 +29998,7 @@ function TimelineSortControl(props) {
     onChange: (event) => {
       setSearchDraft(event.target.value);
     }
-  }), import_react11.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filteredPrimaryOptions.length === 0 ? import_react11.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredPrimaryOptions.map((option) => import_react11.default.createElement("button", {
+  }), import_react14.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filteredPrimaryOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredPrimaryOptions.map((option) => import_react14.default.createElement("button", {
     key: `timeline-sort-primary-${option.value}`,
     type: "button",
     className: option.value === props.timelineSortPreference.primary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -29337,7 +30006,19 @@ function TimelineSortControl(props) {
       props.onSelectPrimarySortField(option.value);
       setOpenDropdown(null);
     }
-  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null)), import_react11.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react11.default.createElement("span", null, "Secondary"), import_react11.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react11.default.createElement("button", {
+  }, import_react14.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react14.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))), import_react14.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react14.default.createElement("span", null, "Secondary"), import_react14.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react14.default.createElement("button", {
+    type: "button",
+    className: "timeline-sort-direction-toggle",
+    "aria-label": `Toggle secondary sort direction (${props.timelineSortPreference.secondaryDirection === "asc" ? "ascending" : "descending"})`,
+    title: `Secondary sort ${props.timelineSortPreference.secondaryDirection === "asc" ? "ascending" : "descending"}`,
+    "aria-pressed": props.timelineSortPreference.secondaryDirection === "desc" ? "true" : "false",
+    disabled: props.timelineSortPreference.secondary === null,
+    onClick: props.onToggleSecondarySortDirection
+  }, import_react14.default.createElement("svg", {
+    viewBox: "0 0 16 16",
+    className: "timeline-sort-direction-toggle-icon",
+    "aria-hidden": "true"
+  }, props.timelineSortPreference.secondaryDirection === "asc" ? import_react14.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react14.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react14.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react14.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
     "aria-label": "Timeline sort secondary",
@@ -29347,11 +30028,11 @@ function TimelineSortControl(props) {
       setOpenDropdown((current) => current === "secondary" ? null : "secondary");
       setSearchDraft("");
     }
-  }, secondaryLabel), openDropdown === "secondary" ? import_react11.default.createElement("div", {
+  }, secondaryLabel), openDropdown === "secondary" ? import_react14.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     role: "listbox",
     "aria-label": "Timeline sort secondary options"
-  }, import_react11.default.createElement("input", {
+  }, import_react14.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sort secondary",
@@ -29360,14 +30041,14 @@ function TimelineSortControl(props) {
     onChange: (event) => {
       setSearchDraft(event.target.value);
     }
-  }), import_react11.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, import_react11.default.createElement("button", {
+  }), import_react14.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, import_react14.default.createElement("button", {
     type: "button",
     className: props.timelineSortPreference.secondary === null ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
     onClick: () => {
       props.onSelectSecondarySortField(null);
       setOpenDropdown(null);
     }
-  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, "None"), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")), filteredSecondaryOptions.length === 0 ? import_react11.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredSecondaryOptions.map((option) => import_react11.default.createElement("button", {
+  }, import_react14.default.createElement("span", { className: "timeline-color-coding-option-label" }, "None"), import_react14.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")), filteredSecondaryOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredSecondaryOptions.map((option) => import_react14.default.createElement("button", {
     key: `timeline-sort-secondary-${option.value}`,
     type: "button",
     className: option.value === props.timelineSortPreference.secondary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -29375,7 +30056,7 @@ function TimelineSortControl(props) {
       props.onSelectSecondarySortField(option.value);
       setOpenDropdown(null);
     }
-  }, import_react11.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react11.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null)))) : null);
+  }, import_react14.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react14.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))))) : null);
 }
 function filterSortOptionsBySearch(options, searchDraft) {
   const normalizedSearch = searchDraft.trim().toLowerCase();
@@ -29386,34 +30067,41 @@ function filterSortOptionsBySearch(options, searchDraft) {
 }
 
 // dist/src/features/gantt-view/use-timeline-sorting.js
-var import_react12 = __toESM(require_react(), 1);
+var import_react15 = __toESM(require_react(), 1);
 
 // dist/src/features/gantt-view/timeline-sort-preference.js
 var DEFAULT_TIMELINE_SORT_PREFERENCE = {
   primary: "startDate",
-  secondary: null
+  primaryDirection: "asc",
+  secondary: null,
+  secondaryDirection: "asc"
 };
 var STORAGE_KEY8 = "azure-ganttops.timeline-sort.v1";
 var store7 = createUserPreferenceStore({
   storageKey: STORAGE_KEY8,
-  readFromServerCache: (preferences) => preferences.timelineSort,
+  readFromServerCache: (preferences, scopeKey) => readQueryScopedTimelinePreference(preferences, scopeKey, "timelineSort"),
   sanitize: sanitizeTimelineSortPreference,
-  buildPatch: (preference) => ({
-    timelineSort: {
+  buildPatch: (preference, cachedPreferences2, scopeKey) => buildQueryScopedTimelinePreferencePatch({
+    key: "timelineSort",
+    value: {
       primary: preference.primary,
-      secondary: preference.secondary
-    }
+      primaryDirection: preference.primaryDirection,
+      secondary: preference.secondary,
+      secondaryDirection: preference.secondaryDirection
+    },
+    cachedPreferences: cachedPreferences2,
+    scopeKey
   })
 });
-function loadLastTimelineSortPreference() {
-  return store7.load();
+function loadLastTimelineSortPreference(queryId) {
+  return store7.load({ scopeKey: queryId });
 }
-function saveTimelineSortPreference(preference) {
+function saveTimelineSortPreference(preference, queryId) {
   const sanitized = sanitizeTimelineSortPreference(preference) ?? DEFAULT_TIMELINE_SORT_PREFERENCE;
-  store7.save(sanitized);
+  store7.save(sanitized, { scopeKey: queryId });
 }
-function hydrateTimelineSortPreference(onHydrated) {
-  store7.hydrate(onHydrated);
+function hydrateTimelineSortPreference(onHydrated, queryId) {
+  store7.hydrate(onHydrated, { scopeKey: queryId });
 }
 function sanitizeTimelineSortPreference(value) {
   if (!value || typeof value !== "object") {
@@ -29432,12 +30120,16 @@ function sanitizeTimelineSortPreference(value) {
   if (secondary === primary) {
     return {
       primary,
-      secondary: primary === "startDate" ? null : "startDate"
+      primaryDirection: sanitizeTimelineSortDirection2(candidate.primaryDirection) ?? "asc",
+      secondary: primary === "startDate" ? null : "startDate",
+      secondaryDirection: sanitizeTimelineSortDirection2(candidate.secondaryDirection) ?? "asc"
     };
   }
   return {
     primary,
-    secondary: secondary ?? null
+    primaryDirection: sanitizeTimelineSortDirection2(candidate.primaryDirection) ?? "asc",
+    secondary: secondary ?? null,
+    secondaryDirection: sanitizeTimelineSortDirection2(candidate.secondaryDirection) ?? "asc"
   };
 }
 function sanitizeTimelineSortField2(value) {
@@ -29457,66 +30149,228 @@ function sanitizeTimelineSortField2(value) {
   }
   return `field:${fieldRef}`;
 }
+function sanitizeTimelineSortDirection2(value) {
+  if (value === "asc" || value === "desc") {
+    return value;
+  }
+  return null;
+}
 
 // dist/src/features/gantt-view/use-timeline-sorting.js
-function useTimelineSorting() {
-  const [sortSettingsOpen, setSortSettingsOpen] = import_react12.default.useState(false);
-  const [timelineSortPreference, setTimelineSortPreference] = import_react12.default.useState(() => loadLastTimelineSortPreference() ?? DEFAULT_TIMELINE_SORT_PREFERENCE);
-  import_react12.default.useEffect(() => {
+function useTimelineSorting(queryId) {
+  const [sortSettingsOpen, setSortSettingsOpen] = import_react15.default.useState(false);
+  const [timelineSortPreference, setTimelineSortPreference] = import_react15.default.useState(() => loadLastTimelineSortPreference(queryId) ?? DEFAULT_TIMELINE_SORT_PREFERENCE);
+  import_react15.default.useEffect(() => {
     hydrateTimelineSortPreference((preference) => {
       setTimelineSortPreference(preference);
-    });
-  }, []);
-  const setAndPersist = import_react12.default.useCallback((preference) => {
+    }, queryId);
+  }, [queryId]);
+  const setAndPersist = import_react15.default.useCallback((preference) => {
     setTimelineSortPreference(preference);
-    saveTimelineSortPreference(preference);
-  }, []);
-  const selectPrimarySortField = import_react12.default.useCallback((field) => {
+    saveTimelineSortPreference(preference, queryId);
+  }, [queryId]);
+  const selectPrimarySortField = import_react15.default.useCallback((field) => {
     setAndPersist({
       primary: field,
-      secondary: field === "startDate" ? null : "startDate"
+      primaryDirection: timelineSortPreference.primaryDirection,
+      secondary: field === "startDate" ? null : "startDate",
+      secondaryDirection: timelineSortPreference.secondaryDirection
     });
-  }, [setAndPersist]);
-  const selectSecondarySortField = import_react12.default.useCallback((field) => {
+  }, [setAndPersist, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]);
+  const selectSecondarySortField = import_react15.default.useCallback((field) => {
     setAndPersist({
       primary: timelineSortPreference.primary,
-      secondary: field
+      primaryDirection: timelineSortPreference.primaryDirection,
+      secondary: field,
+      secondaryDirection: timelineSortPreference.secondaryDirection
     });
-  }, [setAndPersist, timelineSortPreference.primary]);
+  }, [setAndPersist, timelineSortPreference.primary, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]);
+  const toggleSortDirection = import_react15.default.useCallback((key) => {
+    const nextDirection = timelineSortPreference[key] === "asc" ? "desc" : "asc";
+    setAndPersist({
+      ...timelineSortPreference,
+      [key]: nextDirection
+    });
+  }, [setAndPersist, timelineSortPreference]);
   return {
     sortSettingsOpen,
     setSortSettingsOpen,
     timelineSortPreference,
     selectPrimarySortField,
-    selectSecondarySortField
+    selectSecondarySortField,
+    togglePrimarySortDirection: () => toggleSortDirection("primaryDirection"),
+    toggleSecondarySortDirection: () => toggleSortDirection("secondaryDirection")
   };
 }
 
+// dist/src/features/gantt-view/use-tree-expand-collapse.js
+var React28 = __toESM(require_react(), 1);
+function useTreeExpandCollapse(treeLayout) {
+  const [collapsedIds, setCollapsedIds] = React28.useState(/* @__PURE__ */ new Set());
+  const toggle = React28.useCallback((workItemId) => {
+    setCollapsedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(workItemId)) {
+        next.delete(workItemId);
+      } else {
+        next.add(workItemId);
+      }
+      return next;
+    });
+  }, []);
+  const collapseAll = React28.useCallback(() => {
+    if (!treeLayout) {
+      return;
+    }
+    const allParents = /* @__PURE__ */ new Set();
+    for (const id of Object.keys(treeLayout)) {
+      const meta = treeLayout[id];
+      if (meta.hasChildren) {
+        allParents.add(Number(id));
+      }
+    }
+    setCollapsedIds(allParents);
+  }, [treeLayout]);
+  const expandAll = React28.useCallback(() => {
+    setCollapsedIds(/* @__PURE__ */ new Set());
+  }, []);
+  const isCollapsed = React28.useCallback((workItemId) => collapsedIds.has(workItemId), [collapsedIds]);
+  return {
+    collapsedIds,
+    toggle,
+    collapseAll,
+    expandAll,
+    isCollapsed
+  };
+}
+function applyTreeVisibility(timeline, collapsedIds) {
+  if (!timeline || !timeline.treeLayout || collapsedIds.size === 0) {
+    return timeline;
+  }
+  const treeLayout = timeline.treeLayout;
+  const isHidden = (workItemId) => {
+    const meta = treeLayout[workItemId];
+    if (!meta) {
+      return false;
+    }
+    let parentId = meta.parentWorkItemId;
+    while (parentId !== null) {
+      if (collapsedIds.has(parentId)) {
+        return true;
+      }
+      const parentMeta = treeLayout[parentId];
+      if (!parentMeta) {
+        break;
+      }
+      parentId = parentMeta.parentWorkItemId;
+    }
+    return false;
+  };
+  const bars = timeline.bars.filter((bar) => !isHidden(bar.workItemId));
+  const unschedulable = timeline.unschedulable.filter((item) => !isHidden(item.workItemId));
+  return {
+    ...timeline,
+    bars,
+    unschedulable
+  };
+}
+
+// dist/src/features/gantt-view/use-reparent-dragging.js
+var React29 = __toESM(require_react(), 1);
+function useReparentDragging(treeLayout) {
+  const [dragState, setDragState] = React29.useState({
+    sourceWorkItemId: null,
+    dropTargetWorkItemId: null,
+    isValid: false
+  });
+  const treeLayoutRef = React29.useRef(treeLayout);
+  treeLayoutRef.current = treeLayout;
+  const startDrag = React29.useCallback((workItemId) => {
+    setDragState({ sourceWorkItemId: workItemId, dropTargetWorkItemId: null, isValid: false });
+  }, []);
+  const updateDropTarget = React29.useCallback((workItemId) => {
+    setDragState((previous) => {
+      if (!previous.sourceWorkItemId) {
+        return previous;
+      }
+      if (workItemId === null) {
+        return { ...previous, dropTargetWorkItemId: null, isValid: false };
+      }
+      if (workItemId === previous.sourceWorkItemId) {
+        return { ...previous, dropTargetWorkItemId: workItemId, isValid: false };
+      }
+      const currentParent = treeLayoutRef.current?.[previous.sourceWorkItemId]?.parentWorkItemId ?? null;
+      if (workItemId === currentParent) {
+        return { ...previous, dropTargetWorkItemId: workItemId, isValid: false };
+      }
+      const wouldCreateCycle = isDescendantOf(workItemId, previous.sourceWorkItemId, treeLayoutRef.current);
+      return {
+        ...previous,
+        dropTargetWorkItemId: workItemId,
+        isValid: !wouldCreateCycle
+      };
+    });
+  }, []);
+  const executeDrop = React29.useCallback(() => {
+    const current = dragState;
+    if (!current.sourceWorkItemId || !current.isValid || current.dropTargetWorkItemId === null) {
+      return null;
+    }
+    return {
+      targetWorkItemId: current.sourceWorkItemId,
+      newParentId: current.dropTargetWorkItemId
+    };
+  }, [dragState]);
+  const clearDrag = React29.useCallback(() => {
+    setDragState({ sourceWorkItemId: null, dropTargetWorkItemId: null, isValid: false });
+  }, []);
+  return { dragState, startDrag, updateDropTarget, executeDrop, clearDrag };
+}
+function isDescendantOf(candidateId, ancestorId, treeLayout) {
+  if (!treeLayout) {
+    return false;
+  }
+  let currentId = candidateId;
+  const visited = /* @__PURE__ */ new Set();
+  while (currentId !== null) {
+    if (currentId === ancestorId) {
+      return true;
+    }
+    if (visited.has(currentId)) {
+      return false;
+    }
+    visited.add(currentId);
+    const meta = treeLayout[currentId];
+    currentId = meta?.parentWorkItemId ?? null;
+  }
+  return false;
+}
+
 // dist/src/features/gantt-view/use-timeline-resizing.js
-var import_react13 = __toESM(require_react(), 1);
+var import_react16 = __toESM(require_react(), 1);
 function useTimelineResizing(input) {
-  const [activeDetailsResize, setActiveDetailsResize] = import_react13.default.useState(null);
-  const [activeSidebarResize, setActiveSidebarResize] = import_react13.default.useState(null);
-  const detailsWidthLiveRef = import_react13.default.useRef(input.detailsWidthPx);
-  const sidebarWidthLiveRef = import_react13.default.useRef(input.sidebarWidthPx);
-  const detailsResizeMovedRef = import_react13.default.useRef(false);
-  const sidebarResizeMovedRef = import_react13.default.useRef(false);
-  const lastExpandedDetailsWidthRef = import_react13.default.useRef(Math.max(input.detailsWidthPx, input.detailsPanelContentMinWidthPx));
+  const [activeDetailsResize, setActiveDetailsResize] = import_react16.default.useState(null);
+  const [activeSidebarResize, setActiveSidebarResize] = import_react16.default.useState(null);
+  const detailsWidthLiveRef = import_react16.default.useRef(input.detailsWidthPx);
+  const sidebarWidthLiveRef = import_react16.default.useRef(input.sidebarWidthPx);
+  const detailsResizeMovedRef = import_react16.default.useRef(false);
+  const sidebarResizeMovedRef = import_react16.default.useRef(false);
+  const lastExpandedDetailsWidthRef = import_react16.default.useRef(Math.max(input.detailsWidthPx, input.detailsPanelContentMinWidthPx));
   const sidebarCollapsed = input.sidebarFieldsCount === 0;
   const effectiveSidebarWidthPx = sidebarCollapsed ? input.timelineSidebarCollapsedWidthPx : input.sidebarWidthPx;
   const detailsContentHidden = input.detailsWidthPx < input.detailsPanelContentMinWidthPx;
-  const sidebarEffectiveWidthLiveRef = import_react13.default.useRef(effectiveSidebarWidthPx);
-  import_react13.default.useEffect(() => {
+  const sidebarEffectiveWidthLiveRef = import_react16.default.useRef(effectiveSidebarWidthPx);
+  import_react16.default.useEffect(() => {
     detailsWidthLiveRef.current = input.detailsWidthPx;
     if (input.detailsWidthPx >= input.detailsPanelContentMinWidthPx) {
       lastExpandedDetailsWidthRef.current = input.detailsWidthPx;
     }
   }, [input.detailsPanelContentMinWidthPx, input.detailsWidthPx]);
-  import_react13.default.useEffect(() => {
+  import_react16.default.useEffect(() => {
     sidebarWidthLiveRef.current = input.sidebarWidthPx;
     sidebarEffectiveWidthLiveRef.current = effectiveSidebarWidthPx;
   }, [effectiveSidebarWidthPx, input.sidebarWidthPx]);
-  import_react13.default.useEffect(() => {
+  import_react16.default.useEffect(() => {
     const clampWidthToAvailableSpace = () => {
       input.setSidebarWidthPx((current) => {
         const maxWidth = input.resolveTimelineSidebarMaxWidthPx(input.timelineMainGridRef.current, detailsWidthLiveRef.current);
@@ -29544,7 +30398,7 @@ function useTimelineResizing(input) {
     input.timelineMainGridRef,
     input.timelineSidebarMinWidthPx
   ]);
-  import_react13.default.useEffect(() => {
+  import_react16.default.useEffect(() => {
     if (!activeDetailsResize) {
       return;
     }
@@ -29585,7 +30439,7 @@ function useTimelineResizing(input) {
     input.setDetailsWidthPx,
     input.timelineMainGridRef
   ]);
-  import_react13.default.useEffect(() => {
+  import_react16.default.useEffect(() => {
     if (!activeSidebarResize) {
       return;
     }
@@ -29626,7 +30480,7 @@ function useTimelineResizing(input) {
     input.timelineMainGridRef,
     input.timelineSidebarMinWidthPx
   ]);
-  const beginSidebarResize = import_react13.default.useCallback((event) => {
+  const beginSidebarResize = import_react16.default.useCallback((event) => {
     if (event.button !== 0) {
       return;
     }
@@ -29641,7 +30495,7 @@ function useTimelineResizing(input) {
       originWidthPx: input.sidebarWidthPx
     });
   }, [input.sidebarWidthPx]);
-  const beginDetailsResize = import_react13.default.useCallback((event) => {
+  const beginDetailsResize = import_react16.default.useCallback((event) => {
     if (event.button !== 0) {
       return;
     }
@@ -29656,8 +30510,13 @@ function useTimelineResizing(input) {
       originWidthPx: input.detailsWidthPx
     });
   }, [input.detailsWidthPx]);
-  const expandDetailsPanelFromHidden = import_react13.default.useCallback(() => {
-    if (!detailsContentHidden || detailsResizeMovedRef.current) {
+  const toggleDetailsPanelFromSplitter = import_react16.default.useCallback(() => {
+    if (detailsResizeMovedRef.current) {
+      return;
+    }
+    if (!detailsContentHidden) {
+      input.setDetailsWidthPx(input.detailsPanelMinWidthPx);
+      input.persistDetailsWidthPx(input.detailsPanelMinWidthPx);
       return;
     }
     const maxWidth = input.resolveTimelineDetailsMaxWidthPx(input.timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
@@ -29667,6 +30526,7 @@ function useTimelineResizing(input) {
   }, [
     detailsContentHidden,
     input.clamp,
+    input.detailsPanelMinWidthPx,
     input.detailsPanelContentMinWidthPx,
     input.persistDetailsWidthPx,
     input.resolveTimelineDetailsMaxWidthPx,
@@ -29684,29 +30544,96 @@ function useTimelineResizing(input) {
     sidebarEffectiveWidthLiveRef,
     beginSidebarResize,
     beginDetailsResize,
-    expandDetailsPanelFromHidden
+    toggleDetailsPanelFromSplitter
   };
 }
 
+// dist/src/features/gantt-view/use-drag-auto-scroll.js
+var import_react17 = __toESM(require_react(), 1);
+var EDGE_ZONE_PX = 40;
+var MAX_SCROLL_SPEED_PX = 15;
+function useDragAutoScroll(scrollRef, isActive, onAutoScroll) {
+  const pointerRef = import_react17.default.useRef(null);
+  const rafRef = import_react17.default.useRef(null);
+  const onAutoScrollRef = import_react17.default.useRef(onAutoScroll);
+  onAutoScrollRef.current = onAutoScroll;
+  import_react17.default.useEffect(() => {
+    if (!isActive) {
+      pointerRef.current = null;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      return;
+    }
+    const tick = () => {
+      const el = scrollRef.current;
+      const pointer = pointerRef.current;
+      if (!el || !pointer) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      const distFromLeft = pointer.clientX - rect.left;
+      const distFromRight = rect.right - pointer.clientX;
+      const distFromTop = pointer.clientY - rect.top;
+      const distFromBottom = rect.bottom - pointer.clientY;
+      let dx = 0;
+      let dy = 0;
+      if (distFromLeft < EDGE_ZONE_PX && distFromLeft >= 0) {
+        dx = -MAX_SCROLL_SPEED_PX * (1 - distFromLeft / EDGE_ZONE_PX);
+      } else if (distFromRight < EDGE_ZONE_PX && distFromRight >= 0) {
+        dx = MAX_SCROLL_SPEED_PX * (1 - distFromRight / EDGE_ZONE_PX);
+      }
+      if (distFromTop < EDGE_ZONE_PX && distFromTop >= 0) {
+        dy = -MAX_SCROLL_SPEED_PX * (1 - distFromTop / EDGE_ZONE_PX);
+      } else if (distFromBottom < EDGE_ZONE_PX && distFromBottom >= 0) {
+        dy = MAX_SCROLL_SPEED_PX * (1 - distFromBottom / EDGE_ZONE_PX);
+      }
+      if (dx !== 0 || dy !== 0) {
+        const prevScrollLeft = el.scrollLeft;
+        const prevScrollTop = el.scrollTop;
+        el.scrollLeft += dx;
+        el.scrollTop += dy;
+        if (el.scrollLeft !== prevScrollLeft || el.scrollTop !== prevScrollTop) {
+          onAutoScrollRef.current?.();
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [isActive, scrollRef]);
+  return import_react17.default.useCallback((clientX, clientY) => {
+    pointerRef.current = { clientX, clientY };
+  }, []);
+}
+
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
-var import_react15 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
+var import_react_dom = __toESM(require_react_dom(), 1);
 
 // dist/src/features/gantt-view/timeline-label-settings-panel.js
-var import_react14 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 function TimelineLabelSettingsPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react14.default.createElement("div", {
+  return import_react18.default.createElement("div", {
     className: "timeline-label-menu",
     role: "group",
     "aria-label": "Timeline label fields",
     ref: props.panelRef
-  }, import_react14.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react14.default.createElement("section", { className: "timeline-label-menu-column" }, import_react14.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react14.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react14.default.createElement("button", {
+  }, import_react18.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react18.default.createElement("section", { className: "timeline-label-menu-column" }, import_react18.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react18.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineSidebarFields
-  }, "Nothing in sidebar"), import_react14.default.createElement("input", {
+  }, "Nothing in sidebar"), import_react18.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sidebar fields",
@@ -29715,25 +30642,25 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeSidebarFieldSearchDraft(event.target.value);
     }
-  }), import_react14.default.createElement("div", {
+  }), import_react18.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuSidebarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromSidebar
-  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react14.default.createElement("label", {
+  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react18.default.createElement("label", {
     key: `timeline-sidebar-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react14.default.createElement("input", {
+  }, import_react18.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineSidebarFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline sidebar`,
     onChange: () => {
       props.onToggleTimelineSidebarField(option.fieldRef);
     }
-  }), import_react14.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react14.default.createElement("strong", null, option.label), import_react14.default.createElement("span", null, option.subtitle)))))), import_react14.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react14.default.createElement("section", { className: "timeline-label-menu-column" }, import_react14.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react14.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react14.default.createElement("button", {
+  }), import_react18.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react18.default.createElement("strong", null, option.label), import_react18.default.createElement("span", null, option.subtitle)))))), import_react18.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react18.default.createElement("section", { className: "timeline-label-menu-column" }, import_react18.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react18.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineLabelFields
-  }, "Nothing in bars"), import_react14.default.createElement("input", {
+  }, "Nothing in bars"), import_react18.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline label fields",
@@ -29742,70 +30669,126 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeLabelFieldSearchDraft(event.target.value);
     }
-  }), import_react14.default.createElement("div", {
+  }), import_react18.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuBarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromBar
-  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react14.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react14.default.createElement("label", {
+  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react18.default.createElement("label", {
     key: `timeline-label-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react14.default.createElement("input", {
+  }, import_react18.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineLabelFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline bars`,
     onChange: () => {
       props.onToggleTimelineLabelField(option.fieldRef);
     }
-  }), import_react14.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react14.default.createElement("strong", null, option.label), import_react14.default.createElement("span", null, option.subtitle))))))));
+  }), import_react18.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react18.default.createElement("strong", null, option.label), import_react18.default.createElement("span", null, option.subtitle))))))));
 }
 
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
 function TimelinePaneActionsToolbar(props) {
-  return import_react15.default.createElement(import_react15.default.Fragment, null, import_react15.default.createElement("div", {
+  const colorCodingTriggerRef = import_react19.default.useRef(null);
+  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = import_react19.default.useState(null);
+  import_react19.default.useLayoutEffect(() => {
+    if (!props.colorCodingDropdownOpen) {
+      setColorCodingDropdownStyle(null);
+      return;
+    }
+    if (typeof window === "undefined") {
+      return;
+    }
+    const updateDropdownPosition = () => {
+      const trigger = colorCodingTriggerRef.current;
+      if (!trigger) {
+        return;
+      }
+      const rect = trigger.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const dropdownWidth = Math.min(Math.max(rect.width, 440), Math.max(320, viewportWidth - 16));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, viewportWidth - dropdownWidth - 8));
+      setColorCodingDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 6,
+        left,
+        width: dropdownWidth,
+        maxWidth: "min(560px, calc(100vw - 16px))"
+      });
+    };
+    updateDropdownPosition();
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [props.colorCodingDropdownOpen]);
+  const pushButtonLabel = props.pendingWorkItemSyncCount > 0 ? `Push changes (${props.pendingWorkItemSyncCount})` : "Push changes";
+  const shouldShowPushButton = !props.liveSyncEnabled && props.pendingWorkItemSyncCount > 0;
+  return import_react19.default.createElement(import_react19.default.Fragment, null, import_react19.default.createElement("div", {
     className: "timeline-pane-actions"
-  }, import_react15.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react15.default.createElement("button", {
+  }, import_react19.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     disabled: props.isRefreshing,
     "aria-busy": props.isRefreshing ? "true" : void 0,
     onClick: props.onRetryRefresh
-  }, props.isRefreshing ? import_react15.default.createElement("span", { className: "timeline-action-button-content" }, import_react15.default.createElement("span", {
+  }, props.isRefreshing ? import_react19.default.createElement("span", { className: "timeline-action-button-content" }, import_react19.default.createElement("span", {
     className: "timeline-action-button-spinner",
     "aria-hidden": "true"
-  }), import_react15.default.createElement("span", null, "Updating...")) : "Refresh"), import_react15.default.createElement("div", {
+  }), import_react19.default.createElement("span", null, "Updating...")) : "Refresh"), import_react19.default.createElement("div", {
     className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
     role: "group",
     "aria-label": "Timeline zoom"
-  }, import_react15.default.createElement("button", {
+  }, import_react19.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "week",
     "aria-label": "Zoom in to week view",
     onClick: props.onSelectWeekZoom
-  }, "Week"), import_react15.default.createElement("button", {
+  }, "Week"), import_react19.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "month",
     "aria-label": "Zoom out to month view",
     onClick: props.onSelectMonthZoom
-  }, "Month")), import_react15.default.createElement("div", {
+  }, "Month"), import_react19.default.createElement("button", {
+    type: "button",
+    className: props.zoomLevel === "quarter" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": props.zoomLevel === "quarter",
+    "aria-label": "Zoom out to quarter view",
+    onClick: props.onSelectQuarterZoom
+  }, "Quarter"), import_react19.default.createElement("button", {
+    type: "button",
+    className: props.zoomLevel === "year" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
+    "aria-pressed": props.zoomLevel === "year",
+    "aria-label": "Zoom out to year view",
+    onClick: props.onSelectYearZoom
+  }, "Year")), import_react19.default.createElement("div", {
     className: "timeline-dependency-control timeline-control-cluster"
-  }, import_react15.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react15.default.createElement("select", {
+  }, import_react19.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react19.default.createElement("select", {
     className: "timeline-dependency-select",
     "aria-label": "Dependency mode",
     value: props.dependencyViewMode,
     onChange: (event) => {
       props.onChangeDependencyMode(event.target.value);
     }
-  }, props.dependencyModeOptions.map((option) => import_react15.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react15.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react15.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react15.default.createElement("button", {
+  }, props.dependencyModeOptions.map((option) => import_react19.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react19.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react19.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+    ref: colorCodingTriggerRef,
     "aria-label": "Color coding",
     title: "Choose how timeline bars are color-coded.",
     "aria-haspopup": "listbox",
     "aria-expanded": props.colorCodingDropdownOpen ? "true" : "false",
     onClick: props.onToggleColorCodingDropdown
-  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? import_react15.default.createElement("div", { className: "timeline-color-coding-dropdown", role: "listbox", "aria-label": "Color coding options" }, import_react15.default.createElement("input", {
+  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? (0, import_react_dom.createPortal)(import_react19.default.createElement("div", {
+    className: "timeline-color-coding-dropdown",
+    "data-timeline-color-coding-overlay": "true",
+    style: colorCodingDropdownStyle ?? void 0,
+    role: "listbox",
+    "aria-label": "Color coding options"
+  }, import_react19.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search color coding",
@@ -29821,20 +30804,26 @@ function TimelinePaneActionsToolbar(props) {
       event.preventDefault();
       props.onApplyFirstFilteredColorCodingOption();
     }
-  }), import_react15.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react15.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react15.default.createElement("button", {
+  }), import_react19.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react19.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react19.default.createElement("button", {
     key: option.key,
     type: "button",
     className: option.mode === props.colorCoding && (option.mode !== "field" && props.colorCoding !== "field" || option.fieldRef === props.fieldColorCoding.fieldRef) ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
     onClick: () => {
       props.onSelectColorCodingOption(option);
     }
-  }, import_react15.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react15.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))) : null, import_react15.default.createElement("button", {
+  }, import_react19.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react19.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))), document.body) : null, import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-settings-button",
     "aria-label": "Open color coding settings",
     title: "Open color-coding settings and set colors per value.",
     onClick: props.onOpenColorSettings
-  }, "Settings")), import_react15.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react15.default.createElement("button", {
+  }, import_react19.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-color-coding-settings-icon",
+    "aria-hidden": "true"
+  }, import_react19.default.createElement("path", {
+    d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
+  })))), import_react19.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react19.default.createElement("button", {
     type: "button",
     className: props.timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
     "aria-label": "Toggle timeline filters",
@@ -29842,13 +30831,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.timelineFiltersOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleTimelineFilters
-  }, import_react15.default.createElement("svg", {
+  }, import_react19.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-filter-toggle-icon",
     "aria-hidden": "true"
-  }, import_react15.default.createElement("path", {
+  }, import_react19.default.createElement("path", {
     d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
-  })), props.activeTimelineFiltersCount > 0 ? import_react15.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react15.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react15.default.createElement("button", {
+  })), props.activeTimelineFiltersCount > 0 ? import_react19.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react19.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react19.default.createElement("button", {
     type: "button",
     className: props.labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
     "aria-label": "Toggle timeline label fields",
@@ -29856,13 +30845,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.labelSettingsOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleLabelSettings
-  }, import_react15.default.createElement("svg", {
+  }, import_react19.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react15.default.createElement("path", {
+  }, import_react19.default.createElement("path", {
     d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
-  })), import_react15.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react15.default.createElement(TimelineLabelSettingsPanel, {
+  })), import_react19.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react19.default.createElement(TimelineLabelSettingsPanel, {
     open: props.labelSettingsOpen,
     panelRef: props.labelPanelRef,
     sidebarFieldSearchDraft: props.sidebarFieldSearchDraft,
@@ -29881,38 +30870,98 @@ function TimelinePaneActionsToolbar(props) {
     onSyncLabelMenuScrollFromBar: props.onSyncLabelMenuScrollFromBar,
     onToggleTimelineSidebarField: props.onToggleTimelineSidebarField,
     onToggleTimelineLabelField: props.onToggleTimelineLabelField
-  }))), import_react15.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react15.default.createElement("div", {
-    className: "gantt-sync-status",
-    "data-state": props.workItemSyncState,
-    role: "status",
-    "aria-live": "polite",
-    title: props.workItemSyncState === "error" ? props.workItemSyncError ?? void 0 : void 0
-  }, import_react15.default.createElement("span", { className: "gantt-sync-status-dot", "aria-hidden": "true" }), import_react15.default.createElement("span", null, props.workItemSyncState === "syncing" ? "Updating work items..." : props.workItemSyncState === "error" ? "Work item update failed" : "Work items up to date")))));
+  }))), import_react19.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react19.default.createElement("label", {
+    className: "timeline-live-sync-toggle",
+    title: props.liveSyncEnabled ? "Pause automatic work item sync" : "Resume automatic work item sync and flush queued changes"
+  }, import_react19.default.createElement("input", {
+    type: "checkbox",
+    className: "timeline-live-sync-toggle-input",
+    checked: props.liveSyncEnabled,
+    onChange: (event) => {
+      props.onSetLiveSyncEnabled(event.target.checked);
+    }
+  }), import_react19.default.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }), import_react19.default.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")), shouldShowPushButton ? import_react19.default.createElement("button", {
+    type: "button",
+    className: "timeline-action-button timeline-action-button-primary",
+    disabled: props.workItemSyncState === "syncing",
+    onClick: props.onPushPendingWorkItemChanges
+  }, pushButtonLabel) : null, shouldShowPushButton ? import_react19.default.createElement("button", {
+    type: "button",
+    className: "timeline-action-button",
+    disabled: props.workItemSyncState === "syncing",
+    title: "Discard queued changes and revert to server state",
+    onClick: props.onClearPendingWorkItemChanges
+  }, "Clear changes") : null)));
 }
 
 // dist/src/features/gantt-view/timeline-filter-panel.js
-var import_react16 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
+var import_react_dom2 = __toESM(require_react_dom(), 1);
 function TimelineFilterPanel(props) {
+  const filterDropdownTriggerRefs = import_react20.default.useRef({});
+  const [filterDropdownStyle, setFilterDropdownStyle] = import_react20.default.useState(null);
+  import_react20.default.useLayoutEffect(() => {
+    if (!props.openFilterDropdown) {
+      setFilterDropdownStyle(null);
+      return;
+    }
+    if (typeof window === "undefined") {
+      return;
+    }
+    const triggerKey = `${props.openFilterDropdown.slotId}-${props.openFilterDropdown.kind}`;
+    const updateDropdownPosition = () => {
+      const trigger = filterDropdownTriggerRefs.current[triggerKey];
+      if (!trigger) {
+        return;
+      }
+      const rect = trigger.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const dropdownWidth = Math.min(Math.max(rect.width, 440), Math.max(320, viewportWidth - 16));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, viewportWidth - dropdownWidth - 8));
+      setFilterDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 6,
+        left,
+        width: dropdownWidth,
+        maxWidth: "min(560px, calc(100vw - 16px))"
+      });
+    };
+    updateDropdownPosition();
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [props.openFilterDropdown]);
   if (!props.open) {
     return null;
   }
-  return import_react16.default.createElement("div", {
+  return import_react20.default.createElement("div", {
+    className: "timeline-filter-panel-motion"
+  }, import_react20.default.createElement("div", {
     className: "timeline-filter-panel",
     role: "group",
     "aria-label": "Timeline filters",
     ref: props.panelRef
-  }, props.availableFieldRefs.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react16.default.createElement("div", { className: "timeline-filter-grid" }, ...props.timelineFieldFilters.map((filter, index) => {
+  }, props.availableFieldRefs.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react20.default.createElement("div", { className: "timeline-filter-grid" }, ...props.timelineFieldFilters.map((filter, index) => {
     const selectedFieldDisplay = filter.fieldRef ? props.getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
     const valueLabel = !filter.fieldRef || filter.selectedValueKeys.length === 0 ? "All values" : `${filter.selectedValueKeys.length} selected`;
     const isFieldDropdownOpen = props.openFilterDropdown?.kind === "field" && props.openFilterDropdown.slotId === filter.slotId;
     const isValueDropdownOpen = props.openFilterDropdown?.kind === "value" && props.openFilterDropdown.slotId === filter.slotId;
-    const filterValueOptions = isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId ? props.openFilterValueOptions : props.effectiveTimelineValueOptionsForFilter(filter.fieldRef);
-    return import_react16.default.createElement("div", {
+    const filterValueOptions = isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId ? props.openFilterValueOptions : [];
+    const visibleValueKeys = filterValueOptions.map((entry) => entry.key);
+    const hasVisibleValueOptions = visibleValueKeys.length > 0;
+    const areAllVisibleValuesSelected = hasVisibleValueOptions && visibleValueKeys.every((key) => filter.selectedValueKeys.includes(key));
+    return import_react20.default.createElement("div", {
       key: `timeline-filter-slot-${filter.slotId}`,
       className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
-    }, import_react16.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react16.default.createElement("button", {
+    }, import_react20.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react20.default.createElement("button", {
       type: "button",
       className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+      ref: (element) => {
+        filterDropdownTriggerRefs.current[`${filter.slotId}-field`] = element;
+      },
       "aria-label": `Select filter field ${index + 1}`,
       "aria-haspopup": "listbox",
       "aria-expanded": isFieldDropdownOpen ? "true" : "false",
@@ -29921,11 +30970,13 @@ function TimelineFilterPanel(props) {
         props.onSetFilterFieldSearchDraft("");
         props.onSetFilterValueSearchDraft("");
       }
-    }, selectedFieldDisplay), isFieldDropdownOpen ? import_react16.default.createElement("div", {
+    }, selectedFieldDisplay), isFieldDropdownOpen ? (0, import_react_dom2.createPortal)(import_react20.default.createElement("div", {
       className: "timeline-color-coding-dropdown",
+      "data-timeline-filter-overlay": "true",
+      style: filterDropdownStyle ?? void 0,
       role: "listbox",
       "aria-label": `Filter field options ${index + 1}`
-    }, import_react16.default.createElement("input", {
+    }, import_react20.default.createElement("input", {
       type: "search",
       className: "timeline-color-coding-dropdown-search",
       "aria-label": `Search filter fields ${index + 1}`,
@@ -29946,7 +30997,7 @@ function TimelineFilterPanel(props) {
         props.onApplyFieldFilterSelection(filter.slotId, firstField);
         props.onSetOpenFilterDropdown(null);
       }
-    }), import_react16.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react16.default.createElement("button", {
+    }), import_react20.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react20.default.createElement("button", {
       key: `${filter.slotId}-${fieldRef}`,
       type: "button",
       className: filter.fieldRef === fieldRef ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -29954,9 +31005,12 @@ function TimelineFilterPanel(props) {
         props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
         props.onSetOpenFilterDropdown(null);
       }
-    }, import_react16.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react16.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))) : null), import_react16.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react16.default.createElement("button", {
+    }, import_react20.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react20.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))), document.body) : null), import_react20.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react20.default.createElement("button", {
       type: "button",
       className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+      ref: (element) => {
+        filterDropdownTriggerRefs.current[`${filter.slotId}-value`] = element;
+      },
       "aria-label": `Select filter values ${index + 1}`,
       "aria-haspopup": "listbox",
       "aria-expanded": isValueDropdownOpen ? "true" : "false",
@@ -29969,11 +31023,28 @@ function TimelineFilterPanel(props) {
         props.onSetFilterValueSearchDraft("");
         props.onSetFilterFieldSearchDraft("");
       }
-    }, valueLabel), isValueDropdownOpen ? import_react16.default.createElement("div", {
+    }, valueLabel), isValueDropdownOpen ? (0, import_react_dom2.createPortal)(import_react20.default.createElement("div", {
       className: "timeline-color-coding-dropdown",
+      "data-timeline-filter-overlay": "true",
+      style: filterDropdownStyle ?? void 0,
       role: "listbox",
       "aria-label": `Filter value options ${index + 1}`
-    }, import_react16.default.createElement("input", {
+    }, import_react20.default.createElement("div", { className: "timeline-filter-value-search-row" }, import_react20.default.createElement("button", {
+      type: "button",
+      className: areAllVisibleValuesSelected ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active" : "timeline-filter-bulk-toggle",
+      "aria-label": areAllVisibleValuesSelected ? `Deselect all visible filter values ${index + 1}` : `Select all visible filter values ${index + 1}`,
+      title: areAllVisibleValuesSelected ? "Deselect all currently filtered values" : "Select all currently filtered values",
+      disabled: !hasVisibleValueOptions,
+      onClick: () => {
+        props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, visibleValueKeys);
+      }
+    }, import_react20.default.createElement("svg", {
+      viewBox: "0 0 24 24",
+      className: "timeline-label-toggle-icon",
+      "aria-hidden": "true"
+    }, import_react20.default.createElement("path", {
+      d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
+    }))), import_react20.default.createElement("input", {
       type: "search",
       className: "timeline-color-coding-dropdown-search",
       "aria-label": `Search filter values ${index + 1}`,
@@ -29982,17 +31053,17 @@ function TimelineFilterPanel(props) {
       onChange: (event) => {
         props.onSetFilterValueSearchDraft(event.target.value);
       }
-    }), import_react16.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filterValueOptions.length === 0 ? import_react16.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : filterValueOptions.map((entry) => import_react16.default.createElement("label", {
+    })), import_react20.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filterValueOptions.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : filterValueOptions.map((entry) => import_react20.default.createElement("label", {
       key: `${filter.slotId}-value-${entry.key}`,
       className: "timeline-filter-value-option"
-    }, import_react16.default.createElement("input", {
+    }, import_react20.default.createElement("input", {
       type: "checkbox",
       checked: filter.selectedValueKeys.includes(entry.key),
       "aria-label": `Include ${entry.label} in filter ${index + 1}`,
       onChange: () => {
         props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
       }
-    }), import_react16.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react16.default.createElement("strong", null, entry.label), import_react16.default.createElement("span", null, `${entry.count} item(s)`)))))) : null), import_react16.default.createElement("button", {
+    }), import_react20.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react20.default.createElement("strong", null, entry.label), import_react20.default.createElement("span", null, `${entry.count} item(s)`)))))), document.body) : null), import_react20.default.createElement("button", {
       type: "button",
       className: "timeline-filter-row-clear",
       "aria-label": props.timelineFieldFilters.length > 1 ? `Remove filter ${index + 1}` : `Clear filter ${index + 1}`,
@@ -30000,26 +31071,26 @@ function TimelineFilterPanel(props) {
         props.onRemoveTimelineFilterSlot(filter.slotId);
       }
     }, props.timelineFieldFilters.length > 1 ? "Remove" : "Clear"));
-  }), import_react16.default.createElement("button", {
+  }), import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-filter-add",
     "aria-label": "Add timeline filter",
     disabled: props.timelineFieldFilters.length >= props.maxFilterSlots,
     onClick: props.onAddTimelineFilterSlot
-  }, "+")));
+  }, "+"))));
 }
 
 // dist/src/features/gantt-view/timeline-color-coding-panel.js
-var import_react17 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 function TimelineColorCodingPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react17.default.createElement("div", {
+  return import_react21.default.createElement("div", {
     className: "timeline-color-coding-modal-backdrop",
     role: "presentation",
     onClick: props.onClose
-  }, import_react17.default.createElement("section", {
+  }, import_react21.default.createElement("section", {
     className: "timeline-color-coding-modal",
     role: "dialog",
     "aria-modal": "true",
@@ -30027,56 +31098,122 @@ function TimelineColorCodingPanel(props) {
     onClick: (event) => {
       event.stopPropagation();
     }
-  }, import_react17.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react17.default.createElement("h4", null, "Color coding settings"), import_react17.default.createElement("button", {
+  }, import_react21.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react21.default.createElement("h4", null, "Color coding settings"), import_react21.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-settings-button",
     onClick: props.onClose
-  }, "Close")), import_react17.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react17.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react17.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
+  }, "Close")), import_react21.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react21.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
     const scopedKey = props.toScopedFieldValueColorKey(props.selectedFieldRef, entry.key);
     const customColor = (scopedKey ? props.fieldColorCoding.valueColors[scopedKey] : null) ?? props.fieldColorCoding.valueColors[entry.key] ?? null;
     const effectiveColor = customColor ?? entry.defaultColor;
-    return import_react17.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react17.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react17.default.createElement("strong", null, entry.label), import_react17.default.createElement("span", null, `${entry.count} item(s)`)), import_react17.default.createElement("input", {
+    return import_react21.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react21.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)), import_react21.default.createElement("input", {
       type: "color",
       value: effectiveColor,
       "aria-label": `Color for ${entry.label}`,
       onChange: (event) => {
         props.onUpdateFieldValueColor(entry.key, event.target.value);
       }
-    }), import_react17.default.createElement("button", {
+    }), import_react21.default.createElement("button", {
       type: "button",
       className: "timeline-color-coding-value-reset",
       onClick: () => {
         props.onUpdateFieldValueColor(entry.key, null);
       }
     }, "Auto"));
-  })) : props.isReadOnlyStatusColorCodingMode ? import_react17.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react17.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
-    return import_react17.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react17.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react17.default.createElement("strong", null, entry.label), import_react17.default.createElement("span", null, `${entry.count} item(s)`)));
-  })) : import_react17.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
+  })) : props.isOverdueColorCodingMode ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react21.default.createElement("p", { className: "timeline-details-muted" }, "Select statuses that should be treated as completed (not overdue/red)."), props.selectedModeValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.") : props.selectedModeValueStats.map((entry) => {
+    const checked = props.overdueExcludedStateCodes.includes(entry.key.trim().toLowerCase());
+    return import_react21.default.createElement("label", { key: entry.key, className: "timeline-filter-value-option" }, import_react21.default.createElement("input", {
+      type: "checkbox",
+      checked,
+      "aria-label": `Treat ${entry.label} as completed`,
+      onChange: (event) => {
+        props.onToggleOverdueExcludedState(entry.label, event.target.checked);
+      }
+    }), import_react21.default.createElement("div", { className: "timeline-filter-value-option-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : props.isReadOnlyStatusColorCodingMode ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react21.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
+    return import_react21.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react21.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : import_react21.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
+}
+
+// dist/src/features/gantt-view/timeline-field-filtering.js
+var EMPTY_FIELD_FILTER_KEY = "__null__";
+var TAG_FIELD_NAMES = /* @__PURE__ */ new Set(["tag", "tags"]);
+var TAG_SPLIT_DELIMITER = ";";
+function isTagFieldRef(fieldRef) {
+  const normalized = normalizeFieldRef(fieldRef);
+  if (!normalized) {
+    return false;
+  }
+  const parts = normalized.split(".");
+  const leaf = parts[parts.length - 1] ?? normalized;
+  return TAG_FIELD_NAMES.has(leaf.toLowerCase());
+}
+function extractFilterValueTokens(fieldRef, value) {
+  if (value === null || typeof value === "undefined") {
+    return [toEmptyToken()];
+  }
+  if (!isTagFieldRef(fieldRef)) {
+    const text2 = String(value).trim();
+    return text2.length > 0 ? [{ key: String(value), label: text2 }] : [toEmptyToken()];
+  }
+  const raw = String(value);
+  const tokens = [...new Set(raw.split(TAG_SPLIT_DELIMITER).map((entry) => entry.trim()).filter((entry) => entry.length > 0))];
+  if (tokens.length === 0) {
+    return [toEmptyToken()];
+  }
+  return tokens.map((token) => ({ key: token, label: token }));
+}
+function extractFilterMatchKeys(fieldRef, value) {
+  const keys = extractFilterValueTokens(fieldRef, value).map((token) => token.key);
+  if (value !== null && typeof value !== "undefined" && isTagFieldRef(fieldRef)) {
+    keys.push(String(value));
+  }
+  return [...new Set(keys)];
+}
+function toEmptyToken() {
+  return { key: EMPTY_FIELD_FILTER_KEY, label: "Empty" };
+}
+function normalizeFieldRef(fieldRef) {
+  if (typeof fieldRef !== "string") {
+    return null;
+  }
+  const normalized = fieldRef.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
 function useTimelineViewport(initialViewportPreference) {
-  const [dayWidthPx, setDayWidthPx] = import_react18.default.useState(() => {
+  const [dayWidthPx, setDayWidthPx] = import_react22.default.useState(() => {
     if (!initialViewportPreference) {
       return DAY_WIDTH_WEEK_PX;
     }
     return clamp4(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
   });
-  const [activePanDrag, setActivePanDrag] = import_react18.default.useState(null);
-  const [spacePanPressed, setSpacePanPressed] = import_react18.default.useState(false);
-  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react18.default.useState(0);
-  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react18.default.useState(0);
-  const chartScrollRef = import_react18.default.useRef(null);
-  const chartSvgRef = import_react18.default.useRef(null);
-  const zoomAnchorRef = import_react18.default.useRef(null);
-  const wheelZoomFrameRef = import_react18.default.useRef(null);
-  const pendingWheelDayWidthRef = import_react18.default.useRef(null);
-  const liveDayWidthRef = import_react18.default.useRef(dayWidthPx);
-  const pendingFitRangeRef = import_react18.default.useRef(null);
-  const pendingViewportRestoreRef = import_react18.default.useRef(initialViewportPreference);
-  const viewportPersistDebounceRef = import_react18.default.useRef(null);
-  const spacePanPressedRef = import_react18.default.useRef(false);
-  const initialViewportAppliedRef = import_react18.default.useRef(false);
+  const [activePanDrag, setActivePanDrag] = import_react22.default.useState(null);
+  const [spacePanPressed, setSpacePanPressed] = import_react22.default.useState(false);
+  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react22.default.useState(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react22.default.useState(0);
+  const chartScrollRef = import_react22.default.useRef(null);
+  const chartSvgRef = import_react22.default.useRef(null);
+  const mainLaneRef = import_react22.default.useRef(null);
+  const zoomAnchorRef = import_react22.default.useRef(null);
+  const wheelZoomFrameRef = import_react22.default.useRef(null);
+  const pendingWheelDayWidthRef = import_react22.default.useRef(null);
+  const liveDayWidthRef = import_react22.default.useRef(dayWidthPx);
+  const committedDayWidthRef = import_react22.default.useRef(dayWidthPx);
+  const zoomCommitTimerRef = import_react22.default.useRef(null);
+  const pendingFitRangeRef = import_react22.default.useRef(null);
+  const pendingViewportRestoreRef = import_react22.default.useRef(initialViewportPreference);
+  const viewportPersistDebounceRef = import_react22.default.useRef(null);
+  const spacePanPressedRef = import_react22.default.useRef(false);
+  const initialViewportAppliedRef = import_react22.default.useRef(false);
+  const lastZoomLevelRef = import_react22.default.useRef(resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX));
+  const zoomLevel = import_react22.default.useMemo(() => {
+    const prev = lastZoomLevelRef.current;
+    const next = resolveZoomLevelWithHysteresis(dayWidthPx, prev);
+    lastZoomLevelRef.current = next;
+    return next;
+  }, [dayWidthPx]);
   return {
     dayWidthPx,
     setDayWidthPx,
@@ -30090,25 +31227,28 @@ function useTimelineViewport(initialViewportPreference) {
     setChartViewportHeightPx,
     chartScrollRef,
     chartSvgRef,
+    mainLaneRef,
     zoomAnchorRef,
     wheelZoomFrameRef,
     pendingWheelDayWidthRef,
     liveDayWidthRef,
+    committedDayWidthRef,
+    zoomCommitTimerRef,
     pendingFitRangeRef,
     pendingViewportRestoreRef,
     viewportPersistDebounceRef,
     spacePanPressedRef,
     initialViewportAppliedRef,
-    zoomLevel: dayWidthPx >= DAY_WIDTH_MODE_SWITCH_PX ? "week" : "month"
+    zoomLevel
   };
 }
-function useTimelineColorCoding() {
-  const [colorCoding, setColorCoding] = import_react18.default.useState(() => loadLastTimelineColorCoding() ?? "none");
-  const [fieldColorCoding, setFieldColorCoding] = import_react18.default.useState(() => loadTimelineFieldColorCodingConfig());
-  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react18.default.useState(() => loadTimelineFieldColorCodingConfig().fieldRef);
-  const [colorSettingsOpen, setColorSettingsOpen] = import_react18.default.useState(false);
-  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react18.default.useState(false);
-  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react18.default.useState("");
+function useTimelineColorCoding(queryId) {
+  const [colorCoding, setColorCoding] = import_react22.default.useState(() => loadLastTimelineColorCoding(queryId) ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = import_react22.default.useState(() => loadTimelineFieldColorCodingConfig(queryId));
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react22.default.useState(() => loadTimelineFieldColorCodingConfig(queryId).fieldRef);
+  const [colorSettingsOpen, setColorSettingsOpen] = import_react22.default.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react22.default.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react22.default.useState("");
   return {
     colorCoding,
     setColorCoding,
@@ -30125,58 +31265,90 @@ function useTimelineColorCoding() {
   };
 }
 function TimelinePane(props) {
-  const initialTimelineFilterState = import_react18.default.useMemo(() => resolveInitialTimelineFilterState(), []);
-  const initialViewportPreference = import_react18.default.useMemo(() => loadLastTimelineViewportPreference(), []);
+  const initialTimelineFilterState = import_react22.default.useMemo(() => resolveInitialTimelineFilterState(), []);
+  const activeQueryId = props.activeQueryId ?? null;
+  const initialViewportPreference = import_react22.default.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
   const dependencyEditing = useDependencyEditing();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
-  const timelineSorting = useTimelineSorting();
-  const internalSelectionStoreRef = import_react18.default.useRef(null);
+  const timelineSorting = useTimelineSorting(activeQueryId);
+  const internalSelectionStoreRef = import_react22.default.useRef(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
   }
   const selectionStore = props.selectionStore ?? internalSelectionStoreRef.current;
   const { adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId, adoptScheduleError, setAdoptScheduleError, activeScheduleDrag, setActiveScheduleDrag, activeUnschedulableDrag, setActiveUnschedulableDrag, unscheduledDropPreview, setUnscheduledDropPreview } = scheduleDragging;
+  const [editMode, setEditMode] = import_react22.default.useState(false);
+  const [editInfoOpen, setEditInfoOpen] = import_react22.default.useState(false);
+  const editInfoRef = import_react22.default.useRef(null);
+  import_react22.default.useEffect(() => {
+    if (!editInfoOpen) {
+      return;
+    }
+    const onPointerDown = (event) => {
+      if (editInfoRef.current && !editInfoRef.current.contains(event.target)) {
+        setEditInfoOpen(false);
+      }
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setEditInfoOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [editInfoOpen]);
   const { activeDependencyDrag, setActiveDependencyDrag, dependencyViewMode, setDependencyViewMode, selectedDependency, setSelectedDependency } = dependencyEditing;
   const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFieldFilters, setTimelineFieldFilters, nextFilterSlotId, setNextFilterSlotId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
-  const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField } = timelineSorting;
-  const [appliedTimelineSortPreference, setAppliedTimelineSortPreference] = import_react18.default.useState(() => timelineSortPreference);
-  const sortedBaseTimeline = import_react18.default.useMemo(() => applyTimelineSorting(props.timeline, appliedTimelineSortPreference), [appliedTimelineSortPreference, props.timeline]);
-  const effectiveTimeline = import_react18.default.useMemo(() => {
+  const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField, togglePrimarySortDirection, toggleSecondarySortDirection } = timelineSorting;
+  const sortedBaseTimeline = import_react22.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
+  const effectiveTimeline = import_react22.default.useMemo(() => {
     const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
   }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
-  const [selectedWorkItemId, setSelectedWorkItemId] = import_react18.default.useState(() => selectionStore.getSelectedWorkItemId());
-  const { dayWidthPx, setDayWidthPx, activePanDrag, setActivePanDrag, spacePanPressed, setSpacePanPressed, chartViewportWidthPx, setChartViewportWidthPx, chartViewportHeightPx, setChartViewportHeightPx, chartScrollRef, chartSvgRef, zoomAnchorRef, wheelZoomFrameRef, pendingWheelDayWidthRef, liveDayWidthRef, pendingFitRangeRef, pendingViewportRestoreRef, viewportPersistDebounceRef, spacePanPressedRef, initialViewportAppliedRef, zoomLevel } = useTimelineViewport(initialViewportPreference);
-  const [detailsWidthPx, setDetailsWidthPx] = import_react18.default.useState(() => {
-    const preferredWidth = loadLastTimelineDetailsWidthPx();
+  const [selectedWorkItemId, setSelectedWorkItemId] = import_react22.default.useState(() => selectionStore.getSelectedWorkItemId());
+  const [hoveredDependencyKey, setHoveredDependencyKey] = import_react22.default.useState(null);
+  const { dayWidthPx, setDayWidthPx, activePanDrag, setActivePanDrag, spacePanPressed, setSpacePanPressed, chartViewportWidthPx, setChartViewportWidthPx, chartViewportHeightPx, setChartViewportHeightPx, chartScrollRef, chartSvgRef, mainLaneRef, zoomAnchorRef, wheelZoomFrameRef, pendingWheelDayWidthRef, liveDayWidthRef, committedDayWidthRef, zoomCommitTimerRef, pendingFitRangeRef, pendingViewportRestoreRef, viewportPersistDebounceRef, spacePanPressedRef, initialViewportAppliedRef, zoomLevel } = useTimelineViewport(initialViewportPreference);
+  const autoScrollCallbackRef = import_react22.default.useRef(() => {
+  });
+  const stableAutoScrollCallback = import_react22.default.useCallback(() => autoScrollCallbackRef.current(), []);
+  const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null, stableAutoScrollCallback);
+  const [detailsWidthPx, setDetailsWidthPx] = import_react22.default.useState(() => {
+    const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const [sidebarWidthPx, setSidebarWidthPx] = import_react18.default.useState(() => {
-    const preferredWidth = loadLastTimelineSidebarWidthPx();
+  const [sidebarWidthPx, setSidebarWidthPx] = import_react22.default.useState(() => {
+    const preferredWidth = loadLastTimelineSidebarWidthPx(activeQueryId);
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const { colorCoding, setColorCoding, fieldColorCoding, setFieldColorCoding, lastSelectedFieldRef, setLastSelectedFieldRef, colorSettingsOpen, setColorSettingsOpen, colorCodingDropdownOpen, setColorCodingDropdownOpen, colorCodingSearchDraft, setColorCodingSearchDraft } = useTimelineColorCoding();
-  const [labelSettingsOpen, setLabelSettingsOpen] = import_react18.default.useState(false);
-  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react18.default.useState("");
-  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react18.default.useState("");
-  const [timelineLabelFields, setTimelineLabelFields] = import_react18.default.useState(() => loadLastTimelineLabelFields() ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
-  const [timelineSidebarFields, setTimelineSidebarFields] = import_react18.default.useState(() => loadLastTimelineSidebarFields() ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
-  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react18.default.useState(() => loadLastTimelineSidebarRowJustify() ?? "flex-start");
-  const timelineMainGridRef = import_react18.default.useRef(null);
-  const colorCodingControlRef = import_react18.default.useRef(null);
-  const filterToggleControlRef = import_react18.default.useRef(null);
-  const filterPanelRef = import_react18.default.useRef(null);
-  const sortToggleControlRef = import_react18.default.useRef(null);
-  const sortPanelRef = import_react18.default.useRef(null);
-  const labelToggleControlRef = import_react18.default.useRef(null);
-  const labelPanelRef = import_react18.default.useRef(null);
-  const labelMenuSidebarOptionsRef = import_react18.default.useRef(null);
-  const labelMenuBarOptionsRef = import_react18.default.useRef(null);
-  const labelMenuScrollSyncSourceRef = import_react18.default.useRef(null);
-  const dependencyMarkerReactId = import_react18.default.useId();
-  const dependencyMarkerId = import_react18.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
-  const dependencyAlertMarkerId = import_react18.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const { colorCoding, setColorCoding, fieldColorCoding, setFieldColorCoding, lastSelectedFieldRef, setLastSelectedFieldRef, colorSettingsOpen, setColorSettingsOpen, colorCodingDropdownOpen, setColorCodingDropdownOpen, colorCodingSearchDraft, setColorCodingSearchDraft } = useTimelineColorCoding(activeQueryId);
+  const [labelSettingsOpen, setLabelSettingsOpen] = import_react22.default.useState(false);
+  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react22.default.useState("");
+  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react22.default.useState("");
+  const [timelineLabelFields, setTimelineLabelFields] = import_react22.default.useState(() => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
+  const [timelineSidebarFields, setTimelineSidebarFields] = import_react22.default.useState(() => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
+  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react22.default.useState(() => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start");
+  const timelineMainGridRef = import_react22.default.useRef(null);
+  const colorCodingControlRef = import_react22.default.useRef(null);
+  const filterToggleControlRef = import_react22.default.useRef(null);
+  const filterPanelRef = import_react22.default.useRef(null);
+  const sortToggleControlRef = import_react22.default.useRef(null);
+  const sortPanelRef = import_react22.default.useRef(null);
+  const labelToggleControlRef = import_react22.default.useRef(null);
+  const labelPanelRef = import_react22.default.useRef(null);
+  const labelMenuSidebarOptionsRef = import_react22.default.useRef(null);
+  const labelMenuBarOptionsRef = import_react22.default.useRef(null);
+  const labelMenuScrollSyncSourceRef = import_react22.default.useRef(null);
+  const barPointerSelectionIntentRef = import_react22.default.useRef(null);
+  const suppressNextBarClickRef = import_react22.default.useRef(false);
+  const lastDragClientXRef = import_react22.default.useRef(0);
+  const dependencyMarkerReactId = import_react22.default.useId();
+  const dependencyMarkerId = import_react22.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const dependencyAlertMarkerId = import_react22.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
   const dependencyMode = dependencyViewMode === "edit";
   const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
@@ -30194,59 +31366,63 @@ function TimelinePane(props) {
     clamp: clamp4,
     resolveTimelineDetailsMaxWidthPx,
     resolveTimelineSidebarMaxWidthPx,
-    persistDetailsWidthPx: saveTimelineDetailsWidthPx,
-    persistSidebarWidthPx: saveTimelineSidebarWidthPx
+    persistDetailsWidthPx: (widthPx) => {
+      saveTimelineDetailsWidthPx(widthPx, activeQueryId);
+    },
+    persistSidebarWidthPx: (widthPx) => {
+      saveTimelineSidebarWidthPx(widthPx, activeQueryId);
+    }
   });
-  const { isSidebarResizing, isDetailsResizing, detailsContentHidden, sidebarCollapsed, effectiveSidebarWidthPx, detailsResizeMovedRef, sidebarEffectiveWidthLiveRef, beginSidebarResize, beginDetailsResize, expandDetailsPanelFromHidden } = timelineResizing;
-  import_react18.default.useEffect(() => {
+  const { isSidebarResizing, isDetailsResizing, detailsContentHidden, sidebarCollapsed, effectiveSidebarWidthPx, detailsResizeMovedRef, sidebarEffectiveWidthLiveRef, beginSidebarResize, beginDetailsResize, toggleDetailsPanelFromSplitter } = timelineResizing;
+  import_react22.default.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
       pendingViewportRestoreRef.current = viewport;
       setDayWidthPx(clamp4(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
       initialViewportAppliedRef.current = false;
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineColorCodingPreference((mode) => {
       setColorCoding(mode);
-      const config = loadTimelineFieldColorCodingConfig();
+      const config = loadTimelineFieldColorCodingConfig(activeQueryId);
       setFieldColorCoding(config);
       if (config.fieldRef) {
         setLastSelectedFieldRef(config.fieldRef);
       }
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineLabelFieldsPreference((fieldRefs) => {
       setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
       setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineSidebarRowJustifyPreference((justify) => {
       setTimelineSidebarRowJustify(justify);
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
       setSidebarWidthPx((current) => {
         const next = clamp4(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
         return Math.abs(current - next) < 1 ? current : next;
       });
-    });
-  }, []);
-  import_react18.default.useEffect(() => {
+    }, activeQueryId);
+  }, [activeQueryId]);
+  import_react22.default.useEffect(() => {
     hydrateTimelineDetailsWidthPreference((widthPx) => {
       setDetailsWidthPx((current) => {
         const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
         const next = clamp4(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
         return Math.abs(current - next) < 1 ? current : next;
       });
-    });
-  }, []);
+    }, activeQueryId);
+  }, [activeQueryId, sidebarEffectiveWidthLiveRef]);
   useTimelineOverlayDismiss({
     colorCodingDropdownOpen,
     openFilterDropdown,
@@ -30272,10 +31448,9 @@ function TimelinePane(props) {
       setLabelSettingsOpen(false);
     }
   });
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
-    setAppliedTimelineSortPreference(timelineSortPreference);
     setActiveScheduleDrag(null);
     setActivePanDrag(null);
     setActiveUnschedulableDrag(null);
@@ -30284,56 +31459,66 @@ function TimelinePane(props) {
     setSelectedDependency(null);
     initialViewportAppliedRef.current = false;
   }, [props.timeline]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     if (dependencyViewMode === "none") {
       setSelectedDependency(null);
     }
   }, [dependencyViewMode]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     syncTimelineFiltersToUrl(timelineFieldFilters);
   }, [timelineFieldFilters]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     initialViewportAppliedRef.current = false;
     const scrollElement = chartScrollRef.current;
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
   }, [timelineFieldFilters]);
-  const availableFieldRefs = import_react18.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
-  const availableTimelineLabelFieldOptions = import_react18.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredTimeline = import_react18.default.useMemo(() => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters), [effectiveTimeline, timelineFieldFilters]);
-  const activeTimelineFilters = import_react18.default.useMemo(() => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)), [timelineFieldFilters]);
-  const colorCodingOptions = import_react18.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredColorCodingOptions = import_react18.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
+  const availableFieldRefs = import_react22.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const availableTimelineLabelFieldOptions = import_react22.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredTimeline = import_react22.default.useMemo(() => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters), [effectiveTimeline, timelineFieldFilters]);
+  const activeTimelineFilters = import_react22.default.useMemo(() => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)), [timelineFieldFilters]);
+  const colorCodingOptions = import_react22.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredColorCodingOptions = import_react22.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
   const selectedFieldRef = colorCoding === "field" ? fieldColorCoding.fieldRef ?? lastSelectedFieldRef : null;
-  const selectedFieldValueStats = import_react18.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
-  const selectedModeValueStats = import_react18.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
+  const selectedFieldValueStats = import_react22.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
+  const selectedModeValueStats = import_react22.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
+  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null);
+  const reparentDrag = useReparentDragging(filteredTimeline?.treeLayout ?? null);
+  const isTreeQuery = filteredTimeline?.queryType !== "flat" && filteredTimeline?.treeLayout !== null;
+  const visibleTimeline = import_react22.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
   const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
-  const colorByWorkItemId = import_react18.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
-  const chartModel = import_react18.default.useMemo(() => buildVisualChartModel(filteredTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane), [
-    filteredTimeline,
+  const colorByWorkItemId = import_react22.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
+  const chartModel = import_react22.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds), [
+    visibleTimeline,
     dayWidthPx,
     zoomLevel,
     colorByWorkItemId,
     chartViewportWidthPx,
     timelineLabelFields,
-    includeUnscheduledDropLane
+    includeUnscheduledDropLane,
+    treeState.collapsedIds
   ]);
-  const filteredTimelineLabelFieldOptions = import_react18.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
-  const filteredTimelineSidebarFieldOptions = import_react18.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
-  import_react18.default.useEffect(() => {
+  const filteredTimelineLabelFieldOptions = import_react22.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
+  const filteredTimelineSidebarFieldOptions = import_react22.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
+  import_react22.default.useEffect(() => {
     const selectableItems = [
-      ...filteredTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
-      ...filteredTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
+      ...visibleTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
+      ...visibleTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
     ];
     const reconciled = selectionStore.reconcile(selectableItems);
     setSelectedWorkItemId(reconciled);
-  }, [filteredTimeline, selectionStore]);
-  const selectWorkItem = import_react18.default.useCallback((workItemId) => {
+  }, [visibleTimeline, selectionStore]);
+  const selectWorkItem = import_react22.default.useCallback((workItemId) => {
     selectionStore.select(workItemId);
     setSelectedWorkItemId(workItemId);
   }, [selectionStore]);
-  const adoptUnschedulableSchedule = import_react18.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
+  const toggleWorkItemSelection = import_react22.default.useCallback((workItemId) => {
+    const nextWorkItemId = selectionStore.getSelectedWorkItemId() === workItemId ? null : workItemId;
+    selectionStore.select(nextWorkItemId);
+    setSelectedWorkItemId(nextWorkItemId);
+  }, [selectionStore]);
+  const adoptUnschedulableSchedule = import_react22.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
     const sourceBar = filteredTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
     if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
       return;
@@ -30353,7 +31538,7 @@ function TimelinePane(props) {
       }
     }));
   }, [filteredTimeline, props]);
-  const persistTimelineViewportSoon = import_react18.default.useCallback(() => {
+  const persistTimelineViewportSoon = import_react22.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -30367,10 +31552,24 @@ function TimelinePane(props) {
         dayWidthPx: liveDayWidthRef.current,
         scrollLeftPx: scrollElement.scrollLeft,
         scrollTopPx: scrollElement.scrollTop
-      });
+      }, activeQueryId);
     }, VIEWPORT_PERSIST_DEBOUNCE_MS);
-  }, []);
-  import_react18.default.useEffect(() => {
+  }, [activeQueryId]);
+  const resolveFitLayoutLeftOffsets = import_react22.default.useCallback((scrollElement) => {
+    const mainLaneElement = scrollElement.querySelector(".timeline-chart-main-lane");
+    const splitterElement = scrollElement.querySelector(".timeline-main-splitter-embedded");
+    const measuredSplitterWidthPx = splitterElement?.getBoundingClientRect().width ?? 0;
+    const measuredMainLaneOffsetPx = mainLaneElement?.offsetLeft ?? 0;
+    const fallbackSidebarWidthPx = effectiveSidebarWidthPx;
+    const fallbackSplitterWidthPx = splitterElement ? TIMELINE_MAIN_SPLITTER_WIDTH_PX : 0;
+    const sidebarWidthPx2 = measuredMainLaneOffsetPx > 0 ? measuredMainLaneOffsetPx : fallbackSidebarWidthPx;
+    const splitterWidthPx = measuredSplitterWidthPx > 0 ? measuredSplitterWidthPx : fallbackSplitterWidthPx;
+    return {
+      chartStartX: sidebarWidthPx2 + CHART_LEFT_GUTTER,
+      obscuredLeftPx: sidebarWidthPx2 + splitterWidthPx
+    };
+  }, [effectiveSidebarWidthPx]);
+  import_react22.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
       return;
@@ -30410,7 +31609,7 @@ function TimelinePane(props) {
       window.cancelAnimationFrame(frame);
     };
   }, [chartModel.bars.length, chartModel.todayX, chartModel.width, effectiveSidebarWidthPx]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || chartModel.bars.length === 0) {
       setChartViewportWidthPx(0);
@@ -30436,25 +31635,26 @@ function TimelinePane(props) {
       window.removeEventListener("resize", updateViewportSize);
     };
   }, [chartModel.bars.length]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
+    committedDayWidthRef.current = dayWidthPx;
     persistTimelineViewportSoon();
   }, [dayWidthPx, persistTimelineViewportSoon]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     return () => {
       if (viewportPersistDebounceRef.current !== null) {
         window.clearTimeout(viewportPersistDebounceRef.current);
       }
     };
   }, []);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     return () => {
       if (wheelZoomFrameRef.current !== null) {
         window.cancelAnimationFrame(wheelZoomFrameRef.current);
       }
     };
   }, []);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
@@ -30466,22 +31666,95 @@ function TimelinePane(props) {
     zoomAnchorRef.current = null;
     persistTimelineViewportSoon();
   }, [chartModel.dayWidthPx, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
-  import_react18.default.useEffect(() => {
-    const fitRange = pendingFitRangeRef.current;
+  const applyFitRangeToViewport = import_react22.default.useCallback((fitRange, dayWidth) => {
     const scrollElement = chartScrollRef.current;
-    if (!fitRange || !scrollElement) {
+    if (!scrollElement) {
       return;
     }
+    const layoutOffsets = resolveFitLayoutLeftOffsets(scrollElement);
     const maxScrollLeft = Math.max(0, scrollElement.scrollWidth - scrollElement.clientWidth);
     const rangeStartWithPadding = addDays(fitRange.start, -FIT_TO_VIEW_SIDE_PADDING_DAYS);
     const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
-    const desiredStartX = effectiveSidebarWidthPx + CHART_LEFT_GUTTER + rangeStartOffset * chartModel.dayWidthPx;
-    scrollElement.scrollLeft = clamp4(desiredStartX - FIT_TO_VIEW_INSET_PX, 0, maxScrollLeft);
-    pendingFitRangeRef.current = null;
+    const desiredStartX = layoutOffsets.chartStartX + rangeStartOffset * dayWidth;
+    const viewportTargetX = layoutOffsets.obscuredLeftPx + FIT_TO_VIEW_INSET_PX;
+    scrollElement.scrollLeft = clamp4(desiredStartX - viewportTargetX, 0, maxScrollLeft);
     persistTimelineViewportSoon();
-  }, [chartModel.dayWidthPx, chartModel.domainStart, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
+  }, [chartModel.domainStart, persistTimelineViewportSoon, resolveFitLayoutLeftOffsets]);
+  import_react22.default.useEffect(() => {
+    const fitRange = pendingFitRangeRef.current;
+    if (!fitRange) {
+      return;
+    }
+    applyFitRangeToViewport(fitRange, chartModel.dayWidthPx);
+    pendingFitRangeRef.current = null;
+  }, [applyFitRangeToViewport, chartModel.dayWidthPx]);
+  const selectWeekZoom = import_react22.default.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_WEEK_PX);
+  }, [setDayWidthPx]);
+  const selectMonthZoom = import_react22.default.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_MONTH_PX);
+  }, [setDayWidthPx]);
+  const selectQuarterZoom = import_react22.default.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_QUARTER_PX);
+  }, [setDayWidthPx]);
+  const selectYearZoom = import_react22.default.useCallback(() => {
+    setDayWidthPx(DAY_WIDTH_YEAR_PX);
+  }, [setDayWidthPx]);
+  const applyDependencyViewModeChange = import_react22.default.useCallback((mode) => {
+    setDependencyViewMode(mode);
+    setActiveDependencyDrag(null);
+    setActiveScheduleDrag(null);
+    setActiveUnschedulableDrag(null);
+    setUnscheduledDropPreview(null);
+    setSelectedDependency(null);
+  }, [
+    setActiveDependencyDrag,
+    setActiveScheduleDrag,
+    setActiveUnschedulableDrag,
+    setDependencyViewMode,
+    setSelectedDependency,
+    setUnscheduledDropPreview
+  ]);
+  const rotateDependencyViewMode = import_react22.default.useCallback(() => {
+    const modes = DEPENDENCY_VIEW_MODE_OPTIONS.map((option) => option.value);
+    const currentIndex = modes.indexOf(dependencyViewMode);
+    const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % modes.length;
+    const nextMode = modes[nextIndex];
+    if (!nextMode) {
+      return;
+    }
+    applyDependencyViewModeChange(nextMode);
+  }, [applyDependencyViewModeChange, dependencyViewMode]);
+  const toggleTimelineFilters = import_react22.default.useCallback(() => {
+    setTimelineFiltersOpen((current) => {
+      if (current) {
+        setOpenFilterDropdown(null);
+      }
+      return !current;
+    });
+  }, [setOpenFilterDropdown, setTimelineFiltersOpen]);
+  const toggleSortSettings = import_react22.default.useCallback(() => {
+    setSortSettingsOpen((current) => !current);
+  }, [setSortSettingsOpen]);
+  const toggleLabelSettings = import_react22.default.useCallback(() => {
+    setLabelSettingsOpen((current) => !current);
+    setLabelFieldSearchDraft("");
+    setSidebarFieldSearchDraft("");
+  }, [setLabelFieldSearchDraft, setLabelSettingsOpen, setSidebarFieldSearchDraft]);
+  const printCurrentView = usePrintCurrentView({ chartScrollRef });
   useTimelineKeyboardShortcuts({
     isRefreshing: props.isRefreshing,
+    onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges,
+    onPrintCurrentView: printCurrentView.triggerPrint,
+    onToggleTimelineFilters: toggleTimelineFilters,
+    onToggleSortSettings: toggleSortSettings,
+    onToggleLabelSettings: toggleLabelSettings,
+    onRotateDependencyMode: rotateDependencyViewMode,
+    onSelectMonthZoom: selectMonthZoom,
+    onSelectWeekZoom: selectWeekZoom,
+    onSelectQuarterZoom: selectQuarterZoom,
+    onSelectYearZoom: selectYearZoom,
+    pendingWorkItemSyncCount: props.pendingWorkItemSyncCount,
     onRemoveDependency: props.onRemoveDependency,
     onRetryRefresh: props.onRetryRefresh,
     selectedDependency,
@@ -30490,12 +31763,13 @@ function TimelinePane(props) {
     setAdoptScheduleError,
     spacePanPressedRef
   });
-  const handleChartWheel = import_react18.default.useCallback((event) => {
+  const handleChartWheel = import_react22.default.useCallback((event) => {
     if (!event.ctrlKey && !event.metaKey) {
       return;
     }
     const svg2 = chartSvgRef.current;
     const scrollElement = chartScrollRef.current;
+    const mainLane = mainLaneRef.current;
     if (!svg2 || !scrollElement) {
       return;
     }
@@ -30512,25 +31786,35 @@ function TimelinePane(props) {
     const zoomMultiplier = Math.exp(-deltaPixels * ZOOM_WHEEL_SENSITIVITY);
     const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
     const nextDayWidth = quantizeDayWidth(clamp4(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
-    if (Math.abs(nextDayWidth - dayWidthPx) < 0.01) {
-      return;
-    }
     zoomAnchorRef.current = { dayOffset, pointerOffsetX };
     pendingWheelDayWidthRef.current = nextDayWidth;
-    if (wheelZoomFrameRef.current !== null) {
-      return;
+    if (mainLane) {
+      const ratio = nextDayWidth / committedDayWidthRef.current;
+      const originX = scrollElement.scrollLeft + pointerOffsetX;
+      mainLane.style.transformOrigin = `${originX}px 0px`;
+      mainLane.style.transform = `scaleX(${ratio})`;
+      mainLane.style.willChange = "transform";
     }
-    wheelZoomFrameRef.current = window.requestAnimationFrame(() => {
-      wheelZoomFrameRef.current = null;
+    if (zoomCommitTimerRef.current !== null) {
+      clearTimeout(zoomCommitTimerRef.current);
+    }
+    zoomCommitTimerRef.current = window.setTimeout(() => {
+      zoomCommitTimerRef.current = null;
       const pendingDayWidth = pendingWheelDayWidthRef.current;
       pendingWheelDayWidthRef.current = null;
       if (pendingDayWidth === null) {
         return;
       }
-      setDayWidthPx((current) => Math.abs(current - pendingDayWidth) < 0.01 ? current : pendingDayWidth);
-    });
+      if (mainLane) {
+        mainLane.style.transform = "";
+        mainLane.style.transformOrigin = "";
+        mainLane.style.willChange = "";
+      }
+      committedDayWidthRef.current = pendingDayWidth;
+      setDayWidthPx((current) => current === pendingDayWidth ? current : pendingDayWidth);
+    }, ZOOM_COMMIT_DELAY_MS);
   }, [chartModel.dayWidthPx, dayWidthPx]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -30543,7 +31827,7 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("wheel", onWheel);
     };
   }, [handleChartWheel]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -30556,22 +31840,28 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("scroll", onScroll);
     };
   }, [persistTimelineViewportSoon]);
-  const zoomToFitTimeline = import_react18.default.useCallback(() => {
+  const zoomToFitTimeline = import_react22.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     const visibleTimelineRange = resolveTimelineVisibleRange(filteredTimeline);
     if (!scrollElement || !visibleTimelineRange) {
       return;
     }
-    const availableWidth = scrollElement.clientWidth - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX - FIT_TO_VIEW_INSET_PX * 2;
+    const layoutOffsets = resolveFitLayoutLeftOffsets(scrollElement);
+    const availableWidth = scrollElement.clientWidth - layoutOffsets.obscuredLeftPx - CHART_LEFT_GUTTER - CHART_RIGHT_PADDING_PX - FIT_TO_VIEW_INSET_PX * 2;
     if (availableWidth <= 0) {
       return;
     }
     const spanDays = Math.max(1, dayDiffInclusive(visibleTimelineRange.start, visibleTimelineRange.end));
     const fittedDayWidthPx = clamp4(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
     pendingFitRangeRef.current = visibleTimelineRange;
+    if (Math.abs(fittedDayWidthPx - chartModel.dayWidthPx) < 0.01) {
+      applyFitRangeToViewport(visibleTimelineRange, fittedDayWidthPx);
+      pendingFitRangeRef.current = null;
+      return;
+    }
     setDayWidthPx(fittedDayWidthPx);
-  }, [filteredTimeline]);
-  const beginPanDrag = import_react18.default.useCallback((event) => {
+  }, [applyFitRangeToViewport, chartModel.dayWidthPx, filteredTimeline, resolveFitLayoutLeftOffsets]);
+  const beginPanDrag = import_react22.default.useCallback((event) => {
     if (!spacePanPressedRef.current || event.button !== 0) {
       return;
     }
@@ -30591,7 +31881,7 @@ function TimelinePane(props) {
       originScrollTop: scrollElement.scrollTop
     });
   }, []);
-  const updatePanDrag = import_react18.default.useCallback((event) => {
+  const updatePanDrag = import_react22.default.useCallback((event) => {
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== event.pointerId) {
         return current;
@@ -30607,7 +31897,7 @@ function TimelinePane(props) {
       return current;
     });
   }, []);
-  const finishPanDrag = import_react18.default.useCallback((event) => {
+  const finishPanDrag = import_react22.default.useCallback((event) => {
     const pointerId = event.pointerId;
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== pointerId) {
@@ -30617,7 +31907,7 @@ function TimelinePane(props) {
       return null;
     });
   }, [persistTimelineViewportSoon]);
-  const geometryByWorkItemId = import_react18.default.useMemo(() => {
+  const geometryByWorkItemId = import_react22.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar, index) => {
       const y = resolveTimelineBarTopY(index);
@@ -30626,14 +31916,14 @@ function TimelinePane(props) {
     });
     return byId;
   }, [chartModel.bars]);
-  const chartBarByWorkItemId = import_react18.default.useMemo(() => {
+  const chartBarByWorkItemId = import_react22.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar) => {
       byId.set(bar.workItemId, bar);
     });
     return byId;
   }, [chartModel.bars]);
-  const visibleDependencies = import_react18.default.useMemo(() => {
+  const visibleDependencies = import_react22.default.useMemo(() => {
     if (!filteredTimeline) {
       return [];
     }
@@ -30646,34 +31936,55 @@ function TimelinePane(props) {
       return isDependencyViolated(predecessorBar, successorBar);
     });
   }, [chartBarByWorkItemId, dependencyViewMode, filteredTimeline]);
-  const dependencyConnectors = import_react18.default.useMemo(() => {
+  const dependencyConnectors = import_react22.default.useMemo(() => {
     if (!dependencyVisible || !filteredTimeline) {
       return [];
     }
     const uniqueDependencies = deduplicateTimelineDependencies(visibleDependencies);
-    return uniqueDependencies.flatMap((dependency, index) => {
-      const from = geometryByWorkItemId.get(dependency.predecessorWorkItemId);
-      const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
-      if (!from || !to) {
-        return [];
+    const groupedByPredecessor = /* @__PURE__ */ new Map();
+    for (const dep of uniqueDependencies) {
+      const group = groupedByPredecessor.get(dep.predecessorWorkItemId);
+      if (group) {
+        group.push(dep);
+      } else {
+        groupedByPredecessor.set(dep.predecessorWorkItemId, [dep]);
       }
-      const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
-      const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
-      const isViolated = isDependencyViolated(predecessorBar, successorBar);
-      const predecessorToSuccessorGapDays = predecessorBar !== void 0 && successorBar !== void 0 ? dayDiff(predecessorBar.end, successorBar.start) : null;
-      const forceNearGapDetour = predecessorToSuccessorGapDays !== null && predecessorToSuccessorGapDays >= 1 && predecessorToSuccessorGapDays <= DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR;
-      return [
-        {
-          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${index}`,
-          path: buildDependencyConnectorPath(from, to, index, { forceNearGapDetour }),
+    }
+    const connectors = [];
+    for (const [predecessorId, group] of groupedByPredecessor) {
+      const from = geometryByWorkItemId.get(predecessorId);
+      if (!from) {
+        continue;
+      }
+      const resolvedTargets = [];
+      for (const dependency of group) {
+        const to = geometryByWorkItemId.get(dependency.successorWorkItemId);
+        if (!to) {
+          continue;
+        }
+        const predecessorBar = chartBarByWorkItemId.get(dependency.predecessorWorkItemId);
+        const successorBar = chartBarByWorkItemId.get(dependency.successorWorkItemId);
+        resolvedTargets.push({ dependency, to, isViolated: isDependencyViolated(predecessorBar, successorBar) });
+      }
+      if (resolvedTargets.length === 0) {
+        continue;
+      }
+      const baseBendX = resolvedTargets.length > 1 ? resolveStemBendX(from, resolvedTargets.map((t) => t.to), 0) : null;
+      for (let i = 0; i < resolvedTargets.length; i++) {
+        const { dependency, to, isViolated } = resolvedTargets[i];
+        const bendX = baseBendX !== null ? baseBendX + i * DEPENDENCY_BEND_STAGGER_PX : null;
+        connectors.push({
+          key: `${dependency.predecessorWorkItemId}-${dependency.successorWorkItemId}-${dependency.dependencyType}-${i}`,
+          path: bendX !== null ? buildDependencyConnectorPathWithBendX(from, to, bendX) : buildDependencyConnectorPath(from, to, 0),
           markerEnd: `url(#${isViolated ? dependencyAlertMarkerId : dependencyMarkerId})`,
           predecessorWorkItemId: dependency.predecessorWorkItemId,
           successorWorkItemId: dependency.successorWorkItemId,
           dependencyType: dependency.dependencyType,
           isViolated
-        }
-      ];
-    });
+        });
+      }
+    }
+    return connectors;
   }, [
     chartBarByWorkItemId,
     dependencyAlertMarkerId,
@@ -30682,7 +31993,7 @@ function TimelinePane(props) {
     visibleDependencies,
     geometryByWorkItemId
   ]);
-  import_react18.default.useEffect(() => {
+  import_react22.default.useEffect(() => {
     if (!selectedDependency) {
       return;
     }
@@ -30691,7 +32002,17 @@ function TimelinePane(props) {
       setSelectedDependency(null);
     }
   }, [dependencyConnectors, selectedDependency]);
-  const activeDependencyDragPreview = import_react18.default.useMemo(() => {
+  const hoveredDependencyWorkItemIds = import_react22.default.useMemo(() => {
+    if (!hoveredDependencyKey) {
+      return null;
+    }
+    const connector = dependencyConnectors.find((c) => c.key === hoveredDependencyKey);
+    if (!connector) {
+      return null;
+    }
+    return /* @__PURE__ */ new Set([connector.predecessorWorkItemId, connector.successorWorkItemId]);
+  }, [hoveredDependencyKey, dependencyConnectors]);
+  const activeDependencyDragPreview = import_react22.default.useMemo(() => {
     if (!activeDependencyDrag) {
       return null;
     }
@@ -30708,7 +32029,7 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
     };
   }, [activeDependencyDrag, geometryByWorkItemId]);
-  const updateEditedSchedule = import_react18.default.useCallback((workItemId, startDate, endDate) => {
+  const updateEditedSchedule = import_react22.default.useCallback((workItemId, startDate, endDate) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
       [workItemId]: {
@@ -30717,7 +32038,7 @@ function TimelinePane(props) {
       }
     }));
   }, []);
-  const beginBarDrag = import_react18.default.useCallback((input) => {
+  const beginBarDrag = import_react22.default.useCallback((input) => {
     if (!canEditSchedule) {
       return;
     }
@@ -30736,12 +32057,13 @@ function TimelinePane(props) {
       pointerId: input.event.pointerId,
       workItemId: input.bar.workItemId,
       originClientX: input.event.clientX,
+      originScrollLeft: chartScrollRef.current?.scrollLeft ?? 0,
       startDate: input.bar.start,
       endDate: input.bar.end,
       lastDayDelta: 0
     });
-  }, [canEditSchedule, selectWorkItem]);
-  const beginDependencyDrag = import_react18.default.useCallback((input) => {
+  }, [canEditSchedule, chartScrollRef, selectWorkItem]);
+  const beginDependencyDrag = import_react22.default.useCallback((input) => {
     if (!dependencyMode || input.event.button !== 0) {
       return;
     }
@@ -30765,10 +32087,32 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: null
     });
   }, [dependencyMode, geometryByWorkItemId, selectWorkItem]);
-  const handleChartPointerMove = import_react18.default.useCallback((event) => {
+  const applyDragDelta = import_react22.default.useCallback((active, clientX) => {
+    const scrollDelta = (chartScrollRef.current?.scrollLeft ?? 0) - active.originScrollLeft;
+    const effectiveClientDelta = clientX - active.originClientX + scrollDelta;
+    const deltaDays = clientDeltaToDays(effectiveClientDelta, chartSvgRef.current, chartModel.dayWidthPx);
+    if (deltaDays === active.lastDayDelta) {
+      return;
+    }
+    const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
+    setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
+    updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
+  }, [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]);
+  const handleAutoScroll = import_react22.default.useCallback(() => {
+    const active = activeScheduleDrag;
+    if (!active) {
+      return;
+    }
+    applyDragDelta(active, lastDragClientXRef.current);
+  }, [activeScheduleDrag, applyDragDelta]);
+  autoScrollCallbackRef.current = handleAutoScroll;
+  const handleChartPointerMove = import_react22.default.useCallback((event) => {
     const activeDependency = activeDependencyDrag;
     if (activeDependency && event.pointerId === activeDependency.pointerId) {
       const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
+      if (svgPoint.x !== activeDependency.pointerX || svgPoint.y !== activeDependency.pointerY) {
+        suppressNextBarClickRef.current = true;
+      }
       const hoveredTargetWorkItemId = resolveHoveredDependencyTargetWorkItemId(geometryByWorkItemId, svgPoint.x, svgPoint.y, activeDependency.sourceWorkItemId);
       setActiveDependencyDrag((current) => current ? {
         ...current,
@@ -30782,15 +32126,14 @@ function TimelinePane(props) {
     if (!active || event.pointerId !== active.pointerId) {
       return;
     }
-    const deltaDays = clientDeltaToDays(event.clientX - active.originClientX, chartSvgRef.current, chartModel.dayWidthPx);
-    if (deltaDays === active.lastDayDelta) {
-      return;
+    if (event.clientX !== active.originClientX) {
+      suppressNextBarClickRef.current = true;
     }
-    const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
-    setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
-    updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
-  }, [activeDependencyDrag, activeScheduleDrag, chartModel.dayWidthPx, geometryByWorkItemId, updateEditedSchedule]);
-  const persistDraggedSchedule = import_react18.default.useCallback(async (drag) => {
+    lastDragClientXRef.current = event.clientX;
+    updateDragAutoScroll(event.clientX, event.clientY);
+    applyDragDelta(active, event.clientX);
+  }, [activeDependencyDrag, activeScheduleDrag, applyDragDelta, geometryByWorkItemId, updateDragAutoScroll]);
+  const persistDraggedSchedule = import_react22.default.useCallback(async (drag) => {
     const override = editedBarSchedulesByWorkItemId[drag.workItemId];
     if (!override || !props.onUpdateWorkItemSchedule) {
       return;
@@ -30822,7 +32165,7 @@ function TimelinePane(props) {
       });
     }
   }, [editedBarSchedulesByWorkItemId, props, props.timeline]);
-  const finishActiveDrag = import_react18.default.useCallback((event) => {
+  const finishActiveDrag = import_react22.default.useCallback((event) => {
     const dependencyDrag = activeDependencyDrag;
     if (dependencyDrag && event.pointerId === dependencyDrag.pointerId) {
       setActiveDependencyDrag(null);
@@ -30845,7 +32188,7 @@ function TimelinePane(props) {
     setActiveScheduleDrag(null);
     void persistDraggedSchedule(active);
   }, [activeDependencyDrag, activeScheduleDrag, persistDraggedSchedule, props]);
-  const persistWorkItemSchedule = import_react18.default.useCallback(async (input) => {
+  const persistWorkItemSchedule = import_react22.default.useCallback(async (input) => {
     if (props.onUpdateWorkItemSchedule) {
       await props.onUpdateWorkItemSchedule(input);
       return;
@@ -30854,7 +32197,7 @@ function TimelinePane(props) {
       await props.onAdoptUnschedulableSchedule(input);
     }
   }, [props]);
-  const scheduleUnscheduledFromDrop = import_react18.default.useCallback(async (input) => {
+  const scheduleUnscheduledFromDrop = import_react22.default.useCallback(async (input) => {
     const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
     const startDate = toIsoDateUtc(range.startDate);
     const endDate = toIsoDateUtc(range.endDate);
@@ -30869,7 +32212,7 @@ function TimelinePane(props) {
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react18.default.useCallback((event, workItemId, fixedEndDate) => {
+  const startUnscheduledDrag = import_react22.default.useCallback((event, workItemId, fixedEndDate) => {
     if (dependencyMode) {
       return;
     }
@@ -30877,11 +32220,11 @@ function TimelinePane(props) {
     event.dataTransfer.effectAllowed = "move";
     setActiveUnschedulableDrag({ workItemId, fixedEndDate });
   }, [dependencyMode]);
-  const clearUnscheduledDrag = import_react18.default.useCallback(() => {
+  const clearUnscheduledDrag = import_react22.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, []);
-  const handleChartDragOver = import_react18.default.useCallback((event) => {
+  const handleChartDragOver = import_react22.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -30890,7 +32233,7 @@ function TimelinePane(props) {
     const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
     setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
-  const handleChartDrop = import_react18.default.useCallback((event) => {
+  const handleChartDrop = import_react22.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -30909,21 +32252,22 @@ function TimelinePane(props) {
       setAdoptScheduleError(message);
     });
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]);
-  const updateFieldColorCoding = import_react18.default.useCallback((next) => {
+  const updateFieldColorCoding = import_react22.default.useCallback((next) => {
     setFieldColorCoding(next);
-    saveTimelineFieldColorCodingConfig(next);
+    saveTimelineFieldColorCodingConfig(next, activeQueryId);
   }, []);
-  const selectFieldForColorCoding = import_react18.default.useCallback((fieldRef) => {
+  const selectFieldForColorCoding = import_react22.default.useCallback((fieldRef) => {
     const normalizedFieldRef = fieldRef && fieldRef.trim().length > 0 ? fieldRef.trim() : null;
     if (normalizedFieldRef) {
       setLastSelectedFieldRef(normalizedFieldRef);
     }
     updateFieldColorCoding({
       fieldRef: normalizedFieldRef,
-      valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {}
+      valueColors: normalizedFieldRef ? fieldColorCoding.valueColors : {},
+      overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
-  }, [fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const updateFieldValueColor = import_react18.default.useCallback((valueKey, color) => {
+  }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
+  const updateFieldValueColor = import_react22.default.useCallback((valueKey, color) => {
     const nextValueColors = { ...fieldColorCoding.valueColors };
     const scopedKey = toScopedFieldValueColorKey(fieldColorCoding.fieldRef, valueKey);
     if (scopedKey) {
@@ -30940,24 +32284,43 @@ function TimelinePane(props) {
     }
     updateFieldColorCoding({
       fieldRef: fieldColorCoding.fieldRef,
-      valueColors: nextValueColors
+      valueColors: nextValueColors,
+      overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
-  }, [fieldColorCoding.fieldRef, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const selectColorCodingOption = import_react18.default.useCallback((option) => {
+  }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
+  const toggleOverdueExcludedState = import_react22.default.useCallback((stateCode, excluded) => {
+    const normalizedStateCode = normalizeStateCodeForComparison(stateCode);
+    if (normalizedStateCode.length === 0) {
+      return;
+    }
+    const next = new Set(resolveOverdueExcludedStateCodes(fieldColorCoding.overdueExcludedStateCodes, DEFAULT_OVERDUE_EXCLUDED_STATE_CODES));
+    if (excluded) {
+      next.add(normalizedStateCode);
+    } else {
+      next.delete(normalizedStateCode);
+    }
+    updateFieldColorCoding({
+      fieldRef: fieldColorCoding.fieldRef,
+      valueColors: fieldColorCoding.valueColors,
+      overdueExcludedStateCodes: [...next].sort((left, right) => left.localeCompare(right))
+    });
+  }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
+  const selectColorCodingOption = import_react22.default.useCallback((option) => {
     setColorCoding(option.mode);
-    saveLastTimelineColorCoding(option.mode);
+    saveLastTimelineColorCoding(option.mode, activeQueryId);
     if (option.mode === "field") {
       selectFieldForColorCoding(option.fieldRef);
     } else {
       updateFieldColorCoding({
         fieldRef: null,
-        valueColors: fieldColorCoding.valueColors
+        valueColors: fieldColorCoding.valueColors,
+        overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
       });
     }
     setColorCodingDropdownOpen(false);
     setColorCodingSearchDraft("");
-  }, [fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]);
-  const applyFirstFilteredColorCodingOption = import_react18.default.useCallback(() => {
+  }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]);
+  const applyFirstFilteredColorCodingOption = import_react22.default.useCallback(() => {
     const preferredOption = pickPreferredColorCodingOption(filteredColorCodingOptions, colorCodingSearchDraft);
     if (!preferredOption) {
       return false;
@@ -30965,7 +32328,7 @@ function TimelinePane(props) {
     selectColorCodingOption(preferredOption);
     return true;
   }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
-  const applyFieldFilterSelection = import_react18.default.useCallback((slotId, fieldRef) => {
+  const applyFieldFilterSelection = import_react22.default.useCallback((slotId, fieldRef) => {
     const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
     setTimelineFieldFilters((current) => current.map((filter) => filter.slotId === slotId ? {
       ...filter,
@@ -30973,7 +32336,7 @@ function TimelinePane(props) {
       selectedValueKeys: normalizedFieldRef && filter.fieldRef === normalizedFieldRef ? filter.selectedValueKeys : []
     } : filter));
   }, []);
-  const toggleTimelineFieldValueSelection = import_react18.default.useCallback((slotId, valueKey) => {
+  const toggleTimelineFieldValueSelection = import_react22.default.useCallback((slotId, valueKey) => {
     setTimelineFieldFilters((current) => current.map((filter) => {
       if (filter.slotId !== slotId) {
         return filter;
@@ -30991,7 +32354,35 @@ function TimelinePane(props) {
       };
     }));
   }, []);
-  const addTimelineFilterSlot = import_react18.default.useCallback(() => {
+  const toggleVisibleTimelineFieldValueSelections = import_react22.default.useCallback((slotId, valueKeys) => {
+    if (valueKeys.length === 0) {
+      return;
+    }
+    setTimelineFieldFilters((current) => current.map((filter) => {
+      if (filter.slotId !== slotId) {
+        return filter;
+      }
+      const visibleValueKeySet = new Set(valueKeys);
+      const allVisibleValuesSelected = valueKeys.every((valueKey) => filter.selectedValueKeys.includes(valueKey));
+      if (allVisibleValuesSelected) {
+        return {
+          ...filter,
+          selectedValueKeys: filter.selectedValueKeys.filter((valueKey) => !visibleValueKeySet.has(valueKey))
+        };
+      }
+      const nextSelectedValueKeys = [...filter.selectedValueKeys];
+      for (const valueKey of valueKeys) {
+        if (!nextSelectedValueKeys.includes(valueKey)) {
+          nextSelectedValueKeys.push(valueKey);
+        }
+      }
+      return {
+        ...filter,
+        selectedValueKeys: nextSelectedValueKeys
+      };
+    }));
+  }, []);
+  const addTimelineFilterSlot = import_react22.default.useCallback(() => {
     setTimelineFieldFilters((current) => {
       if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
         return current;
@@ -31000,7 +32391,7 @@ function TimelinePane(props) {
     });
     setNextFilterSlotId((current) => current + 1);
   }, [nextFilterSlotId]);
-  const removeTimelineFilterSlot = import_react18.default.useCallback((slotId) => {
+  const removeTimelineFilterSlot = import_react22.default.useCallback((slotId) => {
     setTimelineFieldFilters((current) => {
       if (current.length <= 1) {
         return current.map((filter) => filter.slotId === slotId ? { ...filter, fieldRef: null, selectedValueKeys: [] } : filter);
@@ -31011,7 +32402,7 @@ function TimelinePane(props) {
       setOpenFilterDropdown(null);
     }
   }, [openFilterDropdown?.slotId]);
-  const toggleTimelineLabelField = import_react18.default.useCallback((fieldRef) => {
+  const toggleTimelineLabelField = import_react22.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -31020,17 +32411,17 @@ function TimelinePane(props) {
       const exists = current.includes(normalized);
       const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
       const sanitized = sanitizeTimelineFieldRefList(next);
-      saveTimelineLabelFields(sanitized);
+      saveTimelineLabelFields(sanitized, activeQueryId);
       return sanitized;
     });
   }, []);
-  const clearTimelineLabelFields = import_react18.default.useCallback(() => {
+  const clearTimelineLabelFields = import_react22.default.useCallback(() => {
     setTimelineLabelFields(() => {
-      saveTimelineLabelFields([]);
+      saveTimelineLabelFields([], activeQueryId);
       return [];
     });
   }, []);
-  const toggleTimelineSidebarField = import_react18.default.useCallback((fieldRef) => {
+  const toggleTimelineSidebarField = import_react22.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -31039,22 +32430,22 @@ function TimelinePane(props) {
       const exists = current.includes(normalized);
       const next = exists ? current.filter((entry) => entry !== normalized) : [...current, normalized];
       const sanitized = sanitizeTimelineFieldRefList(next);
-      saveTimelineSidebarFields(sanitized);
+      saveTimelineSidebarFields(sanitized, activeQueryId);
       return sanitized;
     });
   }, []);
-  const clearTimelineSidebarFields = import_react18.default.useCallback(() => {
+  const clearTimelineSidebarFields = import_react22.default.useCallback(() => {
     setTimelineSidebarFields(() => {
-      saveTimelineSidebarFields([]);
+      saveTimelineSidebarFields([], activeQueryId);
       return [];
     });
   }, []);
-  const openTimelineLabelSettingsFromSidebar = import_react18.default.useCallback(() => {
+  const openTimelineLabelSettingsFromSidebar = import_react22.default.useCallback(() => {
     setLabelSettingsOpen(true);
     setLabelFieldSearchDraft("");
     setSidebarFieldSearchDraft("");
   }, []);
-  const syncLabelMenuScrollFromSidebar = import_react18.default.useCallback(() => {
+  const syncLabelMenuScrollFromSidebar = import_react22.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -31070,7 +32461,7 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "sidebar";
     bar.scrollTop = sidebar.scrollTop;
   }, []);
-  const syncLabelMenuScrollFromBar = import_react18.default.useCallback(() => {
+  const syncLabelMenuScrollFromBar = import_react22.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -31086,19 +32477,32 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "bar";
     sidebar.scrollTop = bar.scrollTop;
   }, []);
-  const openFilterSlot = import_react18.default.useMemo(() => openFilterDropdown === null ? null : timelineFieldFilters.find((filter) => filter.slotId === openFilterDropdown.slotId) ?? null, [openFilterDropdown, timelineFieldFilters]);
-  const openFilterFieldOptions = import_react18.default.useMemo(() => {
+  const openFilterSlot = import_react22.default.useMemo(() => openFilterDropdown === null ? null : timelineFieldFilters.find((filter) => filter.slotId === openFilterDropdown.slotId) ?? null, [openFilterDropdown, timelineFieldFilters]);
+  const openFilterFieldOptions = import_react22.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "field") {
       return [];
     }
     return filterFieldRefsBySearch(availableFieldRefs, filterFieldSearchDraft);
   }, [availableFieldRefs, filterFieldSearchDraft, openFilterDropdown]);
-  const openFilterValueOptions = import_react18.default.useMemo(() => {
+  const openFilterValueOptions = import_react22.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
       return [];
     }
     return filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef), filterValueSearchDraft);
   }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
+  const handleAdoptSelectedSchedule = import_react22.default.useCallback(async (input) => {
+    if (props.onAdoptUnschedulableSchedule) {
+      await props.onAdoptUnschedulableSchedule(input);
+    }
+    setAdoptedSchedulesByWorkItemId((current) => ({
+      ...current,
+      [input.targetWorkItemId]: {
+        startDate: input.startDate,
+        endDate: input.endDate
+      }
+    }));
+  }, [props, setAdoptedSchedulesByWorkItemId]);
+  const adoptSourceSchedule = resolveAdoptSourceSchedule(visibleTimeline, selectedWorkItemId);
   const detailProps = {
     timeline: filteredTimeline,
     selectedWorkItemId,
@@ -31106,7 +32510,8 @@ function TimelinePane(props) {
     organization: props.organization,
     project: props.project,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
-    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+    onDirtyChange: props.onDetailsDirtyChange
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
@@ -31120,31 +32525,23 @@ function TimelinePane(props) {
   const selectedColorCodingLabel = resolveSelectedColorCodingLabel(colorCoding, fieldColorCoding.fieldRef);
   const isFieldColorCodingMode = colorCoding === "field";
   const isReadOnlyStatusColorCodingMode = colorCoding === "status";
-  return import_react18.default.createElement("section", {
+  const isOverdueColorCodingMode = colorCoding === "overdue";
+  return import_react22.default.createElement("section", {
     "aria-label": "timeline-pane",
     className: "timeline-pane"
-  }, import_react18.default.createElement(TimelinePaneActionsToolbar, {
+  }, import_react22.default.createElement(TimelinePaneActionsToolbar, {
     isRefreshing: props.isRefreshing === true,
     onRetryRefresh: () => {
       props.onRetryRefresh?.();
     },
     zoomLevel,
-    onSelectWeekZoom: () => {
-      setDayWidthPx(DAY_WIDTH_WEEK_PX);
-    },
-    onSelectMonthZoom: () => {
-      setDayWidthPx(DAY_WIDTH_MONTH_PX);
-    },
+    onSelectWeekZoom: selectWeekZoom,
+    onSelectMonthZoom: selectMonthZoom,
+    onSelectQuarterZoom: selectQuarterZoom,
+    onSelectYearZoom: selectYearZoom,
     dependencyViewMode,
     dependencyModeOptions: DEPENDENCY_VIEW_MODE_OPTIONS,
-    onChangeDependencyMode: (mode) => {
-      setDependencyViewMode(mode);
-      setActiveDependencyDrag(null);
-      setActiveScheduleDrag(null);
-      setActiveUnschedulableDrag(null);
-      setUnscheduledDropPreview(null);
-      setSelectedDependency(null);
-    },
+    onChangeDependencyMode: applyDependencyViewModeChange,
     colorCodingControlRef,
     selectedColorCodingLabel,
     colorCodingDropdownOpen,
@@ -31170,25 +32567,18 @@ function TimelinePane(props) {
     filterToggleControlRef,
     timelineFiltersOpen,
     activeTimelineFiltersCount: activeTimelineFilters.length,
-    onToggleTimelineFilters: () => {
-      setTimelineFiltersOpen((current) => {
-        if (current) {
-          setOpenFilterDropdown(null);
-        }
-        return !current;
-      });
-    },
-    sortControl: import_react18.default.createElement(TimelineSortControl, {
+    onToggleTimelineFilters: toggleTimelineFilters,
+    sortControl: import_react22.default.createElement(TimelineSortControl, {
       availableFieldRefs,
       controlRef: sortToggleControlRef,
       panelRef: sortPanelRef,
       sortSettingsOpen,
       timelineSortPreference,
-      onToggleSortSettings: () => {
-        setSortSettingsOpen((current) => !current);
-      },
+      onToggleSortSettings: toggleSortSettings,
       onSelectPrimarySortField: selectPrimarySortField,
-      onSelectSecondarySortField: selectSecondarySortField
+      onSelectSecondarySortField: selectSecondarySortField,
+      onTogglePrimarySortDirection: togglePrimarySortDirection,
+      onToggleSecondarySortDirection: toggleSecondarySortDirection
     }),
     labelToggleControlRef,
     labelSettingsOpen,
@@ -31201,11 +32591,7 @@ function TimelinePane(props) {
     labelFieldSearchDraft,
     filteredTimelineSidebarFieldOptions,
     filteredTimelineLabelFieldOptions,
-    onToggleLabelSettings: () => {
-      setLabelSettingsOpen((current) => !current);
-      setLabelFieldSearchDraft("");
-      setSidebarFieldSearchDraft("");
-    },
+    onToggleLabelSettings: toggleLabelSettings,
     onChangeSidebarFieldSearchDraft: (value) => {
       setSidebarFieldSearchDraft(value);
     },
@@ -31219,8 +32605,12 @@ function TimelinePane(props) {
     onToggleTimelineSidebarField: toggleTimelineSidebarField,
     onToggleTimelineLabelField: toggleTimelineLabelField,
     workItemSyncState: props.workItemSyncState ?? "up_to_date",
-    workItemSyncError: props.workItemSyncError ?? null
-  }), import_react18.default.createElement(TimelineFilterPanel, {
+    liveSyncEnabled: props.liveSyncEnabled ?? true,
+    pendingWorkItemSyncCount: props.pendingWorkItemSyncCount ?? 0,
+    onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => void 0),
+    onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => void 0),
+    onClearPendingWorkItemChanges: props.onClearPendingWorkItemChanges ?? (() => void 0)
+  }), import_react22.default.createElement(TimelineFilterPanel, {
     open: timelineFiltersOpen,
     panelRef: filterPanelRef,
     availableFieldRefs,
@@ -31238,12 +32628,13 @@ function TimelinePane(props) {
     filterValueSearchDraft,
     onApplyFieldFilterSelection: applyFieldFilterSelection,
     onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
+    onToggleVisibleTimelineFieldValueSelections: toggleVisibleTimelineFieldValueSelections,
     onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
     onAddTimelineFilterSlot: addTimelineFilterSlot
-  }), adoptScheduleError ? import_react18.default.createElement("div", {
+  }), adoptScheduleError ? import_react22.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
-  }, `Save failed: ${adoptScheduleError}`) : null, import_react18.default.createElement(TimelineColorCodingPanel, {
+  }, `Save failed: ${adoptScheduleError}`) : null, import_react22.default.createElement(TimelineColorCodingPanel, {
     open: colorSettingsOpen,
     colorCoding,
     selectedFieldRef,
@@ -31252,24 +32643,45 @@ function TimelinePane(props) {
     selectedModeValueStats,
     isFieldColorCodingMode,
     isReadOnlyStatusColorCodingMode,
+    isOverdueColorCodingMode,
+    overdueExcludedStateCodes: resolveOverdueExcludedStateCodes(fieldColorCoding.overdueExcludedStateCodes, DEFAULT_OVERDUE_EXCLUDED_STATE_CODES),
     onClose: () => {
       setColorSettingsOpen(false);
     },
     onUpdateFieldValueColor: updateFieldValueColor,
+    onToggleOverdueExcludedState: toggleOverdueExcludedState,
     resolveSelectedColorCodingLabel,
     toScopedFieldValueColorKey
-  }), import_react18.default.createElement("div", {
+  }), import_react22.default.createElement(TimelinePrintHeader, {
+    queryName: props.activeQueryName ?? null,
+    queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
+    workItemCount: chartModel.bars.length,
+    printedAt: /* @__PURE__ */ new Date(),
+    isPrintMode: printCurrentView.isPrintMode
+  }), import_react22.default.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }), import_react22.default.createElement("div", {
     className: "timeline-main-grid",
     ref: timelineMainGridRef,
     style: timelineMainGridStyle
-  }, import_react18.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react18.default.createElement("div", { className: "timeline-empty-state" }, import_react18.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react18.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react18.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react18.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react18.default.createElement("button", {
+  }, import_react22.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react22.default.createElement("div", { className: "timeline-empty-state" }, import_react22.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react22.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react22.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react22.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react22.default.createElement("button", {
     type: "button",
     className: "timeline-chart-fit-button",
     "aria-label": "Zoom to fit timeline",
     onClick: zoomToFitTimeline
-  }, "Fit")), import_react18.default.createElement("div", {
+  }, import_react22.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-chart-fit-icon",
+    "aria-hidden": "true"
+  }, import_react22.default.createElement("path", {
+    d: "M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })))), import_react22.default.createElement("div", {
     className: [
       "timeline-chart-scroll",
+      unscheduledCount === 0 ? "timeline-chart-scroll-unscheduled-empty" : "",
       activeScheduleDrag ? "timeline-chart-scroll-dragging" : "",
       activePanDrag ? "timeline-chart-scroll-panning" : "",
       spacePanPressed ? "timeline-chart-scroll-space-pan-ready" : ""
@@ -31279,30 +32691,30 @@ function TimelinePane(props) {
     onPointerMove: updatePanDrag,
     onPointerUp: finishPanDrag,
     onPointerCancel: finishPanDrag
-  }, import_react18.default.createElement("div", {
+  }, import_react22.default.createElement("div", {
     className: sidebarCollapsed ? "timeline-left-sidebar timeline-left-sidebar-collapsed timeline-left-sidebar-embedded" : "timeline-left-sidebar timeline-left-sidebar-embedded",
     "aria-label": "Timeline left sidebar",
     style: { width: `${Math.round(effectiveSidebarWidthPx)}px`, height: `${chartModel.height}px` }
-  }, sidebarCollapsed ? import_react18.default.createElement("div", {
+  }, sidebarCollapsed ? import_react22.default.createElement("div", {
     className: "timeline-left-sidebar-collapsed-body",
     style: { height: `${chartModel.height}px` }
-  }, import_react18.default.createElement("button", {
+  }, import_react22.default.createElement("button", {
     type: "button",
     className: "timeline-left-sidebar-settings-button",
     "aria-label": "Configure timeline sidebar fields",
     onClick: openTimelineLabelSettingsFromSidebar
-  }, import_react18.default.createElement("svg", {
+  }, import_react22.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-left-sidebar-settings-icon",
     "aria-hidden": "true"
-  }, import_react18.default.createElement("path", {
+  }, import_react22.default.createElement("path", {
     d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
   })))) : [
-    import_react18.default.createElement("div", {
+    import_react22.default.createElement("div", {
       className: "timeline-left-sidebar-header",
       style: { height: `${CHART_TOP_PADDING}px` },
       key: "header"
-    }, import_react18.default.createElement("button", {
+    }, import_react22.default.createElement("button", {
       type: "button",
       className: "timeline-left-sidebar-align-toggle",
       "aria-label": "Toggle timeline sidebar row alignment",
@@ -31311,39 +32723,83 @@ function TimelinePane(props) {
       onClick: () => {
         const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
         setTimelineSidebarRowJustify(next);
-        saveTimelineSidebarRowJustify(next);
+        saveTimelineSidebarRowJustify(next, activeQueryId);
       }
-    }, import_react18.default.createElement("svg", {
+    }, import_react22.default.createElement("svg", {
       viewBox: "0 0 24 24",
       className: "timeline-left-sidebar-align-icon",
       "aria-hidden": "true"
     }, timelineSidebarRowJustify === "flex-end" ? [
-      import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-      import_react18.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
-      import_react18.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
+      import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+      import_react22.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
+      import_react22.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
     ] : [
-      import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-      import_react18.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
-      import_react18.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
+      import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+      import_react22.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
+      import_react22.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
     ]))),
-    import_react18.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react18.default.createElement("button", {
+    import_react22.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react22.default.createElement("button", {
       key: `timeline-sidebar-row-${bar.workItemId}`,
       type: "button",
-      className: selectedWorkItemId === bar.workItemId ? "timeline-left-sidebar-row timeline-left-sidebar-row-selected" : "timeline-left-sidebar-row",
+      className: [
+        "timeline-left-sidebar-row",
+        selectedWorkItemId === bar.workItemId ? "timeline-left-sidebar-row-selected" : "",
+        reparentDrag.dragState.sourceWorkItemId === bar.workItemId ? "timeline-sidebar-row-dragging" : "",
+        reparentDrag.dragState.dropTargetWorkItemId === bar.workItemId && reparentDrag.dragState.isValid ? "timeline-sidebar-row-drop-target" : "",
+        reparentDrag.dragState.dropTargetWorkItemId === bar.workItemId && !reparentDrag.dragState.isValid && reparentDrag.dragState.sourceWorkItemId !== null ? "timeline-sidebar-row-drop-invalid" : "",
+        bar.treeBlockStart ? "timeline-sidebar-row-block-start" : "",
+        bar.treeBlockEnd ? "timeline-sidebar-row-block-end" : ""
+      ].filter(Boolean).join(" "),
       "aria-label": `timeline-sidebar-row-${bar.workItemId}`,
+      draggable: isTreeQuery && Boolean(props.onReparentWorkItem),
       style: {
         height: `${CHART_ROW_HEIGHT}px`,
-        justifyContent: timelineSidebarRowJustify
+        justifyContent: timelineSidebarRowJustify,
+        "--timeline-row-selection-color": bar.color
       },
       onClick: () => {
-        selectWorkItem(bar.workItemId);
+        toggleWorkItemSelection(bar.workItemId);
+      },
+      onDragStart: isTreeQuery && props.onReparentWorkItem ? (event) => {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", String(bar.workItemId));
+        reparentDrag.startDrag(bar.workItemId);
+      } : void 0,
+      onDragOver: isTreeQuery && props.onReparentWorkItem ? (event) => {
+        reparentDrag.updateDropTarget(bar.workItemId);
+        if (reparentDrag.dragState.isValid || reparentDrag.dragState.sourceWorkItemId === null) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        }
+      } : void 0,
+      onDragLeave: isTreeQuery ? () => {
+        reparentDrag.updateDropTarget(null);
+      } : void 0,
+      onDrop: isTreeQuery && props.onReparentWorkItem ? (event) => {
+        event.preventDefault();
+        const result = reparentDrag.executeDrop();
+        reparentDrag.clearDrag();
+        if (result && props.onReparentWorkItem) {
+          void props.onReparentWorkItem(result);
+        }
+      } : void 0,
+      onDragEnd: isTreeQuery ? () => {
+        reparentDrag.clearDrag();
+      } : void 0
+    }, bar.treeDepth !== null && bar.treeDepth > 0 ? buildTreeIndentGuides(bar) : null, bar.treeHasChildren ? import_react22.default.createElement("span", {
+      className: "timeline-tree-toggle",
+      role: "button",
+      "aria-label": bar.treeIsCollapsed ? "Expand" : "Collapse",
+      onClick: (event) => {
+        event.stopPropagation();
+        treeState.toggle(bar.workItemId);
       }
-    }, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react18.default.createElement("div", {
+    }, bar.treeIsCollapsed ? "\u25B6" : "\u25BC") : bar.treeDepth !== null ? import_react22.default.createElement("span", { className: "timeline-tree-toggle-placeholder" }) : null, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react22.default.createElement("div", {
       className: "timeline-left-sidebar-tail-spacer",
       "aria-hidden": "true",
       style: { height: `${chartModel.tailHeightPx}px` }
     }))
-  ]), !sidebarCollapsed ? import_react18.default.createElement(TimelineMainSplitter, {
+  ]), !sidebarCollapsed ? import_react22.default.createElement(TimelineMainSplitter, {
     active: isSidebarResizing,
     embedded: true,
     ariaLabel: "Resize timeline sidebar",
@@ -31352,42 +32808,49 @@ function TimelinePane(props) {
     ariaValueNow: sidebarWidthPx,
     onPointerDown: beginSidebarResize,
     style: { height: `${chartModel.height}px`, left: `${Math.round(effectiveSidebarWidthPx)}px` }
-  }) : null, import_react18.default.createElement("svg", {
+  }) : null, import_react22.default.createElement("svg", {
     className: "timeline-shared-row-guides",
     viewBox: `0 0 ${effectiveSidebarWidthPx + chartModel.width} ${chartModel.height}`,
     style: { width: `${effectiveSidebarWidthPx + chartModel.width}px`, height: `${chartModel.height}px` },
     "aria-hidden": "true"
-  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index) => import_react18.default.createElement("line", {
+  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index) => import_react22.default.createElement("line", {
     key: `shared-row-guide-${index}`,
     x1: 0,
     y1: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
     x2: effectiveSidebarWidthPx + chartModel.width,
     y2: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
     className: "timeline-row-guide-line"
-  }))), import_react18.default.createElement("div", {
+  }))), import_react22.default.createElement("div", {
     className: "timeline-chart-main-lane",
+    ref: mainLaneRef,
     style: { width: `${chartModel.width}px` }
-  }, import_react18.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react18.default.createElement("svg", {
+  }, import_react22.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
     className: "timeline-chart-axis",
+    width: chartModel.width,
+    height: CHART_TOP_PADDING,
     viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
+    preserveAspectRatio: "none",
     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
-  }, chartModel.monthMarkers.map((month) => import_react18.default.createElement("text", {
-    key: `sticky-month-label-${month.x}-${month.label}`,
-    x: CHART_LEFT_GUTTER + month.x,
+  }, (zoomLevel === "year" ? chartModel.yearMarkers : zoomLevel === "quarter" ? chartModel.yearMarkers : chartModel.monthMarkers).map((marker) => import_react22.default.createElement("text", {
+    key: `sticky-top-label-${marker.x}-${marker.label}`,
+    x: CHART_LEFT_GUTTER + marker.x,
     y: CHART_AXIS_MONTH_LABEL_Y,
     className: "timeline-axis-month-label"
-  }, month.label)), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react18.default.createElement("text", {
+  }, marker.label)), (zoomLevel === "week" ? chartModel.weekMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : zoomLevel === "year" ? chartModel.quarterMarkers : []).map((tick) => import_react22.default.createElement("text", {
     key: `sticky-tick-label-${tick.x}-${tick.label}`,
-    x: CHART_LEFT_GUTTER + tick.x,
+    x: CHART_LEFT_GUTTER + tick.x + CHART_AXIS_TICK_LABEL_X_OFFSET,
     y: CHART_AXIS_TICK_LABEL_Y,
     className: "timeline-axis-label"
-  }, tick.label)), chartModel.todayX !== null ? import_react18.default.createElement("text", {
+  }, tick.label)), chartModel.todayX !== null ? import_react22.default.createElement("text", {
     x: CHART_LEFT_GUTTER + chartModel.todayX,
     y: CHART_AXIS_TODAY_LABEL_Y,
     className: "timeline-today-label"
-  }, "Today") : null)), import_react18.default.createElement("svg", {
+  }, "Today") : null)), import_react22.default.createElement("svg", {
     className: activeUnschedulableDrag && !activeScheduleDrag ? "timeline-chart timeline-chart-unscheduled-drop-active" : "timeline-chart",
+    width: chartModel.width,
+    height: chartModel.height,
     viewBox: `0 0 ${chartModel.width} ${chartModel.height}`,
+    preserveAspectRatio: "none",
     role: "img",
     "aria-label": "gantt-chart",
     style: { width: `${chartModel.width}px`, height: `${chartModel.height}px` },
@@ -31397,7 +32860,7 @@ function TimelinePane(props) {
     onPointerCancel: finishActiveDrag,
     onDragOver: handleChartDragOver,
     onDrop: handleChartDrop
-  }, import_react18.default.createElement("defs", null, import_react18.default.createElement("marker", {
+  }, import_react22.default.createElement("defs", null, import_react22.default.createElement("marker", {
     id: dependencyMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -31406,10 +32869,10 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react18.default.createElement("path", {
+  }, import_react22.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead"
-  })), import_react18.default.createElement("marker", {
+  })), import_react22.default.createElement("marker", {
     id: dependencyAlertMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -31418,53 +32881,82 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react18.default.createElement("path", {
+  }, import_react22.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead-alert"
-  }))), chartModel.currentPeriod ? import_react18.default.createElement("rect", {
+  }))), buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width), chartModel.currentPeriod ? import_react22.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
     y: CHART_GRID_START_Y,
     width: chartModel.currentPeriod.width,
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-current-period-highlight"
-  }) : null, chartModel.dailyGridLines.map((dayX) => import_react18.default.createElement("line", {
+  }) : null, (zoomLevel === "week" || zoomLevel === "month" ? chartModel.weekendBands : []).map((band) => import_react22.default.createElement("rect", {
+    key: `timeline-weekend-band-${band.date}`,
+    x: CHART_LEFT_GUTTER + band.x,
+    y: CHART_GRID_START_Y,
+    width: band.width,
+    height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
+    className: "timeline-weekend-band",
+    "data-date": band.date
+  })), chartModel.dailyGridLines.map((dayX) => import_react22.default.createElement("line", {
     key: `day-grid-${dayX}`,
     x1: CHART_LEFT_GUTTER + dayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + dayX,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-day"
-  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react18.default.createElement("line", {
+  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react22.default.createElement("line", {
     key: `month-week-grid-${week.x}`,
     x1: CHART_LEFT_GUTTER + week.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + week.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-weekly"
-  })), chartModel.monthMarkers.map((month) => import_react18.default.createElement("line", {
-    key: `month-boundary-${month.x}`,
+  })), (zoomLevel === "quarter" || zoomLevel === "year" ? chartModel.monthMarkers : []).map((month) => import_react22.default.createElement("line", {
+    key: `quarter-month-grid-${month.x}`,
     x1: CHART_LEFT_GUTTER + month.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + month.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
+    className: "timeline-grid-line-weekly"
+  })), (zoomLevel === "year" ? chartModel.quarterMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : chartModel.monthMarkers).map((marker) => import_react22.default.createElement("line", {
+    key: `boundary-${marker.x}-${marker.label}`,
+    x1: CHART_LEFT_GUTTER + marker.x,
+    y1: CHART_GRID_START_Y,
+    x2: CHART_LEFT_GUTTER + marker.x,
+    y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-month-boundary-line"
-  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react18.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react18.default.createElement("line", {
+  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react22.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react22.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + tick.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + tick.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line"
-  }))), chartModel.todayX !== null ? import_react18.default.createElement("g", null, import_react18.default.createElement("line", {
+  }))), chartModel.todayX !== null ? import_react22.default.createElement("g", null, import_react22.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + chartModel.todayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + chartModel.todayX,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-today-line"
   })) : null, chartModel.bars.map((bar, index) => {
+    if (selectedWorkItemId !== bar.workItemId) {
+      return null;
+    }
+    return import_react22.default.createElement("rect", {
+      key: `timeline-row-highlight-${bar.workItemId}`,
+      x: 0,
+      y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+      width: chartModel.width,
+      height: CHART_ROW_HEIGHT,
+      fill: `color-mix(in srgb, ${bar.color} 14%, transparent)`,
+      pointerEvents: "none"
+    });
+  }), chartModel.bars.map((bar, index) => {
     const y = resolveTimelineBarTopY(index);
     const isSelected = selectedWorkItemId === bar.workItemId;
-    const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : ""].filter(Boolean).join(" ");
-    return import_react18.default.createElement("g", { key: bar.workItemId }, import_react18.default.createElement("rect", {
+    const isDependencyHovered = hoveredDependencyWorkItemIds !== null && hoveredDependencyWorkItemIds.has(bar.workItemId);
+    const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : "", isDependencyHovered ? "timeline-bar-dependency-hover" : ""].filter(Boolean).join(" ");
+    return import_react22.default.createElement("g", { key: bar.workItemId }, import_react22.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x,
       y,
       width: bar.width,
@@ -31477,25 +32969,41 @@ function TimelinePane(props) {
       "aria-label": `timeline-bar-${bar.workItemId}`,
       "aria-current": isSelected ? "true" : void 0,
       onClick: () => {
-        selectWorkItem(bar.workItemId);
+        if (suppressNextBarClickRef.current) {
+          suppressNextBarClickRef.current = false;
+          barPointerSelectionIntentRef.current = null;
+          return;
+        }
+        const pointerSelectionIntent = barPointerSelectionIntentRef.current;
+        barPointerSelectionIntentRef.current = null;
+        if (pointerSelectionIntent?.workItemId === bar.workItemId) {
+          selectWorkItem(pointerSelectionIntent.wasSelected ? null : bar.workItemId);
+          return;
+        }
+        toggleWorkItemSelection(bar.workItemId);
       },
       onKeyDown: (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          selectWorkItem(bar.workItemId);
+          toggleWorkItemSelection(bar.workItemId);
         }
       },
       onPointerDown: (event) => {
         if (spacePanPressedRef.current) {
           return;
         }
+        suppressNextBarClickRef.current = false;
+        barPointerSelectionIntentRef.current = {
+          workItemId: bar.workItemId,
+          wasSelected: selectedWorkItemId === bar.workItemId
+        };
         if (dependencyMode) {
           beginDependencyDrag({ event, sourceWorkItemId: bar.workItemId });
           return;
         }
         void beginBarDrag({ event, mode: "move", bar });
       }
-    }), canEditSchedule ? import_react18.default.createElement("rect", {
+    }), canEditSchedule ? import_react22.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -31509,7 +33017,7 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "resize-start", bar });
       }
-    }) : null, canEditSchedule ? import_react18.default.createElement("rect", {
+    }) : null, canEditSchedule ? import_react22.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x + bar.width - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -31523,42 +33031,45 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "resize-end", bar });
       }
-    }) : null, bar.displayLabel.trim().length > 0 ? import_react18.default.createElement("text", {
+    }) : null, bar.displayLabel.trim().length > 0 ? import_react22.default.createElement("text", {
       x: CHART_LEFT_GUTTER + bar.x + 18,
       y: y + 16,
       className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
-    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react18.default.createElement("circle", {
+    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react22.default.createElement("circle", {
       cx: CHART_LEFT_GUTTER + bar.x + 10,
       cy: y + BAR_HEIGHT / 2,
       r: 4.5,
       className: "timeline-bar-state-dot",
       style: { fill: bar.stateColor }
     }));
-  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react18.default.createElement("g", {
+  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react22.default.createElement("g", {
     className: "timeline-unscheduled-drop-preview"
-  }, import_react18.default.createElement("rect", {
+  }, import_react22.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 8,
     width: dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate) * chartModel.dayWidthPx,
     height: BAR_HEIGHT,
     rx: 6,
     className: "timeline-unscheduled-drop-preview-bar"
-  }), import_react18.default.createElement("text", {
+  }), import_react22.default.createElement("text", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx + 8,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 24,
     className: "timeline-unscheduled-drop-preview-label"
   }, `${formatTickDate(unscheduledDropPreview.startDate)} \u2192 ${formatTickDate(unscheduledDropPreview.endDate)} (${dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate)}d)`)) : null, dependencyConnectors.map((connector) => {
     const isSelected = selectedDependency?.predecessorWorkItemId === connector.predecessorWorkItemId && selectedDependency?.successorWorkItemId === connector.successorWorkItemId && selectedDependency?.dependencyType === connector.dependencyType;
+    const isHovered = hoveredDependencyKey === connector.key;
     const className = [
       "timeline-dependency-line",
       connector.isViolated ? "timeline-dependency-line-violated" : "",
-      isSelected ? "timeline-dependency-line-selected" : ""
+      isSelected ? "timeline-dependency-line-selected" : "",
+      isHovered ? "timeline-dependency-line-hovered" : ""
     ].filter(Boolean).join(" ");
-    return import_react18.default.createElement("path", {
+    const hoverHandlers = {
+      onPointerEnter: () => setHoveredDependencyKey(connector.key),
+      onPointerLeave: () => setHoveredDependencyKey((prev) => prev === connector.key ? null : prev)
+    };
+    return import_react22.default.createElement("g", {
       key: connector.key,
-      d: connector.path,
-      className,
-      markerEnd: connector.markerEnd,
       "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
       onClick: () => {
         setSelectedDependency({
@@ -31567,18 +33078,66 @@ function TimelinePane(props) {
           dependencyType: connector.dependencyType
         });
       }
-    });
-  }), activeDependencyDragPreview ? import_react18.default.createElement("path", {
+    }, import_react22.default.createElement("path", {
+      d: connector.path,
+      className: "timeline-dependency-line-hitarea",
+      ...hoverHandlers
+    }), import_react22.default.createElement("path", {
+      d: connector.path,
+      className,
+      markerEnd: connector.markerEnd,
+      pointerEvents: "none"
+    }));
+  }), activeDependencyDragPreview ? import_react22.default.createElement("path", {
     d: activeDependencyDragPreview.path,
     className: "timeline-dependency-line timeline-dependency-line-draft",
     markerEnd: `url(#${dependencyMarkerId})`,
     "aria-label": "dependency-draft"
-  }) : null)))), import_react18.default.createElement("div", { className: "timeline-unschedulable-list" }, import_react18.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react18.default.createElement("h4", null, "Unscheduled")), filteredTimeline?.unschedulable.length ? import_react18.default.createElement("ul", null, ...filteredTimeline.unschedulable.map((item) => import_react18.default.createElement("li", { key: item.workItemId }, (() => {
+  }) : null)))), import_react22.default.createElement("div", {
+    className: [
+      "timeline-unschedulable-list",
+      visibleTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
+    ].filter(Boolean).join(" ")
+  }, import_react22.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react22.default.createElement("h4", null, "Unscheduled tasks"), import_react22.default.createElement("button", {
+    type: "button",
+    className: editMode ? "timeline-unschedulable-edit-toggle timeline-unschedulable-edit-toggle-active" : "timeline-unschedulable-edit-toggle",
+    "aria-pressed": editMode,
+    onClick: () => setEditMode((current) => !current)
+  }, "Edit mode"), import_react22.default.createElement("div", {
+    ref: editInfoRef,
+    className: "timeline-unschedulable-edit-info-wrap"
+  }, import_react22.default.createElement("button", {
+    type: "button",
+    className: editInfoOpen ? "timeline-unschedulable-edit-info timeline-unschedulable-edit-info-open" : "timeline-unschedulable-edit-info",
+    "aria-label": "Show edit help",
+    "aria-expanded": editInfoOpen,
+    onClick: () => setEditInfoOpen((current) => !current)
+  }, "i"), editInfoOpen ? import_react22.default.createElement("div", {
+    className: "timeline-unschedulable-edit-info-popover",
+    role: "tooltip"
+  }, import_react22.default.createElement("p", { className: "timeline-unschedulable-edit-info-popover-title" }, "How to schedule unscheduled tasks"), import_react22.default.createElement("ol", { className: "timeline-unschedulable-edit-info-popover-steps" }, import_react22.default.createElement("li", null, "Turn on ", import_react22.default.createElement("strong", null, "Edit mode"), " to enable changes."), import_react22.default.createElement("li", null, import_react22.default.createElement("strong", null, "Drag"), " any item from the Unscheduled list into the chart to place it."), import_react22.default.createElement("li", null, "Or ", import_react22.default.createElement("strong", null, "select a scheduled task"), " above, then click the purple \u2191 next to an unscheduled item to copy that task's dates."))) : null), editMode && adoptSourceSchedule ? import_react22.default.createElement("span", { className: "timeline-unschedulable-edit-hint" }, "click ", import_react22.default.createElement("svg", {
+    className: "timeline-unschedulable-edit-hint-icon",
+    viewBox: "0 0 16 16",
+    "aria-hidden": "true"
+  }, import_react22.default.createElement("path", {
+    d: "M8 13V3M8 3l-4 4M8 3l4 4",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })), ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)})`) : null), visibleTimeline?.unschedulable.length ? import_react22.default.createElement("ul", null, ...visibleTimeline.unschedulable.map((item) => {
+    const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
     const label = `#${item.details.mappedId} ${item.title}`;
     const minWidthPx = Math.round(dayWidthPx * 14);
     const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
     const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
-    return import_react18.default.createElement("button", {
+    const showAdoptArrow = editMode && adoptSourceSchedule !== null;
+    return import_react22.default.createElement("li", {
+      key: item.workItemId,
+      className: "timeline-unschedulable-row",
+      style: treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : void 0
+    }, import_react22.default.createElement("button", {
       type: "button",
       className: "timeline-unschedulable-button",
       style: {
@@ -31588,7 +33147,7 @@ function TimelinePane(props) {
       },
       "aria-label": label,
       "aria-pressed": selectedWorkItemId === item.workItemId,
-      draggable: !dependencyMode,
+      draggable: !dependencyMode && editMode,
       onDragStart: (event) => {
         startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
       },
@@ -31597,57 +33156,96 @@ function TimelinePane(props) {
       },
       onClick: () => {
         setAdoptScheduleError(null);
-        if (!dependencyMode && selectedWorkItemId !== null) {
-          void adoptUnschedulableSchedule(item.workItemId, selectedWorkItemId).catch((error) => {
-            const message = error instanceof Error ? error.message : "Unknown error";
-            setAdoptScheduleError(message);
-          });
-        }
-        selectWorkItem(item.workItemId);
+        toggleWorkItemSelection(item.workItemId);
       }
-    }, import_react18.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react18.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label)));
-  })()))) : import_react18.default.createElement("div", null, "None"))), import_react18.default.createElement(TimelineMainSplitter, {
+    }, import_react22.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react22.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label))), showAdoptArrow ? import_react22.default.createElement("button", {
+      type: "button",
+      className: "timeline-unschedulable-adopt-arrow",
+      "aria-label": `Adopt selected schedule onto ${label}`,
+      title: `Apply ${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)}`,
+      onClick: (event) => {
+        event.stopPropagation();
+        if (!adoptSourceSchedule) {
+          return;
+        }
+        void handleAdoptSelectedSchedule({
+          targetWorkItemId: item.workItemId,
+          startDate: adoptSourceSchedule.startDate,
+          endDate: adoptSourceSchedule.endDate
+        });
+      }
+    }, import_react22.default.createElement("svg", {
+      className: "timeline-unschedulable-adopt-arrow-icon",
+      viewBox: "0 0 16 16",
+      "aria-hidden": "true"
+    }, import_react22.default.createElement("path", {
+      d: "M8 12V4M8 4l-4 4M8 4l4 4",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }))) : null);
+  })) : import_react22.default.createElement("p", { className: "timeline-unschedulable-empty" }, "None"))), import_react22.default.createElement(TimelineMainSplitter, {
     active: isDetailsResizing,
     ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
     ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
     ariaValueMax: resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, effectiveSidebarWidthPx),
     ariaValueNow: detailsWidthPx,
     onPointerDown: beginDetailsResize,
-    onClick: expandDetailsPanelFromHidden,
+    onClick: toggleDetailsPanelFromSplitter,
     style: timelineMainSplitterStyle
-  }, detailsContentHidden ? import_react18.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react18.default.createElement("svg", {
+  }, detailsContentHidden ? import_react22.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
     className: "timeline-main-splitter-expand-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react18.default.createElement("path", {
+  }, import_react22.default.createElement("path", {
     d: "M10.5 3.5 6 8l4.5 4.5",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2.2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }))) : null), import_react18.default.createElement(TimelineDetailsPanel, detailProps)));
+  }))) : import_react22.default.createElement("span", { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
+    className: "timeline-main-splitter-expand-icon",
+    viewBox: "0 0 16 16",
+    "aria-hidden": "true"
+  }, import_react22.default.createElement("path", {
+    d: "M5.5 3.5 10 8l-4.5 4.5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })))), import_react22.default.createElement(TimelineDetailsPanel, detailProps)));
 }
 var BAR_HEIGHT = 24;
 var BAR_ROW_GAP = 2;
 var CHART_ROW_HEIGHT = BAR_HEIGHT + BAR_ROW_GAP;
 var BAR_ROW_TOP_INSET_PX = Math.max(0, Math.floor((CHART_ROW_HEIGHT - BAR_HEIGHT) / 2));
-var CHART_TOP_PADDING = 56;
+var CHART_TOP_PADDING = 64;
 var CHART_BOTTOM_PADDING = 18;
 var CHART_LEFT_GUTTER = 24;
 var CHART_RIGHT_PADDING_PX = 80;
 var CHART_AXIS_TODAY_LABEL_Y = CHART_TOP_PADDING - 46;
 var CHART_AXIS_MONTH_LABEL_Y = CHART_TOP_PADDING - 32;
 var CHART_AXIS_TICK_LABEL_Y = CHART_TOP_PADDING - 16;
+var CHART_AXIS_TICK_LABEL_X_OFFSET = 0;
 var CHART_GRID_START_Y = CHART_TOP_PADDING - 10;
 var TODAY_INITIAL_VIEWPORT_RATIO = 0.38;
 var DAY_WIDTH_WEEK_PX = 22;
 var DAY_WIDTH_MONTH_PX = 8;
+var DAY_WIDTH_QUARTER_PX = 3;
+var DAY_WIDTH_YEAR_PX = 1;
 var DAY_WIDTH_MAX_PX = 40;
-var DAY_WIDTH_MIN_PX = 4;
-var ZOOM_WHEEL_SENSITIVITY = 18e-4;
+var DAY_WIDTH_MIN_PX = 0.5;
+var ZOOM_WHEEL_SENSITIVITY = 5e-3;
 var ZOOM_DAY_WIDTH_STEP_PX = 0.25;
-var DAY_WIDTH_MODE_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+var DAY_WIDTH_WEEK_MONTH_SWITCH_PX = (DAY_WIDTH_WEEK_PX + DAY_WIDTH_MONTH_PX) / 2;
+var DAY_WIDTH_MONTH_QUARTER_SWITCH_PX = (DAY_WIDTH_MONTH_PX + DAY_WIDTH_QUARTER_PX) / 2;
+var DAY_WIDTH_QUARTER_YEAR_SWITCH_PX = (DAY_WIDTH_QUARTER_PX + DAY_WIDTH_YEAR_PX) / 2;
+var ZOOM_LEVEL_HYSTERESIS_PX = 0.6;
+var ZOOM_COMMIT_DELAY_MS = 120;
 var FIT_TO_VIEW_INSET_PX = 20;
 var FIT_TO_VIEW_SIDE_PADDING_DAYS = 1;
 var VIEWPORT_PERSIST_DEBOUNCE_MS = 220;
@@ -31655,6 +33253,7 @@ var DETAILS_PANEL_DEFAULT_WIDTH_PX = 320;
 var DETAILS_PANEL_MIN_WIDTH_PX = 0;
 var DETAILS_PANEL_MAX_WIDTH_PX = 820;
 var DETAILS_PANEL_SPLITTER_WIDTH_PX = 10;
+var TIMELINE_MAIN_SPLITTER_WIDTH_PX = 10;
 var DETAILS_PANEL_MIN_CHART_WIDTH_PX = 360;
 var DETAILS_PANEL_CONTENT_MIN_WIDTH_PX = 260;
 var TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX = 260;
@@ -31663,21 +33262,15 @@ var TIMELINE_SIDEBAR_MAX_WIDTH_PX = 640;
 var TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX = 56;
 var MIN_BAR_WIDTH_PX = 10;
 var HANDLE_WIDTH = 8;
-var DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
+var DEFAULT_UNSCHEDULED_DURATION_DAYS2 = 14;
 var BAR_LABEL_HORIZONTAL_PADDING = 8;
 var APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
 var DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
 var OVERDUE_TIMELINE_COLOR = "#b91c1c";
 var OVERDUE_OK_TIMELINE_COLOR = "#475569";
 var DEPENDENCY_ENDPOINT_GAP_PX = 6;
-var DEPENDENCY_LEFT_APPROACH_PX = 16;
 var DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
-var DEPENDENCY_LANE_GAP_PX = 6;
-var DEPENDENCY_LANE_TOP_OFFSET_PX = 6;
 var DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
-var DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX = 4;
-var DEPENDENCY_NEAR_GAP_DAYS_FOR_DETOUR = 2;
-var DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX = 9;
 var MAX_TIMELINE_FILTER_SLOTS = 5;
 var TIMELINE_FILTERS_QUERY_PARAM = "tf";
 var LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
@@ -31700,7 +33293,7 @@ var TIMELINE_CATEGORY_COLORS = [
   "#334155",
   "#0f766e"
 ];
-function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane) {
+function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, collapsedIds) {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc2 = /* @__PURE__ */ new Date();
     const normalizedTodayUtc2 = new Date(Date.UTC(todayUtc2.getUTCFullYear(), todayUtc2.getUTCMonth(), todayUtc2.getUTCDate()));
@@ -31711,9 +33304,12 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
+      weekendBands: [],
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
+      quarterMarkers: [],
+      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc2, -1),
       currentPeriod: null,
       todayX: null
@@ -31725,7 +33321,7 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
     if (!start && !end) {
       return null;
     }
-    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
+    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS2 - 1));
     const normalizedEnd = end ?? addDays(start, 2);
     const rangeStart = normalizedStart.getTime() <= normalizedEnd.getTime() ? normalizedStart : normalizedEnd;
     const rangeEnd = normalizedEnd.getTime() >= normalizedStart.getTime() ? normalizedEnd : normalizedStart;
@@ -31745,9 +33341,12 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       tailHeightPx: CHART_BOTTOM_PADDING,
       dayWidthPx,
       bars: [],
+      weekendBands: [],
       weekMarkers: [],
       dailyGridLines: [],
       monthMarkers: [],
+      quarterMarkers: [],
+      yearMarkers: [],
       domainStart: addDays(normalizedTodayUtc2, -1),
       currentPeriod: null,
       todayX: null
@@ -31775,9 +33374,11 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
     x: visiblePeriodStart * dayWidthPx,
     width: (visiblePeriodEndExclusive - visiblePeriodStart) * dayWidthPx
   } : null;
+  const weekendBands = buildWeekendBands(domainStart, totalDays, dayWidthPx);
   const bars = normalizedBars.map((bar) => {
     const startOffset = dayDiff(domainStart, bar.start);
     const spanDays = Math.max(1, dayDiffInclusive(bar.start, bar.end));
+    const treeMeta = timeline.treeLayout?.[bar.source.workItemId] ?? null;
     return {
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
@@ -31791,12 +33392,22 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
-      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx)
+      width: Math.max(MIN_BAR_WIDTH_PX, spanDays * dayWidthPx),
+      treeDepth: treeMeta?.depth ?? null,
+      treeHasChildren: treeMeta?.hasChildren ?? false,
+      treeIsCollapsed: treeMeta?.hasChildren ? collapsedIds?.has(bar.source.workItemId) ?? false : false,
+      treeIsLastSibling: treeMeta?.isLastSibling ?? false,
+      treeAncestorIsLastSibling: treeMeta?.ancestorIsLastSibling ?? [],
+      treeBlockStart: false,
+      treeBlockEnd: false
     };
   });
-  const weekMarkers = buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx);
+  assignTreeBlockFlags(bars);
+  const weekMarkers = zoomLevel === "week" || zoomLevel === "month" ? buildWeeklyAxisMarkers(domainStart, totalDays, dayWidthPx) : [];
   const dailyGridLines = zoomLevel === "week" ? buildDailyGridLines(totalDays, dayWidthPx) : [];
   const monthMarkers = buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const quarterMarkers = buildQuarterAxisMarkers(domainStart, totalDays, dayWidthPx);
+  const yearMarkers = buildYearAxisMarkers(domainStart, totalDays, dayWidthPx);
   const timelineWidth = totalDays * dayWidthPx;
   const verticalLayout = resolveTimelineVerticalLayoutMetrics(bars.length, includeUnscheduledDropLane);
   return {
@@ -31806,9 +33417,12 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
     tailHeightPx: verticalLayout.tailHeightPx,
     dayWidthPx,
     bars,
+    weekendBands,
     weekMarkers,
     dailyGridLines,
     monthMarkers,
+    quarterMarkers,
+    yearMarkers,
     domainStart,
     currentPeriod,
     todayX
@@ -31844,8 +33458,9 @@ function buildColorByWorkItemId(timeline, mode, fieldConfig) {
     return map;
   }
   if (mode === "overdue") {
+    const overdueExcludedStateCodes = resolveOverdueExcludedStateCodes(fieldConfig.overdueExcludedStateCodes, DEFAULT_OVERDUE_EXCLUDED_STATE_CODES);
     items.forEach((item) => {
-      map.set(item.workItemId, isOverdueTimelineItem(item.endDate, item.stateCode) ? OVERDUE_TIMELINE_COLOR : OVERDUE_OK_TIMELINE_COLOR);
+      map.set(item.workItemId, isOverdueTimelineItem(item.endDate, item.stateCode, overdueExcludedStateCodes) ? OVERDUE_TIMELINE_COLOR : OVERDUE_OK_TIMELINE_COLOR);
     });
     return map;
   }
@@ -31907,7 +33522,7 @@ function resolveTimelineVisibleRange(timeline) {
     if (!start && !end) {
       return null;
     }
-    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS - 1));
+    const normalizedStart = start ?? addDays(end, -(DEFAULT_UNSCHEDULED_DURATION_DAYS2 - 1));
     const normalizedEnd = end ?? addDays(start, 2);
     return normalizedStart.getTime() <= normalizedEnd.getTime() ? { start: normalizedStart, end: normalizedEnd } : { start: normalizedEnd, end: normalizedStart };
   }).filter((value) => value !== null);
@@ -32067,8 +33682,9 @@ function applyTimelineFieldFilters(timeline, filters) {
       if (!normalizedFieldRef || filter.selectedValueKeys.length === 0) {
         return true;
       }
-      const valueKey = fieldValueToStorageKey(fieldValues?.[normalizedFieldRef]);
-      return filter.selectedValueKeys.includes(valueKey);
+      const selectedValueKeys = new Set(filter.selectedValueKeys);
+      const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
+      return matchKeys.some((key) => selectedValueKeys.has(key));
     });
   };
   const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
@@ -32153,6 +33769,7 @@ var COLOR_CODING_MODE_OPTIONS = [
   { key: "mode:overdue", mode: "overdue", fieldRef: null, label: "Overdue", subtitle: "Mode", searchText: "overdue mode late due date" }
 ];
 var COLOR_CODING_RESERVED_FIELD_REFS = /* @__PURE__ */ new Set(["state", "system.state"]);
+var WELL_KNOWN_FILTER_FIELD_REFS = ["System.Tags"];
 function buildColorCodingOptions(fieldRefs) {
   const fieldOptions = fieldRefs.filter((fieldRef) => !isReservedColorCodingFieldRef(fieldRef)).map((fieldRef) => {
     const fieldDisplayName = getFieldDisplayName2(fieldRef);
@@ -32227,6 +33844,77 @@ function buildTimelineBarLabel(bar, fieldRefs) {
   }
   return parts.join(" - ");
 }
+function assignTreeBlockFlags(bars) {
+  const isPartOfTree = (bar) => bar.treeDepth !== null && (bar.treeHasChildren || bar.treeDepth > 0);
+  for (let index = 0; index < bars.length; index++) {
+    const bar = bars[index];
+    if (!isPartOfTree(bar)) {
+      continue;
+    }
+    const prev = index > 0 ? bars[index - 1] : null;
+    const next = index + 1 < bars.length ? bars[index + 1] : null;
+    bar.treeBlockStart = bar.treeDepth === 0 && bar.treeHasChildren && (!prev || !isPartOfTree(prev) || prev.treeDepth === 0 && !prev.treeHasChildren);
+    bar.treeBlockEnd = isPartOfTree(bar) && (!next || !isPartOfTree(next) || next.treeDepth === 0 && next.treeHasChildren);
+  }
+}
+function buildTreeDepthBandsAndBorders(bars, chartWidth) {
+  const elements = [];
+  for (let index = 0; index < bars.length; index++) {
+    const bar = bars[index];
+    const isTree = bar.treeDepth !== null && (bar.treeHasChildren || bar.treeDepth > 0);
+    if (!isTree) {
+      continue;
+    }
+    elements.push(import_react22.default.createElement("rect", {
+      key: `tree-depth-band-${bar.workItemId}`,
+      x: 0,
+      y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
+      width: chartWidth,
+      height: CHART_ROW_HEIGHT,
+      className: `timeline-tree-depth-band timeline-tree-depth-${Math.min(bar.treeDepth ?? 0, 4)}`
+    }));
+    if (bar.treeBlockStart) {
+      elements.push(import_react22.default.createElement("rect", {
+        key: `tree-block-top-${bar.workItemId}`,
+        x: 0,
+        y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT - 1,
+        width: chartWidth,
+        height: 2,
+        className: "timeline-tree-block-border"
+      }));
+    }
+    if (bar.treeBlockEnd) {
+      elements.push(import_react22.default.createElement("rect", {
+        key: `tree-block-bottom-${bar.workItemId}`,
+        x: 0,
+        y: CHART_TOP_PADDING + (index + 1) * CHART_ROW_HEIGHT - 1,
+        width: chartWidth,
+        height: 2,
+        className: "timeline-tree-block-border"
+      }));
+    }
+  }
+  return elements;
+}
+function buildTreeIndentGuides(bar) {
+  const depth = bar.treeDepth ?? 0;
+  if (depth === 0) {
+    return null;
+  }
+  const guides = [];
+  for (let level = 0; level < depth - 1; level++) {
+    const ancestorIsLast = bar.treeAncestorIsLastSibling[level + 1] ?? false;
+    guides.push(import_react22.default.createElement("span", {
+      key: `guide-${level}`,
+      className: ancestorIsLast ? "timeline-tree-guide timeline-tree-guide-blank" : "timeline-tree-guide timeline-tree-guide-pipe"
+    }));
+  }
+  guides.push(import_react22.default.createElement("span", {
+    key: `guide-branch`,
+    className: bar.treeIsLastSibling ? "timeline-tree-guide timeline-tree-guide-elbow" : "timeline-tree-guide timeline-tree-guide-tee"
+  }));
+  return import_react22.default.createElement("span", { className: "timeline-tree-guides", "aria-hidden": "true" }, ...guides);
+}
 function buildTimelineSidebarLabel(bar, fieldRefs) {
   const parts = sanitizeTimelineFieldRefList(fieldRefs).map((fieldRef) => timelineSidebarLabelValueForFieldRef(bar, fieldRef)).filter((value) => value !== null && value.length > 0);
   if (parts.length === 0) {
@@ -32266,22 +33954,22 @@ function normalizeTimelineLabelValue(value) {
   return normalized.length > 0 ? normalized : null;
 }
 function listAvailableColorCodingFields(timeline) {
-  if (!timeline) {
-    return [];
-  }
   const set = /* @__PURE__ */ new Set();
-  const register = (fieldValues) => {
-    if (!fieldValues) {
-      return;
-    }
-    Object.keys(fieldValues).forEach((fieldRef) => {
-      if (fieldRef.trim().length > 0) {
-        set.add(fieldRef);
+  WELL_KNOWN_FILTER_FIELD_REFS.forEach((fieldRef) => set.add(fieldRef));
+  if (timeline) {
+    const register = (fieldValues) => {
+      if (!fieldValues) {
+        return;
       }
-    });
-  };
-  timeline.bars.forEach((bar) => register(bar.details.fieldValues));
-  timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+      Object.keys(fieldValues).forEach((fieldRef) => {
+        if (fieldRef.trim().length > 0) {
+          set.add(fieldRef);
+        }
+      });
+    };
+    timeline.bars.forEach((bar) => register(bar.details.fieldValues));
+    timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+  }
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 function listFieldValueStats(timeline, fieldRef) {
@@ -32294,15 +33982,17 @@ function listFieldValueStats(timeline, fieldRef) {
   }
   const counts = /* @__PURE__ */ new Map();
   const register = (value) => {
-    const key = fieldValueToStorageKey(value);
-    const existing = counts.get(key);
-    if (existing) {
-      existing.count += 1;
-      return;
-    }
-    counts.set(key, {
-      label: fieldValueToCategoryLabel(value),
-      count: 1
+    const uniqueTokensForItem = /* @__PURE__ */ new Map();
+    extractFilterValueTokens(trimmedFieldRef, value).forEach((token) => {
+      uniqueTokensForItem.set(token.key, token.label);
+    });
+    uniqueTokensForItem.forEach((label, key) => {
+      const existing = counts.get(key);
+      if (existing) {
+        existing.count += 1;
+        return;
+      }
+      counts.set(key, { label, count: 1 });
     });
   };
   timeline.bars.forEach((bar) => register(bar.details.fieldValues?.[trimmedFieldRef]));
@@ -32316,7 +34006,7 @@ function listFieldValueStats(timeline, fieldRef) {
   })).sort((left, right) => left.label.localeCompare(right.label, void 0, { sensitivity: "base", numeric: true }));
 }
 function listModeValueStats(timeline, mode) {
-  if (!timeline || mode !== "status") {
+  if (!timeline || mode !== "status" && mode !== "overdue") {
     return [];
   }
   const counts = /* @__PURE__ */ new Map();
@@ -32376,7 +34066,7 @@ function buildCategoricalColorMap(categories) {
   });
   return map;
 }
-function isOverdueTimelineItem(endDateIso, stateCode) {
+function isOverdueTimelineItem(endDateIso, stateCode, overdueExcludedStateCodes) {
   if (!endDateIso) {
     return false;
   }
@@ -32389,8 +34079,20 @@ function isOverdueTimelineItem(endDateIso, stateCode) {
   if (endDate.getTime() >= todayStartUtc.getTime()) {
     return false;
   }
-  const normalizedState = stateCode.trim().toLowerCase();
-  return !["closed", "done", "resolved", "removed", "completed"].includes(normalizedState);
+  const normalizedState = normalizeStateCodeForComparison(stateCode);
+  if (normalizedState.length === 0) {
+    return true;
+  }
+  return !resolveOverdueExcludedStateCodes(overdueExcludedStateCodes, DEFAULT_OVERDUE_EXCLUDED_STATE_CODES).includes(normalizedState);
+}
+function resolveOverdueExcludedStateCodes(stateCodes, defaults) {
+  if (!Array.isArray(stateCodes)) {
+    return [...defaults];
+  }
+  return [...new Set(stateCodes.map((stateCode) => normalizeStateCodeForComparison(stateCode)).filter((stateCode) => stateCode.length > 0))];
+}
+function normalizeStateCodeForComparison(stateCode) {
+  return stateCode.trim().toLowerCase();
 }
 function parseIso(value) {
   if (!value) {
@@ -32405,9 +34107,33 @@ function normalizeUtcDate(value) {
 function resolveUnschedulableFixedEndDate(item) {
   return parseIso(item.schedule?.endDate ?? null);
 }
+function resolveAdoptSourceSchedule(timeline, selectedWorkItemId) {
+  if (!timeline || selectedWorkItemId === null) {
+    return null;
+  }
+  const selectedBar = timeline.bars.find((bar) => bar.workItemId === selectedWorkItemId);
+  if (!selectedBar?.schedule.startDate || !selectedBar.schedule.endDate) {
+    return null;
+  }
+  return {
+    sourceWorkItemId: selectedBar.workItemId,
+    startDate: selectedBar.schedule.startDate,
+    endDate: selectedBar.schedule.endDate
+  };
+}
+function formatAdoptDate(value) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = String(parsed.getFullYear()).slice(2);
+  return `${day}.${month}.${year}`;
+}
 function resolveUnscheduledDropRange(startDate, fixedEndDate) {
   let normalizedStart = normalizeUtcDate(startDate);
-  const normalizedEnd = fixedEndDate ? normalizeUtcDate(fixedEndDate) : addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS - 1);
+  const normalizedEnd = fixedEndDate ? normalizeUtcDate(fixedEndDate) : addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS2 - 1);
   if (normalizedStart.getTime() > normalizedEnd.getTime()) {
     normalizedStart = normalizedEnd;
   }
@@ -32465,6 +34191,21 @@ function buildDailyGridLines(totalDays, dayWidthPx) {
   }
   return lines;
 }
+function buildWeekendBands(domainStart, totalDays, dayWidthPx) {
+  const bands = [];
+  for (let dayIndex = 0; dayIndex < totalDays; dayIndex += 1) {
+    const currentDay = addDays(domainStart, dayIndex);
+    if (!isWeekendUtc(currentDay)) {
+      continue;
+    }
+    bands.push({
+      x: dayIndex * dayWidthPx,
+      width: dayWidthPx,
+      date: formatTickDate(currentDay)
+    });
+  }
+  return bands;
+}
 function buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx) {
   const domainEndExclusive = addDays(domainStart, totalDays + 1);
   let cursor = startOfMonthUtc(domainStart);
@@ -32487,13 +34228,72 @@ function buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx) {
   }
   return markers;
 }
+function buildQuarterAxisMarkers(domainStart, totalDays, dayWidthPx) {
+  const domainEndExclusive = addDays(domainStart, totalDays + 1);
+  const startMonth = domainStart.getUTCMonth();
+  const quarterStartMonth = startMonth - startMonth % 3;
+  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), quarterStartMonth, 1));
+  const markers = [];
+  const seenX = /* @__PURE__ */ new Set();
+  while (cursor.getTime() < domainEndExclusive.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    if (offset <= totalDays) {
+      const markerOffsetDays = clamp4(offset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        const quarter = Math.floor(cursor.getUTCMonth() / 3) + 1;
+        markers.push({
+          x,
+          label: `Q${quarter}/${String(cursor.getUTCFullYear()).slice(2)}`
+        });
+      }
+    }
+    cursor = addMonthsUtc(cursor, 3);
+  }
+  return markers;
+}
+function buildYearAxisMarkers(domainStart, totalDays, dayWidthPx) {
+  const domainEndExclusive = addDays(domainStart, totalDays + 1);
+  let cursor = new Date(Date.UTC(domainStart.getUTCFullYear(), 0, 1));
+  const markers = [];
+  const seenX = /* @__PURE__ */ new Set();
+  while (cursor.getTime() < domainEndExclusive.getTime()) {
+    const offset = dayDiff(domainStart, cursor);
+    if (offset <= totalDays) {
+      const markerOffsetDays = clamp4(offset, 0, totalDays);
+      const x = markerOffsetDays * dayWidthPx;
+      if (!seenX.has(x)) {
+        seenX.add(x);
+        markers.push({
+          x,
+          label: String(cursor.getUTCFullYear())
+        });
+      }
+    }
+    cursor = new Date(Date.UTC(cursor.getUTCFullYear() + 1, 0, 1));
+  }
+  return markers;
+}
 function formatTickDate(value) {
   return value.toISOString().slice(0, 10);
 }
 function formatDayMonthLabel(value) {
   const day = String(value.getUTCDate()).padStart(2, "0");
   const month = String(value.getUTCMonth() + 1).padStart(2, "0");
-  return `${day}.${month}.`;
+  const weekNumber = String(resolveIsoWeekNumberUtc(value)).padStart(2, "0");
+  return `${day}.${month}. (KW${weekNumber})`;
+}
+function isWeekendUtc(value) {
+  const weekday = value.getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
+function resolveIsoWeekNumberUtc(value) {
+  const normalized = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+  const weekday = normalized.getUTCDay() || 7;
+  normalized.setUTCDate(normalized.getUTCDate() + 4 - weekday);
+  const yearStart = new Date(Date.UTC(normalized.getUTCFullYear(), 0, 1));
+  return Math.ceil(((normalized.getTime() - yearStart.getTime()) / 864e5 + 1) / 7);
 }
 function formatMonthYearLabel(value) {
   return new Intl.DateTimeFormat("en-US", {
@@ -32578,7 +34378,42 @@ function clamp4(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 function quantizeDayWidth(value) {
-  return Math.round(value / ZOOM_DAY_WIDTH_STEP_PX) * ZOOM_DAY_WIDTH_STEP_PX;
+  const step = value < 1 ? 0.01 : value < 4 ? 0.05 : value < 10 ? 0.1 : ZOOM_DAY_WIDTH_STEP_PX;
+  return Math.round(value / step) * step;
+}
+function resolveZoomLevelWithoutHysteresis(dayWidthPx) {
+  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX) {
+    return "week";
+  }
+  if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX) {
+    return "month";
+  }
+  if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX) {
+    return "quarter";
+  }
+  return "year";
+}
+function resolveZoomLevelWithHysteresis(dayWidthPx, previous) {
+  const H = ZOOM_LEVEL_HYSTERESIS_PX;
+  if (dayWidthPx >= DAY_WIDTH_WEEK_MONTH_SWITCH_PX + H) {
+    return "week";
+  }
+  if (dayWidthPx <= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX - H) {
+    return "year";
+  }
+  if (dayWidthPx < DAY_WIDTH_MONTH_QUARTER_SWITCH_PX - H) {
+    if (dayWidthPx >= DAY_WIDTH_QUARTER_YEAR_SWITCH_PX + H) {
+      return "quarter";
+    }
+    return previous === "year" ? "year" : "quarter";
+  }
+  if (dayWidthPx < DAY_WIDTH_WEEK_MONTH_SWITCH_PX - H) {
+    if (dayWidthPx >= DAY_WIDTH_MONTH_QUARTER_SWITCH_PX + H) {
+      return "month";
+    }
+    return previous === "quarter" || previous === "year" ? "quarter" : "month";
+  }
+  return previous === "month" || previous === "quarter" || previous === "year" ? "month" : "week";
 }
 function normalizeWheelDelta(event) {
   if (event.deltaMode === 1) {
@@ -32610,91 +34445,129 @@ function calculateDraggedSchedule(mode, sourceStart, sourceEnd, dayDelta) {
   }
   return { startDate: sourceStart, endDate: candidateEnd };
 }
-function buildDependencyConnectorPath(from, to, laneSeed, options) {
+var DEPENDENCY_BEND_STAGGER_PX = 5;
+function resolveStemBendX(from, targets, laneSeed) {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const minEndX = Math.min(...targets.map((t) => t.x - DEPENDENCY_ENDPOINT_GAP_PX));
+  const horizontalDistance = minEndX - startX;
+  const stagger = laneSeed % 4 * DEPENDENCY_BEND_STAGGER_PX;
+  return startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2)) + stagger;
+}
+function buildDependencyConnectorPathWithBendX(from, to, bendX) {
   const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
   const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
-  const horizontalDistance = endX - startX;
-  const minDirectDistance = options?.forceNearGapDetour ? 20 : 10;
-  const directLaneX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
-  if (horizontalDistance >= minDirectDistance) {
+  if (from.midY === to.midY) {
     return toDependencyPathString([
       { x: startX, y: from.midY },
-      { x: directLaneX, y: from.midY },
-      { x: directLaneX, y: to.midY },
       { x: endX, y: to.midY }
     ]);
   }
-  const laneY = resolveDependencyLaneY(laneSeed, {
-    fromTopY: from.y,
-    fromMidY: from.midY,
-    fromBottomY: from.y + BAR_HEIGHT,
-    toTopY: to.y,
-    toMidY: to.midY
-  });
-  const detourX = Math.max(startX, endX) + DEPENDENCY_LEFT_APPROACH_PX;
-  const approachX = endX - Math.max(4, options?.forceNearGapDetour ? DEPENDENCY_TIGHT_GAP_DETOUR_MIN_PX : 6);
+  if (endX < bendX) {
+    const approachX = endX - DEPENDENCY_ENDPOINT_GAP_PX * 3;
+    const verticalDirection = to.midY > from.midY ? 1 : -1;
+    const approachY = to.midY - verticalDirection * (BAR_HEIGHT / 2 + DEPENDENCY_ENDPOINT_GAP_PX);
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: approachY },
+      { x: approachX, y: approachY },
+      { x: approachX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
   return toDependencyPathString([
     { x: startX, y: from.midY },
-    { x: detourX, y: from.midY },
-    { x: detourX, y: laneY },
-    { x: approachX, y: laneY },
-    { x: approachX, y: to.midY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: to.midY },
     { x: endX, y: to.midY }
   ]);
 }
-function buildDependencyConnectorToPointPath(from, targetX, targetY, laneSeed) {
+function buildDependencyConnectorPath(from, to, laneSeed) {
+  const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
+  const endX = to.x - DEPENDENCY_ENDPOINT_GAP_PX;
+  const horizontalDistance = endX - startX;
+  const stagger = laneSeed % 4 * DEPENDENCY_BEND_STAGGER_PX;
+  const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2)) + stagger;
+  if (from.midY === to.midY) {
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+  if (endX < bendX) {
+    const approachX = endX - DEPENDENCY_ENDPOINT_GAP_PX * 3;
+    const verticalDirection = to.midY > from.midY ? 1 : -1;
+    const approachY = to.midY - verticalDirection * (BAR_HEIGHT / 2 + DEPENDENCY_ENDPOINT_GAP_PX);
+    return toDependencyPathString([
+      { x: startX, y: from.midY },
+      { x: bendX, y: from.midY },
+      { x: bendX, y: approachY },
+      { x: approachX, y: approachY },
+      { x: approachX, y: to.midY },
+      { x: endX, y: to.midY }
+    ]);
+  }
+  return toDependencyPathString([
+    { x: startX, y: from.midY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: to.midY },
+    { x: endX, y: to.midY }
+  ]);
+}
+function buildDependencyConnectorToPointPath(from, targetX, targetY, _laneSeed) {
   const startX = from.x + from.width + DEPENDENCY_ENDPOINT_GAP_PX;
   const safeTargetX = Number.isFinite(targetX) ? targetX : startX + DEPENDENCY_POINTER_SEGMENT_MIN_PX;
   const safeTargetY = Number.isFinite(targetY) ? targetY : from.midY;
   const horizontalDistance = safeTargetX - startX;
-  if (horizontalDistance >= 10) {
-    const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, horizontalDistance / 2));
+  const bendX = startX + Math.max(6, Math.min(DEPENDENCY_LANE_ENTRY_MIN_PX, Math.abs(horizontalDistance) / 2));
+  if (from.midY === safeTargetY) {
     return toDependencyPathString([
       { x: startX, y: from.midY },
-      { x: bendX, y: from.midY },
-      { x: bendX, y: safeTargetY },
       { x: safeTargetX, y: safeTargetY }
     ]);
   }
-  const estimatedTargetTopY = safeTargetY - BAR_HEIGHT / 2;
-  const laneY = resolveDependencyLaneY(laneSeed, {
-    fromTopY: from.y,
-    fromMidY: from.midY,
-    fromBottomY: from.y + BAR_HEIGHT,
-    toTopY: estimatedTargetTopY,
-    toMidY: safeTargetY
-  });
-  const detourX = Math.max(startX, safeTargetX) + DEPENDENCY_LEFT_APPROACH_PX;
   return toDependencyPathString([
     { x: startX, y: from.midY },
-    { x: detourX, y: from.midY },
-    { x: detourX, y: laneY },
-    { x: safeTargetX, y: laneY },
+    { x: bendX, y: from.midY },
+    { x: bendX, y: safeTargetY },
     { x: safeTargetX, y: safeTargetY }
   ]);
 }
+var DEPENDENCY_CORNER_RADIUS_PX = 5;
 function toDependencyPathString(points) {
   if (points.length === 0) {
     return "";
   }
-  const [first, ...rest] = points;
-  return `M ${first.x} ${first.y}${rest.map((point) => ` L ${point.x} ${point.y}`).join("")}`;
-}
-function resolveDependencyLaneY(seed, input) {
-  const normalizedSeed = Number.isFinite(seed) ? Math.abs(Math.trunc(seed)) : 0;
-  const laneOffset = DEPENDENCY_LANE_GAP_PX * (normalizedSeed % 3 + 1);
-  if (input.toMidY > input.fromMidY) {
-    const lowerLaneY = input.fromBottomY + DEPENDENCY_LANE_TOP_OFFSET_PX;
-    const upperLaneY = input.toTopY - DEPENDENCY_LANE_TOP_OFFSET_PX;
-    if (upperLaneY > lowerLaneY) {
-      return Math.min(upperLaneY, lowerLaneY + laneOffset);
-    }
-    return input.fromMidY + (input.toMidY - input.fromMidY) / 2;
+  if (points.length <= 2) {
+    const [first, ...rest] = points;
+    return `M ${first.x} ${first.y}${rest.map((p) => ` L ${p.x} ${p.y}`).join("")}`;
   }
-  const upperBarTopY = Math.min(input.fromTopY, input.toTopY);
-  const topLaneY = upperBarTopY - DEPENDENCY_LANE_TOP_OFFSET_PX - laneOffset;
-  const minLaneY = CHART_GRID_START_Y + DEPENDENCY_LANE_MIN_Y_OFFSET_FROM_GRID_START_PX;
-  return Math.max(minLaneY, topLaneY);
+  const r = DEPENDENCY_CORNER_RADIUS_PX;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const cur = points[i];
+    const next = points[i + 1];
+    const dxIn = cur.x - prev.x;
+    const dyIn = cur.y - prev.y;
+    const lenIn = Math.sqrt(dxIn * dxIn + dyIn * dyIn);
+    const dxOut = next.x - cur.x;
+    const dyOut = next.y - cur.y;
+    const lenOut = Math.sqrt(dxOut * dxOut + dyOut * dyOut);
+    const clampedR = Math.min(r, lenIn / 2, lenOut / 2);
+    if (clampedR < 1) {
+      d += ` L ${cur.x} ${cur.y}`;
+      continue;
+    }
+    const beforeX = cur.x - dxIn / lenIn * clampedR;
+    const beforeY = cur.y - dyIn / lenIn * clampedR;
+    const afterX = cur.x + dxOut / lenOut * clampedR;
+    const afterY = cur.y + dyOut / lenOut * clampedR;
+    d += ` L ${beforeX} ${beforeY} Q ${cur.x} ${cur.y} ${afterX} ${afterY}`;
+  }
+  const last = points[points.length - 1];
+  d += ` L ${last.x} ${last.y}`;
+  return d;
 }
 function deduplicateTimelineDependencies(dependencies) {
   const unique = [];
@@ -32804,8 +34677,30 @@ function applyEditedBarSchedules(timeline, editedBarSchedulesByWorkItemId) {
   return changed ? { ...timeline, bars } : timeline;
 }
 
+// dist/src/features/gantt-view/timeline-live-sync-preference.js
+var STORAGE_KEY9 = "azure-ganttops.timeline-live-sync-enabled";
+var store8 = createUserPreferenceStore({
+  storageKey: STORAGE_KEY9,
+  readFromServerCache: (preferences) => preferences.timelineLiveSyncEnabled,
+  sanitize: (value) => typeof value === "boolean" ? value : null,
+  buildPatch: (enabled) => ({
+    timelineLiveSyncEnabled: enabled
+  }),
+  serialize: (enabled) => enabled ? "true" : "false",
+  deserialize: (raw) => raw
+});
+function loadTimelineLiveSyncEnabledPreference() {
+  return store8.load() ?? true;
+}
+function saveTimelineLiveSyncEnabledPreference(enabled) {
+  store8.save(enabled);
+}
+function hydrateTimelineLiveSyncEnabledPreference(onHydrated) {
+  store8.hydrate(onHydrated);
+}
+
 // dist/src/features/diagnostics/warning-banner.js
-var import_react19 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 function WarningBanner(props) {
   const lines = buildWarningBannerLines(props);
   if (lines.length === 0) {
@@ -32814,10 +34709,10 @@ function WarningBanner(props) {
   const title = lines[0] ?? "[WARN]";
   const detail = (lines[1] ?? "").replace(/^- /, "");
   const actionLine = (lines[2] ?? "").replace(/^- /, "");
-  return import_react19.default.createElement("section", {
+  return import_react23.default.createElement("section", {
     "aria-label": "timeline-warning-banner",
     className: "warning-banner-card"
-  }, import_react19.default.createElement("div", { className: "warning-banner-copy" }, import_react19.default.createElement("p", { className: "warning-banner-title" }, title), import_react19.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react19.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react19.default.createElement("button", {
+  }, import_react23.default.createElement("div", { className: "warning-banner-copy" }, import_react23.default.createElement("p", { className: "warning-banner-title" }, title), import_react23.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react23.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react23.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -32844,29 +34739,38 @@ function buildWarningBannerLines(model) {
 }
 
 // dist/src/features/diagnostics/trust-badge.js
-var import_react20 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 function TrustBadge(props) {
   const label = props.trustState === "ready" ? "Ready" : props.trustState === "partial_failure" ? "Partial failure" : "Needs attention";
   const isHealthy = props.trustState === "ready";
   const pillLabel = isHealthy ? "OK" : "Trust Attention";
   const pillIcon = isHealthy ? "\u2713" : "!";
   const statusLine = `[${props.statusCode}] ${label}`;
-  return import_react20.default.createElement("details", {
+  const detailsProps = {
     "aria-label": "global-trust-badge",
     className: "trust-badge-details",
     "data-trust-state": isHealthy ? "healthy" : "unhealthy"
-  }, import_react20.default.createElement("summary", { className: "trust-badge-trigger" }, import_react20.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react20.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react20.default.createElement("div", { className: "trust-badge-panel" }, import_react20.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react20.default.createElement("dl", { className: "trust-badge-meta" }, import_react20.default.createElement("dt", null, "last-updated"), import_react20.default.createElement("dd", null, props.lastRefreshAt ?? "none"))));
+  };
+  if (typeof props.controlsOpen === "boolean") {
+    detailsProps.open = props.controlsOpen;
+  }
+  if (props.onControlsOpenChange) {
+    detailsProps.onToggle = (event) => {
+      props.onControlsOpenChange?.(event.currentTarget.open);
+    };
+  }
+  return import_react24.default.createElement("details", detailsProps, import_react24.default.createElement("summary", { className: "trust-badge-trigger" }, import_react24.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react24.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react24.default.createElement("div", { className: "trust-badge-panel" }, import_react24.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react24.default.createElement("dl", { className: "trust-badge-meta" }, import_react24.default.createElement("dt", null, "last-updated"), import_react24.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react24.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null));
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js
-var import_react21 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 function DiagnosticsTab(props) {
   const lines = buildDiagnosticsTabLines(props).slice(1);
-  const rows = lines.map((line, index) => import_react21.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
-  return import_react21.default.createElement("section", {
+  const rows = lines.map((line, index) => import_react25.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
+  return import_react25.default.createElement("section", {
     "aria-label": "diagnostics-tab",
     className: "diagnostics-card"
-  }, import_react21.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react21.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react21.default.createElement("button", {
+  }, import_react25.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react25.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -33021,6 +34925,80 @@ function deriveActiveTabForQueryResponse(response) {
   return shouldOpenMappingFixTab(response) ? "mapping" : "timeline";
 }
 
+// dist/src/domain/planning-model/tree-structure.js
+function buildTreeLayoutFromParentMap(items) {
+  const allIds = new Set(items.map((item) => item.id));
+  const childrenByParent = /* @__PURE__ */ new Map();
+  for (const item of items) {
+    const parentId = item.parentId !== null && allIds.has(item.parentId) ? item.parentId : null;
+    const siblings = childrenByParent.get(parentId);
+    if (siblings) {
+      siblings.push(item.id);
+    } else {
+      childrenByParent.set(parentId, [item.id]);
+    }
+  }
+  const roots = childrenByParent.get(null) ?? [];
+  const orphanIds = findOrphans(allIds, childrenByParent, roots);
+  for (const orphanId of orphanIds) {
+    roots.push(orphanId);
+  }
+  const orderedIds = [];
+  const metaMap = /* @__PURE__ */ new Map();
+  const visited = /* @__PURE__ */ new Set();
+  dfsTraverse(roots, null, 0, [], childrenByParent, visited, allIds, orderedIds, metaMap);
+  return {
+    orderedIds,
+    metaByWorkItemId: metaMap
+  };
+}
+function findOrphans(allIds, childrenByParent, roots) {
+  const reachable = /* @__PURE__ */ new Set();
+  const stack = [...roots];
+  while (stack.length > 0) {
+    const id = stack.pop();
+    if (reachable.has(id)) {
+      continue;
+    }
+    reachable.add(id);
+    const children = childrenByParent.get(id);
+    if (children) {
+      stack.push(...children);
+    }
+  }
+  const orphans = [];
+  for (const id of allIds) {
+    if (!reachable.has(id)) {
+      orphans.push(id);
+    }
+  }
+  return orphans;
+}
+function dfsTraverse(siblings, parentId, depth, ancestorIsLastSibling, childrenByParent, visited, allIds, orderedIds, metaMap) {
+  for (let index = 0; index < siblings.length; index++) {
+    const id = siblings[index];
+    if (visited.has(id) || !allIds.has(id)) {
+      continue;
+    }
+    visited.add(id);
+    const children = childrenByParent.get(id) ?? [];
+    const validChildren = children.filter((childId) => !visited.has(childId) && allIds.has(childId));
+    const isLast = index === siblings.length - 1;
+    metaMap.set(id, {
+      workItemId: id,
+      depth,
+      parentWorkItemId: parentId,
+      hasChildren: validChildren.length > 0,
+      isLastSibling: isLast,
+      ancestorIsLastSibling: [...ancestorIsLastSibling]
+    });
+    orderedIds.push(id);
+    if (validChildren.length > 0) {
+      dfsTraverse(validChildren, id, depth + 1, [...ancestorIsLastSibling, isLast], childrenByParent, visited, allIds, orderedIds, metaMap);
+    }
+  }
+}
+
 // dist/src/app/bootstrap/ui-client-timeline-mutations.js
 function applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate) {
   const adopted = applyAdoptedSchedules(timeline, {
@@ -33094,6 +35072,46 @@ function applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWor
       }
     ],
     suppressedDependencies: timeline.suppressedDependencies.filter((dependency) => !(dependency.predecessorWorkItemId === predecessorWorkItemId && dependency.successorWorkItemId === successorWorkItemId && dependency.dependencyType === "FS"))
+  };
+}
+function applyReparentUpdate(timeline, targetWorkItemId, newParentId) {
+  if (!timeline) {
+    return timeline;
+  }
+  const updatedBars = timeline.bars.map((bar) => bar.workItemId === targetWorkItemId ? { ...bar, details: { ...bar.details, parentWorkItemId: newParentId } } : bar);
+  const updatedUnschedulable = timeline.unschedulable.map((item) => item.workItemId === targetWorkItemId ? { ...item, details: { ...item.details, parentWorkItemId: newParentId } } : item);
+  const allItems = [
+    ...updatedBars.map((b) => ({ id: b.workItemId, parentId: b.details.parentWorkItemId ?? null })),
+    ...updatedUnschedulable.map((u) => ({ id: u.workItemId, parentId: u.details.parentWorkItemId ?? null }))
+  ];
+  const layout = buildTreeLayoutFromParentMap(allItems);
+  const barPosition = /* @__PURE__ */ new Map();
+  layout.orderedIds.forEach((id, index) => barPosition.set(id, index));
+  const reorderedBars = [...updatedBars].sort((a, b) => {
+    const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    return posA - posB;
+  });
+  const reorderedUnschedulable = [...updatedUnschedulable].sort((a, b) => {
+    const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
+    return posA - posB;
+  });
+  const treeLayoutRecord = {};
+  for (const [id, meta] of layout.metaByWorkItemId) {
+    treeLayoutRecord[String(id)] = {
+      depth: meta.depth,
+      parentWorkItemId: meta.parentWorkItemId,
+      hasChildren: meta.hasChildren,
+      isLastSibling: meta.isLastSibling,
+      ancestorIsLastSibling: [...meta.ancestorIsLastSibling]
+    };
+  }
+  return {
+    ...timeline,
+    bars: reorderedBars,
+    unschedulable: reorderedUnschedulable,
+    treeLayout: treeLayoutRecord
   };
 }
 function toTimelineStateBadge(code, preferredColor) {
@@ -33267,14 +35285,14 @@ function nextThemeMode(mode) {
 }
 
 // dist/src/app/bootstrap/use-ado-comm-log-polling.js
-var import_react22 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 function useAdoCommLogPolling(input) {
-  const [logs, setLogs] = import_react22.default.useState([]);
-  const [cursor, setCursor] = import_react22.default.useState(0);
-  const [error, setError] = import_react22.default.useState(null);
-  const [loading, setLoading] = import_react22.default.useState(true);
-  const inFlightRef = import_react22.default.useRef(false);
-  import_react22.default.useEffect(() => {
+  const [logs, setLogs] = import_react26.default.useState([]);
+  const [cursor, setCursor] = import_react26.default.useState(0);
+  const [error, setError] = import_react26.default.useState(null);
+  const [loading, setLoading] = import_react26.default.useState(true);
+  const inFlightRef = import_react26.default.useRef(false);
+  import_react26.default.useEffect(() => {
     let active = true;
     const poll = async () => {
       if (!active || inFlightRef.current) {
@@ -33327,6 +35345,27 @@ function useAdoCommLogPolling(input) {
   };
 }
 
+// dist/src/app/bootstrap/ui-client-menu-dismiss.js
+function dismissOpenDetailsMenus(params) {
+  const openDetails = Array.from(params.root.querySelectorAll("details[open]"));
+  const activeDetails = params.target instanceof Element ? params.target.closest("details") : null;
+  for (const detail of openDetails) {
+    if (detail.dataset.autoDismiss === "off") {
+      continue;
+    }
+    if (activeDetails && (detail === activeDetails || detail.contains(activeDetails) || activeDetails.contains(detail))) {
+      continue;
+    }
+    detail.open = false;
+  }
+}
+function isTargetInsideElement(target, element) {
+  if (!target || !element) {
+    return false;
+  }
+  return element.contains(target);
+}
+
 // dist/src/app/bootstrap/ui-client-refresh-flow.js
 async function runRetryRefreshFlow(params) {
   if (params.lastRunRequest) {
@@ -33346,7 +35385,7 @@ async function runRetryRefreshFlow(params) {
       blocker: {
         tab: "query",
         reason: "No query available to refresh.",
-        nextAction: "Open controls, enter Query ID, then run query."
+        nextAction: "Open OK menu, enter Query ID, then run query."
       }
     };
   }
@@ -33387,13 +35426,10 @@ function applyTimelineMutationToUiState(setUiModel, setResponse, mutation) {
 async function runTrackedWorkItemSync(params) {
   params.inFlightRef.current += 1;
   params.setWorkItemSyncState("syncing");
-  params.setWorkItemSyncError(null);
   try {
     return await params.operation();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Write failed.";
     params.setWorkItemSyncState("error");
-    params.setWorkItemSyncError(message);
     throw error;
   } finally {
     params.inFlightRef.current = Math.max(0, params.inFlightRef.current - 1);
@@ -33401,6 +35437,101 @@ async function runTrackedWorkItemSync(params) {
       params.setWorkItemSyncState((current) => current === "error" ? current : "up_to_date");
     }
   }
+}
+
+// dist/src/app/bootstrap/ui-client-work-item-sync.js
+function createPendingWorkItemMutation(draft) {
+  if (draft.kind === "work_item") {
+    return {
+      ...draft,
+      key: `work_item::${draft.queryId ?? "__global__"}::${draft.workItemId}`
+    };
+  }
+  if (draft.kind === "reparent") {
+    return {
+      ...draft,
+      key: `reparent::${draft.queryId ?? "__global__"}::${draft.targetWorkItemId}::${draft.newParentId ?? "root"}`
+    };
+  }
+  return {
+    ...draft,
+    key: `dependency::${draft.queryId ?? "__global__"}::${draft.predecessorWorkItemId}::${draft.successorWorkItemId}`
+  };
+}
+function applyPendingWorkItemMutationsToResponse(response, pendingMutations) {
+  if (!response.timeline || !response.activeQueryId || pendingMutations.length === 0) {
+    return response;
+  }
+  const relevantMutations = pendingMutations.filter((mutation) => mutation.queryId === response.activeQueryId);
+  if (relevantMutations.length === 0) {
+    return response;
+  }
+  return {
+    ...response,
+    timeline: relevantMutations.reduce((timeline, mutation) => {
+      return mutation.applyToTimeline(timeline);
+    }, response.timeline)
+  };
+}
+function upsertPendingWorkItemMutation(queue, mutation) {
+  const existingIndex = queue.findIndex((entry) => entry.key === mutation.key);
+  if (existingIndex === -1) {
+    return [...queue, mutation];
+  }
+  const existing = queue[existingIndex];
+  if (!existing) {
+    return [...queue, mutation];
+  }
+  if (existing.kind === "work_item" && mutation.kind === "work_item") {
+    const next2 = [...queue];
+    next2[existingIndex] = {
+      ...existing,
+      applyToTimeline: composeTimelineMutations(existing.applyToTimeline, mutation.applyToTimeline),
+      executeSchedule: mutation.executeSchedule ?? existing.executeSchedule,
+      executeDetails: mutation.executeDetails ?? existing.executeDetails
+    };
+    return next2;
+  }
+  if (existing.kind === "dependency" && mutation.kind === "dependency") {
+    if (existing.dependencyAction !== mutation.dependencyAction) {
+      return queue.filter((entry) => entry.key !== mutation.key);
+    }
+    const next2 = [...queue];
+    next2[existingIndex] = {
+      ...existing,
+      applyToTimeline: composeTimelineMutations(existing.applyToTimeline, mutation.applyToTimeline),
+      execute: mutation.execute
+    };
+    return next2;
+  }
+  const next = [...queue];
+  next[existingIndex] = mutation;
+  return next;
+}
+async function flushPendingWorkItemMutations(params) {
+  while (params.queueRef.current.length > 0) {
+    const [nextMutation] = params.queueRef.current;
+    if (!nextMutation) {
+      return;
+    }
+    await params.runTrackedWorkItemSync(async () => {
+      if (nextMutation.kind === "work_item") {
+        if (nextMutation.executeSchedule) {
+          await nextMutation.executeSchedule();
+        }
+        if (nextMutation.executeDetails) {
+          await nextMutation.executeDetails();
+        }
+        return;
+      }
+      await nextMutation.execute();
+    });
+    params.queueRef.current = params.queueRef.current.slice(1);
+    params.onPendingCountChange(params.queueRef.current.length);
+  }
+}
+function composeTimelineMutations(first, second) {
+  return (timeline) => second(first(timeline));
 }
 
 // dist/src/app/bootstrap/ui-client-header-query-service.js
@@ -33415,6 +35546,22 @@ function findAzureSavedQueryName(response, queryId) {
   }
   const name = match.name.trim();
   return name.length > 0 ? name : null;
+}
+function resolveActiveQueryName(activeQueryId, response, savedHeaderQueries) {
+  if (!activeQueryId) {
+    return null;
+  }
+  const fromAzure = findAzureSavedQueryName(response, activeQueryId);
+  if (fromAzure) {
+    return fromAzure;
+  }
+  const normalizedQueryId = activeQueryId.trim().toLowerCase();
+  const headerMatch = savedHeaderQueries.find((entry) => entry.id.trim().toLowerCase() === normalizedQueryId);
+  const headerName = headerMatch?.name.trim() ?? "";
+  if (headerName.length === 0 || headerName === activeQueryId) {
+    return null;
+  }
+  return headerName;
 }
 function filterHeaderQueries(queries, searchDraft) {
   const search = searchDraft.trim().toLowerCase();
@@ -33592,27 +35739,27 @@ function deleteSavedHeaderQueryFlow(params) {
 }
 
 // dist/src/app/bootstrap/use-header-query-flow.js
-var import_react23 = __toESM(require_react(), 1);
+var import_react27 = __toESM(require_react(), 1);
 function useHeaderQueryFlow(params) {
-  const initialState = import_react23.default.useMemo(() => createInitialHeaderQueryFlowState({
+  const initialState = import_react27.default.useMemo(() => createInitialHeaderQueryFlowState({
     savedQueries: params.initialSavedHeaderQueries,
     selectedHeaderQueryId: params.initialSelectedHeaderQueryId
   }), [params.initialSavedHeaderQueries, params.initialSelectedHeaderQueryId]);
-  const [savedHeaderQueries, setSavedHeaderQueries] = import_react23.default.useState(initialState.savedHeaderQueries);
-  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react23.default.useState(initialState.selectedHeaderQueryId);
-  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react23.default.useState(initialState.newHeaderQueryMode);
-  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react23.default.useState(initialState.newHeaderQueryInput);
-  const [headerQuerySearch, setHeaderQuerySearch] = import_react23.default.useState(initialState.headerQuerySearch);
-  const [headerQueryLoading, setHeaderQueryLoading] = import_react23.default.useState(initialState.headerQueryLoading);
-  const [headerQueryMessage, setHeaderQueryMessage] = import_react23.default.useState(initialState.headerQueryMessage);
-  const filteredHeaderQueries = import_react23.default.useMemo(() => {
+  const [savedHeaderQueries, setSavedHeaderQueries] = import_react27.default.useState(initialState.savedHeaderQueries);
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react27.default.useState(initialState.selectedHeaderQueryId);
+  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react27.default.useState(initialState.newHeaderQueryMode);
+  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react27.default.useState(initialState.newHeaderQueryInput);
+  const [headerQuerySearch, setHeaderQuerySearch] = import_react27.default.useState(initialState.headerQuerySearch);
+  const [headerQueryLoading, setHeaderQueryLoading] = import_react27.default.useState(initialState.headerQueryLoading);
+  const [headerQueryMessage, setHeaderQueryMessage] = import_react27.default.useState(initialState.headerQueryMessage);
+  const filteredHeaderQueries = import_react27.default.useMemo(() => {
     return resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch);
   }, [headerQuerySearch, savedHeaderQueries]);
-  const toggleNewHeaderQueryMode = import_react23.default.useCallback(() => {
+  const toggleNewHeaderQueryMode = import_react27.default.useCallback(() => {
     setNewHeaderQueryMode((current) => !current);
     setHeaderQueryMessage(null);
   }, []);
-  const loadSavedHeaderQuery = import_react23.default.useCallback(async (queryId) => {
+  const loadSavedHeaderQuery = import_react27.default.useCallback(async (queryId) => {
     if (headerQueryLoading) {
       return;
     }
@@ -33634,7 +35781,7 @@ function useHeaderQueryFlow(params) {
     }
     setHeaderQueryLoading(false);
   }, [headerQueryLoading, params.runQuery, savedHeaderQueries]);
-  const saveCurrentHeaderQuery = import_react23.default.useCallback(async (rawInput) => {
+  const saveCurrentHeaderQuery = import_react27.default.useCallback(async (rawInput) => {
     if (headerQueryLoading) {
       return;
     }
@@ -33662,7 +35809,7 @@ function useHeaderQueryFlow(params) {
     }
     setHeaderQueryLoading(false);
   }, [headerQueryLoading, params, savedHeaderQueries]);
-  const deleteSavedHeaderQuery = import_react23.default.useCallback((queryId) => {
+  const deleteSavedHeaderQuery = import_react27.default.useCallback((queryId) => {
     const result = deleteSavedHeaderQueryFlow({
       queryId,
       state: {
@@ -33674,7 +35821,7 @@ function useHeaderQueryFlow(params) {
     setSelectedHeaderQueryId(result.selectedHeaderQueryId);
     setHeaderQueryMessage(null);
   }, [savedHeaderQueries, selectedHeaderQueryId]);
-  const hydrateSavedHeaderQueries = import_react23.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
+  const hydrateSavedHeaderQueries = import_react27.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
     setSavedHeaderQueries(nextSavedHeaderQueries);
     setSelectedHeaderQueryId(nextSelectedId);
   }, []);
@@ -33706,11 +35853,12 @@ var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
 function renderAdoCommLogPanel(params) {
-  return import_react24.default.createElement("details", {
+  return import_react28.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
-    open: true
-  }, import_react24.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react24.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react24.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react24.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react24.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react24.default.createElement("pre", {
+    open: true,
+    "data-auto-dismiss": "off"
+  }, import_react28.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react28.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react28.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react28.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react28.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react28.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -33718,34 +35866,42 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root = (0, import_client.createRoot)(options.container);
-  root.render(import_react24.default.createElement(import_react24.default.StrictMode, null, import_react24.default.createElement(QueryClientProvider, {
+  root.render(import_react28.default.createElement(import_react28.default.StrictMode, null, import_react28.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react24.default.createElement(BrowserRouter, null, import_react24.default.createElement(UiShellApp, {
+  }, import_react28.default.createElement(BrowserRouter, null, import_react28.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react24.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react28.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const persistedQueryInput = resolvePersistedRefreshQueryInput();
   const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react24.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react24.default.useState(!hasInitialQuery);
-  const [response, setResponse] = import_react24.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react24.default.useState(restoredState?.lastRunRequest ?? null);
-  const [uiModel, setUiModel] = import_react24.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react24.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react24.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react24.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const responseRef = import_react24.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react24.default.useState("up_to_date");
-  const [workItemSyncError, setWorkItemSyncError] = import_react24.default.useState(null);
-  const [isRefreshing, setIsRefreshing] = import_react24.default.useState(false);
-  const workItemSyncInFlightRef = import_react24.default.useRef(0);
-  const timelineSelectionStoreRef = import_react24.default.useRef(createTimelineSelectionStore());
-  const workItemStateOptionsCacheRef = import_react24.default.useRef(/* @__PURE__ */ new Map());
+  const [activeTab, setActiveTab] = import_react28.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react28.default.useState(!hasInitialQuery);
+  const [response, setResponse] = import_react28.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react28.default.useState(restoredState?.lastRunRequest ?? null);
+  const [uiModel, setUiModel] = import_react28.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react28.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react28.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react28.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react28.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react28.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react28.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react28.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react28.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react28.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react28.default.useState(false);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react28.default.useState(false);
+  const workItemSyncInFlightRef = import_react28.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react28.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react28.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react28.default.useRef(null);
+  const liveSyncEnabledRef = import_react28.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react28.default.useRef(createTimelineSelectionStore());
+  const workItemStateOptionsCacheRef = import_react28.default.useRef(/* @__PURE__ */ new Map());
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
   const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
   const adoCommLogPolling = useAdoCommLogPolling({
@@ -33754,7 +35910,7 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const fetchWorkItemStateOptionsCached = import_react24.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react28.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -33763,38 +35919,54 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react24.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react28.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react24.default.useCallback(async (request) => {
-    const result = await props.composition.runQuerySelectionFlow({
-      queryId: request.queryId,
-      mappingProfileId: request.mappingProfileId,
-      mappingProfileUpsert: request.mappingProfileUpsert
-    });
-    const submitted = await enrichRuntimeStateColors(result.response);
-    setResponse(submitted);
-    setUiModel(mapQueryIntakeResponseToUiModel(submitted));
-    setLastRunRequest({
-      queryInput: request.queryId,
-      mappingProfileId: request.mappingProfileId,
-      mappingProfileUpsert: request.mappingProfileUpsert
-    });
-    setBlockerMessage(null);
-    if (shouldOpenMappingFixTab(submitted)) {
-      setMappingFixResponse(submitted);
-      setActiveTab(deriveActiveTabForQueryResponse(submitted));
-    } else {
-      setMappingFixResponse(null);
-      setActiveTab(deriveActiveTabForQueryResponse(submitted));
+  const runQuery = import_react28.default.useCallback(async (request) => {
+    try {
+      const result = await props.composition.runQuerySelectionFlow({
+        queryId: request.queryId,
+        mappingProfileId: request.mappingProfileId,
+        mappingProfileUpsert: request.mappingProfileUpsert
+      });
+      const submitted = applyPendingWorkItemMutationsToResponse(await enrichRuntimeStateColors(result.response), pendingWorkItemMutationsRef.current);
+      setResponse(submitted);
+      setUiModel(mapQueryIntakeResponseToUiModel(submitted));
+      setLastRunRequest({
+        queryInput: request.queryId,
+        mappingProfileId: request.mappingProfileId,
+        mappingProfileUpsert: request.mappingProfileUpsert
+      });
+      setBlockerMessage(null);
+      if (shouldOpenMappingFixTab(submitted)) {
+        setMappingFixResponse(submitted);
+        setActiveTab(deriveActiveTabForQueryResponse(submitted));
+      } else {
+        setMappingFixResponse(null);
+        setActiveTab(deriveActiveTabForQueryResponse(submitted));
+      }
+      return submitted;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setBlockerMessage({
+        tab: "query",
+        reason,
+        nextAction: "Check that Azure CLI is installed and authenticated, then retry."
+      });
+      setUiModel((prev) => ({
+        ...prev,
+        uiState: "auth_failure",
+        trustState: "needs_attention",
+        guidance: reason
+      }));
+      throw error;
     }
-    return submitted;
   }, [enrichRuntimeStateColors, props.composition]);
-  const handleNeedsFix = import_react24.default.useCallback((needsFixResponse) => {
+  const handleNeedsFix = import_react28.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react24.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react28.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -33814,10 +35986,7 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const retryRefresh = import_react24.default.useCallback(async () => {
-    if (isRefreshing) {
-      return;
-    }
+  const executeRefresh = import_react28.default.useCallback(async (discardPendingChanges) => {
     setIsRefreshing(true);
     try {
       const result = await runRetryRefreshFlow({
@@ -33833,8 +36002,16 @@ function UiShellApp(props) {
         return;
       }
       if (result.kind === "refreshed") {
-        setResponse(result.response);
-        setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        if (discardPendingChanges) {
+          pendingWorkItemMutationsRef.current = [];
+          setPendingWorkItemSyncCount(0);
+          setResponse(result.response);
+          setUiModel(mapQueryIntakeResponseToUiModel(result.response));
+        } else {
+          const refreshedResponse = applyPendingWorkItemMutationsToResponse(result.response, pendingWorkItemMutationsRef.current);
+          setResponse(refreshedResponse);
+          setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
+        }
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
@@ -33843,10 +36020,21 @@ function UiShellApp(props) {
           setActiveTab("timeline");
         }
       }
+      setHasOptimisticChanges(false);
     } finally {
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, isRefreshing, lastRunRequest, props.composition.controller.submit, runQuery]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery]);
+  const retryRefresh = import_react28.default.useCallback(async () => {
+    if (isRefreshing) {
+      return;
+    }
+    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges) {
+      setShowRefreshDiscardWarning(true);
+      return;
+    }
+    await executeRefresh(false);
+  }, [detailsPanelDirty, executeRefresh, hasOptimisticChanges, isRefreshing]);
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences2.savedQueries ?? [],
     initialSelectedHeaderQueryId: cachedPreferences2.selectedHeaderQueryId ?? "",
@@ -33855,26 +36043,108 @@ function UiShellApp(props) {
     getResponse: () => responseRef.current,
     headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
   });
-  const runTrackedWorkItemUpdate = import_react24.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react28.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
-      setWorkItemSyncState,
-      setWorkItemSyncError
+      setWorkItemSyncState
     });
   }, []);
+  const flushQueuedWorkItemMutations = import_react28.default.useCallback(async () => {
+    if (flushPendingWorkItemMutationsPromiseRef.current) {
+      return flushPendingWorkItemMutationsPromiseRef.current;
+    }
+    const flushPromise = flushPendingWorkItemMutations({
+      queueRef: pendingWorkItemMutationsRef,
+      onPendingCountChange: (count) => {
+        setPendingWorkItemSyncCount(count);
+        if (count === 0) {
+          preOptimisticResponseSnapshotRef.current = null;
+        }
+      },
+      runTrackedWorkItemSync: async (operation) => {
+        await runTrackedWorkItemUpdate(operation);
+      }
+    }).then(() => {
+      setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+    }).finally(() => {
+      flushPendingWorkItemMutationsPromiseRef.current = null;
+    });
+    flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
+    return flushPromise;
+  }, [runTrackedWorkItemUpdate]);
+  const enqueuePendingWorkItemMutation = import_react28.default.useCallback((mutation) => {
+    if (pendingWorkItemMutationsRef.current.length === 0) {
+      preOptimisticResponseSnapshotRef.current = responseRef.current;
+    }
+    pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
+    setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
+    setHasOptimisticChanges(true);
+  }, []);
+  const scheduleWorkItemMutation = import_react28.default.useCallback(async (params) => {
+    applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+    enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
+      kind: "work_item",
+      queryId: responseRef.current?.activeQueryId ?? null,
+      workItemId: params.workItemId,
+      applyToTimeline: params.applyToTimeline,
+      executeSchedule: params.executeSchedule,
+      executeDetails: params.executeDetails
+    }));
+    if (!liveSyncEnabledRef.current) {
+      setWorkItemSyncState("paused");
+      return;
+    }
+    await flushQueuedWorkItemMutations();
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
+  const scheduleDependencyMutation = import_react28.default.useCallback(async (params) => {
+    applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+    enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
+      kind: "dependency",
+      queryId: responseRef.current?.activeQueryId ?? null,
+      predecessorWorkItemId: params.predecessorWorkItemId,
+      successorWorkItemId: params.successorWorkItemId,
+      dependencyAction: params.dependencyAction,
+      applyToTimeline: params.applyToTimeline,
+      execute: params.execute
+    }));
+    if (!liveSyncEnabledRef.current) {
+      setWorkItemSyncState("paused");
+      return;
+    }
+    await flushQueuedWorkItemMutations();
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
+  const scheduleReparentMutation = import_react28.default.useCallback(async (params) => {
+    applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
+    enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
+      kind: "reparent",
+      queryId: responseRef.current?.activeQueryId ?? null,
+      targetWorkItemId: params.targetWorkItemId,
+      newParentId: params.newParentId,
+      applyToTimeline: params.applyToTimeline,
+      execute: params.execute
+    }));
+    if (!liveSyncEnabledRef.current) {
+      setWorkItemSyncState("paused");
+      return;
+    }
+    await flushQueuedWorkItemMutations();
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  import_react24.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react24.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
+    liveSyncEnabledRef.current = liveSyncEnabled;
+  }, [liveSyncEnabled]);
+  import_react28.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react24.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     void hydrateUserPreferences().then((preferences) => {
       if (preferences.themeMode) {
         setThemeMode(preferences.themeMode);
@@ -33882,8 +36152,32 @@ function UiShellApp(props) {
       const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
       headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
     });
+    hydrateTimelineLiveSyncEnabledPreference((enabled) => {
+      setLiveSyncEnabled(enabled);
+      setWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
+    });
   }, [headerQueryFlow.hydrateSavedHeaderQueries]);
-  import_react24.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
+    if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
+      void flushQueuedWorkItemMutations();
+      return;
+    }
+    if (workItemSyncInFlightRef.current > 0 || workItemSyncState === "error") {
+      return;
+    }
+    setWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
+  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
+  import_react28.default.useEffect(() => {
+    const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges;
+    const onBeforeUnload = (event) => {
+      if (hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [detailsPanelDirty, hasOptimisticChanges]);
+  import_react28.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -33907,6 +36201,35 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
+  import_react28.default.useEffect(() => {
+    const onPointerDown = (event) => {
+      const target = event.target;
+      const trustBadgeElement = document.querySelector("details.trust-badge-details");
+      if (controlsOpen && !isTargetInsideElement(target, trustBadgeElement)) {
+        setControlsOpen(false);
+      }
+      dismissOpenDetailsMenus({
+        root: document,
+        target
+      });
+    };
+    const onKeyDown = (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      setControlsOpen(false);
+      dismissOpenDetailsMenus({
+        root: document,
+        target: null
+      });
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [controlsOpen]);
   const mainPanel = renderActivePanel({
     activeTab,
     uiModel,
@@ -33922,7 +36245,21 @@ function UiShellApp(props) {
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
-  return import_react24.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react24.default.createElement("section", { className: "ui-shell-header" }, import_react24.default.createElement("div", { className: "ui-shell-brand" }, import_react24.default.createElement("h1", null, "Azure GanttOps")), import_react24.default.createElement("div", { className: "ui-shell-header-actions" }, import_react24.default.createElement("div", { className: "header-query-picker" }, import_react24.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react24.default.createElement("details", { className: "header-query-dropdown" }, import_react24.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react24.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react24.default.createElement("input", {
+  const controlsContent = import_react28.default.createElement(import_react28.default.Fragment, null, import_react28.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react28.default.createElement(TopTabs, {
+    activeTab,
+    model: uiModel,
+    onTabChange: (tab) => {
+      setActiveTab(tab);
+    },
+    onBlockedAttempt: (payload) => {
+      setBlockerMessage(payload);
+      setControlsOpen(true);
+    }
+  }), blockerMessage ? import_react28.default.createElement("section", {
+    "aria-label": "tab-blocker-guidance",
+    className: "tab-blocker-guidance"
+  }, import_react28.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react28.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react28.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel);
+  return import_react28.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react28.default.createElement("section", { className: "ui-shell-header" }, import_react28.default.createElement("div", { className: "ui-shell-brand" }, import_react28.default.createElement("h1", null, "Azure GanttOps")), import_react28.default.createElement("div", { className: "ui-shell-header-actions" }, import_react28.default.createElement("div", { className: "header-query-picker" }, import_react28.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react28.default.createElement("details", { className: "header-query-dropdown" }, import_react28.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react28.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react28.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -33930,7 +36267,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react24.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react24.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react24.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react24.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react24.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react28.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react28.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react28.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react28.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react28.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -33940,21 +36277,45 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react24.default.createElement("button", {
+  }, "\xD7"), import_react28.default.createElement("button", {
+    type: "button",
+    className: "header-query-dropdown-item-open",
+    "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
+    title: "Open in Azure DevOps",
+    onClick: (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const entryOrg = entry.organization ?? organization;
+      const entryProject = entry.project ?? project;
+      const queryUrl = buildAzureQueryUrl(entryOrg, entryProject, entry.id);
+      if (queryUrl) {
+        window.open(queryUrl, "_blank", "noopener,noreferrer");
+      }
+    }
+  }, import_react28.default.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, import_react28.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react28.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react28.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react24.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react28.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react24.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react28.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -33970,23 +36331,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react24.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react28.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react24.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react28.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react24.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react24.default.createElement("span", {
+  }, import_react28.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react28.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react24.default.createElement("div", { className: "theme-menu" }, import_react24.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react28.default.createElement("div", { className: "theme-menu" }, import_react28.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -33994,20 +36355,15 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react24.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react24.default.createElement(TrustBadge, {
+  }, import_react28.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react28.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
-    readOnlyTimeline: uiModel.capabilities.readOnlyTimeline
-  }), import_react24.default.createElement("button", {
-    type: "button",
-    className: "controls-toggle-button",
-    "aria-expanded": controlsOpen,
-    "aria-controls": "ui-controls-drawer",
-    onClick: () => {
-      setControlsOpen((current) => !current);
-    }
-  }, controlsOpen ? "Close controls" : "Open controls"))), import_react24.default.createElement("section", { className: "ui-shell-content" }, import_react24.default.createElement("section", { className: "gantt-primary-card" }, import_react24.default.createElement(WarningBanner, {
+    readOnlyTimeline: uiModel.capabilities.readOnlyTimeline,
+    controlsOpen,
+    onControlsOpenChange: setControlsOpen,
+    controlsContent
+  }))), import_react28.default.createElement("section", { className: "ui-shell-content" }, import_react28.default.createElement("section", { className: "gantt-primary-card" }, import_react28.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -34015,118 +36371,173 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react24.default.createElement(TimelinePane, {
+  }), import_react28.default.createElement(TimelinePane, {
+    key: response?.activeQueryId ?? "timeline-no-query",
+    activeQueryId: response?.activeQueryId ?? null,
+    activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
     timeline: uiModel.timeline,
     showDependencies: true,
     isRefreshing,
     workItemSyncState,
-    workItemSyncError,
+    liveSyncEnabled,
+    pendingWorkItemSyncCount,
     organization,
     project,
     selectionStore: timelineSelectionStoreRef.current,
+    onSetLiveSyncEnabled: (enabled) => {
+      setLiveSyncEnabled(enabled);
+      saveTimelineLiveSyncEnabledPreference(enabled);
+    },
+    onPushPendingWorkItemChanges: () => {
+      void flushQueuedWorkItemMutations();
+    },
+    onDetailsDirtyChange: setDetailsPanelDirty,
+    onClearPendingWorkItemChanges: () => {
+      const snapshot = preOptimisticResponseSnapshotRef.current;
+      pendingWorkItemMutationsRef.current = [];
+      preOptimisticResponseSnapshotRef.current = null;
+      setPendingWorkItemSyncCount(0);
+      setHasOptimisticChanges(false);
+      setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+      if (snapshot) {
+        setResponse(snapshot);
+        setUiModel(mapQueryIntakeResponseToUiModel(snapshot));
+      } else {
+        void executeRefresh(true);
+      }
+    },
     onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-          targetWorkItemId,
-          startDate,
-          endDate
-        });
-        if (!writeResult.accepted) {
-          throw toWritebackError(writeResult.reasonCode);
+      await scheduleWorkItemMutation({
+        workItemId: targetWorkItemId,
+        applyToTimeline: (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate),
+        executeSchedule: async () => {
+          const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+            targetWorkItemId,
+            startDate,
+            endDate
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
         }
-        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate));
       });
     },
     onAdoptUnschedulableSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.adoptWorkItemSchedule({
-          targetWorkItemId,
-          startDate,
-          endDate
-        });
-        if (!writeResult.accepted) {
-          throw toWritebackError(writeResult.reasonCode);
+      await scheduleWorkItemMutation({
+        workItemId: targetWorkItemId,
+        applyToTimeline: (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate),
+        executeSchedule: async () => {
+          const writeResult = await props.composition.controller.adoptWorkItemSchedule({
+            targetWorkItemId,
+            startDate,
+            endDate
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
         }
-        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyScheduleUpdate(timeline, targetWorkItemId, startDate, endDate));
       });
     },
     onCreateDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.linkDependency({
-          predecessorWorkItemId,
-          successorWorkItemId,
-          action: "add"
-        });
-        if (!writeResult.accepted) {
-          throw toWritebackError(writeResult.reasonCode);
+      await scheduleDependencyMutation({
+        predecessorWorkItemId,
+        successorWorkItemId,
+        dependencyAction: "add",
+        applyToTimeline: (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add"),
+        execute: async () => {
+          const writeResult = await props.composition.controller.linkDependency({
+            predecessorWorkItemId,
+            successorWorkItemId,
+            action: "add"
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
         }
-        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "add"));
       });
     },
     onRemoveDependency: async ({ predecessorWorkItemId, successorWorkItemId }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.linkDependency({
-          predecessorWorkItemId,
-          successorWorkItemId,
-          action: "remove"
-        });
-        if (!writeResult.accepted) {
-          throw toWritebackError(writeResult.reasonCode);
+      await scheduleDependencyMutation({
+        predecessorWorkItemId,
+        successorWorkItemId,
+        dependencyAction: "remove",
+        applyToTimeline: (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove"),
+        execute: async () => {
+          const writeResult = await props.composition.controller.linkDependency({
+            predecessorWorkItemId,
+            successorWorkItemId,
+            action: "remove"
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
         }
-        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, "remove"));
       });
     },
     onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state: state2, stateColor }) => {
-      await runTrackedWorkItemUpdate(async () => {
-        const writeResult = await props.composition.controller.updateWorkItemDetails({
-          targetWorkItemId,
-          title,
-          descriptionHtml,
-          state: state2
-        });
-        if (!writeResult.accepted) {
-          throw toWritebackError(writeResult.reasonCode);
+      await scheduleWorkItemMutation({
+        workItemId: targetWorkItemId,
+        applyToTimeline: (timeline) => applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state2, stateColor),
+        executeDetails: async () => {
+          const writeResult = await props.composition.controller.updateWorkItemDetails({
+            targetWorkItemId,
+            title,
+            descriptionHtml,
+            state: state2
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
         }
-        applyTimelineMutationToUiState(setUiModel, setResponse, (timeline) => applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state2, stateColor));
+      });
+    },
+    onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
+      await scheduleReparentMutation({
+        targetWorkItemId,
+        newParentId,
+        applyToTimeline: (timeline) => applyReparentUpdate(timeline, targetWorkItemId, newParentId),
+        execute: async () => {
+          const writeResult = await props.composition.controller.reparentWorkItem({
+            targetWorkItemId,
+            newParentId
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
+        }
       });
     },
     onFetchWorkItemStateOptions: fetchWorkItemStateOptions,
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  })), import_react24.default.createElement("section", {
-    id: "ui-controls-drawer",
-    className: controlsOpen ? "ui-shell-workspace ui-shell-workspace-open" : "ui-shell-workspace",
-    "aria-hidden": controlsOpen ? "false" : "true"
-  }, import_react24.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react24.default.createElement(TopTabs, {
-    activeTab,
-    model: uiModel,
-    onTabChange: (tab) => {
-      setActiveTab(tab);
-    },
-    onBlockedAttempt: (payload) => {
-      setBlockerMessage(payload);
+  }))), import_react28.default.createElement("footer", { className: "ui-shell-footer" }, import_react28.default.createElement("span", null, "An "), import_react28.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react28.default.createElement("span", null, " by Christian Betz @ "), import_react28.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), showRefreshDiscardWarning ? import_react28.default.createElement("div", {
+    className: "refresh-discard-warning-backdrop",
+    onClick: () => setShowRefreshDiscardWarning(false)
+  }, import_react28.default.createElement("div", {
+    className: "refresh-discard-warning-dialog",
+    role: "alertdialog",
+    "aria-labelledby": "refresh-discard-warning-title",
+    "aria-describedby": "refresh-discard-warning-desc",
+    onClick: (e) => e.stopPropagation()
+  }, import_react28.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react28.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react28.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react28.default.createElement("button", {
+    type: "button",
+    className: "refresh-discard-warning-cancel",
+    onClick: () => setShowRefreshDiscardWarning(false)
+  }, "Abbrechen"), import_react28.default.createElement("button", {
+    type: "button",
+    className: "refresh-discard-warning-confirm",
+    onClick: () => {
+      setShowRefreshDiscardWarning(false);
+      void executeRefresh(true);
     }
-  }), blockerMessage ? import_react24.default.createElement("section", {
-    "aria-label": "tab-blocker-guidance",
-    className: "tab-blocker-guidance"
-  }, import_react24.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react24.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react24.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel)), import_react24.default.createElement("footer", { className: "ui-shell-footer" }, import_react24.default.createElement("span", null, "An Open Source Project by Christian Betz @ "), import_react24.default.createElement("a", {
-    href: "https://tensorfive.com",
-    target: "_blank",
-    rel: "noreferrer"
-  }, "TensorFive GmbH")));
+  }, "Verwerfen & Aktualisieren")))) : null);
 }
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react24.default.createElement(QuerySelector, {
+    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react28.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
-      availableFieldRefs: [
-        "System.Id",
-        "System.Title",
-        "Microsoft.VSTS.Scheduling.StartDate",
-        "Microsoft.VSTS.Scheduling.TargetDate"
-      ],
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
       authStatus: params.response?.preflightStatus ?? null,
@@ -34135,18 +36546,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react24.default.createElement(MappingFixPanel, {
+    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react28.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
+      detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react24.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react28.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react24.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react28.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react24.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react24.default.createElement(DiagnosticsTab, {
+  return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react28.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();

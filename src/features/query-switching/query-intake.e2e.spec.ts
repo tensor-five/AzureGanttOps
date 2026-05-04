@@ -315,7 +315,7 @@ describe("query-intake boundary e2e", () => {
     expect(result.mappingValidation.status).toBe("invalid");
     expect(result.timeline?.bars).toEqual([]);
     expect(result.timeline?.dependencies).toEqual([]);
-    expect(result.guidance).toContain("Fix required mapping fields before rendering timeline");
+    expect(result.guidance).toContain("Confirm field mapping before rendering timeline");
     expect(result.uiState).toBe("empty");
   });
 

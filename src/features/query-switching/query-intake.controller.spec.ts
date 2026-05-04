@@ -258,7 +258,7 @@ describe("QueryIntakeController", () => {
     expect(response.mappingValidation.status).toBe("invalid");
     expect(response.timeline?.bars).toEqual([]);
     expect(response.timeline?.dependencies).toEqual([]);
-    expect(response.guidance).toContain("Fix required mapping fields before rendering timeline:");
+    expect(response.guidance).toContain("Confirm field mapping before rendering timeline:");
     expect(response.view).toContain("Mapping validation:");
     expect(response.view).toContain("- status: invalid");
     expect(response.view).toContain("start [MAP_REQUIRED_BLANK]");

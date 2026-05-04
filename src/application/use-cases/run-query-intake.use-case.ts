@@ -9,6 +9,8 @@ import type { QueryContext } from "../../domain/query-runtime/entities/query-con
 import { type FieldMappingProfile, normalizeProfile, type RequiredMappingField } from "../../domain/mapping/field-mapping.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import { validateRequiredMappings } from "../../domain/mapping/mapping-validator.js";
+import { proposeDefaultMapping } from "../../domain/mapping/default-mapping-proposal.js";
+import { extractAvailableFieldRefs } from "../services/extract-available-field-refs.js";
 
 export type RunQueryIntakeInput = {
   context: QueryContext;
@@ -72,6 +74,7 @@ export class RunQueryIntakeUseCase {
   public async execute(input: RunQueryIntakeInput): Promise<RunQueryIntakeResult> {
     await this.initializeMappingProfile();
     await this.applyMappingMutation(input.mappingMutation);
+    const callerProvidedMutation = Boolean(input.mappingMutation);
 
     const context = toAdoContext(input.context);
     const selectedQueryId = input.context.queryId.value;
@@ -99,6 +102,9 @@ export class RunQueryIntakeUseCase {
         this.queryRuntime.executeByQueryId(selectedQueryId, context)
       ]);
       const stale = this.isStale(runVersion);
+      if (!stale) {
+        await this.tryAutoApplyMappingFromSnapshot(snapshot, selectedQueryId, callerProvidedMutation);
+      }
       const timeline = stale ? null : await this.buildTimeline(snapshot);
       const stableSnapshot = stale ? null : snapshot;
       const reload = this.currentMetadata(runVersion, stale ? "stale_discarded" : "full_reload");
@@ -236,6 +242,50 @@ export class RunQueryIntakeUseCase {
     }
 
     validateRequiredMappings(profile);
+    await this.mappingSettings.setLastActiveProfileId(profile.id);
+    this.activeMappingProfile = profile;
+  }
+
+  private async tryAutoApplyMappingFromSnapshot(
+    snapshot: IngestionSnapshot,
+    selectedQueryId: string,
+    callerProvidedMutation: boolean
+  ): Promise<void> {
+    if (callerProvidedMutation) {
+      return;
+    }
+    if (!this.mappingSettings) {
+      return;
+    }
+    if (this.activeMappingProfile) {
+      return;
+    }
+    if (snapshot.workItems.length === 0) {
+      return;
+    }
+
+    const proposal = proposeDefaultMapping({
+      queryId: selectedQueryId,
+      availableFieldRefs: extractAvailableFieldRefs(snapshot)
+    });
+
+    if (proposal.status !== "valid") {
+      return;
+    }
+
+    const profiles = await this.mappingSettings.loadProfiles();
+    const existing = profiles.find((entry) => entry.id === proposal.profile.id);
+
+    if (existing) {
+      validateRequiredMappings(existing);
+      await this.mappingSettings.setLastActiveProfileId(existing.id);
+      this.activeMappingProfile = existing;
+      return;
+    }
+
+    const profile = normalizeProfile(proposal.profile);
+    validateRequiredMappings(profile);
+    await this.mappingSettings.saveProfiles([...profiles, profile]);
     await this.mappingSettings.setLastActiveProfileId(profile.id);
     this.activeMappingProfile = profile;
   }

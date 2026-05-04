@@ -399,8 +399,8 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await expect(page.getByLabel("mapping-fix-panel")).toBeVisible();
-  await expect(page.getByLabel("mapping-fix-panel")).toContainText("Fix required mapping fields");
-  await page.getByRole("button", { name: "Apply required defaults" }).click();
+  await expect(page.getByLabel("mapping-fix-panel")).toContainText("Set up field mapping");
+  await page.getByRole("button", { name: "Apply standard Azure mapping" }).click();
 
   await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();

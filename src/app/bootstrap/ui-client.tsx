@@ -1207,12 +1207,6 @@ function renderActivePanel(params: {
       { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" },
       React.createElement(QuerySelector, {
         savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
-        availableFieldRefs: [
-          "System.Id",
-          "System.Title",
-          "Microsoft.VSTS.Scheduling.StartDate",
-          "Microsoft.VSTS.Scheduling.TargetDate"
-        ],
         onRun: params.onRun,
         onNeedsFix: params.onNeedsFix,
         authStatus: params.response?.preflightStatus ?? null,
@@ -1229,6 +1223,7 @@ function renderActivePanel(params: {
       params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid"
         ? React.createElement(MappingFixPanel, {
             requiredIssues: params.mappingFixResponse.mappingValidation.issues,
+            detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
             onApply: (selection) => {
               void params.onApplyMappingDefaults(selection);
             }

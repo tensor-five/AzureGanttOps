@@ -45,6 +45,7 @@ function createResponse(overrides: Partial<QueryIntakeResponse>): QueryIntakeRes
       issues: []
     },
     activeMappingProfileId: null,
+    detectedFieldRefs: [],
     view: "",
     ...overrides
   };

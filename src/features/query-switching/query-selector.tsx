@@ -3,29 +3,17 @@ import React from "react";
 import type { QueryIntakeResponse } from "./query-intake.controller.js";
 import {
   persistQueryMappingSelection,
-  proposeDefaultMappingForQuery,
   readPersistedQueryMappingSelection
-} from "../field-mapping/mapping-auto-apply.js";
+} from "../field-mapping/query-profile-storage.js";
 
 export type QuerySelectorProps = {
   savedQueries: Array<{
     id: string;
     name: string;
   }>;
-  availableFieldRefs: string[];
   onRun: (request: {
     queryId: string;
     mappingProfileId?: string;
-    mappingProfileUpsert?: {
-      id: string;
-      name: string;
-      fields: {
-        id: string;
-        title: string;
-        start: string;
-        endOrTarget: string;
-      };
-    };
   }) => Promise<QueryIntakeResponse>;
   onNeedsFix: (response: QueryIntakeResponse) => void;
   authStatus: QueryIntakeResponse["preflightStatus"] | null;
@@ -90,10 +78,6 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
       setQueryInputError(null);
 
       const persisted = readPersistedQueryMappingSelection(parsed.queryId);
-      const proposal = proposeDefaultMappingForQuery({
-        queryId: parsed.queryId,
-        availableFieldRefs: props.availableFieldRefs
-      });
 
       const normalizedRawInput = rawInput.trim();
       const transportQueryInput = resolveQueryRunInput(rawInput, organization, project);
@@ -103,8 +87,7 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
 
       const response = await props.onRun({
         queryId: transportQueryInput,
-        mappingProfileId: persisted,
-        mappingProfileUpsert: proposal.status === "valid" ? proposal.profile : undefined
+        mappingProfileId: persisted
       });
 
       persistLocalStorage(QUERY_INPUT_KEY, normalizedRawInput);
@@ -130,7 +113,7 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
       if (
         response.preflightStatus === "READY" &&
         response.statusCode === "OK" &&
-        (response.mappingValidation.status === "invalid" || proposal.status === "invalid")
+        response.mappingValidation.status === "invalid"
       ) {
         props.onNeedsFix(response);
       }
