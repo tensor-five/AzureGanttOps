@@ -9,6 +9,7 @@ declare global {
     __phase6Read: () => {
       callLog: Array<{ queryInput: string }>;
       density: string | null;
+      liveSyncEnabled: string | null;
       adoEntries: Array<{ seq: number; direction: "request" | "response"; url: string }>;
     };
   }
@@ -250,9 +251,20 @@ async function mountRuntimeUi(page: Page, responses: QueryIntakeResponse[]): Pro
 async function getRuntimeInfo(page: Page): Promise<{
   callLog: Array<{ queryInput: string }>;
   density: string | null;
+  liveSyncEnabled: string | null;
   adoEntries: Array<{ seq: number; direction: "request" | "response"; url: string }>;
 }> {
   return page.evaluate(() => window.__phase6Read());
+}
+
+async function clickControlsTab(page: Page, tabName: string | RegExp): Promise<void> {
+  const trustBadge = page.locator("details[aria-label='global-trust-badge']");
+  const isOpen = await trustBadge.evaluate((element) => (element as HTMLDetailsElement).open);
+  if (!isOpen) {
+    await trustBadge.locator("summary").click();
+  }
+
+  await page.getByRole("tab", { name: tabName }).click();
 }
 
 test("query mapping timeline diagnostics retry refresh source-health journey", async ({ page }) => {
@@ -322,36 +334,37 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await expect(page.getByLabel("global-trust-badge")).toContainText("Needs attention");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
 
-  await page.getByRole("tab", { name: "Mapping [blocked]" }).click();
+  await clickControlsTab(page, "Mapping [blocked]");
   await expect(page.getByLabel("tab-blocker-guidance")).toContainText("No query selected yet");
   await expect(page.getByRole("tab", { name: "Diagnostics [blocked]" })).toBeVisible();
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-1");
   await page.getByRole("button", { name: "Run query by ID" }).click();
   await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-2");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await expect(page.getByLabel("global-trust-badge")).toContainText("[QUERY_FAILED] Partial failure");
-  await page.getByRole("tab", { name: "Timeline [ok]" }).click();
+  await clickControlsTab(page, "Timeline [ok]");
   await expect(page.getByLabel("timeline-warning-banner")).toContainText("Action: Retry refresh");
+  await page.keyboard.press("Escape");
 
   await page.getByLabel("timeline-warning-banner").getByRole("button", { name: "Retry refresh" }).click();
   await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-1");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
-  await page.getByRole("tab", { name: "Timeline [ok]" }).click();
-  await page.getByRole("button", { name: "Select first item" }).click();
-  await expect(page.getByLabel("selected-timeline-item")).toContainText("Alpha timeline item");
+  await clickControlsTab(page, "Timeline [ok]");
+  await page.keyboard.press("Escape");
+  await page.getByLabel("timeline-sidebar-row-801").click();
   await expect(page.getByLabel("timeline-details-panel")).toContainText("- selected work item: #801");
 
-  await page.getByRole("tab", { name: "Diagnostics [ok]" }).click();
+  await clickControlsTab(page, "Diagnostics [ok]");
   await expect(page.getByLabel("diagnostics-tab")).toContainText("source health: HEALTHY");
   await expect(page.getByLabel("ado-communication-log-panel")).toBeVisible();
   await expect(page.getByLabel("ado-communication-log-panel").getByLabel("ado-log-entry").first()).toBeVisible();
@@ -394,7 +407,7 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
 
   await mountRuntimeUi(page, responses);
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-map");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
@@ -405,58 +418,63 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
   await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
 
-  await page.getByRole("button", { name: "Select first item" }).click();
+  await page.keyboard.press("Escape");
+  await page.getByLabel("timeline-sidebar-row-801").click();
   await expect(page.getByLabel("timeline-details-panel")).toContainText("- selected work item: #801");
 
-  await page.getByRole("tab", { name: "Diagnostics [ok]" }).click();
+  await clickControlsTab(page, "Diagnostics [ok]");
   await expect(page.getByLabel("diagnostics-tab")).toContainText("active query source: q-map");
 
   const runtimeInfo = await getRuntimeInfo(page);
   expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual(["q-map", "q-map"]);
 });
 
-test("density timeline preference persists across query switch and remount", async ({ page }) => {
+test("timeline live-sync preference persists across query switch and remount", async ({ page }) => {
   const responses = [
     buildResponse({
-      selectedQueryId: "q-density",
-      activeQueryId: "q-density",
+      selectedQueryId: "q-preferences",
+      activeQueryId: "q-preferences",
       savedQueries: [
-        { id: "q-density", name: "Density query", path: "Shared Queries/Density" },
-        { id: "q-density-2", name: "Density query 2", path: "Shared Queries/Density2" }
+        { id: "q-preferences", name: "Preferences query", path: "Shared Queries/Preferences" },
+        { id: "q-preferences-2", name: "Preferences query 2", path: "Shared Queries/Preferences2" }
       ]
     }),
     buildResponse({
-      selectedQueryId: "q-density-2",
-      activeQueryId: "q-density-2"
+      selectedQueryId: "q-preferences-2",
+      activeQueryId: "q-preferences-2"
     })
   ];
 
   await mountRuntimeUi(page, responses);
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
+  await clickControlsTab(page, "Query [ok]");
 
-  await page.getByLabel("Query ID").fill("q-density");
+  await page.getByLabel("Query ID").fill("q-preferences");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
-  await page.getByRole("tab", { name: "Timeline [ok]" }).click();
-  await expect(page.getByLabel("timeline-pane")).toContainText("Density mode: comfortable");
+  await clickControlsTab(page, "Timeline [ok]");
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Live sync")).toBeChecked();
 
-  await page.getByRole("button", { name: "Compact" }).click();
+  await page.getByLabel("Live sync").click();
+  await expect(page.getByLabel("Live sync")).not.toBeChecked();
   let runtimeInfo = await getRuntimeInfo(page);
-  expect(runtimeInfo.density).toBe("compact");
+  expect(runtimeInfo.liveSyncEnabled).toBe("false");
 
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
-  await page.getByLabel("Query ID").fill("q-density-2");
+  await clickControlsTab(page, "Query [ok]");
+  await page.getByLabel("Query ID").fill("q-preferences-2");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
-  await page.getByRole("tab", { name: "Timeline [ok]" }).click();
-  await expect(page.getByLabel("timeline-pane")).toContainText("Density mode: compact");
+  await clickControlsTab(page, "Timeline [ok]");
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Live sync")).not.toBeChecked();
 
-  await mountRuntimeUi(page, [buildResponse({ selectedQueryId: "q-density-2", activeQueryId: "q-density-2" })]);
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
-  await page.getByLabel("Query ID").fill("q-density-2");
+  await mountRuntimeUi(page, [buildResponse({ selectedQueryId: "q-preferences-2", activeQueryId: "q-preferences-2" })]);
+  await clickControlsTab(page, "Query [ok]");
+  await page.getByLabel("Query ID").fill("q-preferences-2");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
-  await page.getByRole("tab", { name: "Timeline [ok]" }).click();
-  await expect(page.getByLabel("timeline-pane")).toContainText("Density mode: compact");
+  await clickControlsTab(page, "Timeline [ok]");
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Live sync")).not.toBeChecked();
 });
