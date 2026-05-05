@@ -1,8 +1,6 @@
-@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
-
 :root {
-  --font-display: "Satoshi", -apple-system, blinkmacsystemfont, sans-serif;
-  --font-body: "Satoshi", -apple-system, blinkmacsystemfont, sans-serif;
+  --font-display: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+  --font-body: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
   --font-regular: 400;
   --font-medium: 500;
   --font-bold: 700;

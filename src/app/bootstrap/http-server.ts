@@ -162,7 +162,7 @@ const ADO_COMM_NEXT_SEQ_FROM_ENTRY = (entry: AdoCommLogEntry) => entry.seq;
 const ADO_COMM_DEFAULT_JSON_PREVIEW = (value: unknown) => JSON.stringify(value ?? ADO_COMM_PREVIEW_FALLBACK);
 const CONTENT_SECURITY_POLICY =
   "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://api.fontshare.com; img-src 'self' data:; font-src 'self' data: https://cdn.fontshare.com; connect-src 'self'";
+  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
 const ADO_COMM_ROUTE_QUERY_AFTER_SEQ = "afterSeq";
 const ADO_COMM_ROUTE_QUERY_LIMIT = "limit";
 const ADO_COMM_LOG_VERBOSE_PREFIX = "[ado-runtime]";

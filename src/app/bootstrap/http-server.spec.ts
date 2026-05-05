@@ -12,6 +12,9 @@ type StartedServer = {
 };
 
 describe("createHttpServer", () => {
+  const expectedLocalOnlyCsp =
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
+    "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
   const tempDirs: string[] = [];
 
   afterEach(async () => {
@@ -44,6 +47,25 @@ describe("createHttpServer", () => {
       expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.css');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.js');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves a local-only CSP without Fontshare allowances", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/`);
+      const csp = response.headers.get("content-security-policy");
+
+      expect(csp).toBe(expectedLocalOnlyCsp);
+      expect(csp).not.toContain("api.fontshare.com");
+      expect(csp).not.toContain("cdn.fontshare.com");
     } finally {
       await server.close();
     }

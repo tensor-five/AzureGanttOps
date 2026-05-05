@@ -101,7 +101,7 @@ If Azure CLI is not found at runtime, the Query tab supports:
 
 - The app stores user-specific settings locally under `~/.azure-ganttops/`.
 - Azure DevOps data access is performed from the local backend process using your local auth context.
-- The UI currently loads a webfont from an external provider (Fontshare) during app load.
+- The UI uses system fonts and does not establish external webfont connections during app load.
 
 ## Trademark Notice
 

@@ -32,8 +32,20 @@ describe("local UI CSS structure", () => {
   it("retains required token contract", () => {
     const tokenCss = readFileSync(path.join(bootstrapDir, "local-ui-tokens.css"), "utf8");
 
+    expect(tokenCss).toContain("--font-display");
+    expect(tokenCss).toContain("--font-body");
     expect(tokenCss).toContain("--color-bg");
     expect(tokenCss).toContain("--color-text");
     expect(tokenCss).toContain("--space-2");
+  });
+
+  it("keeps font tokens local without external font imports", () => {
+    const tokenCss = readFileSync(path.join(bootstrapDir, "local-ui-tokens.css"), "utf8");
+
+    expect(tokenCss).not.toMatch(/^@import\b/im);
+    expect(tokenCss).not.toMatch(/fontshare/i);
+    expect(tokenCss).not.toContain("Satoshi");
+    expect(tokenCss).toMatch(/--font-display:\s*system-ui,/);
+    expect(tokenCss).toMatch(/--font-body:\s*system-ui,/);
   });
 });
