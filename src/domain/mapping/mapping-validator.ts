@@ -1,17 +1,13 @@
 import {
   type FieldMappingProfile,
   normalizeProfile,
+  REQUIRED_FIELD_LABELS,
   type RequiredFieldMappings,
   type RequiredMappingField
 } from "./field-mapping.js";
 import { MappingValidationFailedError, type MappingValidationIssue } from "./mapping-errors.js";
 
-const FIELD_LABEL: Record<RequiredMappingField, string> = {
-  id: "ID",
-  title: "Title",
-  start: "Start Date",
-  endOrTarget: "End/Target Date"
-};
+const FIELD_LABEL = REQUIRED_FIELD_LABELS;
 
 export function validateRequiredMappings(profile: FieldMappingProfile): RequiredFieldMappings {
   const normalized = normalizeProfile(profile);

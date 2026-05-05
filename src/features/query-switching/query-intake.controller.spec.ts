@@ -6,6 +6,12 @@ import { QueryId } from "../../domain/query-runtime/value-objects/query-id.js";
 import { QueryIntakeController } from "./query-intake.controller.js";
 import type { DiagnosticsPort } from "../../application/ports/diagnostics.port.js";
 import { PublishDiagnosticsUseCase } from "../../application/use-cases/publish-diagnostics.use-case.js";
+import { RunQueryIntakeUseCase } from "../../application/use-cases/run-query-intake.use-case.js";
+import type { AuthPreflightPort } from "../../application/ports/auth-preflight.port.js";
+import type { MappingSettingsPort } from "../../application/ports/mapping-settings.port.js";
+import type { QueryRuntimePort } from "../../application/ports/query-runtime.port.js";
+import type { BuildTimelineViewUseCase } from "../../application/use-cases/build-timeline-view.use-case.js";
+import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 
 class InMemoryContextSettings {
   public context: AdoContext | null;
@@ -718,5 +724,93 @@ describe("QueryIntakeController", () => {
         })
       })
     );
+  });
+
+  it("auto-applies default mapping when controller submits with no mapping fields and snapshot has standard scheduling fields", async () => {
+    const store = new AdoContextStore(new InMemoryContextSettings(null));
+    const queryId = QueryId.create("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+
+    const authPreflight: AuthPreflightPort = {
+      check: vi.fn(async () => ({ status: "READY" as const }))
+    };
+
+    const queryRuntime: QueryRuntimePort = {
+      listSavedQueries: vi.fn(async () => []),
+      executeByQueryId: vi.fn(async () => ({
+        queryType: "flat" as const,
+        workItemIds: [101],
+        workItems: [
+          {
+            id: 101,
+            title: "Work item 101",
+            "Microsoft.VSTS.Scheduling.StartDate": "2026-01-01",
+            "Microsoft.VSTS.Scheduling.TargetDate": "2026-01-02"
+          }
+        ],
+        relations: [],
+        queryRelations: [],
+        hydration: {
+          maxIdsPerBatch: 200,
+          requestedIds: 1,
+          attemptedBatches: 1,
+          succeededBatches: 1,
+          retriedRequests: 0,
+          missingIds: [],
+          partial: false,
+          statusCode: "OK" as const
+        }
+      }))
+    };
+
+    const validTimeline: TimelineReadModel = {
+      queryType: "flat",
+      bars: [
+        {
+          workItemId: 101,
+          title: "Work item 101",
+          state: { code: "Active", badge: "A", color: "#1d4ed8" },
+          schedule: {
+            startDate: "2026-01-01T00:00:00.000Z",
+            endDate: "2026-01-02T00:00:00.000Z",
+            missingBoundary: null
+          },
+          details: { mappedId: "WI-101" }
+        }
+      ],
+      unschedulable: [],
+      dependencies: [],
+      suppressedDependencies: [],
+      treeLayout: null,
+      mappingValidation: { status: "valid", issues: [] }
+    };
+
+    const buildTimelineView: BuildTimelineViewUseCase = {
+      execute: vi.fn(async () => validTimeline)
+    } as never;
+
+    const mappingSettings: MappingSettingsPort = {
+      loadProfiles: vi.fn(async () => []),
+      saveProfiles: vi.fn(async () => undefined),
+      getLastActiveProfileId: vi.fn(async () => null),
+      setLastActiveProfileId: vi.fn(async () => undefined)
+    };
+
+    const useCase = new RunQueryIntakeUseCase(
+      authPreflight,
+      queryRuntime,
+      buildTimelineView,
+      mappingSettings
+    );
+
+    const controller = new QueryIntakeController(store, useCase);
+
+    const response = await controller.submit({
+      queryInput: `https://dev.azure.com/contoso/delivery/_queries/query?qid=${queryId.value}`
+    });
+
+    expect(mappingSettings.saveProfiles).toHaveBeenCalledTimes(1);
+    expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith(`auto:${queryId.value}`);
+    expect(response.activeMappingProfileId).toBe(`auto:${queryId.value}`);
+    expect(response.mappingValidation.status).toBe("valid");
   });
 });

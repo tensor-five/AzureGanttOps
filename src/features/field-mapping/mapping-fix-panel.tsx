@@ -1,15 +1,15 @@
 import React from "react";
 
+import { STANDARD_AZURE_FIELD_DEFAULTS } from "../../domain/mapping/default-mapping-proposal.js";
+import {
+  REQUIRED_FIELD_LABELS,
+  REQUIRED_MAPPING_FIELDS,
+  type RequiredMappingField
+} from "../../domain/mapping/field-mapping.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 
-const REQUIRED_LABELS: Record<"id" | "title" | "start" | "endOrTarget", string> = {
-  id: "ID",
-  title: "Title",
-  start: "Start Date",
-  endOrTarget: "End/Target Date"
-};
-
-const REQUIRED_ORDER: Array<keyof typeof REQUIRED_LABELS> = ["id", "title", "start", "endOrTarget"];
+const REQUIRED_LABELS = REQUIRED_FIELD_LABELS;
+const REQUIRED_ORDER: readonly RequiredMappingField[] = REQUIRED_MAPPING_FIELDS;
 
 export type MappingFixPanelProps = {
   requiredIssues: MappingValidationIssue[];
@@ -23,10 +23,10 @@ export type MappingFixPanelProps = {
 };
 
 export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement {
-  const issueByField = new Map<keyof typeof REQUIRED_LABELS, MappingValidationIssue>();
+  const issueByField = new Map<RequiredMappingField, MappingValidationIssue>();
   for (const issue of props.requiredIssues) {
     if (issue.field in REQUIRED_LABELS) {
-      issueByField.set(issue.field as keyof typeof REQUIRED_LABELS, issue);
+      issueByField.set(issue.field as RequiredMappingField, issue);
     }
   }
 
@@ -90,13 +90,7 @@ export function MappingFixPanel(props: MappingFixPanelProps): React.ReactElement
       {
         type: "button",
         className: "mapping-fix-primary",
-        onClick: () =>
-          props.onApply({
-            id: "System.Id",
-            title: "System.Title",
-            start: "Microsoft.VSTS.Scheduling.StartDate",
-            endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
-          })
+        onClick: () => props.onApply({ ...STANDARD_AZURE_FIELD_DEFAULTS })
       },
       "Apply standard Azure mapping"
     ),

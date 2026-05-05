@@ -876,5 +876,36 @@ describe("RunQueryIntakeUseCase", () => {
       expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith(existingAutoProfile.id);
       expect(result.activeMappingProfileId).toBe(existingAutoProfile.id);
     });
+
+    it("auto-applies when caller wraps an empty mappingMutation envelope (controller pass-through)", async () => {
+      const authPreflight: AuthPreflightPort = {
+        check: vi.fn(async () => ({ status: "READY" as const }))
+      };
+      const queryRuntime: QueryRuntimePort = {
+        listSavedQueries: vi.fn(async () => []),
+        executeByQueryId: vi.fn(async () => snapshotWithStandardFields())
+      };
+      const buildTimelineView: BuildTimelineViewUseCase = {
+        execute: vi.fn(async () => createTimeline())
+      } as never;
+
+      const mappingSettings = createMappingSettingsStub([], null);
+
+      const useCase = new RunQueryIntakeUseCase(
+        authPreflight,
+        queryRuntime,
+        buildTimelineView,
+        mappingSettings
+      );
+
+      const result = await useCase.execute({
+        context: contextA,
+        mappingMutation: { selectProfileId: undefined, upsertProfile: undefined }
+      });
+
+      expect(mappingSettings.saveProfiles).toHaveBeenCalledTimes(1);
+      expect(mappingSettings.setLastActiveProfileId).toHaveBeenCalledWith(`auto:${queryA.value}`);
+      expect(result.activeMappingProfileId).toBe(`auto:${queryA.value}`);
+    });
   });
 });

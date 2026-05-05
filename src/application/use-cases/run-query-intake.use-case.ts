@@ -6,7 +6,13 @@ import type { MappingSettingsPort } from "../ports/mapping-settings.port.js";
 import type { QueryRuntimePort, SavedQuery } from "../ports/query-runtime.port.js";
 import type { BuildTimelineViewUseCase } from "./build-timeline-view.use-case.js";
 import type { QueryContext } from "../../domain/query-runtime/entities/query-context.js";
-import { type FieldMappingProfile, normalizeProfile, type RequiredMappingField } from "../../domain/mapping/field-mapping.js";
+import {
+  type FieldMappingProfile,
+  normalizeProfile,
+  REQUIRED_FIELD_LABELS,
+  REQUIRED_MAPPING_FIELDS,
+  type RequiredMappingField
+} from "../../domain/mapping/field-mapping.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import { validateRequiredMappings } from "../../domain/mapping/mapping-validator.js";
 import { proposeDefaultMapping } from "../../domain/mapping/default-mapping-proposal.js";
@@ -74,7 +80,11 @@ export class RunQueryIntakeUseCase {
   public async execute(input: RunQueryIntakeInput): Promise<RunQueryIntakeResult> {
     await this.initializeMappingProfile();
     await this.applyMappingMutation(input.mappingMutation);
-    const callerProvidedMutation = Boolean(input.mappingMutation);
+    const callerProvidedMutation = Boolean(
+      input.mappingMutation &&
+        (input.mappingMutation.selectProfileId !== undefined ||
+          input.mappingMutation.upsertProfile !== undefined)
+    );
 
     const context = toAdoContext(input.context);
     const selectedQueryId = input.context.queryId.value;
@@ -283,6 +293,7 @@ export class RunQueryIntakeUseCase {
       return;
     }
 
+    // normalize once for downstream persistence; validateRequiredMappings re-normalizes internally for its own checks
     const profile = normalizeProfile(proposal.profile);
     validateRequiredMappings(profile);
     await this.mappingSettings.saveProfiles([...profiles, profile]);
@@ -336,19 +347,13 @@ function toAdoContext(context: QueryContext): AdoContext {
 }
 
 function createMissingMappingValidationResult(): TimelineReadModel {
-  const requiredFields: RequiredMappingField[] = ["id", "title", "start", "endOrTarget"];
-  const fieldLabels: Record<RequiredMappingField, string> = {
-    id: "ID",
-    title: "Title",
-    start: "Start Date",
-    endOrTarget: "End/Target Date"
-  };
+  const requiredFields: readonly RequiredMappingField[] = REQUIRED_MAPPING_FIELDS;
 
   const issues: MappingValidationIssue[] = requiredFields.map((field) => ({
     code: "MAP_REQUIRED_MISSING",
     field,
-    message: `${fieldLabels[field]} mapping is required.`,
-    guidance: `Assign an Azure field reference for ${fieldLabels[field]}.`
+    message: `${REQUIRED_FIELD_LABELS[field]} mapping is required.`,
+    guidance: `Assign an Azure field reference for ${REQUIRED_FIELD_LABELS[field]}.`
   }));
 
   return {

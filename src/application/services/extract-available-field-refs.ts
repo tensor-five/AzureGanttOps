@@ -1,5 +1,7 @@
 import type { IngestionSnapshot, IngestionWorkItem } from "../dto/ingestion-snapshot.js";
 
+// IngestionWorkItem exposes id/title as dedicated properties; map them back
+// to their canonical Azure field references for the proposal pool.
 const SPECIAL_KEYS = new Set<keyof IngestionWorkItem>(["id", "title"]);
 
 export function extractAvailableFieldRefs(snapshot: IngestionSnapshot): string[] {

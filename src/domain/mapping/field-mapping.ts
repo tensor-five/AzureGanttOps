@@ -15,6 +15,13 @@ export type FieldMappingProfile = {
   fields: RequiredFieldMappings;
 };
 
+export const REQUIRED_FIELD_LABELS: Record<RequiredMappingField, string> = {
+  id: "ID",
+  title: "Title",
+  start: "Start Date",
+  endOrTarget: "End/Target Date"
+};
+
 export function normalizeProfile(profile: FieldMappingProfile): FieldMappingProfile {
   return {
     id: profile.id.trim(),

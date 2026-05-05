@@ -1,4 +1,4 @@
-import type { FieldMappingProfile, RequiredMappingField } from "./field-mapping.js";
+import type { FieldMappingProfile, RequiredFieldMappings, RequiredMappingField } from "./field-mapping.js";
 
 export const DEFAULT_FIELD_CANDIDATES: Record<RequiredMappingField, readonly string[]> = {
   id: ["System.Id", "Custom.ExternalId", "Custom.WorkItemId"],
@@ -9,6 +9,13 @@ export const DEFAULT_FIELD_CANDIDATES: Record<RequiredMappingField, readonly str
     "Microsoft.VSTS.Scheduling.FinishDate",
     "Custom.TargetDate"
   ]
+};
+
+export const STANDARD_AZURE_FIELD_DEFAULTS: RequiredFieldMappings = {
+  id: DEFAULT_FIELD_CANDIDATES.id[0],
+  title: DEFAULT_FIELD_CANDIDATES.title[0],
+  start: DEFAULT_FIELD_CANDIDATES.start[0],
+  endOrTarget: DEFAULT_FIELD_CANDIDATES.endOrTarget[0]
 };
 
 const DEFAULT_PROFILE_NAME = "Auto-applied Azure default";
