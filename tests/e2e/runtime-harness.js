@@ -27486,19 +27486,13 @@ var arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
 var arrayPop = unapply(Array.prototype.pop);
 var arrayPush = unapply(Array.prototype.push);
 var arraySplice = unapply(Array.prototype.splice);
-var arrayIsArray = Array.isArray;
 var stringToLowerCase = unapply(String.prototype.toLowerCase);
 var stringToString = unapply(String.prototype.toString);
 var stringMatch = unapply(String.prototype.match);
 var stringReplace = unapply(String.prototype.replace);
 var stringIndexOf = unapply(String.prototype.indexOf);
 var stringTrim = unapply(String.prototype.trim);
-var numberToString = unapply(Number.prototype.toString);
-var booleanToString = unapply(Boolean.prototype.toString);
-var bigintToString = typeof BigInt === "undefined" ? null : unapply(BigInt.prototype.toString);
-var symbolToString = typeof Symbol === "undefined" ? null : unapply(Symbol.prototype.toString);
 var objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
-var objectToString = unapply(Object.prototype.toString);
 var regExpTest = unapply(RegExp.prototype.test);
 var typeErrorCreate = unconstruct(TypeError);
 function unapply(func) {
@@ -27524,9 +27518,6 @@ function addToSet(set, array) {
   let transformCaseFunc = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : stringToLowerCase;
   if (setPrototypeOf) {
     setPrototypeOf(set, null);
-  }
-  if (!arrayIsArray(array)) {
-    return set;
   }
   let l = array.length;
   while (l--) {
@@ -27558,7 +27549,7 @@ function clone(object) {
   for (const [property, value] of entries(object)) {
     const isPropertyExist = objectHasOwnProperty(object, property);
     if (isPropertyExist) {
-      if (arrayIsArray(value)) {
+      if (Array.isArray(value)) {
         newObject[property] = cleanArray(value);
       } else if (value && typeof value === "object" && value.constructor === Object) {
         newObject[property] = clone(value);
@@ -27568,44 +27559,6 @@ function clone(object) {
     }
   }
   return newObject;
-}
-function stringifyValue(value) {
-  switch (typeof value) {
-    case "string": {
-      return value;
-    }
-    case "number": {
-      return numberToString(value);
-    }
-    case "boolean": {
-      return booleanToString(value);
-    }
-    case "bigint": {
-      return bigintToString ? bigintToString(value) : "0";
-    }
-    case "symbol": {
-      return symbolToString ? symbolToString(value) : "Symbol()";
-    }
-    case "undefined": {
-      return objectToString(value);
-    }
-    case "function":
-    case "object": {
-      if (value === null) {
-        return objectToString(value);
-      }
-      const valueAsRecord = value;
-      const valueToString = lookupGetter(valueAsRecord, "toString");
-      if (typeof valueToString === "function") {
-        const stringified = valueToString(valueAsRecord);
-        return typeof stringified === "string" ? stringified : objectToString(stringified);
-      }
-      return objectToString(value);
-    }
-    default: {
-      return objectToString(value);
-    }
-  }
 }
 function lookupGetter(object, prop) {
   while (object !== null) {
@@ -27625,14 +27578,6 @@ function lookupGetter(object, prop) {
   }
   return fallbackValue;
 }
-function isRegex(value) {
-  try {
-    regExpTest(value, "");
-    return true;
-  } catch (_unused) {
-    return false;
-  }
-}
 var html$1 = freeze(["a", "abbr", "acronym", "address", "area", "article", "aside", "audio", "b", "bdi", "bdo", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "content", "data", "datalist", "dd", "decorator", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "img", "input", "ins", "kbd", "label", "legend", "li", "main", "map", "mark", "marquee", "menu", "menuitem", "meter", "nav", "nobr", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "search", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"]);
 var svg$1 = freeze(["svg", "a", "altglyph", "altglyphdef", "altglyphitem", "animatecolor", "animatemotion", "animatetransform", "circle", "clippath", "defs", "desc", "ellipse", "enterkeyhint", "exportparts", "filter", "font", "g", "glyph", "glyphref", "hkern", "image", "inputmode", "line", "lineargradient", "marker", "mask", "metadata", "mpath", "part", "path", "pattern", "polygon", "polyline", "radialgradient", "rect", "stop", "style", "switch", "symbol", "text", "textpath", "title", "tref", "tspan", "view", "vkern"]);
 var svgFilters = freeze(["feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence"]);
@@ -27640,9 +27585,9 @@ var svgDisallowed = freeze(["animate", "color-profile", "cursor", "discard", "fo
 var mathMl$1 = freeze(["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmultiscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mspace", "msqrt", "mstyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "mprescripts"]);
 var mathMlDisallowed = freeze(["maction", "maligngroup", "malignmark", "mlongdiv", "mscarries", "mscarry", "msgroup", "mstack", "msline", "msrow", "semantics", "annotation", "annotation-xml", "mprescripts", "none"]);
 var text = freeze(["#text"]);
-var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns"]);
+var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns", "slot"]);
 var svg = freeze(["accent-height", "accumulate", "additive", "alignment-baseline", "amplitude", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clippathunits", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "exponent", "fill", "fill-opacity", "fill-rule", "filter", "filterunits", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "intercept", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "mask-type", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "primitiveunits", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "slope", "specularconstant", "specularexponent", "spreadmethod", "startoffset", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "systemlanguage", "tabindex", "tablevalues", "targetx", "targety", "transform", "transform-origin", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "version", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"]);
-var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnalign", "columnlines", "columnspacing", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lquote", "lspace", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
+var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnsalign", "columnlines", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lspace", "lquote", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
 var xml = freeze(["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"]);
 var MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm);
 var ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
@@ -27675,11 +27620,20 @@ var EXPRESSIONS = /* @__PURE__ */ Object.freeze({
 });
 var NODE_TYPE = {
   element: 1,
+  attribute: 2,
   text: 3,
+  cdataSection: 4,
+  entityReference: 5,
+  // Deprecated
+  entityNode: 6,
   // Deprecated
   progressingInstruction: 7,
   comment: 8,
-  document: 9
+  document: 9,
+  documentType: 10,
+  documentFragment: 11,
+  notation: 12
+  // Deprecated
 };
 var getGlobal = function getGlobal2() {
   return typeof window === "undefined" ? null : window;
@@ -27724,7 +27678,7 @@ var _createHooksMap = function _createHooksMap2() {
 function createDOMPurify() {
   let window2 = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : getGlobal();
   const DOMPurify = (root) => createDOMPurify(root);
-  DOMPurify.version = "3.4.2";
+  DOMPurify.version = "3.3.3";
   DOMPurify.removed = [];
   if (!window2 || !window2.document || window2.document.nodeType !== NODE_TYPE.document || !window2.Element) {
     DOMPurify.isSupported = false;
@@ -27879,15 +27833,15 @@ function createDOMPurify() {
     PARSER_MEDIA_TYPE = // eslint-disable-next-line unicorn/prefer-includes
     SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
     transformCaseFunc = PARSER_MEDIA_TYPE === "application/xhtml+xml" ? stringToString : stringToLowerCase;
-    ALLOWED_TAGS2 = objectHasOwnProperty(cfg, "ALLOWED_TAGS") && arrayIsArray(cfg.ALLOWED_TAGS) ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
-    ALLOWED_ATTR2 = objectHasOwnProperty(cfg, "ALLOWED_ATTR") && arrayIsArray(cfg.ALLOWED_ATTR) ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
-    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") && arrayIsArray(cfg.ALLOWED_NAMESPACES) ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
-    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") && arrayIsArray(cfg.ADD_URI_SAFE_ATTR) ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
-    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") && arrayIsArray(cfg.ADD_DATA_URI_TAGS) ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
-    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") && arrayIsArray(cfg.FORBID_CONTENTS) ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
-    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") && arrayIsArray(cfg.FORBID_TAGS) ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
-    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") && arrayIsArray(cfg.FORBID_ATTR) ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
-    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES && typeof cfg.USE_PROFILES === "object" ? clone(cfg.USE_PROFILES) : cfg.USE_PROFILES : false;
+    ALLOWED_TAGS2 = objectHasOwnProperty(cfg, "ALLOWED_TAGS") ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR2 = objectHasOwnProperty(cfg, "ALLOWED_ATTR") ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
+    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
+    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
+    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
+    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
+    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
+    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES : false;
     ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false;
     ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false;
     ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false;
@@ -27903,20 +27857,19 @@ function createDOMPurify() {
     SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false;
     KEEP_CONTENT = cfg.KEEP_CONTENT !== false;
     IN_PLACE = cfg.IN_PLACE || false;
-    IS_ALLOWED_URI$1 = isRegex(cfg.ALLOWED_URI_REGEXP) ? cfg.ALLOWED_URI_REGEXP : IS_ALLOWED_URI;
-    NAMESPACE = typeof cfg.NAMESPACE === "string" ? cfg.NAMESPACE : HTML_NAMESPACE;
-    MATHML_TEXT_INTEGRATION_POINTS = objectHasOwnProperty(cfg, "MATHML_TEXT_INTEGRATION_POINTS") && cfg.MATHML_TEXT_INTEGRATION_POINTS && typeof cfg.MATHML_TEXT_INTEGRATION_POINTS === "object" ? clone(cfg.MATHML_TEXT_INTEGRATION_POINTS) : addToSet({}, ["mi", "mo", "mn", "ms", "mtext"]);
-    HTML_INTEGRATION_POINTS = objectHasOwnProperty(cfg, "HTML_INTEGRATION_POINTS") && cfg.HTML_INTEGRATION_POINTS && typeof cfg.HTML_INTEGRATION_POINTS === "object" ? clone(cfg.HTML_INTEGRATION_POINTS) : addToSet({}, ["annotation-xml"]);
-    const customElementHandling = objectHasOwnProperty(cfg, "CUSTOM_ELEMENT_HANDLING") && cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING === "object" ? clone(cfg.CUSTOM_ELEMENT_HANDLING) : create(null);
-    CUSTOM_ELEMENT_HANDLING = create(null);
-    if (objectHasOwnProperty(customElementHandling, "tagNameCheck") && isRegexOrFunction(customElementHandling.tagNameCheck)) {
-      CUSTOM_ELEMENT_HANDLING.tagNameCheck = customElementHandling.tagNameCheck;
+    IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
+    NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
+    MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
+    HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
+    CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
     }
-    if (objectHasOwnProperty(customElementHandling, "attributeNameCheck") && isRegexOrFunction(customElementHandling.attributeNameCheck)) {
-      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = customElementHandling.attributeNameCheck;
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
     }
-    if (objectHasOwnProperty(customElementHandling, "allowCustomizedBuiltInElements") && typeof customElementHandling.allowCustomizedBuiltInElements === "boolean") {
-      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = customElementHandling.allowCustomizedBuiltInElements;
+    if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === "boolean") {
+      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
     }
     if (SAFE_FOR_TEMPLATES) {
       ALLOW_DATA_ATTR = false;
@@ -27947,38 +27900,42 @@ function createDOMPurify() {
         addToSet(ALLOWED_ATTR2, xml);
       }
     }
-    EXTRA_ELEMENT_HANDLING.tagCheck = null;
-    EXTRA_ELEMENT_HANDLING.attributeCheck = null;
-    if (objectHasOwnProperty(cfg, "ADD_TAGS")) {
+    if (!objectHasOwnProperty(cfg, "ADD_TAGS")) {
+      EXTRA_ELEMENT_HANDLING.tagCheck = null;
+    }
+    if (!objectHasOwnProperty(cfg, "ADD_ATTR")) {
+      EXTRA_ELEMENT_HANDLING.attributeCheck = null;
+    }
+    if (cfg.ADD_TAGS) {
       if (typeof cfg.ADD_TAGS === "function") {
         EXTRA_ELEMENT_HANDLING.tagCheck = cfg.ADD_TAGS;
-      } else if (arrayIsArray(cfg.ADD_TAGS)) {
+      } else {
         if (ALLOWED_TAGS2 === DEFAULT_ALLOWED_TAGS) {
           ALLOWED_TAGS2 = clone(ALLOWED_TAGS2);
         }
         addToSet(ALLOWED_TAGS2, cfg.ADD_TAGS, transformCaseFunc);
       }
     }
-    if (objectHasOwnProperty(cfg, "ADD_ATTR")) {
+    if (cfg.ADD_ATTR) {
       if (typeof cfg.ADD_ATTR === "function") {
         EXTRA_ELEMENT_HANDLING.attributeCheck = cfg.ADD_ATTR;
-      } else if (arrayIsArray(cfg.ADD_ATTR)) {
+      } else {
         if (ALLOWED_ATTR2 === DEFAULT_ALLOWED_ATTR) {
           ALLOWED_ATTR2 = clone(ALLOWED_ATTR2);
         }
         addToSet(ALLOWED_ATTR2, cfg.ADD_ATTR, transformCaseFunc);
       }
     }
-    if (objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") && arrayIsArray(cfg.ADD_URI_SAFE_ATTR)) {
+    if (cfg.ADD_URI_SAFE_ATTR) {
       addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
     }
-    if (objectHasOwnProperty(cfg, "FORBID_CONTENTS") && arrayIsArray(cfg.FORBID_CONTENTS)) {
+    if (cfg.FORBID_CONTENTS) {
       if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
         FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
       addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
     }
-    if (objectHasOwnProperty(cfg, "ADD_FORBID_CONTENTS") && arrayIsArray(cfg.ADD_FORBID_CONTENTS)) {
+    if (cfg.ADD_FORBID_CONTENTS) {
       if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
         FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
@@ -28171,10 +28128,6 @@ function createDOMPurify() {
       _forceRemove(currentNode);
       return true;
     }
-    if (SAFE_FOR_XML && currentNode.namespaceURI === HTML_NAMESPACE && tagName === "style" && _isNode(currentNode.firstElementChild)) {
-      _forceRemove(currentNode);
-      return true;
-    }
     if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
       _forceRemove(currentNode);
       return true;
@@ -28183,7 +28136,7 @@ function createDOMPurify() {
       _forceRemove(currentNode);
       return true;
     }
-    if (FORBID_TAGS[tagName] || !(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && !ALLOWED_TAGS2[tagName]) {
+    if (!(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName])) {
       if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
         if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
           return false;
@@ -28199,6 +28152,7 @@ function createDOMPurify() {
           const childCount = childNodes.length;
           for (let i = childCount - 1; i >= 0; --i) {
             const childClone = cloneNode(childNodes[i], true);
+            childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
             parentNode.insertBefore(childClone, getNextSibling(currentNode));
           }
         }
@@ -28236,10 +28190,10 @@ function createDOMPurify() {
     if (SANITIZE_DOM && (lcName === "id" || lcName === "name") && (value in document2 || value in formElement)) {
       return false;
     }
-    const nameIsPermitted = ALLOWED_ATTR2[lcName] || EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag);
     if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR2, lcName)) ;
     else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR2, lcName)) ;
-    else if (!nameIsPermitted || FORBID_ATTR[lcName]) {
+    else if (EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag)) ;
+    else if (!ALLOWED_ATTR2[lcName] || FORBID_ATTR[lcName]) {
       if (
         // First condition does a very basic check if a) it's basically a valid custom element tagname AND
         // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
@@ -28260,9 +28214,8 @@ function createDOMPurify() {
     } else ;
     return true;
   };
-  const RESERVED_CUSTOM_ELEMENT_NAMES = addToSet({}, ["annotation-xml", "color-profile", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "missing-glyph"]);
   const _isBasicCustomElement = function _isBasicCustomElement2(tagName) {
-    return !RESERVED_CUSTOM_ELEMENT_NAMES[stringToLowerCase(tagName)] && regExpTest(CUSTOM_ELEMENT2, tagName);
+    return tagName !== "annotation-xml" && stringMatch(tagName, CUSTOM_ELEMENT2);
   };
   const _sanitizeAttributes = function _sanitizeAttributes2(currentNode) {
     _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
@@ -28296,7 +28249,7 @@ function createDOMPurify() {
       hookEvent.forceKeepAttr = void 0;
       _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
       value = hookEvent.attrValue;
-      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name") && stringIndexOf(value, SANITIZE_NAMED_PROPS_PREFIX) !== 0) {
+      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name")) {
         _removeAttribute(name, currentNode);
         value = SANITIZE_NAMED_PROPS_PREFIX + value;
       }
@@ -28363,7 +28316,7 @@ function createDOMPurify() {
     }
     _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
   };
-  const _sanitizeShadowDOM2 = function _sanitizeShadowDOM(fragment) {
+  const _sanitizeShadowDOM = function _sanitizeShadowDOM2(fragment) {
     let shadowNode = null;
     const shadowIterator = _createNodeIterator(fragment);
     _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
@@ -28388,9 +28341,13 @@ function createDOMPurify() {
       dirty = "<!-->";
     }
     if (typeof dirty !== "string" && !_isNode(dirty)) {
-      dirty = stringifyValue(dirty);
-      if (typeof dirty !== "string") {
-        throw typeErrorCreate("dirty is not a string, aborting");
+      if (typeof dirty.toString === "function") {
+        dirty = dirty.toString();
+        if (typeof dirty !== "string") {
+          throw typeErrorCreate("dirty is not a string, aborting");
+        }
+      } else {
+        throw typeErrorCreate("toString is not a function");
       }
     }
     if (!DOMPurify.isSupported) {
@@ -28404,9 +28361,8 @@ function createDOMPurify() {
       IN_PLACE = false;
     }
     if (IN_PLACE) {
-      const nn = dirty.nodeName;
-      if (typeof nn === "string") {
-        const tagName = transformCaseFunc(nn);
+      if (dirty.nodeName) {
+        const tagName = transformCaseFunc(dirty.nodeName);
         if (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName]) {
           throw typeErrorCreate("root node is forbidden and cannot be sanitized in-place");
         }
@@ -28439,21 +28395,13 @@ function createDOMPurify() {
       _sanitizeElements(currentNode);
       _sanitizeAttributes(currentNode);
       if (currentNode.content instanceof DocumentFragment) {
-        _sanitizeShadowDOM2(currentNode.content);
+        _sanitizeShadowDOM(currentNode.content);
       }
     }
     if (IN_PLACE) {
       return dirty;
     }
     if (RETURN_DOM) {
-      if (SAFE_FOR_TEMPLATES) {
-        body.normalize();
-        let html2 = body.innerHTML;
-        arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
-          html2 = stringReplace(html2, expr, " ");
-        });
-        body.innerHTML = html2;
-      }
       if (RETURN_DOM_FRAGMENT) {
         returnNode = createDocumentFragment.call(body.ownerDocument);
         while (body.firstChild) {
@@ -28585,9 +28533,12 @@ function TimelineDetailsPanel(props) {
   const [isSaving, setIsSaving] = import_react4.default.useState(false);
   const descriptionFieldRef = import_react4.default.useRef(null);
   const descriptionRef = import_react4.default.useRef(null);
+  const draftRef = import_react4.default.useRef({ title: "", descriptionHtml: "", state: "" });
   const hasFetchedInitialStateOptionsRef = import_react4.default.useRef(false);
+  const selectedBaselineKey = selected ? `${selected.workItemId}\0${selected.title}\0${sanitizeHtmlFragment(selected.descriptionHtml)}\0${selected.state}` : null;
   import_react4.default.useEffect(() => {
     if (!selected) {
+      draftRef.current = { title: "", descriptionHtml: "", state: "" };
       setTitleDraft("");
       setDescriptionDraft("");
       setStateDraft("");
@@ -28597,9 +28548,15 @@ function TimelineDetailsPanel(props) {
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
       }
+      props.onDirtyChange?.(false);
       return;
     }
     const sanitizedDescription = sanitizeHtmlFragment(selected.descriptionHtml);
+    draftRef.current = {
+      title: selected.title,
+      descriptionHtml: sanitizedDescription,
+      state: selected.state
+    };
     setTitleDraft(selected.title);
     setDescriptionDraft(sanitizedDescription);
     setStateDraft(selected.state);
@@ -28609,7 +28566,8 @@ function TimelineDetailsPanel(props) {
     if (descriptionRef.current) {
       descriptionRef.current.innerHTML = sanitizedDescription;
     }
-  }, [selected?.workItemId]);
+    props.onDirtyChange?.(false);
+  }, [selectedBaselineKey, props.draftResetKey]);
   import_react4.default.useEffect(() => {
     if (hasFetchedInitialStateOptionsRef.current || !selected || !props.onFetchWorkItemStateOptions) {
       return;
@@ -28645,7 +28603,12 @@ function TimelineDetailsPanel(props) {
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
   const baselineState = selected?.state ?? "";
-  const isDirty = titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+  const isDraftDirty = import_react4.default.useCallback((draft) => draft.title.trim() !== baselineTitle.trim() || draft.descriptionHtml !== baselineDescription || draft.state.trim() !== baselineState.trim(), [baselineDescription, baselineState, baselineTitle]);
+  const reportDraftDirty = import_react4.default.useCallback((draft) => {
+    draftRef.current = draft;
+    props.onDirtyChange?.(isDraftDirty(draft));
+  }, [isDraftDirty, props.onDirtyChange]);
+  const isDirty = isDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: stateDraft });
   import_react4.default.useEffect(() => {
     props.onDirtyChange?.(isDirty);
   }, [isDirty]);
@@ -28661,25 +28624,45 @@ function TimelineDetailsPanel(props) {
     if (!descriptionRef.current) {
       return;
     }
+    if (isSaving) {
+      return;
+    }
     descriptionRef.current.focus();
     document.execCommand(command, false, value);
-    setDescriptionDraft(sanitizeHtmlFragment(descriptionRef.current.innerHTML));
+    const sanitizedDescription = sanitizeHtmlFragment(descriptionRef.current.innerHTML);
+    reportDraftDirty({ title: titleDraft, descriptionHtml: sanitizedDescription, state: stateDraft });
+    setDescriptionDraft(sanitizedDescription);
   };
   const saveDetails = async () => {
-    if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
+    if (!selected || !props.onUpdateSelectedWorkItemDetails || isSaving || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
       return;
     }
     setSaveError(null);
     setIsSaving(true);
+    const submittedDraft = {
+      title: titleDraft.trim(),
+      descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
+      state: stateDraft.trim()
+    };
     try {
       await props.onUpdateSelectedWorkItemDetails({
         targetWorkItemId: selected.workItemId,
-        title: titleDraft.trim(),
-        descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
-        state: stateDraft.trim(),
+        title: submittedDraft.title,
+        descriptionHtml: submittedDraft.descriptionHtml,
+        state: submittedDraft.state,
         stateColor: selectedStateColor
       });
-      setTitleDraft(titleDraft.trim());
+      const currentDraft = draftRef.current;
+      const savedDraftStillCurrent = currentDraft.title.trim() === submittedDraft.title && currentDraft.descriptionHtml === submittedDraft.descriptionHtml && currentDraft.state.trim() === submittedDraft.state;
+      if (savedDraftStillCurrent) {
+        draftRef.current = submittedDraft;
+        props.onDirtyChange?.(false);
+        setTitleDraft(submittedDraft.title);
+        setDescriptionDraft(submittedDraft.descriptionHtml);
+        setStateDraft(submittedDraft.state);
+      } else {
+        props.onDirtyChange?.(isDraftDirty(currentDraft));
+      }
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Saving details failed.");
     } finally {
@@ -28691,7 +28674,7 @@ function TimelineDetailsPanel(props) {
       if (event.key.toLowerCase() !== "s" || !event.ctrlKey && !event.metaKey) {
         return;
       }
-      if (!selected || !props.onUpdateSelectedWorkItemDetails || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
+      if (!selected || !props.onUpdateSelectedWorkItemDetails || isSaving || titleDraft.trim().length === 0 || stateDraft.trim().length === 0 || !isDirty) {
         return;
       }
       event.preventDefault();
@@ -28701,7 +28684,7 @@ function TimelineDetailsPanel(props) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isDirty, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
+  }, [isDirty, isSaving, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
   return import_react4.default.createElement("aside", {
     "aria-label": "timeline-details-panel",
     className: contentHidden ? "timeline-details-panel-surface timeline-details-panel-surface-content-hidden" : "timeline-details-panel-surface"
@@ -28731,15 +28714,21 @@ function TimelineDetailsPanel(props) {
   }))) : import_react4.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)) : null), contentHidden ? import_react4.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react4.default.createElement("div", { className: "timeline-details-edit-form" }, import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Title"), import_react4.default.createElement("input", {
     type: "text",
     className: "timeline-details-input",
+    disabled: isSaving,
     value: titleDraft,
     onChange: (event) => {
-      setTitleDraft(event.target.value);
+      const nextTitle = event.target.value;
+      reportDraftDirty({ title: nextTitle, descriptionHtml: descriptionDraft, state: stateDraft });
+      setTitleDraft(nextTitle);
     }
   })), import_react4.default.createElement("label", { className: "timeline-details-field" }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "State"), import_react4.default.createElement("select", {
     className: "timeline-details-input",
+    disabled: isSaving,
     value: stateDraft,
     onChange: (event) => {
-      setStateDraft(event.target.value);
+      const nextState = event.target.value;
+      reportDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: nextState });
+      setStateDraft(nextState);
     }
   }, ...stateOptions.map((option) => import_react4.default.createElement("option", { key: option.name, value: option.name }, option.name)))), import_react4.default.createElement("div", { className: "timeline-details-field", ref: descriptionFieldRef }, import_react4.default.createElement("span", { className: "timeline-details-label" }, "Description"), isDescriptionEditing ? import_react4.default.createElement("div", { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" }, import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("bold") }, "B"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("italic") }, "I"), import_react4.default.createElement("button", { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("underline") }, "U"), import_react4.default.createElement("button", {
     type: "button",
@@ -28781,9 +28770,12 @@ function TimelineDetailsPanel(props) {
       isDescriptionEditing ? "timeline-details-richtext-editing" : "timeline-details-richtext-readonly",
       !isDescriptionEditing && !isDescriptionExpanded ? "timeline-details-richtext-collapsed" : null
     ].filter(Boolean).join(" "),
-    contentEditable: isDescriptionEditing,
+    contentEditable: isDescriptionEditing && !isSaving,
     suppressContentEditableWarning: true,
     onClick: () => {
+      if (isSaving) {
+        return;
+      }
       if (!isDescriptionEditing) {
         setIsDescriptionEditing(true);
         requestAnimationFrame(() => {
@@ -28792,11 +28784,15 @@ function TimelineDetailsPanel(props) {
       }
     },
     onInput: (event) => {
+      if (isSaving) {
+        return;
+      }
       const target = event.target;
       const sanitized = sanitizeHtmlFragment(target.innerHTML);
       if (sanitized !== target.innerHTML) {
         target.innerHTML = sanitized;
       }
+      reportDraftDirty({ title: titleDraft, descriptionHtml: sanitized, state: stateDraft });
       setDescriptionDraft(sanitized);
     },
     onBlur: () => {
@@ -32580,6 +32576,7 @@ function TimelinePane(props) {
     contentHidden: detailsContentHidden,
     organization: props.organization,
     project: props.project,
+    draftResetKey: props.detailsDraftResetKey,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
     onDirtyChange: props.onDetailsDirtyChange
@@ -35480,6 +35477,45 @@ function resolvePersistedRefreshQueryInput() {
   return resolveQueryRunInput(rawQueryInput, organization, project);
 }
 
+// dist/src/app/bootstrap/ui-client-refresh-guard.js
+function createRefreshDiscardWarningInput(params) {
+  const queueWasDrainedByLiveSync = params.afterSuccessfulLiveSyncFlush === true && params.pendingWorkItemMutationCount === 0 && params.state.liveSyncEnabled;
+  return {
+    detailsPanelDirty: params.state.detailsPanelDirty,
+    pendingWorkItemMutationCount: params.pendingWorkItemMutationCount,
+    hasOptimisticChanges: queueWasDrainedByLiveSync ? false : params.state.hasOptimisticChanges,
+    liveSyncEnabled: params.state.liveSyncEnabled,
+    workItemSyncState: queueWasDrainedByLiveSync ? "up_to_date" : params.state.workItemSyncState
+  };
+}
+function shouldFlushLiveSyncBeforeRefresh(input) {
+  return input.liveSyncEnabled && !input.detailsPanelDirty && input.pendingWorkItemMutationCount > 0;
+}
+function shouldShowRefreshDiscardWarning(input) {
+  if (input.detailsPanelDirty) {
+    return true;
+  }
+  if (input.pendingWorkItemMutationCount > 0) {
+    return true;
+  }
+  if (!input.hasOptimisticChanges) {
+    return false;
+  }
+  return !input.liveSyncEnabled || input.workItemSyncState === "error";
+}
+function runWithInFlightGuard(inFlightRef, operation) {
+  if (inFlightRef.current) {
+    return inFlightRef.current;
+  }
+  const next = Promise.resolve().then(operation).finally(() => {
+    if (inFlightRef.current === next) {
+      inFlightRef.current = null;
+    }
+  });
+  inFlightRef.current = next;
+  return next;
+}
+
 // dist/src/app/bootstrap/ui-client-writeback-flow.js
 function toWritebackError(reasonCode) {
   return new Error(reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
@@ -35965,14 +36001,30 @@ function UiShellApp(props) {
   const [isRefreshing, setIsRefreshing] = import_react28.default.useState(false);
   const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react28.default.useState(false);
   const [detailsPanelDirty, setDetailsPanelDirty] = import_react28.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react28.default.useState(0);
   const [hasOptimisticChanges, setHasOptimisticChanges] = import_react28.default.useState(false);
+  const isRefreshingRef = import_react28.default.useRef(isRefreshing);
   const workItemSyncInFlightRef = import_react28.default.useRef(0);
   const pendingWorkItemMutationsRef = import_react28.default.useRef([]);
   const preOptimisticResponseSnapshotRef = import_react28.default.useRef(null);
   const flushPendingWorkItemMutationsPromiseRef = import_react28.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react28.default.useRef(null);
+  const refreshGuardStateRef = import_react28.default.useRef({
+    detailsPanelDirty: false,
+    hasOptimisticChanges: false,
+    liveSyncEnabled,
+    workItemSyncState
+  });
   const liveSyncEnabledRef = import_react28.default.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = import_react28.default.useRef(createTimelineSelectionStore());
   const workItemStateOptionsCacheRef = import_react28.default.useRef(/* @__PURE__ */ new Map());
+  isRefreshingRef.current = isRefreshing;
+  refreshGuardStateRef.current = {
+    detailsPanelDirty,
+    hasOptimisticChanges,
+    liveSyncEnabled,
+    workItemSyncState
+  };
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
   const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
   const adoCommLogPolling = useAdoCommLogPolling({
@@ -35981,6 +36033,27 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
+  const updateRefreshGuardState = import_react28.default.useCallback((patch) => {
+    refreshGuardStateRef.current = {
+      ...refreshGuardStateRef.current,
+      ...patch
+    };
+  }, []);
+  const setGuardedHasOptimisticChanges = import_react28.default.useCallback((next) => {
+    updateRefreshGuardState({ hasOptimisticChanges: next });
+    setHasOptimisticChanges(next);
+  }, [updateRefreshGuardState]);
+  const setGuardedWorkItemSyncState = import_react28.default.useCallback((next) => {
+    const current = refreshGuardStateRef.current.workItemSyncState;
+    const resolved = typeof next === "function" ? next(current) : next;
+    updateRefreshGuardState({ workItemSyncState: resolved });
+    setWorkItemSyncState(resolved);
+  }, [updateRefreshGuardState]);
+  const setGuardedLiveSyncEnabled = import_react28.default.useCallback((enabled) => {
+    liveSyncEnabledRef.current = enabled;
+    updateRefreshGuardState({ liveSyncEnabled: enabled });
+    setLiveSyncEnabled(enabled);
+  }, [updateRefreshGuardState]);
   const fetchWorkItemStateOptionsCached = import_react28.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
@@ -36057,8 +36130,27 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
+  const readRefreshGuardInput = import_react28.default.useCallback((options) => createRefreshDiscardWarningInput({
+    state: refreshGuardStateRef.current,
+    pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
+    afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
+  }), []);
+  const handleDetailsDirtyChange = import_react28.default.useCallback((dirty) => {
+    updateRefreshGuardState({ detailsPanelDirty: dirty });
+    setDetailsPanelDirty(dirty);
+  }, [updateRefreshGuardState]);
+  const handleSetLiveSyncEnabled = import_react28.default.useCallback((enabled) => {
+    setGuardedLiveSyncEnabled(enabled);
+    saveTimelineLiveSyncEnabledPreference(enabled);
+  }, [setGuardedLiveSyncEnabled]);
   const executeRefresh = import_react28.default.useCallback(async (discardPendingChanges) => {
+    isRefreshingRef.current = true;
     setIsRefreshing(true);
+    if (discardPendingChanges) {
+      pendingWorkItemMutationsRef.current = [];
+      setPendingWorkItemSyncCount(0);
+      setGuardedHasOptimisticChanges(false);
+    }
     try {
       const result = await runRetryRefreshFlow({
         lastRunRequest,
@@ -36074,8 +36166,6 @@ function UiShellApp(props) {
       }
       if (result.kind === "refreshed") {
         if (discardPendingChanges) {
-          pendingWorkItemMutationsRef.current = [];
-          setPendingWorkItemSyncCount(0);
           setResponse(result.response);
           setUiModel(mapQueryIntakeResponseToUiModel(result.response));
         } else {
@@ -36091,21 +36181,15 @@ function UiShellApp(props) {
           setActiveTab("timeline");
         }
       }
-      setHasOptimisticChanges(false);
+      if (discardPendingChanges) {
+        setDetailsDraftResetKey((current) => current + 1);
+      }
+      setGuardedHasOptimisticChanges(false);
     } finally {
+      isRefreshingRef.current = false;
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery]);
-  const retryRefresh = import_react28.default.useCallback(async () => {
-    if (isRefreshing) {
-      return;
-    }
-    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges) {
-      setShowRefreshDiscardWarning(true);
-      return;
-    }
-    await executeRefresh(false);
-  }, [detailsPanelDirty, executeRefresh, hasOptimisticChanges, isRefreshing]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges]);
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences2.savedQueries ?? [],
     initialSelectedHeaderQueryId: cachedPreferences2.selectedHeaderQueryId ?? "",
@@ -36118,9 +36202,9 @@ function UiShellApp(props) {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
-      setWorkItemSyncState
+      setWorkItemSyncState: setGuardedWorkItemSyncState
     });
-  }, []);
+  }, [setGuardedWorkItemSyncState]);
   const flushQueuedWorkItemMutations = import_react28.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
@@ -36137,21 +36221,46 @@ function UiShellApp(props) {
         await runTrackedWorkItemUpdate(operation);
       }
     }).then(() => {
-      setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+      if (pendingWorkItemMutationsRef.current.length === 0) {
+        setGuardedHasOptimisticChanges(false);
+      }
+      setGuardedWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
     }).finally(() => {
       flushPendingWorkItemMutationsPromiseRef.current = null;
     });
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
-  }, [runTrackedWorkItemUpdate]);
+  }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
+  const runRetryRefresh = import_react28.default.useCallback(async () => {
+    if (isRefreshingRef.current) {
+      return;
+    }
+    const initialGuardInput = readRefreshGuardInput();
+    let guardInput = initialGuardInput;
+    if (shouldFlushLiveSyncBeforeRefresh(initialGuardInput)) {
+      try {
+        await flushQueuedWorkItemMutations();
+      } catch {
+        setShowRefreshDiscardWarning(true);
+        return;
+      }
+      guardInput = readRefreshGuardInput({ afterSuccessfulLiveSyncFlush: true });
+    }
+    if (shouldShowRefreshDiscardWarning(guardInput)) {
+      setShowRefreshDiscardWarning(true);
+      return;
+    }
+    await executeRefresh(false);
+  }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
+  const retryRefresh = import_react28.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
   const enqueuePendingWorkItemMutation = import_react28.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
     pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
-    setHasOptimisticChanges(true);
-  }, []);
+    setGuardedHasOptimisticChanges(true);
+  }, [setGuardedHasOptimisticChanges]);
   const scheduleWorkItemMutation = import_react28.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
@@ -36163,11 +36272,11 @@ function UiShellApp(props) {
       executeDetails: params.executeDetails
     }));
     if (!liveSyncEnabledRef.current) {
-      setWorkItemSyncState("paused");
+      setGuardedWorkItemSyncState("paused");
       return;
     }
     await flushQueuedWorkItemMutations();
-  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const scheduleDependencyMutation = import_react28.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
@@ -36180,11 +36289,11 @@ function UiShellApp(props) {
       execute: params.execute
     }));
     if (!liveSyncEnabledRef.current) {
-      setWorkItemSyncState("paused");
+      setGuardedWorkItemSyncState("paused");
       return;
     }
     await flushQueuedWorkItemMutations();
-  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const scheduleReparentMutation = import_react28.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
@@ -36196,11 +36305,11 @@ function UiShellApp(props) {
       execute: params.execute
     }));
     if (!liveSyncEnabledRef.current) {
-      setWorkItemSyncState("paused");
+      setGuardedWorkItemSyncState("paused");
       return;
     }
     await flushQueuedWorkItemMutations();
-  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]);
+  }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
   import_react28.default.useEffect(() => {
     responseRef.current = response;
@@ -36224,10 +36333,10 @@ function UiShellApp(props) {
       headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
     });
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
-      setLiveSyncEnabled(enabled);
-      setWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
+      setGuardedLiveSyncEnabled(enabled);
+      setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
-  }, [headerQueryFlow.hydrateSavedHeaderQueries]);
+  }, [headerQueryFlow.hydrateSavedHeaderQueries, setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
   import_react28.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
@@ -36236,10 +36345,10 @@ function UiShellApp(props) {
     if (workItemSyncInFlightRef.current > 0 || workItemSyncState === "error") {
       return;
     }
-    setWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
-  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
+    setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
+  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
   import_react28.default.useEffect(() => {
-    const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges;
+    const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
         event.preventDefault();
@@ -36247,7 +36356,7 @@ function UiShellApp(props) {
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [detailsPanelDirty, hasOptimisticChanges]);
+  }, []);
   import_react28.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
@@ -36454,27 +36563,26 @@ function UiShellApp(props) {
     pendingWorkItemSyncCount,
     organization,
     project,
+    detailsDraftResetKey,
     selectionStore: timelineSelectionStoreRef.current,
-    onSetLiveSyncEnabled: (enabled) => {
-      setLiveSyncEnabled(enabled);
-      saveTimelineLiveSyncEnabledPreference(enabled);
-    },
+    onSetLiveSyncEnabled: handleSetLiveSyncEnabled,
     onPushPendingWorkItemChanges: () => {
       void flushQueuedWorkItemMutations();
     },
-    onDetailsDirtyChange: setDetailsPanelDirty,
+    onDetailsDirtyChange: handleDetailsDirtyChange,
     onClearPendingWorkItemChanges: () => {
       const snapshot = preOptimisticResponseSnapshotRef.current;
       pendingWorkItemMutationsRef.current = [];
       preOptimisticResponseSnapshotRef.current = null;
       setPendingWorkItemSyncCount(0);
-      setHasOptimisticChanges(false);
-      setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+      setGuardedHasOptimisticChanges(false);
+      setGuardedWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+      setDetailsDraftResetKey((current) => current + 1);
       if (snapshot) {
         setResponse(snapshot);
         setUiModel(mapQueryIntakeResponseToUiModel(snapshot));
       } else {
-        void executeRefresh(true);
+        void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
       }
     },
     onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
@@ -36600,7 +36708,7 @@ function UiShellApp(props) {
     className: "refresh-discard-warning-confirm",
     onClick: () => {
       setShowRefreshDiscardWarning(false);
-      void executeRefresh(true);
+      void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
     }
   }, "Verwerfen & Aktualisieren")))) : null);
 }
@@ -36964,5 +37072,5 @@ react-router/dist/development/index.mjs:
    *)
 
 dompurify/dist/purify.es.mjs:
-  (*! @license DOMPurify 3.4.2 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.2/LICENSE *)
+  (*! @license DOMPurify 3.3.3 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.3/LICENSE *)
 */

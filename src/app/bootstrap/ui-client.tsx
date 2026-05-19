@@ -51,6 +51,14 @@ import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
 import { resolvePersistedRefreshQueryInput, runRetryRefreshFlow, type RunRequest } from "./ui-client-refresh-flow.js";
 import {
+  createRefreshDiscardWarningInput,
+  runWithInFlightGuard,
+  shouldFlushLiveSyncBeforeRefresh,
+  shouldShowRefreshDiscardWarning,
+  type RefreshDiscardWarningInput,
+  type RefreshDiscardWarningState
+} from "./ui-client-refresh-guard.js";
+import {
   applyTimelineMutationToUiState,
   runTrackedWorkItemSync,
   toWritebackError
@@ -186,14 +194,30 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = React.useState(false);
   const [detailsPanelDirty, setDetailsPanelDirty] = React.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = React.useState(0);
   const [hasOptimisticChanges, setHasOptimisticChanges] = React.useState(false);
+  const isRefreshingRef = React.useRef(isRefreshing);
   const workItemSyncInFlightRef = React.useRef(0);
   const pendingWorkItemMutationsRef = React.useRef<PendingWorkItemMutation[]>([]);
   const preOptimisticResponseSnapshotRef = React.useRef<QueryIntakeResponse | null>(null);
   const flushPendingWorkItemMutationsPromiseRef = React.useRef<Promise<void> | null>(null);
+  const retryRefreshInFlightPromiseRef = React.useRef<Promise<void> | null>(null);
+  const refreshGuardStateRef = React.useRef<RefreshDiscardWarningState>({
+    detailsPanelDirty: false,
+    hasOptimisticChanges: false,
+    liveSyncEnabled,
+    workItemSyncState
+  });
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
+  isRefreshingRef.current = isRefreshing;
+  refreshGuardStateRef.current = {
+    detailsPanelDirty,
+    hasOptimisticChanges,
+    liveSyncEnabled,
+    workItemSyncState
+  };
   const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
   const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
   const adoCommLogPolling = useAdoCommLogPolling({
@@ -202,6 +226,40 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
+
+  const updateRefreshGuardState = React.useCallback((patch: Partial<RefreshDiscardWarningState>) => {
+    refreshGuardStateRef.current = {
+      ...refreshGuardStateRef.current,
+      ...patch
+    };
+  }, []);
+
+  const setGuardedHasOptimisticChanges = React.useCallback(
+    (next: boolean) => {
+      updateRefreshGuardState({ hasOptimisticChanges: next });
+      setHasOptimisticChanges(next);
+    },
+    [updateRefreshGuardState]
+  );
+
+  const setGuardedWorkItemSyncState = React.useCallback(
+    (next: React.SetStateAction<WorkItemSyncState>) => {
+      const current = refreshGuardStateRef.current.workItemSyncState;
+      const resolved = typeof next === "function" ? next(current) : next;
+      updateRefreshGuardState({ workItemSyncState: resolved });
+      setWorkItemSyncState(resolved);
+    },
+    [updateRefreshGuardState]
+  );
+
+  const setGuardedLiveSyncEnabled = React.useCallback(
+    (enabled: boolean) => {
+      liveSyncEnabledRef.current = enabled;
+      updateRefreshGuardState({ liveSyncEnabled: enabled });
+      setLiveSyncEnabled(enabled);
+    },
+    [updateRefreshGuardState]
+  );
 
   const fetchWorkItemStateOptionsCached = React.useCallback(
     async ({ targetWorkItemId }: { targetWorkItemId: number }) => {
@@ -322,8 +380,34 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]
   );
 
+  const readRefreshGuardInput = React.useCallback(
+    (options?: { afterSuccessfulLiveSyncFlush?: boolean }): RefreshDiscardWarningInput =>
+      createRefreshDiscardWarningInput({
+        state: refreshGuardStateRef.current,
+        pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
+        afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
+      }),
+    []
+  );
+
+  const handleDetailsDirtyChange = React.useCallback((dirty: boolean) => {
+    updateRefreshGuardState({ detailsPanelDirty: dirty });
+    setDetailsPanelDirty(dirty);
+  }, [updateRefreshGuardState]);
+
+  const handleSetLiveSyncEnabled = React.useCallback((enabled: boolean) => {
+    setGuardedLiveSyncEnabled(enabled);
+    saveTimelineLiveSyncEnabledPreference(enabled);
+  }, [setGuardedLiveSyncEnabled]);
+
   const executeRefresh = React.useCallback(async (discardPendingChanges: boolean) => {
+    isRefreshingRef.current = true;
     setIsRefreshing(true);
+    if (discardPendingChanges) {
+      pendingWorkItemMutationsRef.current = [];
+      setPendingWorkItemSyncCount(0);
+      setGuardedHasOptimisticChanges(false);
+    }
 
     try {
       const result = await runRetryRefreshFlow({
@@ -342,8 +426,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       if (result.kind === "refreshed") {
         if (discardPendingChanges) {
-          pendingWorkItemMutationsRef.current = [];
-          setPendingWorkItemSyncCount(0);
           setResponse(result.response);
           setUiModel(mapQueryIntakeResponseToUiModel(result.response));
         } else {
@@ -362,24 +444,15 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           setActiveTab("timeline");
         }
       }
-      setHasOptimisticChanges(false);
+      if (discardPendingChanges) {
+        setDetailsDraftResetKey((current) => current + 1);
+      }
+      setGuardedHasOptimisticChanges(false);
     } finally {
+      isRefreshingRef.current = false;
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery]);
-
-  const retryRefresh = React.useCallback(async () => {
-    if (isRefreshing) {
-      return;
-    }
-
-    if (pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges) {
-      setShowRefreshDiscardWarning(true);
-      return;
-    }
-
-    await executeRefresh(false);
-  }, [detailsPanelDirty, executeRefresh, hasOptimisticChanges, isRefreshing]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -395,10 +468,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return runTrackedWorkItemSync({
         operation,
         inFlightRef: workItemSyncInFlightRef,
-        setWorkItemSyncState
+        setWorkItemSyncState: setGuardedWorkItemSyncState
       });
     },
-    []
+    [setGuardedWorkItemSyncState]
   );
 
   const flushQueuedWorkItemMutations = React.useCallback(async (): Promise<void> => {
@@ -419,7 +492,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
     })
       .then(() => {
-        setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+        if (pendingWorkItemMutationsRef.current.length === 0) {
+          setGuardedHasOptimisticChanges(false);
+        }
+        setGuardedWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
       })
       .finally(() => {
         flushPendingWorkItemMutationsPromiseRef.current = null;
@@ -427,7 +503,40 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
-  }, [runTrackedWorkItemUpdate]);
+  }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
+
+  const runRetryRefresh = React.useCallback(async () => {
+    if (isRefreshingRef.current) {
+      return;
+    }
+
+    const initialGuardInput = readRefreshGuardInput();
+
+    let guardInput = initialGuardInput;
+
+    if (shouldFlushLiveSyncBeforeRefresh(initialGuardInput)) {
+      try {
+        await flushQueuedWorkItemMutations();
+      } catch {
+        setShowRefreshDiscardWarning(true);
+        return;
+      }
+
+      guardInput = readRefreshGuardInput({ afterSuccessfulLiveSyncFlush: true });
+    }
+
+    if (shouldShowRefreshDiscardWarning(guardInput)) {
+      setShowRefreshDiscardWarning(true);
+      return;
+    }
+
+    await executeRefresh(false);
+  }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
+
+  const retryRefresh = React.useCallback(
+    () => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh),
+    [runRetryRefresh]
+  );
 
   const enqueuePendingWorkItemMutation = React.useCallback((mutation: PendingWorkItemMutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
@@ -435,8 +544,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     }
     pendingWorkItemMutationsRef.current = upsertPendingWorkItemMutation(pendingWorkItemMutationsRef.current, mutation);
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
-    setHasOptimisticChanges(true);
-  }, []);
+    setGuardedHasOptimisticChanges(true);
+  }, [setGuardedHasOptimisticChanges]);
 
   const scheduleWorkItemMutation = React.useCallback(
     async (params: {
@@ -458,13 +567,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       );
 
       if (!liveSyncEnabledRef.current) {
-        setWorkItemSyncState("paused");
+        setGuardedWorkItemSyncState("paused");
         return;
       }
 
       await flushQueuedWorkItemMutations();
     },
-    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]
   );
 
   const scheduleDependencyMutation = React.useCallback(
@@ -489,13 +598,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       );
 
       if (!liveSyncEnabledRef.current) {
-        setWorkItemSyncState("paused");
+        setGuardedWorkItemSyncState("paused");
         return;
       }
 
       await flushQueuedWorkItemMutations();
     },
-    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]
   );
 
   const scheduleReparentMutation = React.useCallback(
@@ -518,13 +627,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       );
 
       if (!liveSyncEnabledRef.current) {
-        setWorkItemSyncState("paused");
+        setGuardedWorkItemSyncState("paused");
         return;
       }
 
       await flushQueuedWorkItemMutations();
     },
-    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations]
+    [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]
   );
 
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
@@ -557,10 +666,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       );
     });
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
-      setLiveSyncEnabled(enabled);
-      setWorkItemSyncState((current) => (current === "syncing" ? current : enabled ? "up_to_date" : "paused"));
+      setGuardedLiveSyncEnabled(enabled);
+      setGuardedWorkItemSyncState((current) => (current === "syncing" ? current : enabled ? "up_to_date" : "paused"));
     });
-  }, [headerQueryFlow.hydrateSavedHeaderQueries]);
+  }, [headerQueryFlow.hydrateSavedHeaderQueries, setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
 
   React.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
@@ -572,12 +681,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       return;
     }
 
-    setWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
-  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, workItemSyncState]);
+    setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
+  }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
 
   React.useEffect(() => {
     const hasUnsavedChanges = () =>
-      pendingWorkItemMutationsRef.current.length > 0 || detailsPanelDirty || hasOptimisticChanges;
+      pendingWorkItemMutationsRef.current.length > 0 ||
+      refreshGuardStateRef.current.detailsPanelDirty ||
+      refreshGuardStateRef.current.hasOptimisticChanges;
 
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges()) {
@@ -587,7 +698,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [detailsPanelDirty, hasOptimisticChanges]);
+  }, []);
 
   React.useEffect(() => {
     persistUserPreferencesPatch({
@@ -947,27 +1058,26 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           pendingWorkItemSyncCount,
           organization,
           project,
+          detailsDraftResetKey,
           selectionStore: timelineSelectionStoreRef.current,
-          onSetLiveSyncEnabled: (enabled) => {
-            setLiveSyncEnabled(enabled);
-            saveTimelineLiveSyncEnabledPreference(enabled);
-          },
+          onSetLiveSyncEnabled: handleSetLiveSyncEnabled,
           onPushPendingWorkItemChanges: () => {
             void flushQueuedWorkItemMutations();
           },
-          onDetailsDirtyChange: setDetailsPanelDirty,
+          onDetailsDirtyChange: handleDetailsDirtyChange,
           onClearPendingWorkItemChanges: () => {
             const snapshot = preOptimisticResponseSnapshotRef.current;
             pendingWorkItemMutationsRef.current = [];
             preOptimisticResponseSnapshotRef.current = null;
             setPendingWorkItemSyncCount(0);
-            setHasOptimisticChanges(false);
-            setWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+            setGuardedHasOptimisticChanges(false);
+            setGuardedWorkItemSyncState(liveSyncEnabledRef.current ? "up_to_date" : "paused");
+            setDetailsDraftResetKey((current) => current + 1);
             if (snapshot) {
               setResponse(snapshot);
               setUiModel(mapQueryIntakeResponseToUiModel(snapshot));
             } else {
-              void executeRefresh(true);
+              void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
             }
           },
           onUpdateWorkItemSchedule: async ({ targetWorkItemId, startDate, endDate }) => {
@@ -1149,7 +1259,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                   className: "refresh-discard-warning-confirm",
                   onClick: () => {
                     setShowRefreshDiscardWarning(false);
-                    void executeRefresh(true);
+                    void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
                   }
                 },
                 "Verwerfen & Aktualisieren"

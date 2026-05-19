@@ -105,6 +105,7 @@ export type TimelinePaneProps = {
   organization?: string;
   project?: string;
   density?: TimelineDensity;
+  detailsDraftResetKey?: number;
   selectionStore?: TimelineSelectionStore;
   onAdoptUnschedulableSchedule?: (input: {
     targetWorkItemId: number;
@@ -2016,6 +2017,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     contentHidden: detailsContentHidden,
     organization: props.organization,
     project: props.project,
+    draftResetKey: props.detailsDraftResetKey,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
     onDirtyChange: props.onDetailsDirtyChange

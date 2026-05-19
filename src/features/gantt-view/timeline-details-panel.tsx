@@ -7,6 +7,7 @@ export type TimelineDetailsPanelProps = {
   timeline: TimelineReadModel | null;
   selectedWorkItemId: number | null;
   contentHidden?: boolean;
+  draftResetKey?: number;
   organization?: string;
   project?: string;
   onUpdateSelectedWorkItemDetails?: (input: {
@@ -22,6 +23,12 @@ export type TimelineDetailsPanelProps = {
 
 const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
 
+type TimelineDetailsDraft = {
+  title: string;
+  descriptionHtml: string;
+  state: string;
+};
+
 export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.ReactElement {
   const contentHidden = props.contentHidden ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
@@ -35,10 +42,15 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const [isSaving, setIsSaving] = React.useState(false);
   const descriptionFieldRef = React.useRef<HTMLDivElement | null>(null);
   const descriptionRef = React.useRef<HTMLDivElement | null>(null);
+  const draftRef = React.useRef<TimelineDetailsDraft>({ title: "", descriptionHtml: "", state: "" });
   const hasFetchedInitialStateOptionsRef = React.useRef(false);
+  const selectedBaselineKey = selected
+    ? `${selected.workItemId}\u0000${selected.title}\u0000${sanitizeHtmlFragment(selected.descriptionHtml)}\u0000${selected.state}`
+    : null;
 
   React.useEffect(() => {
     if (!selected) {
+      draftRef.current = { title: "", descriptionHtml: "", state: "" };
       setTitleDraft("");
       setDescriptionDraft("");
       setStateDraft("");
@@ -48,10 +60,16 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       if (descriptionRef.current) {
         descriptionRef.current.innerHTML = "";
       }
+      props.onDirtyChange?.(false);
       return;
     }
 
     const sanitizedDescription = sanitizeHtmlFragment(selected.descriptionHtml);
+    draftRef.current = {
+      title: selected.title,
+      descriptionHtml: sanitizedDescription,
+      state: selected.state
+    };
     setTitleDraft(selected.title);
     setDescriptionDraft(sanitizedDescription);
     setStateDraft(selected.state);
@@ -61,7 +79,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     if (descriptionRef.current) {
       descriptionRef.current.innerHTML = sanitizedDescription;
     }
-  }, [selected?.workItemId]);
+    props.onDirtyChange?.(false);
+  }, [selectedBaselineKey, props.draftResetKey]);
 
   React.useEffect(() => {
     if (hasFetchedInitialStateOptionsRef.current || !selected || !props.onFetchWorkItemStateOptions) {
@@ -123,8 +142,22 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const baselineTitle = selected?.title ?? "";
   const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
   const baselineState = selected?.state ?? "";
+  const isDraftDirty = React.useCallback(
+    (draft: { title: string; descriptionHtml: string; state: string }) =>
+      draft.title.trim() !== baselineTitle.trim() ||
+      draft.descriptionHtml !== baselineDescription ||
+      draft.state.trim() !== baselineState.trim(),
+    [baselineDescription, baselineState, baselineTitle]
+  );
+  const reportDraftDirty = React.useCallback(
+    (draft: { title: string; descriptionHtml: string; state: string }) => {
+      draftRef.current = draft;
+      props.onDirtyChange?.(isDraftDirty(draft));
+    },
+    [isDraftDirty, props.onDirtyChange]
+  );
   const isDirty =
-    titleDraft.trim() !== baselineTitle.trim() || descriptionDraft !== baselineDescription || stateDraft.trim() !== baselineState.trim();
+    isDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: stateDraft });
 
   React.useEffect(() => {
     props.onDirtyChange?.(isDirty);
@@ -150,16 +183,22 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     if (!descriptionRef.current) {
       return;
     }
+    if (isSaving) {
+      return;
+    }
 
     descriptionRef.current.focus();
     document.execCommand(command, false, value);
-    setDescriptionDraft(sanitizeHtmlFragment(descriptionRef.current.innerHTML));
+    const sanitizedDescription = sanitizeHtmlFragment(descriptionRef.current.innerHTML);
+    reportDraftDirty({ title: titleDraft, descriptionHtml: sanitizedDescription, state: stateDraft });
+    setDescriptionDraft(sanitizedDescription);
   };
 
   const saveDetails = async () => {
     if (
       !selected ||
       !props.onUpdateSelectedWorkItemDetails ||
+      isSaving ||
       titleDraft.trim().length === 0 ||
       stateDraft.trim().length === 0 ||
       !isDirty
@@ -169,16 +208,34 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
 
     setSaveError(null);
     setIsSaving(true);
+    const submittedDraft: TimelineDetailsDraft = {
+      title: titleDraft.trim(),
+      descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
+      state: stateDraft.trim()
+    };
 
     try {
       await props.onUpdateSelectedWorkItemDetails({
         targetWorkItemId: selected.workItemId,
-        title: titleDraft.trim(),
-        descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
-        state: stateDraft.trim(),
+        title: submittedDraft.title,
+        descriptionHtml: submittedDraft.descriptionHtml,
+        state: submittedDraft.state,
         stateColor: selectedStateColor
       });
-      setTitleDraft(titleDraft.trim());
+      const currentDraft = draftRef.current;
+      const savedDraftStillCurrent =
+        currentDraft.title.trim() === submittedDraft.title &&
+        currentDraft.descriptionHtml === submittedDraft.descriptionHtml &&
+        currentDraft.state.trim() === submittedDraft.state;
+      if (savedDraftStillCurrent) {
+        draftRef.current = submittedDraft;
+        props.onDirtyChange?.(false);
+        setTitleDraft(submittedDraft.title);
+        setDescriptionDraft(submittedDraft.descriptionHtml);
+        setStateDraft(submittedDraft.state);
+      } else {
+        props.onDirtyChange?.(isDraftDirty(currentDraft));
+      }
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Saving details failed.");
     } finally {
@@ -195,6 +252,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       if (
         !selected ||
         !props.onUpdateSelectedWorkItemDetails ||
+        isSaving ||
         titleDraft.trim().length === 0 ||
         stateDraft.trim().length === 0 ||
         !isDirty
@@ -210,7 +268,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isDirty, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
+  }, [isDirty, isSaving, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
 
   return React.createElement(
     "aside",
@@ -302,9 +360,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               React.createElement("input", {
                 type: "text",
                 className: "timeline-details-input",
+                disabled: isSaving,
                 value: titleDraft,
                 onChange: (event) => {
-                  setTitleDraft((event.target as HTMLInputElement).value);
+                  const nextTitle = (event.target as HTMLInputElement).value;
+                  reportDraftDirty({ title: nextTitle, descriptionHtml: descriptionDraft, state: stateDraft });
+                  setTitleDraft(nextTitle);
                 }
               })
             ),
@@ -316,9 +377,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                 "select",
                 {
                   className: "timeline-details-input",
+                  disabled: isSaving,
                   value: stateDraft,
                   onChange: (event) => {
-                    setStateDraft((event.target as HTMLSelectElement).value);
+                    const nextState = (event.target as HTMLSelectElement).value;
+                    reportDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: nextState });
+                    setStateDraft(nextState);
                   }
                 },
                 ...stateOptions.map((option) => React.createElement("option", { key: option.name, value: option.name }, option.name))
@@ -436,9 +500,12 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                 ]
                   .filter(Boolean)
                   .join(" "),
-                contentEditable: isDescriptionEditing,
+                contentEditable: isDescriptionEditing && !isSaving,
                 suppressContentEditableWarning: true,
                 onClick: () => {
+                  if (isSaving) {
+                    return;
+                  }
                   if (!isDescriptionEditing) {
                     setIsDescriptionEditing(true);
                     requestAnimationFrame(() => {
@@ -447,11 +514,15 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                   }
                 },
                 onInput: (event) => {
+                  if (isSaving) {
+                    return;
+                  }
                   const target = event.target as HTMLDivElement;
                   const sanitized = sanitizeHtmlFragment(target.innerHTML);
                   if (sanitized !== target.innerHTML) {
                     target.innerHTML = sanitized;
                   }
+                  reportDraftDirty({ title: titleDraft, descriptionHtml: sanitized, state: stateDraft });
                   setDescriptionDraft(sanitized);
                 },
                 onBlur: () => {

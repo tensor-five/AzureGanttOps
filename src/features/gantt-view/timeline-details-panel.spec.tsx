@@ -105,6 +105,170 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it("reports details dirty immediately on draft changes and clears after save", async () => {
+    const onDirtyChange = vi.fn();
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
+
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeTimeline(),
+        selectedWorkItemId: 11,
+        onDirtyChange,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    const titleInput = screen.getByLabelText("Title");
+    fireEvent.change(titleInput, { target: { value: "Updated Source Item" } });
+
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    });
+  });
+
+  it("resets dirty drafts when the parent requests a details draft reset", async () => {
+    const onDirtyChange = vi.fn();
+    const timeline = makeTimeline();
+    const { rerender } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11,
+        draftResetKey: 0,
+        onDirtyChange
+      })
+    );
+
+    const titleInput = screen.getByLabelText("Title") as HTMLInputElement;
+    fireEvent.change(titleInput, { target: { value: "Unsaved draft" } });
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    const refreshedTimeline = makeTimeline();
+    refreshedTimeline.bars[0].title = "Server title";
+    rerender(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: refreshedTimeline,
+        selectedWorkItemId: 11,
+        draftResetKey: 1,
+        onDirtyChange
+      })
+    );
+
+    await waitFor(() => {
+      expect(titleInput.value).toBe("Server title");
+    });
+    await waitFor(() => {
+      expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    });
+  });
+
+  it("rehydrates same-selected details when refreshed server values change", async () => {
+    const onDirtyChange = vi.fn();
+    const timeline = makeTimeline();
+    const { rerender } = render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11,
+        onDirtyChange
+      })
+    );
+
+    const titleInput = screen.getByLabelText("Title") as HTMLInputElement;
+    fireEvent.change(titleInput, { target: { value: "Local stale draft" } });
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    const refreshedTimeline = makeTimeline();
+    refreshedTimeline.bars[0].title = "Fresh server title";
+    refreshedTimeline.bars[0].details.descriptionHtml = "<p>Fresh server description</p>";
+    rerender(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: refreshedTimeline,
+        selectedWorkItemId: 11,
+        onDirtyChange
+      })
+    );
+
+    await waitFor(() => {
+      expect(titleInput.value).toBe("Fresh server title");
+    });
+    await waitFor(() => {
+      expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    });
+  });
+
+  it("keeps detail controls locked while a save is in flight", async () => {
+    let resolveSave: () => void = () => undefined;
+    const onUpdateSelectedWorkItemDetails = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSave = resolve;
+        })
+    );
+
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeTimeline(),
+        selectedWorkItemId: 11,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    const titleInput = screen.getByLabelText("Title") as HTMLInputElement;
+    fireEvent.change(titleInput, { target: { value: "Updated Source Item" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(titleInput.disabled).toBe(true);
+    });
+
+    resolveSave();
+    await waitFor(() => {
+      expect(titleInput.disabled).toBe(false);
+    });
+  });
+
+  it("does not save again from Ctrl+S while a save is in flight", async () => {
+    let resolveSave: () => void = () => undefined;
+    const onUpdateSelectedWorkItemDetails = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSave = resolve;
+        })
+    );
+
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeTimeline(),
+        selectedWorkItemId: 11,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Updated Source Item" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledTimes(1);
+    });
+
+    const event = new KeyboardEvent("keydown", { key: "s", ctrlKey: true, cancelable: true });
+    window.dispatchEvent(event);
+
+    expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(false);
+
+    resolveSave();
+    await waitFor(() => {
+      expect((screen.getByLabelText("Title") as HTMLInputElement).disabled).toBe(false);
+    });
+  });
+
   it("does nothing on Ctrl+S when no changes exist", async () => {
     const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
 
