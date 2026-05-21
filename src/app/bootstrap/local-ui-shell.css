@@ -1,3 +1,5 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@900&display=swap");
+
 main[data-ui-shell="phase-6-runtime"] {
   width: 100vw;
   max-width: none;
@@ -77,8 +79,10 @@ section[role="tabpanel"]:hover {
 
 .ui-shell-brand h1 {
   margin: 0;
+  font-family: "Satoshi", Inter, ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
   font-size: clamp(1.1rem, 1.8vw, 1.35rem);
   font-weight: var(--font-black);
+  letter-spacing: 0;
 }
 
 .ui-shell-header-actions {
@@ -3783,4 +3787,3 @@ input {
     transition-duration: 0s !important;
   }
 }
-
