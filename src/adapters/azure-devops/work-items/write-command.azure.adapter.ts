@@ -160,7 +160,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       accept: "application/json"
     });
     if (sourceResponse.status < 200 || sourceResponse.status >= 300) {
-      throw new Error("WORK_ITEM_DUPLICATE_SOURCE_FETCH_FAILED");
+      throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_DUPLICATE_SOURCE_FETCH_FAILED", sourceResponse.json));
     }
 
     const source = extractDuplicateSource(sourceResponse.json);
@@ -296,15 +296,9 @@ function buildWorkItemRelationLookupUrl(input: { organization: string; project: 
 }
 
 function buildWorkItemDuplicateSourceUrl(input: { organization: string; project: string; workItemId: number }): string {
-  const fields = [
-    "System.Title",
-    "System.Description",
-    "System.WorkItemType",
-    "System.Tags"
-  ].join(",");
   return (
     `https://dev.azure.com/${encodeURIComponent(input.organization)}/${encodeURIComponent(input.project)}` +
-    `/_apis/wit/workitems/${input.workItemId}?$expand=relations&fields=${fields}&api-version=${API_VERSION}`
+    `/_apis/wit/workitems/${input.workItemId}?$expand=relations&api-version=${API_VERSION}`
   );
 }
 

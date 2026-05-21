@@ -171,7 +171,7 @@ describe("WriteCommandAzureAdapter", () => {
       createdWorkItemId: 1234
     });
     expect(get).toHaveBeenCalledWith(
-      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?$expand=relations&fields=System.Title,System.Description,System.WorkItemType,System.Tags&api-version=7.1",
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?$expand=relations&api-version=7.1",
       { accept: "application/json" }
     );
     expect(post).toHaveBeenCalledWith(
@@ -249,5 +249,30 @@ describe("WriteCommandAzureAdapter", () => {
     ).rejects.toThrow(
       "WORK_ITEM_DUPLICATE_FAILED: TF401320: Rule Error for field Custom.Required. Required fields must have a value."
     );
+  });
+
+  it("includes Azure duplicate source fetch error details", async () => {
+    const get = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "The expand parameter can not be used with the fields parameter."
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 1234 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await expect(
+      adapter.submit({
+        kind: "WORK_ITEM_DUPLICATE",
+        sourceWorkItemId: 42
+      })
+    ).rejects.toThrow(
+      "WORK_ITEM_DUPLICATE_SOURCE_FETCH_FAILED: The expand parameter can not be used with the fields parameter."
+    );
+    expect(post).not.toHaveBeenCalled();
   });
 });
