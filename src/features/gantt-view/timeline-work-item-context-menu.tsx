@@ -13,7 +13,13 @@ export type TimelineWorkItemContextMenuProps = {
   organization?: string;
   project?: string;
   onClose: () => void;
-  onDuplicateWorkItem?: (input: { sourceWorkItemId: number }) => Promise<void>;
+  onDuplicateWorkItem?: (input: {
+    sourceWorkItemId: number;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<void>;
   onUpdateWorkItemState?: (input: { targetWorkItemId: number; state: string; stateColor: string | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<WorkItemStateOption[]>;
 };
@@ -137,7 +143,11 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     setActionError(null);
     setBusyAction("duplicate");
     try {
-      await props.onDuplicateWorkItem({ sourceWorkItemId: menuState.item.workItemId });
+      const scheduleFieldRefs = menuState.item.scheduleFieldRefs ?? props.timeline?.scheduleFieldRefs;
+      await props.onDuplicateWorkItem({
+        sourceWorkItemId: menuState.item.workItemId,
+        ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+      });
       props.onClose();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");

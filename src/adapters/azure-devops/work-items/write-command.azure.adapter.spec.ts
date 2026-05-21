@@ -132,7 +132,7 @@ describe("WriteCommandAzureAdapter", () => {
     );
   });
 
-  it("duplicates work items with title, description, tags, and parent relation", async () => {
+  it("duplicates work items with title, description, tags, schedule dates, and parent relation", async () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
@@ -140,7 +140,9 @@ describe("WriteCommandAzureAdapter", () => {
           "System.Title": "Original",
           "System.Description": "<p>Details</p>",
           "System.WorkItemType": "User Story",
-          "System.Tags": "alpha; beta"
+          "System.Tags": "alpha; beta",
+          "Microsoft.VSTS.Scheduling.StartDate": "2026-03-01T00:00:00.000Z",
+          "Microsoft.VSTS.Scheduling.TargetDate": "2026-03-03T00:00:00.000Z"
         },
         relations: [
           {
@@ -166,7 +168,7 @@ describe("WriteCommandAzureAdapter", () => {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_DUPLICATE",
-      operationCount: 4,
+      operationCount: 6,
       reasonCode: "WRITE_ENABLED",
       createdWorkItemId: 1234
     });
@@ -182,12 +184,71 @@ describe("WriteCommandAzureAdapter", () => {
         { op: "add", path: "/fields/System.Tags", value: "alpha; beta" },
         {
           op: "add",
+          path: "/fields/Microsoft.VSTS.Scheduling.StartDate",
+          value: "2026-03-01T00:00:00.000Z"
+        },
+        {
+          op: "add",
+          path: "/fields/Microsoft.VSTS.Scheduling.TargetDate",
+          value: "2026-03-03T00:00:00.000Z"
+        },
+        {
+          op: "add",
           path: "/relations/-",
           value: {
             rel: "System.LinkTypes.Hierarchy-Reverse",
             url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/99"
           }
         }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("duplicates schedule fields from the active mapping when they are present", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.Title": "Original",
+          "System.WorkItemType": "Task",
+          "Custom.StartDate": "2026-01-01",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 1234 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_DUPLICATE",
+      sourceWorkItemId: 42,
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    });
+
+    expect(result).toMatchObject({
+      accepted: true,
+      commandKind: "WORK_ITEM_DUPLICATE",
+      operationCount: 3,
+      createdWorkItemId: 1234
+    });
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "Original" },
+        { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
+        { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" }
       ],
       {
         "content-type": "application/json-patch+json",

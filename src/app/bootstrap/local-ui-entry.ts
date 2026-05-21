@@ -235,7 +235,7 @@ const composition = createDefaultUiShellComposition({
 
       return payload as WriteCommandTransportResult;
     },
-    duplicateWorkItem: async ({ sourceWorkItemId }) => {
+    duplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
       const response = await fetch("/phase2/work-item-duplicate", {
         method: "POST",
         headers: withCsrf({
@@ -243,7 +243,8 @@ const composition = createDefaultUiShellComposition({
           accept: "application/json"
         }),
         body: JSON.stringify({
-          sourceWorkItemId
+          sourceWorkItemId,
+          ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
         })
       });
 

@@ -33,6 +33,10 @@ export type HierarchyLinkCommand = {
 export type WorkItemDuplicateCommand = {
   kind: "WORK_ITEM_DUPLICATE";
   sourceWorkItemId: number;
+  scheduleFieldRefs?: {
+    start: string;
+    endOrTarget: string;
+  };
 };
 
 export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | HierarchyLinkCommand | WorkItemDuplicateCommand;

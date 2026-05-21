@@ -3,6 +3,10 @@ import type { WriteCommandPort } from "../../../application/ports/write-command.
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
 
 const API_VERSION = "7.1";
+const DEFAULT_DUPLICATE_SCHEDULE_FIELD_REFS = {
+  start: "Microsoft.VSTS.Scheduling.StartDate",
+  endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+};
 
 type HttpResponse = {
   status: number;
@@ -163,7 +167,10 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_DUPLICATE_SOURCE_FETCH_FAILED", sourceResponse.json));
     }
 
-    const source = extractDuplicateSource(sourceResponse.json);
+    const source = extractDuplicateSource(
+      sourceResponse.json,
+      resolveDuplicateScheduleFieldRefs(command.scheduleFieldRefs)
+    );
     if (!source) {
       throw new Error("WORK_ITEM_DUPLICATE_SOURCE_MALFORMED");
     }
@@ -314,10 +321,21 @@ type DuplicateSource = {
   descriptionHtml: string | null;
   workItemType: string;
   tags: string | null;
+  dateFields: DuplicateFieldValue[];
   parentRelationUrl: string | null;
 };
 
-function extractDuplicateSource(payload: unknown): DuplicateSource | null {
+type DuplicateFieldValue = {
+  fieldRef: string;
+  value: string;
+};
+
+type DuplicateScheduleFieldRefs = {
+  start: string;
+  endOrTarget: string;
+};
+
+function extractDuplicateSource(payload: unknown, scheduleFieldRefs: readonly string[]): DuplicateSource | null {
   if (!payload || typeof payload !== "object") {
     return null;
   }
@@ -342,6 +360,7 @@ function extractDuplicateSource(payload: unknown): DuplicateSource | null {
     descriptionHtml: typeof description === "string" && description.trim().length > 0 ? description : null,
     workItemType: workItemType.trim(),
     tags: typeof tags === "string" && tags.trim().length > 0 ? tags : null,
+    dateFields: extractStringFields(fieldRecord, scheduleFieldRefs),
     parentRelationUrl: extractParentRelationUrl(payload)
   };
 }
@@ -359,6 +378,10 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
     operations.push({ op: "add", path: "/fields/System.Tags", value: source.tags });
   }
 
+  for (const dateField of source.dateFields) {
+    operations.push({ op: "add", path: `/fields/${dateField.fieldRef}`, value: dateField.value });
+  }
+
   if (source.parentRelationUrl !== null) {
     operations.push({
       op: "add",
@@ -371,6 +394,20 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
   }
 
   return operations;
+}
+
+function extractStringFields(fields: Record<string, unknown>, fieldRefs: readonly string[]): DuplicateFieldValue[] {
+  return fieldRefs.flatMap((fieldRef) => {
+    const value = fields[fieldRef];
+    return typeof value === "string" && value.trim().length > 0 ? [{ fieldRef, value }] : [];
+  });
+}
+
+function resolveDuplicateScheduleFieldRefs(input: DuplicateScheduleFieldRefs | undefined): string[] {
+  const refs = input
+    ? [input.start, input.endOrTarget]
+    : [DEFAULT_DUPLICATE_SCHEDULE_FIELD_REFS.start, DEFAULT_DUPLICATE_SCHEDULE_FIELD_REFS.endOrTarget];
+  return [...new Set(refs.map((fieldRef) => fieldRef.trim()).filter(Boolean))];
 }
 
 function extractParentRelationUrl(payload: unknown): string | null {

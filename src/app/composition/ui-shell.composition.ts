@@ -74,6 +74,10 @@ export type QueryIntakeTransport = {
   }) => Promise<WriteCommandTransportResult>;
   duplicateWorkItem: (request: {
     sourceWorkItemId: number;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
   }) => Promise<WriteCommandTransportResult>;
   reparentWorkItem: (request: {
     targetWorkItemId: number;

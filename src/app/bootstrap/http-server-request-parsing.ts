@@ -207,7 +207,7 @@ export function parseUpdateStatePayload(
 
 export function parseDuplicateWorkItemPayload(
   input: Record<string, unknown> | null
-): { sourceWorkItemId: number } | null {
+): { sourceWorkItemId: number; scheduleFieldRefs?: { start: string; endOrTarget: string } } | null {
   if (!input) {
     return null;
   }
@@ -221,7 +221,42 @@ export function parseDuplicateWorkItemPayload(
     return null;
   }
 
-  return { sourceWorkItemId };
+  const scheduleFieldRefs = parseScheduleFieldRefs(input.scheduleFieldRefs);
+  if (input.scheduleFieldRefs !== undefined && !scheduleFieldRefs) {
+    return null;
+  }
+
+  return {
+    sourceWorkItemId,
+    ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+  };
+}
+
+function parseScheduleFieldRefs(input: unknown): { start: string; endOrTarget: string } | null {
+  if (input === undefined) {
+    return null;
+  }
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  const refs = input as Record<string, unknown>;
+  const start = refs.start;
+  const endOrTarget = refs.endOrTarget;
+
+  if (
+    typeof start !== "string" ||
+    start.trim().length === 0 ||
+    typeof endOrTarget !== "string" ||
+    endOrTarget.trim().length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    start: start.trim(),
+    endOrTarget: endOrTarget.trim()
+  };
 }
 
 export function parseMappingProfileUpsert(input: unknown):

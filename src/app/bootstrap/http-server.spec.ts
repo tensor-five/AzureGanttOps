@@ -692,7 +692,10 @@ describe("createHttpServer", () => {
             fields: {
               "System.Title": "Original",
               "System.WorkItemType": "Task",
-              "System.Tags": "alpha"
+              "System.Tags": "alpha",
+              "Microsoft.VSTS.Scheduling.StartDate": "2026-01-01T00:00:00.000Z",
+              "Custom.StartDate2": "2026-03-01T00:00:00.000Z",
+              "Custom.TargetDate2": "2026-03-03T00:00:00.000Z"
             },
             relations: [
               {
@@ -721,7 +724,11 @@ describe("createHttpServer", () => {
           "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
-          sourceWorkItemId: 42
+          sourceWorkItemId: 42,
+          scheduleFieldRefs: {
+            start: "Custom.StartDate2",
+            endOrTarget: "Custom.TargetDate2"
+          }
         })
       });
       const body = await response.json();
@@ -737,6 +744,16 @@ describe("createHttpServer", () => {
           body: [
             { op: "add", path: "/fields/System.Title", value: "Original" },
             { op: "add", path: "/fields/System.Tags", value: "alpha" },
+            {
+              op: "add",
+              path: "/fields/Custom.StartDate2",
+              value: "2026-03-01T00:00:00.000Z"
+            },
+            {
+              op: "add",
+              path: "/fields/Custom.TargetDate2",
+              value: "2026-03-03T00:00:00.000Z"
+            },
             {
               op: "add",
               path: "/relations/-",

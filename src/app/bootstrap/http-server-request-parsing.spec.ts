@@ -45,8 +45,32 @@ describe("parseDuplicateWorkItemPayload", () => {
     });
   });
 
+  it("accepts active schedule field refs for duplicate commands", () => {
+    expect(
+      parseDuplicateWorkItemPayload({
+        sourceWorkItemId: 42,
+        scheduleFieldRefs: {
+          start: " Custom.StartDate2 ",
+          endOrTarget: " Custom.TargetDate2 "
+        }
+      })
+    ).toEqual({
+      sourceWorkItemId: 42,
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    });
+  });
+
   it("rejects missing or invalid source work item ids", () => {
     expect(parseDuplicateWorkItemPayload({ sourceWorkItemId: 0 })).toBeNull();
     expect(parseDuplicateWorkItemPayload({ sourceWorkItemId: "42" })).toBeNull();
+    expect(
+      parseDuplicateWorkItemPayload({
+        sourceWorkItemId: 42,
+        scheduleFieldRefs: { start: "", endOrTarget: "Custom.TargetDate2" }
+      })
+    ).toBeNull();
   });
 });

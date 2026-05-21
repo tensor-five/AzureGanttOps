@@ -62,6 +62,10 @@ describe("BuildTimelineViewUseCase", () => {
     const result = await useCase.execute({ snapshot, mappingProfile: profile });
 
     expect(result.mappingValidation).toEqual({ status: "valid", issues: [] });
+    expect(result.scheduleFieldRefs).toEqual({
+      start: "Custom.StartDate",
+      endOrTarget: "Custom.TargetDate"
+    });
     expect(result.bars).toHaveLength(2);
     expect(result.bars[0].title).toBe("Beta");
     expect(result.bars[0].state).toEqual({

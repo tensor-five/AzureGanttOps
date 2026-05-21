@@ -1054,7 +1054,8 @@ async function handleTimelineWritesRoute(
         writeEnabled: deps.writeEnabled,
         command: {
           kind: "WORK_ITEM_DUPLICATE",
-          sourceWorkItemId: duplicate.sourceWorkItemId
+          sourceWorkItemId: duplicate.sourceWorkItemId,
+          ...(duplicate.scheduleFieldRefs ? { scheduleFieldRefs: duplicate.scheduleFieldRefs } : {})
         }
       });
 

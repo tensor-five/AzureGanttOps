@@ -133,7 +133,13 @@ export type TimelinePaneProps = {
     state: string;
     stateColor: string | null;
   }) => Promise<void>;
-  onDuplicateWorkItem?: (input: { sourceWorkItemId: number }) => Promise<void>;
+  onDuplicateWorkItem?: (input: {
+    sourceWorkItemId: number;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<void>;
   onReparentWorkItem?: (input: { targetWorkItemId: number; newParentId: number | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDensityChange?: (density: TimelineDensity) => void;
@@ -2398,10 +2404,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                                 toggleWorkItemSelection(bar.workItemId);
                               },
                               onContextMenu: (event: React.MouseEvent<HTMLButtonElement>) => {
-                                workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar));
+                                workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
                               },
                               onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
-                                workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar));
+                                workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
                               },
                               onDragStart: isTreeQuery && props.onReparentWorkItem
                                 ? (event: React.DragEvent) => {
@@ -2761,7 +2767,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       "aria-label": `timeline-bar-${bar.workItemId}`,
                       "aria-current": isSelected ? "true" : undefined,
                       onContextMenu: (event: React.MouseEvent<SVGRectElement>) => {
-                        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar));
+                        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
                       },
                       onClick: () => {
                         if (suppressNextBarClickRef.current) {
@@ -2778,7 +2784,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         toggleWorkItemSelection(bar.workItemId);
                       },
                       onKeyDown: (event) => {
-                        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar));
+                        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
                         if (event.defaultPrevented) {
                           return;
                         }
@@ -3099,10 +3105,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           toggleWorkItemSelection(item.workItemId);
                         },
                         onContextMenu: (event: React.MouseEvent<HTMLButtonElement>) => {
-                          workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromUnschedulable(item));
+                          workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromUnschedulable(item, props.timeline?.scheduleFieldRefs));
                         },
                         onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
-                          workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromUnschedulable(item));
+                          workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromUnschedulable(item, props.timeline?.scheduleFieldRefs));
                         }
                       },
                       React.createElement(
@@ -3364,21 +3370,27 @@ type VisualChartModel = {
   todayX: number | null;
 };
 
-function buildContextMenuItemFromVisualBar(bar: VisualTimelineBar): WorkItemContextMenuItem {
+function buildContextMenuItemFromVisualBar(
+  bar: VisualTimelineBar,
+  scheduleFieldRefs: TimelineReadModel["scheduleFieldRefs"] | undefined
+): WorkItemContextMenuItem {
   return {
     workItemId: bar.workItemId,
     title: bar.title,
-    state: bar.stateCode
+    state: bar.stateCode,
+    ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
 }
 
 function buildContextMenuItemFromUnschedulable(
-  item: TimelineReadModel["unschedulable"][number]
+  item: TimelineReadModel["unschedulable"][number],
+  scheduleFieldRefs: TimelineReadModel["scheduleFieldRefs"] | undefined
 ): WorkItemContextMenuItem {
   return {
     workItemId: item.workItemId,
     title: item.title,
-    state: item.state.code
+    state: item.state.code,
+    ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
 }
 

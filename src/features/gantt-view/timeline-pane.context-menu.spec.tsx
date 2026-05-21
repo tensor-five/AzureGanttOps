@@ -54,10 +54,17 @@ describe("timeline-pane work item context menu", () => {
   it("opens from Gantt bars and duplicates the selected work item", async () => {
     const user = userEvent.setup();
     const onDuplicateWorkItem = vi.fn(async () => undefined);
+    const timeline = {
+      ...makeTimeline(),
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    };
 
     render(
       React.createElement(TimelinePane, {
-        timeline: makeTimeline(),
+        timeline,
         showDependencies: true,
         organization: "contoso",
         project: "delivery",
@@ -69,7 +76,13 @@ describe("timeline-pane work item context menu", () => {
     await user.click(screen.getByRole("menuitem", { name: "Duplizieren" }));
 
     await waitFor(() => {
-      expect(onDuplicateWorkItem).toHaveBeenCalledWith({ sourceWorkItemId: 11 });
+      expect(onDuplicateWorkItem).toHaveBeenCalledWith({
+        sourceWorkItemId: 11,
+        scheduleFieldRefs: {
+          start: "Custom.StartDate2",
+          endOrTarget: "Custom.TargetDate2"
+        }
+      });
     });
   });
 

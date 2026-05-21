@@ -1191,10 +1191,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               }
             });
           },
-          onDuplicateWorkItem: async ({ sourceWorkItemId }) => {
+          onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
             await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.duplicateWorkItem({
-                sourceWorkItemId
+                sourceWorkItemId,
+                ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
               });
 
               if (!writeResult.accepted) {
