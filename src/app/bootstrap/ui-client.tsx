@@ -822,7 +822,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       React.createElement(
         "div",
         { className: "ui-shell-brand" },
-        React.createElement("h1", null, "Azure GanttOps")
+        React.createElement("h1", null, "AzureGanttOps")
       ),
       React.createElement(
         "div",
