@@ -88,6 +88,8 @@ import { useDragAutoScroll } from "./use-drag-auto-scroll.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
+import { TimelineWorkItemContextMenu } from "./timeline-work-item-context-menu.js";
+import { useWorkItemContextMenu, type WorkItemContextMenuItem } from "./use-work-item-context-menu.js";
 import { extractFilterMatchKeys, extractFilterValueTokens } from "./timeline-field-filtering.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
@@ -126,6 +128,12 @@ export type TimelinePaneProps = {
     state: string;
     stateColor: string | null;
   }) => Promise<void>;
+  onUpdateWorkItemState?: (input: {
+    targetWorkItemId: number;
+    state: string;
+    stateColor: string | null;
+  }) => Promise<void>;
+  onDuplicateWorkItem?: (input: { sourceWorkItemId: number }) => Promise<void>;
   onReparentWorkItem?: (input: { targetWorkItemId: number; newParentId: number | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDensityChange?: (density: TimelineDensity) => void;
@@ -296,6 +304,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
   const dependencyEditing = useDependencyEditing();
+  const workItemContextMenu = useWorkItemContextMenu();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
   const timelineSorting = useTimelineSorting(activeQueryId);
   const internalSelectionStoreRef = React.useRef<TimelineSelectionStore | null>(null);
@@ -2183,6 +2192,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       resolveSelectedColorCodingLabel,
       toScopedFieldValueColorKey
     }),
+    React.createElement(TimelineWorkItemContextMenu, {
+      menuState: workItemContextMenu.menuState,
+      menuRef: workItemContextMenu.menuRef,
+      timeline: filteredTimeline,
+      organization: props.organization,
+      project: props.project,
+      onClose: workItemContextMenu.closeMenu,
+      onDuplicateWorkItem: props.onDuplicateWorkItem,
+      onUpdateWorkItemState: props.onUpdateWorkItemState,
+      onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+    }),
     React.createElement(TimelinePrintHeader, {
       queryName: props.activeQueryName ?? null,
       queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
@@ -2376,6 +2396,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                               },
                               onClick: () => {
                                 toggleWorkItemSelection(bar.workItemId);
+                              },
+                              onContextMenu: (event: React.MouseEvent<HTMLButtonElement>) => {
+                                workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar));
+                              },
+                              onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                                workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar));
                               },
                               onDragStart: isTreeQuery && props.onReparentWorkItem
                                 ? (event: React.DragEvent) => {
@@ -2734,6 +2760,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                       tabIndex: 0,
                       "aria-label": `timeline-bar-${bar.workItemId}`,
                       "aria-current": isSelected ? "true" : undefined,
+                      onContextMenu: (event: React.MouseEvent<SVGRectElement>) => {
+                        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar));
+                      },
                       onClick: () => {
                         if (suppressNextBarClickRef.current) {
                           suppressNextBarClickRef.current = false;
@@ -2749,12 +2778,19 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         toggleWorkItemSelection(bar.workItemId);
                       },
                       onKeyDown: (event) => {
+                        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar));
+                        if (event.defaultPrevented) {
+                          return;
+                        }
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
                           toggleWorkItemSelection(bar.workItemId);
                         }
                       },
                       onPointerDown: (event) => {
+                        if (event.button !== 0) {
+                          return;
+                        }
                         if (spacePanPressedRef.current) {
                           return;
                         }
@@ -2780,6 +2816,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           className: "timeline-bar-handle timeline-bar-handle-start",
                           "aria-label": `timeline-bar-start-handle-${bar.workItemId}`,
                           onPointerDown: (event) => {
+                            if (event.button !== 0) {
+                              return;
+                            }
                             if (spacePanPressedRef.current) {
                               return;
                             }
@@ -2797,6 +2836,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                           className: "timeline-bar-handle timeline-bar-handle-end",
                           "aria-label": `timeline-bar-end-handle-${bar.workItemId}`,
                           onPointerDown: (event) => {
+                            if (event.button !== 0) {
+                              return;
+                            }
                             if (spacePanPressedRef.current) {
                               return;
                             }
@@ -3055,6 +3097,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         onClick: () => {
                           setAdoptScheduleError(null);
                           toggleWorkItemSelection(item.workItemId);
+                        },
+                        onContextMenu: (event: React.MouseEvent<HTMLButtonElement>) => {
+                          workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromUnschedulable(item));
+                        },
+                        onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                          workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromUnschedulable(item));
                         }
                       },
                       React.createElement(
@@ -3315,6 +3363,24 @@ type VisualChartModel = {
   currentPeriod: { x: number; width: number } | null;
   todayX: number | null;
 };
+
+function buildContextMenuItemFromVisualBar(bar: VisualTimelineBar): WorkItemContextMenuItem {
+  return {
+    workItemId: bar.workItemId,
+    title: bar.title,
+    state: bar.stateCode
+  };
+}
+
+function buildContextMenuItemFromUnschedulable(
+  item: TimelineReadModel["unschedulable"][number]
+): WorkItemContextMenuItem {
+  return {
+    workItemId: item.workItemId,
+    title: item.title,
+    state: item.state.code
+  };
+}
 
 function buildVisualChartModel(
   timeline: TimelineReadModel | null,

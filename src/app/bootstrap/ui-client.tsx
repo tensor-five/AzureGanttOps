@@ -31,7 +31,8 @@ import {
   applyDependencyLinkUpdate,
   applyReparentUpdate,
   applyScheduleUpdate,
-  applyWorkItemMetadataUpdate
+  applyWorkItemMetadataUpdate,
+  applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import {
   persistUiShellState,
@@ -1172,6 +1173,35 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                 }
               }
             });
+          },
+          onUpdateWorkItemState: async ({ targetWorkItemId, state, stateColor }) => {
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) =>
+                applyWorkItemStateUpdate(timeline, targetWorkItemId, state, stateColor),
+              executeDetails: async () => {
+                const writeResult = await props.composition.controller.updateWorkItemState({
+                  targetWorkItemId,
+                  state
+                });
+
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
+              }
+            });
+          },
+          onDuplicateWorkItem: async ({ sourceWorkItemId }) => {
+            await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.duplicateWorkItem({
+                sourceWorkItemId
+              });
+
+              if (!writeResult.accepted) {
+                throw toWritebackError(writeResult.reasonCode);
+              }
+            });
+            await retryRefresh();
           },
           onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
             await scheduleReparentMutation({

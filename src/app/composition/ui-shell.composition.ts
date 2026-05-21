@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
+import type { WriteCommandReasonCode } from "../../application/dto/write-boundary/write-command.dto.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
@@ -19,6 +20,17 @@ export type AdoCommLogEntry = {
 export type WorkItemStateOption = {
   name: string;
   color: string | null;
+};
+
+export type WriteCommandKind = "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK" | "WORK_ITEM_DUPLICATE";
+
+export type WriteCommandTransportResult = {
+  accepted: boolean;
+  mode: "NO_OP" | "EXECUTED";
+  commandKind: WriteCommandKind;
+  operationCount: number;
+  reasonCode: WriteCommandReasonCode;
+  createdWorkItemId?: number;
 };
 
 export type QueryIntakeTransport = {
@@ -44,46 +56,29 @@ export type QueryIntakeTransport = {
     targetWorkItemId: number;
     startDate: string;
     endDate: string;
-  }) => Promise<{
-    accepted: boolean;
-    mode: "NO_OP" | "EXECUTED";
-    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
-    operationCount: number;
-    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
-  }>;
+  }) => Promise<WriteCommandTransportResult>;
   linkDependency: (request: {
     predecessorWorkItemId: number;
     successorWorkItemId: number;
     action: "add" | "remove";
-  }) => Promise<{
-    accepted: boolean;
-    mode: "NO_OP" | "EXECUTED";
-    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
-    operationCount: number;
-    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
-  }>;
+  }) => Promise<WriteCommandTransportResult>;
   updateWorkItemDetails: (request: {
     targetWorkItemId: number;
     title: string;
     descriptionHtml: string;
     state: string;
-  }) => Promise<{
-    accepted: boolean;
-    mode: "NO_OP" | "EXECUTED";
-    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
-    operationCount: number;
-    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
-  }>;
+  }) => Promise<WriteCommandTransportResult>;
+  updateWorkItemState: (request: {
+    targetWorkItemId: number;
+    state: string;
+  }) => Promise<WriteCommandTransportResult>;
+  duplicateWorkItem: (request: {
+    sourceWorkItemId: number;
+  }) => Promise<WriteCommandTransportResult>;
   reparentWorkItem: (request: {
     targetWorkItemId: number;
     newParentId: number | null;
-  }) => Promise<{
-    accepted: boolean;
-    mode: "NO_OP" | "EXECUTED";
-    commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
-    operationCount: number;
-    reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
-  }>;
+  }) => Promise<WriteCommandTransportResult>;
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
     states: WorkItemStateOption[];
   }>;
@@ -190,6 +185,20 @@ export function createLocalUiShellController(params: {
       mode: "NO_OP",
       commandKind: "WORK_ITEM_PATCH",
       operationCount: 0,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    updateWorkItemState: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_PATCH",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    duplicateWorkItem: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_DUPLICATE",
+      operationCount: 1,
       reasonCode: "WRITE_DISABLED"
     }),
     reparentWorkItem: async () => ({

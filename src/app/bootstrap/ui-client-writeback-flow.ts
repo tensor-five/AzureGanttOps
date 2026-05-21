@@ -5,7 +5,15 @@ import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-m
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 export function toWritebackError(reasonCode: string): Error {
-  return new Error(reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+  if (reasonCode === "WRITE_DISABLED") {
+    return new Error("Writeback is disabled.");
+  }
+
+  if (reasonCode === "WRITE_UNSUPPORTED") {
+    return new Error("Writeback operation is not supported by this Azure DevOps connection.");
+  }
+
+  return new Error("Write failed.");
 }
 
 export function applyTimelineMutationToUiState(

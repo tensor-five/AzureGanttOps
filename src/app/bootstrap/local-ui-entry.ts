@@ -1,6 +1,6 @@
 import "./local-ui.css";
 import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.js";
-import type { AdoCommLogEntry } from "../composition/ui-shell.composition.js";
+import type { AdoCommLogEntry, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
 const container = document.getElementById("app");
@@ -109,7 +109,7 @@ const composition = createDefaultUiShellComposition({
             mode: "NO_OP" | "EXECUTED";
             commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
             operationCount: number;
-            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
           }
         | { message?: string; result?: { reasonCode?: string } };
 
@@ -126,7 +126,7 @@ const composition = createDefaultUiShellComposition({
         mode: "NO_OP" | "EXECUTED";
         commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
         operationCount: number;
-        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
     linkDependency: async ({ predecessorWorkItemId, successorWorkItemId, action }) => {
@@ -149,7 +149,7 @@ const composition = createDefaultUiShellComposition({
             mode: "NO_OP" | "EXECUTED";
             commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
             operationCount: number;
-            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
           }
         | { message?: string; result?: { reasonCode?: string } };
 
@@ -166,7 +166,7 @@ const composition = createDefaultUiShellComposition({
         mode: "NO_OP" | "EXECUTED";
         commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
         operationCount: number;
-        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
     updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
@@ -190,7 +190,7 @@ const composition = createDefaultUiShellComposition({
             mode: "NO_OP" | "EXECUTED";
             commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
             operationCount: number;
-            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
           }
         | { message?: string; result?: { reasonCode?: string } };
 
@@ -207,8 +207,57 @@ const composition = createDefaultUiShellComposition({
         mode: "NO_OP" | "EXECUTED";
         commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK";
         operationCount: number;
-        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
+    },
+    updateWorkItemState: async ({ targetWorkItemId, state }) => {
+      const response = await fetch("/phase2/work-item-state-update", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          targetWorkItemId,
+          state
+        })
+      });
+
+      const payload = (await response.json()) as WriteCommandTransportResult | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Work item state update failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as WriteCommandTransportResult;
+    },
+    duplicateWorkItem: async ({ sourceWorkItemId }) => {
+      const response = await fetch("/phase2/work-item-duplicate", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          sourceWorkItemId
+        })
+      });
+
+      const payload = (await response.json()) as WriteCommandTransportResult | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Work item duplicate failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as WriteCommandTransportResult;
     },
     reparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
       const response = await fetch("/phase2/work-item-reparent", {
@@ -226,7 +275,7 @@ const composition = createDefaultUiShellComposition({
             mode: "NO_OP" | "EXECUTED";
             commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
             operationCount: number;
-            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+            reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
           }
         | { message?: string };
 
@@ -243,7 +292,7 @@ const composition = createDefaultUiShellComposition({
         mode: "NO_OP" | "EXECUTED";
         commandKind: "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK";
         operationCount: number;
-        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+        reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
     fetchWorkItemStateOptions: async ({ targetWorkItemId }) => {

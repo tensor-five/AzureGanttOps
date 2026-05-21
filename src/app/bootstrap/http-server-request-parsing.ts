@@ -179,6 +179,51 @@ export function parseUpdateDetailsPayload(
   };
 }
 
+export function parseUpdateStatePayload(
+  input: Record<string, unknown> | null
+): { targetWorkItemId: number; state: string } | null {
+  if (!input) {
+    return null;
+  }
+
+  const targetWorkItemId = input.targetWorkItemId;
+  const state = input.state;
+
+  if (
+    typeof targetWorkItemId !== "number" ||
+    !Number.isFinite(targetWorkItemId) ||
+    targetWorkItemId <= 0 ||
+    typeof state !== "string" ||
+    state.trim().length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    targetWorkItemId,
+    state: state.trim()
+  };
+}
+
+export function parseDuplicateWorkItemPayload(
+  input: Record<string, unknown> | null
+): { sourceWorkItemId: number } | null {
+  if (!input) {
+    return null;
+  }
+
+  const sourceWorkItemId = input.sourceWorkItemId;
+  if (
+    typeof sourceWorkItemId !== "number" ||
+    !Number.isFinite(sourceWorkItemId) ||
+    sourceWorkItemId <= 0
+  ) {
+    return null;
+  }
+
+  return { sourceWorkItemId };
+}
+
 export function parseMappingProfileUpsert(input: unknown):
   | {
       id: string;

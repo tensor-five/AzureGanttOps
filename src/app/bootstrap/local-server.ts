@@ -99,6 +99,35 @@ async function main(): Promise<void> {
           }
           throw error;
         }
+      },
+      post: async (
+        url: string,
+        body: unknown,
+        headers?: Record<string, string>
+      ): Promise<FetchResponse> => {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            redirect: "manual",
+            headers: {
+              authorization: await authHeaderProvider.getHeader(),
+              accept: "application/json",
+              "content-type": "application/json-patch+json",
+              ...(headers ?? {})
+            },
+            body: JSON.stringify(body)
+          });
+          return {
+            status: response.status,
+            json: await parseResponseBody(response),
+            headers: toHeaders(response.headers)
+          };
+        } catch (error) {
+          if (process.env.ADO_VERBOSE_LOGS === "1") {
+            console.log(`[ado-runtime] http transport error method=POST url=${url} error=${formatError(error)}`);
+          }
+          throw error;
+        }
       }
     }
   });

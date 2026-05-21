@@ -12,6 +12,7 @@ type HttpResponse = {
 
 export type WorkItemWriteHttpClient = {
   get?: (url: string, headers?: Record<string, string>) => Promise<HttpResponse>;
+  post?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<HttpResponse>;
   patch: (url: string, body: unknown, headers?: Record<string, string>) => Promise<HttpResponse>;
 };
 
@@ -57,6 +58,10 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
 
     if (command.kind === "HIERARCHY_LINK") {
       return this.submitHierarchyLink(command, context);
+    }
+
+    if (command.kind === "WORK_ITEM_DUPLICATE") {
+      return this.submitWorkItemDuplicate(command, context);
     }
 
     const sourceWorkItemUrl = buildWorkItemUrl({
@@ -131,6 +136,62 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       reasonCode: "WRITE_ENABLED"
     };
   }
+
+  private async submitWorkItemDuplicate(
+    command: Extract<WriteCommand, { kind: "WORK_ITEM_DUPLICATE" }>,
+    context: { organization: string; project: string }
+  ): Promise<WriteCommandResult> {
+    if (!this.httpClient.get || !this.httpClient.post) {
+      return {
+        accepted: false,
+        mode: "NO_OP",
+        commandKind: "WORK_ITEM_DUPLICATE",
+        operationCount: 1,
+        reasonCode: "WRITE_UNSUPPORTED"
+      };
+    }
+
+    const sourceUrl = buildWorkItemDuplicateSourceUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemId: command.sourceWorkItemId
+    });
+    const sourceResponse = await this.httpClient.get(sourceUrl, {
+      accept: "application/json"
+    });
+    if (sourceResponse.status < 200 || sourceResponse.status >= 300) {
+      throw new Error("WORK_ITEM_DUPLICATE_SOURCE_FETCH_FAILED");
+    }
+
+    const source = extractDuplicateSource(sourceResponse.json);
+    if (!source) {
+      throw new Error("WORK_ITEM_DUPLICATE_SOURCE_MALFORMED");
+    }
+
+    const operations = buildDuplicateCreateOperations(source);
+    const createUrl = buildWorkItemCreateUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemType: source.workItemType
+    });
+    const createResponse = await this.httpClient.post(createUrl, operations, {
+      "content-type": "application/json-patch+json",
+      accept: "application/json"
+    });
+    if (createResponse.status < 200 || createResponse.status >= 300) {
+      throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_DUPLICATE_FAILED", createResponse.json));
+    }
+
+    return {
+      accepted: true,
+      mode: "EXECUTED",
+      commandKind: "WORK_ITEM_DUPLICATE",
+      operationCount: operations.length,
+      reasonCode: "WRITE_ENABLED",
+      createdWorkItemId: extractCreatedWorkItemId(createResponse.json) ?? undefined
+    };
+  }
+
   private async submitHierarchyLink(
     command: Extract<WriteCommand, { kind: "HIERARCHY_LINK" }>,
     context: { organization: string; project: string }
@@ -232,6 +293,166 @@ function buildWorkItemRelationLookupUrl(input: { organization: string; project: 
     `https://dev.azure.com/${encodeURIComponent(input.organization)}/${encodeURIComponent(input.project)}` +
     `/_apis/wit/workitems/${input.workItemId}?$expand=relations&api-version=${API_VERSION}`
   );
+}
+
+function buildWorkItemDuplicateSourceUrl(input: { organization: string; project: string; workItemId: number }): string {
+  const fields = [
+    "System.Title",
+    "System.Description",
+    "System.WorkItemType",
+    "System.Tags"
+  ].join(",");
+  return (
+    `https://dev.azure.com/${encodeURIComponent(input.organization)}/${encodeURIComponent(input.project)}` +
+    `/_apis/wit/workitems/${input.workItemId}?$expand=relations&fields=${fields}&api-version=${API_VERSION}`
+  );
+}
+
+function buildWorkItemCreateUrl(input: { organization: string; project: string; workItemType: string }): string {
+  return (
+    `https://dev.azure.com/${encodeURIComponent(input.organization)}/${encodeURIComponent(input.project)}` +
+    `/_apis/wit/workitems/$${encodeURIComponent(input.workItemType)}?api-version=${API_VERSION}`
+  );
+}
+
+type DuplicateSource = {
+  title: string;
+  descriptionHtml: string | null;
+  workItemType: string;
+  tags: string | null;
+  parentRelationUrl: string | null;
+};
+
+function extractDuplicateSource(payload: unknown): DuplicateSource | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const fields = (payload as { fields?: unknown }).fields;
+  if (!fields || typeof fields !== "object") {
+    return null;
+  }
+
+  const fieldRecord = fields as Record<string, unknown>;
+  const title = fieldRecord["System.Title"];
+  const workItemType = fieldRecord["System.WorkItemType"];
+  if (typeof title !== "string" || title.trim().length === 0 || typeof workItemType !== "string" || workItemType.trim().length === 0) {
+    return null;
+  }
+
+  const description = fieldRecord["System.Description"];
+  const tags = fieldRecord["System.Tags"];
+
+  return {
+    title,
+    descriptionHtml: typeof description === "string" && description.trim().length > 0 ? description : null,
+    workItemType: workItemType.trim(),
+    tags: typeof tags === "string" && tags.trim().length > 0 ? tags : null,
+    parentRelationUrl: extractParentRelationUrl(payload)
+  };
+}
+
+function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
+  const operations: unknown[] = [
+    { op: "add", path: "/fields/System.Title", value: source.title }
+  ];
+
+  if (source.descriptionHtml !== null) {
+    operations.push({ op: "add", path: "/fields/System.Description", value: source.descriptionHtml });
+  }
+
+  if (source.tags !== null) {
+    operations.push({ op: "add", path: "/fields/System.Tags", value: source.tags });
+  }
+
+  if (source.parentRelationUrl !== null) {
+    operations.push({
+      op: "add",
+      path: "/relations/-",
+      value: {
+        rel: "System.LinkTypes.Hierarchy-Reverse",
+        url: source.parentRelationUrl
+      }
+    });
+  }
+
+  return operations;
+}
+
+function extractParentRelationUrl(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const relations = (payload as { relations?: unknown }).relations;
+  if (!Array.isArray(relations)) {
+    return null;
+  }
+
+  for (const relationEntry of relations) {
+    if (!relationEntry || typeof relationEntry !== "object") {
+      continue;
+    }
+
+    const rel = (relationEntry as { rel?: unknown }).rel;
+    const url = (relationEntry as { url?: unknown }).url;
+    if (rel === "System.LinkTypes.Hierarchy-Reverse" && typeof url === "string" && url.trim().length > 0) {
+      return url.trim();
+    }
+  }
+
+  return null;
+}
+
+function extractCreatedWorkItemId(payload: unknown): number | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const id = (payload as { id?: unknown }).id;
+  return typeof id === "number" && Number.isFinite(id) && id > 0 ? id : null;
+}
+
+function buildAzureResponseErrorMessage(fallback: string, payload: unknown): string {
+  const azureMessage = extractAzureErrorMessage(payload);
+  return azureMessage ? `${fallback}: ${azureMessage}` : fallback;
+}
+
+function extractAzureErrorMessage(payload: unknown): string | null {
+  if (typeof payload === "string") {
+    return normalizeErrorText(payload);
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const record = payload as Record<string, unknown>;
+  for (const key of ["message", "Message", "errorMessage"]) {
+    const message = record[key];
+    if (typeof message === "string") {
+      return normalizeErrorText(message);
+    }
+  }
+
+  const innerException = record.innerException;
+  if (innerException && typeof innerException === "object") {
+    const innerMessage = (innerException as Record<string, unknown>).message;
+    if (typeof innerMessage === "string") {
+      return normalizeErrorText(innerMessage);
+    }
+  }
+
+  return null;
+}
+
+function normalizeErrorText(value: string): string | null {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  return normalized.length > 1000 ? `${normalized.slice(0, 997)}...` : normalized;
 }
 
 function resolveDependencyRelationIndex(payload: unknown, targetId: number, relation: string): number | null {
