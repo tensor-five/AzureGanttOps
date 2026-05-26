@@ -7,6 +7,11 @@ const DEFAULT_DUPLICATE_SCHEDULE_FIELD_REFS = {
   start: "Microsoft.VSTS.Scheduling.StartDate",
   endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
 };
+const DUPLICATE_SYSTEM_FIELD_REFS = [
+  "System.AssignedTo",
+  "System.AreaPath",
+  "System.IterationPath"
+];
 
 type HttpResponse = {
   status: number;
@@ -321,6 +326,7 @@ type DuplicateSource = {
   descriptionHtml: string | null;
   workItemType: string;
   tags: string | null;
+  systemFields: DuplicateFieldValue[];
   dateFields: DuplicateFieldValue[];
   parentRelationUrl: string | null;
 };
@@ -360,6 +366,7 @@ function extractDuplicateSource(payload: unknown, scheduleFieldRefs: readonly st
     descriptionHtml: typeof description === "string" && description.trim().length > 0 ? description : null,
     workItemType: workItemType.trim(),
     tags: typeof tags === "string" && tags.trim().length > 0 ? tags : null,
+    systemFields: extractDuplicateSystemFields(fieldRecord),
     dateFields: extractStringFields(fieldRecord, scheduleFieldRefs),
     parentRelationUrl: extractParentRelationUrl(payload)
   };
@@ -376,6 +383,10 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
 
   if (source.tags !== null) {
     operations.push({ op: "add", path: "/fields/System.Tags", value: source.tags });
+  }
+
+  for (const systemField of source.systemFields) {
+    operations.push({ op: "add", path: `/fields/${systemField.fieldRef}`, value: systemField.value });
   }
 
   for (const dateField of source.dateFields) {
@@ -399,8 +410,42 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
 function extractStringFields(fields: Record<string, unknown>, fieldRefs: readonly string[]): DuplicateFieldValue[] {
   return fieldRefs.flatMap((fieldRef) => {
     const value = fields[fieldRef];
-    return typeof value === "string" && value.trim().length > 0 ? [{ fieldRef, value }] : [];
+    const stringValue = extractStringFieldValue(value);
+    return stringValue !== null ? [{ fieldRef, value: stringValue }] : [];
   });
+}
+
+function extractDuplicateSystemFields(fields: Record<string, unknown>): DuplicateFieldValue[] {
+  return DUPLICATE_SYSTEM_FIELD_REFS.flatMap((fieldRef) => {
+    const value = fieldRef === "System.AssignedTo"
+      ? extractAssignedToFieldValue(fields[fieldRef])
+      : extractStringFieldValue(fields[fieldRef]);
+    return value !== null ? [{ fieldRef, value }] : [];
+  });
+}
+
+function extractAssignedToFieldValue(value: unknown): string | null {
+  const directValue = extractStringFieldValue(value);
+  if (directValue !== null) {
+    return directValue;
+  }
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const identity = value as Record<string, unknown>;
+  const uniqueName = extractStringFieldValue(identity.uniqueName);
+  if (uniqueName !== null) {
+    return uniqueName.trim();
+  }
+
+  const displayName = extractStringFieldValue(identity.displayName);
+  return displayName !== null ? displayName.trim() : null;
+}
+
+function extractStringFieldValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
 function resolveDuplicateScheduleFieldRefs(input: DuplicateScheduleFieldRefs | undefined): string[] {

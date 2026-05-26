@@ -132,7 +132,7 @@ describe("WriteCommandAzureAdapter", () => {
     );
   });
 
-  it("duplicates work items with title, description, tags, schedule dates, and parent relation", async () => {
+  it("duplicates work items with title, description, tags, assignment, paths, schedule dates, and parent relation", async () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
@@ -141,6 +141,9 @@ describe("WriteCommandAzureAdapter", () => {
           "System.Description": "<p>Details</p>",
           "System.WorkItemType": "User Story",
           "System.Tags": "alpha; beta",
+          "System.AssignedTo": "Ada Lovelace <ada@example.com>",
+          "System.AreaPath": "delivery\\Platform",
+          "System.IterationPath": "delivery\\Sprint 1",
           "Microsoft.VSTS.Scheduling.StartDate": "2026-03-01T00:00:00.000Z",
           "Microsoft.VSTS.Scheduling.TargetDate": "2026-03-03T00:00:00.000Z"
         },
@@ -168,7 +171,7 @@ describe("WriteCommandAzureAdapter", () => {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_DUPLICATE",
-      operationCount: 6,
+      operationCount: 9,
       reasonCode: "WRITE_ENABLED",
       createdWorkItemId: 1234
     });
@@ -182,6 +185,9 @@ describe("WriteCommandAzureAdapter", () => {
         { op: "add", path: "/fields/System.Title", value: "Original" },
         { op: "add", path: "/fields/System.Description", value: "<p>Details</p>" },
         { op: "add", path: "/fields/System.Tags", value: "alpha; beta" },
+        { op: "add", path: "/fields/System.AssignedTo", value: "Ada Lovelace <ada@example.com>" },
+        { op: "add", path: "/fields/System.AreaPath", value: "delivery\\Platform" },
+        { op: "add", path: "/fields/System.IterationPath", value: "delivery\\Sprint 1" },
         {
           op: "add",
           path: "/fields/Microsoft.VSTS.Scheduling.StartDate",
@@ -249,6 +255,51 @@ describe("WriteCommandAzureAdapter", () => {
         { op: "add", path: "/fields/System.Title", value: "Original" },
         { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
         { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("duplicates assigned identity objects by unique name", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.Title": "Original",
+          "System.WorkItemType": "Task",
+          "System.AssignedTo": {
+            displayName: "Ada Lovelace",
+            uniqueName: "ada@example.com"
+          }
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 1234 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_DUPLICATE",
+      sourceWorkItemId: 42
+    });
+
+    expect(result).toMatchObject({
+      accepted: true,
+      commandKind: "WORK_ITEM_DUPLICATE",
+      operationCount: 2,
+      createdWorkItemId: 1234
+    });
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "Original" },
+        { op: "add", path: "/fields/System.AssignedTo", value: "ada@example.com" }
       ],
       {
         "content-type": "application/json-patch+json",
