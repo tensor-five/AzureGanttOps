@@ -47,6 +47,10 @@ export class BuildTimelineViewUseCase {
 
       return {
         queryType: input.snapshot.queryType,
+        scheduleFieldRefs: {
+          start: requiredMappings.start,
+          endOrTarget: requiredMappings.endOrTarget
+        },
         bars: projection.bars,
         unschedulable: projection.unschedulable,
         dependencies: projection.dependencies,

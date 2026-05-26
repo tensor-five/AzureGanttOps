@@ -1,7 +1,9 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
 import { sanitizeHtmlFragment } from "../../shared/security/sanitize-html-fragment.js";
+import { resolveWorkItemStateOptions } from "./work-item-state-options.js";
 
 export type TimelineDetailsPanelProps = {
   timeline: TimelineReadModel | null;
@@ -20,8 +22,6 @@ export type TimelineDetailsPanelProps = {
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onDirtyChange?: (dirty: boolean) => void;
 };
-
-const KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
 
 type TimelineDetailsDraft = {
   title: string;
@@ -164,15 +164,16 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [isDirty]);
 
   const azureLink = selected
-    ? buildAzureWorkItemUrl({
-        organization: props.organization,
-        project: props.project,
-        workItemId: selected.workItemId
-      })
+    ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId)
     : null;
 
   const stateOptions = React.useMemo(
-    () => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions),
+    () =>
+      resolveWorkItemStateOptions({
+        timeline: props.timeline,
+        selectedState: selected?.state ?? "",
+        serverStateOptions
+      }),
     [props.timeline, selected?.state, serverStateOptions]
   );
   const selectedStateColor =
@@ -634,21 +635,6 @@ function resolveSelectedWorkItem(
   return null;
 }
 
-function buildAzureWorkItemUrl(input: {
-  organization: string | undefined;
-  project: string | undefined;
-  workItemId: number;
-}): string | null {
-  const organization = (input.organization ?? "").trim();
-  const project = (input.project ?? "").trim();
-
-  if (!organization || !project) {
-    return null;
-  }
-
-  return `https://dev.azure.com/${encodeURIComponent(organization)}/${encodeURIComponent(project)}/_workitems/edit/${input.workItemId}`;
-}
-
 function parseTimelineDetailLine(line: string): { label: string; value: string } | null {
   const match = /^- ([^:]+):\s?(.*)$/.exec(line);
   if (!match) {
@@ -690,51 +676,4 @@ function formatDateForDisplay(raw: string): string {
   const hours = String(parsed.getHours()).padStart(2, "0");
   const minutes = String(parsed.getMinutes()).padStart(2, "0");
   return `${day}.${month}.${year} ${hours}:${minutes}`;
-}
-
-function resolveStateOptions(
-  timeline: TimelineReadModel | null,
-  selectedState: string,
-  serverStateOptions: Array<{ name: string; color: string | null }>
-): Array<{ name: string; color: string | null }> {
-  if (serverStateOptions.length > 0) {
-    const normalizedServerOptions = serverStateOptions
-      .map((state) => ({ name: state.name.trim(), color: state.color }))
-      .filter((state) => state.name.length > 0);
-    if (
-      selectedState.trim().length > 0 &&
-      !normalizedServerOptions.some((entry) => entry.name.toLowerCase() === selectedState.trim().toLowerCase())
-    ) {
-      normalizedServerOptions.unshift({ name: selectedState.trim(), color: null });
-    }
-    return normalizedServerOptions;
-  }
-
-  const discovered = new Set<string>();
-  timeline?.bars.forEach((bar) => {
-    if (bar.state.code.trim().length > 0) {
-      discovered.add(bar.state.code.trim());
-    }
-  });
-  timeline?.unschedulable.forEach((item) => {
-    if (item.state.code.trim().length > 0) {
-      discovered.add(item.state.code.trim());
-    }
-  });
-
-  if (selectedState.trim().length > 0) {
-    discovered.add(selectedState.trim());
-  }
-
-  const result: Array<{ name: string; color: string | null }> = [];
-  KNOWN_STATE_ORDER.forEach((state) => {
-    result.push({ name: state, color: null });
-    discovered.delete(state);
-  });
-
-  [...discovered].sort((left, right) => left.localeCompare(right)).forEach((state) => {
-    result.push({ name: state, color: null });
-  });
-
-  return result.length > 0 ? result : [{ name: selectedState || "To Do", color: null }];
 }

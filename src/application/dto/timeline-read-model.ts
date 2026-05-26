@@ -81,6 +81,10 @@ export type MappingValidationResult =
 
 export type TimelineReadModel = {
   queryType: IngestionQueryType;
+  scheduleFieldRefs?: {
+    start: string;
+    endOrTarget: string;
+  };
   bars: TimelineBar[];
   unschedulable: TimelineUnschedulableItem[];
   dependencies: TimelineDependencyArrow[];

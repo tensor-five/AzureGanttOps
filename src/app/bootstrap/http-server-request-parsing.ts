@@ -179,6 +179,86 @@ export function parseUpdateDetailsPayload(
   };
 }
 
+export function parseUpdateStatePayload(
+  input: Record<string, unknown> | null
+): { targetWorkItemId: number; state: string } | null {
+  if (!input) {
+    return null;
+  }
+
+  const targetWorkItemId = input.targetWorkItemId;
+  const state = input.state;
+
+  if (
+    typeof targetWorkItemId !== "number" ||
+    !Number.isFinite(targetWorkItemId) ||
+    targetWorkItemId <= 0 ||
+    typeof state !== "string" ||
+    state.trim().length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    targetWorkItemId,
+    state: state.trim()
+  };
+}
+
+export function parseDuplicateWorkItemPayload(
+  input: Record<string, unknown> | null
+): { sourceWorkItemId: number; scheduleFieldRefs?: { start: string; endOrTarget: string } } | null {
+  if (!input) {
+    return null;
+  }
+
+  const sourceWorkItemId = input.sourceWorkItemId;
+  if (
+    typeof sourceWorkItemId !== "number" ||
+    !Number.isFinite(sourceWorkItemId) ||
+    sourceWorkItemId <= 0
+  ) {
+    return null;
+  }
+
+  const scheduleFieldRefs = parseScheduleFieldRefs(input.scheduleFieldRefs);
+  if (input.scheduleFieldRefs !== undefined && !scheduleFieldRefs) {
+    return null;
+  }
+
+  return {
+    sourceWorkItemId,
+    ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+  };
+}
+
+function parseScheduleFieldRefs(input: unknown): { start: string; endOrTarget: string } | null {
+  if (input === undefined) {
+    return null;
+  }
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  const refs = input as Record<string, unknown>;
+  const start = refs.start;
+  const endOrTarget = refs.endOrTarget;
+
+  if (
+    typeof start !== "string" ||
+    start.trim().length === 0 ||
+    typeof endOrTarget !== "string" ||
+    endOrTarget.trim().length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    start: start.trim(),
+    endOrTarget: endOrTarget.trim()
+  };
+}
+
 export function parseMappingProfileUpsert(input: unknown):
   | {
       id: string;

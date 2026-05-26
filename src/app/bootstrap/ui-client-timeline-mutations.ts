@@ -78,6 +78,39 @@ export function applyWorkItemMetadataUpdate(
   };
 }
 
+export function applyWorkItemStateUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  stateCode: string,
+  stateColor: string | null
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  const nextState = toTimelineStateBadge(stateCode, stateColor);
+
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) =>
+      bar.workItemId === targetWorkItemId
+        ? {
+            ...bar,
+            state: nextState
+          }
+        : bar
+    ),
+    unschedulable: timeline.unschedulable.map((item) =>
+      item.workItemId === targetWorkItemId
+        ? {
+            ...item,
+            state: nextState
+          }
+        : item
+    )
+  };
+}
+
 export function applyDependencyLinkUpdate(
   timeline: QueryIntakeResponse["timeline"],
   predecessorWorkItemId: number,

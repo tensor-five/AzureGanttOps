@@ -15,6 +15,7 @@ import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
+import type { WriteCommandResult } from "../../application/dto/write-boundary/write-command.dto.js";
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
 import {
   parseAdoptSchedulePayload,
@@ -25,7 +26,9 @@ import {
   parsePayload,
   parseQueryIdFromQuery,
   parseTargetWorkItemIdFromQuery,
+  parseDuplicateWorkItemPayload,
   parseUpdateDetailsPayload,
+  parseUpdateStatePayload,
   parseUserPreferencesPatch
 } from "./http-server-request-parsing.js";
 import {
@@ -94,7 +97,7 @@ export type HttpServer = {
 };
 
 type AdoCommLogDirection = "request" | "response";
-type AdoCommMethod = "GET" | "PATCH";
+type AdoCommMethod = "GET" | "PATCH" | "POST";
 
 type AdoCommLogEntry = {
   seq: number;
@@ -136,6 +139,8 @@ const ADOPT_SCHEDULE_ROUTE_PATH = "/phase2/work-item-schedule-adopt";
 const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
 const REPARENT_ROUTE_PATH = "/phase2/work-item-reparent";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
+const UPDATE_STATE_ROUTE_PATH = "/phase2/work-item-state-update";
+const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
@@ -376,6 +381,14 @@ function isUpdateDetailsRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_DETAILS_ROUTE_PATH;
 }
 
+function isUpdateStateRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === UPDATE_STATE_ROUTE_PATH;
+}
+
+function isDuplicateWorkItemRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === DUPLICATE_WORK_ITEM_ROUTE_PATH;
+}
+
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_STATE_OPTIONS_ROUTE_PATH;
 }
@@ -408,7 +421,9 @@ function isCsrfProtectedRoute(method: string, pathname: string): boolean {
     isAdoptScheduleRoute(method, pathname) ||
     isDependencyLinkRoute(method, pathname) ||
     isReparentRoute(method, pathname) ||
-    isUpdateDetailsRoute(method, pathname)
+    isUpdateDetailsRoute(method, pathname) ||
+    isUpdateStateRoute(method, pathname) ||
+    isDuplicateWorkItemRoute(method, pathname)
   );
 }
 
@@ -421,6 +436,11 @@ function writeAdoCommLogsResponse(res: ServerResponse, store: AdoCommLogStore, u
 export function createHttpServer(params: {
   httpClient: HttpClient & {
     patch?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers?: Record<string, string | undefined>;
+    }>;
+    post?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
       status: number;
       json: unknown;
       headers?: Record<string, string | undefined>;
@@ -442,6 +462,11 @@ export function createHttpServer(params: {
 
   const instrumentedHttpClient: HttpClient & {
     patch?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers?: Record<string, string | undefined>;
+    }>;
+    post?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
       status: number;
       json: unknown;
       headers?: Record<string, string | undefined>;
@@ -477,6 +502,25 @@ export function createHttpServer(params: {
       appendAdoCommResponseLog(adoCommLogStore, {
         url,
         method: "PATCH",
+        status: response.status,
+        durationMs: ADO_COMM_DURATION(startedAt),
+        json: response.json
+      });
+
+      return response;
+    };
+  }
+  if (params.httpClient.post) {
+    instrumentedHttpClient.post = async (url: string, body: unknown, headers?: Record<string, string>) => {
+      const startedAt = Date.now();
+      logVerboseHttpRequest(verboseLogs, "POST", url);
+      appendAdoCommRequestLog(adoCommLogStore, url, "POST");
+
+      const response = await params.httpClient.post!(url, body, headers);
+      logVerboseHttpResponse(verboseLogs, response);
+      appendAdoCommResponseLog(adoCommLogStore, {
+        url,
+        method: "POST",
         status: response.status,
         durationMs: ADO_COMM_DURATION(startedAt),
         json: response.json
@@ -761,6 +805,23 @@ type TimelineWritesDeps = {
   writeEnabled: boolean;
 };
 
+function writeRejectedWriteResult(res: ServerResponse, writeResult: WriteCommandResult): void {
+  if (writeResult.reasonCode === "WRITE_UNSUPPORTED") {
+    writeJson(res, 501, {
+      code: "WRITE_UNSUPPORTED",
+      message: "Writeback operation is not supported by the configured Azure DevOps transport.",
+      result: writeResult
+    });
+    return;
+  }
+
+  writeJson(res, 403, {
+    code: "WRITE_DISABLED",
+    message: "Writeback is disabled.",
+    result: writeResult
+  });
+}
+
 async function handleTimelineWritesRoute(
   req: IncomingMessage,
   res: ServerResponse,
@@ -795,11 +856,7 @@ async function handleTimelineWritesRoute(
       });
 
       if (!writeResult.accepted) {
-        writeJson(res, 403, {
-          code: "WRITE_DISABLED",
-          message: "Writeback is disabled.",
-          result: writeResult
-        });
+        writeRejectedWriteResult(res, writeResult);
         return true;
       }
 
@@ -840,11 +897,7 @@ async function handleTimelineWritesRoute(
       });
 
       if (!writeResult.accepted) {
-        writeJson(res, 403, {
-          code: "WRITE_DISABLED",
-          message: "Writeback is disabled.",
-          result: writeResult
-        });
+        writeRejectedWriteResult(res, writeResult);
         return true;
       }
 
@@ -884,11 +937,7 @@ async function handleTimelineWritesRoute(
       });
 
       if (!writeResult.accepted) {
-        writeJson(res, 403, {
-          code: "WRITE_DISABLED",
-          message: "Writeback is disabled.",
-          result: writeResult
-        });
+        writeRejectedWriteResult(res, writeResult);
         return true;
       }
 
@@ -931,11 +980,7 @@ async function handleTimelineWritesRoute(
       });
 
       if (!writeResult.accepted) {
-        writeJson(res, 403, {
-          code: "WRITE_DISABLED",
-          message: "Writeback is disabled.",
-          result: writeResult
-        });
+        writeRejectedWriteResult(res, writeResult);
         return true;
       }
 
@@ -945,6 +990,86 @@ async function handleTimelineWritesRoute(
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to patch work item."
+      });
+      return true;
+    }
+  }
+
+  if (isUpdateStateRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const update = parseUpdateStatePayload(payload);
+
+    if (!update) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId/state."
+      });
+      return true;
+    }
+
+    try {
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "WORK_ITEM_PATCH",
+          workItemId: update.targetWorkItemId,
+          operations: [
+            { op: "add", path: "/fields/System.State", value: update.state }
+          ]
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeRejectedWriteResult(res, writeResult);
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to update work item state."
+      });
+      return true;
+    }
+  }
+
+  if (isDuplicateWorkItemRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const duplicate = parseDuplicateWorkItemPayload(payload);
+
+    if (!duplicate) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide sourceWorkItemId."
+      });
+      return true;
+    }
+
+    try {
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "WORK_ITEM_DUPLICATE",
+          sourceWorkItemId: duplicate.sourceWorkItemId,
+          ...(duplicate.scheduleFieldRefs ? { scheduleFieldRefs: duplicate.scheduleFieldRefs } : {})
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeRejectedWriteResult(res, writeResult);
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to duplicate work item."
       });
       return true;
     }

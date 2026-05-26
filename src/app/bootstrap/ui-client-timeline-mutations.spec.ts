@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
-import { applyDependencyLinkUpdate, applyScheduleUpdate, applyWorkItemMetadataUpdate } from "./ui-client-timeline-mutations.js";
+import {
+  applyDependencyLinkUpdate,
+  applyScheduleUpdate,
+  applyWorkItemMetadataUpdate,
+  applyWorkItemStateUpdate
+} from "./ui-client-timeline-mutations.js";
 
 function makeTimeline(): TimelineReadModel {
   return {
@@ -57,6 +62,14 @@ describe("ui-client-timeline-mutations", () => {
     expect(updated?.unschedulable[0]?.details.descriptionHtml).toBe("<p>updated</p>");
     expect(updated?.unschedulable[0]?.state.code).toBe("Done");
     expect(updated?.unschedulable[0]?.state.color).toBe("#abcdef");
+  });
+
+  it("applies state-only updates without changing title or description", () => {
+    const updated = applyWorkItemStateUpdate(makeTimeline(), 11, "Closed", "abcdef");
+    expect(updated?.bars[0]?.title).toBe("Item 11");
+    expect(updated?.bars[0]?.details.descriptionHtml).toBe("<p>a</p>");
+    expect(updated?.bars[0]?.state.code).toBe("Closed");
+    expect(updated?.bars[0]?.state.color).toBe("#abcdef");
   });
 
   it("adds and removes dependency links idempotently", () => {

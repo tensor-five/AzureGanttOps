@@ -40,6 +40,9 @@ function makeTimeline(id: string): TimelineReadModel {
 describe("ui-client-writeback-flow", () => {
   it("maps writeback reason code to stable error text", () => {
     expect(toWritebackError("WRITE_DISABLED").message).toBe("Writeback is disabled.");
+    expect(toWritebackError("WRITE_UNSUPPORTED").message).toBe(
+      "Writeback operation is not supported by this Azure DevOps connection."
+    );
     expect(toWritebackError("ANY_OTHER").message).toBe("Write failed.");
   });
 
