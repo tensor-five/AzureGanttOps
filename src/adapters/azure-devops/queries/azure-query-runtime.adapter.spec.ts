@@ -155,6 +155,83 @@ describe("AzureQueryRuntimeAdapter", () => {
     expect(snapshot.workItems.map((item) => item.id)).toEqual(ids);
   });
 
+  it("allows script-style high hydration concurrency for many 200 item batches", async () => {
+    const previousConcurrency = process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY;
+    process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY = "40";
+
+    const chunkCount = 13;
+    const ids = Array.from({ length: chunkCount * 200 }, (_, index) => index + 1);
+    let activeHydrationRequests = 0;
+    let maxActiveHydrationRequests = 0;
+    let startedHydrationRequests = 0;
+    let releaseHydrationRequests: () => void = () => undefined;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+    try {
+      const releasePromise = new Promise<void>((resolve) => {
+        releaseHydrationRequests = resolve;
+      });
+      fallbackTimer = setTimeout(() => releaseHydrationRequests(), 100);
+
+      const client: HttpClient = {
+        async get(url: string) {
+          if (url.includes("/_apis/wit/wiql/")) {
+            return {
+              status: 200,
+              json: {
+                queryType: "flat",
+                workItems: ids.map((id) => ({ id })),
+                workItemRelations: []
+              }
+            };
+          }
+
+          if (url.includes("/_apis/wit/workitems")) {
+            const chunkIds = extractIdsFromWorkItemsUrl(url);
+            startedHydrationRequests += 1;
+            activeHydrationRequests += 1;
+            maxActiveHydrationRequests = Math.max(maxActiveHydrationRequests, activeHydrationRequests);
+
+            if (startedHydrationRequests === chunkCount) {
+              if (fallbackTimer) {
+                clearTimeout(fallbackTimer);
+              }
+              releaseHydrationRequests();
+            }
+
+            await releasePromise;
+            activeHydrationRequests -= 1;
+
+            return {
+              status: 200,
+              json: {
+                value: chunkIds.map((id) => makeHydratedItem(id))
+              }
+            };
+          }
+
+          throw new Error(`unexpected url ${url}`);
+        }
+      };
+
+      const adapter = makeAdapter(client);
+      const snapshot = await adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+
+      expect(snapshot.hydration.attemptedBatches).toBe(chunkCount);
+      expect(maxActiveHydrationRequests).toBe(chunkCount);
+    } finally {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+      }
+
+      if (typeof previousConcurrency === "undefined") {
+        delete process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY;
+      } else {
+        process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY = previousConcurrency;
+      }
+    }
+  });
+
   it("accepts tree query types and extracts IDs from workItemRelations", async () => {
     const client = makeClient((url) => {
       if (url.includes("/_apis/wit/wiql/")) {

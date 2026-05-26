@@ -11,8 +11,8 @@ import { filterRuntimeRelations } from "../../../domain/query-runtime/services/r
 
 const API_VERSION = "7.1";
 const MAX_IDS_PER_BATCH = 200;
-const DEFAULT_HYDRATION_CONCURRENCY = 6;
-const MAX_HYDRATION_CONCURRENCY = 12;
+const DEFAULT_HYDRATION_CONCURRENCY = 12;
+const MAX_HYDRATION_CONCURRENCY = 40;
 const MAX_RETRY_ATTEMPTS = 4;
 const BASE_BACKOFF_MS = 250;
 const MAX_BACKOFF_MS = 4000;
@@ -51,8 +51,6 @@ type HydrationChunkResult = {
   missingIds: number[];
   retriedRequests: number;
 };
-
-const HYDRATION_CONCURRENCY = resolveHydrationConcurrency();
 
 export class AzureQueryRuntimeAdapter {
   public constructor(
@@ -137,6 +135,7 @@ export class AzureQueryRuntimeAdapter {
 
     const idChunks = chunkIds(workItemIds, MAX_IDS_PER_BATCH);
     const chunkResults: HydrationChunkResult[] = new Array(idChunks.length);
+    const hydrationConcurrency = resolveHydrationConcurrency();
 
     let cursor = 0;
     const runWorker = async () => {
@@ -149,7 +148,7 @@ export class AzureQueryRuntimeAdapter {
       }
     };
 
-    const workers = Array.from({ length: Math.min(HYDRATION_CONCURRENCY, idChunks.length) }, () => runWorker());
+    const workers = Array.from({ length: Math.min(hydrationConcurrency, idChunks.length) }, () => runWorker());
     await Promise.all(workers);
 
     const byId = new Map<number, IngestionWorkItem>();
