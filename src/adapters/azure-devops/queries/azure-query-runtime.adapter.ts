@@ -10,7 +10,8 @@ import { resolveQueryShape } from "../../../domain/query-runtime/services/query-
 import { filterRuntimeRelations } from "../../../domain/query-runtime/services/relation-filter-policy.js";
 
 const API_VERSION = "7.1";
-const MAX_IDS_PER_BATCH = 200;
+const AZURE_DEVOPS_MAX_IDS_PER_BATCH = 200;
+const DEFAULT_HYDRATION_BATCH_SIZE = 50;
 const DEFAULT_HYDRATION_CONCURRENCY = 12;
 const MAX_HYDRATION_CONCURRENCY = 40;
 const MAX_RETRY_ATTEMPTS = 4;
@@ -121,19 +122,20 @@ export class AzureQueryRuntimeAdapter {
         workItems: [],
         relationCandidates: [],
         metadata: {
-          maxIdsPerBatch: MAX_IDS_PER_BATCH,
+          maxIdsPerBatch: resolveHydrationBatchSize(),
           requestedIds: 0,
           attemptedBatches: 0,
           succeededBatches: 0,
+          partial: false,
           retriedRequests: 0,
           missingIds: [],
-          partial: false,
           statusCode: "OK"
         }
       };
     }
 
-    const idChunks = chunkIds(workItemIds, MAX_IDS_PER_BATCH);
+    const hydrationBatchSize = resolveHydrationBatchSize();
+    const idChunks = chunkIds(workItemIds, hydrationBatchSize);
     const chunkResults: HydrationChunkResult[] = new Array(idChunks.length);
     const hydrationConcurrency = resolveHydrationConcurrency();
 
@@ -177,7 +179,7 @@ export class AzureQueryRuntimeAdapter {
       workItems: orderedWorkItems,
       relationCandidates,
       metadata: {
-        maxIdsPerBatch: MAX_IDS_PER_BATCH,
+        maxIdsPerBatch: hydrationBatchSize,
         requestedIds: workItemIds.length,
         attemptedBatches: idChunks.length,
         succeededBatches: chunkResults.length,
@@ -637,6 +639,20 @@ function toTransportFailureHint(error: unknown): string {
       .replace(/^_+|_+$/g, "")
       .slice(0, 80) || "TRANSPORT"
   );
+}
+
+function resolveHydrationBatchSize(): number {
+  const raw = process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE;
+  if (!raw) {
+    return DEFAULT_HYDRATION_BATCH_SIZE;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return DEFAULT_HYDRATION_BATCH_SIZE;
+  }
+
+  return Math.min(parsed, AZURE_DEVOPS_MAX_IDS_PER_BATCH);
 }
 
 function resolveHydrationConcurrency(): number {

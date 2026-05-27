@@ -110,57 +110,113 @@ describe("AzureQueryRuntimeAdapter", () => {
   it.each([
     { totalIds: 0, expectedChunks: [] },
     { totalIds: 1, expectedChunks: [1] },
-    { totalIds: 200, expectedChunks: [200] },
-    { totalIds: 201, expectedChunks: [200, 1] },
-    { totalIds: 400, expectedChunks: [200, 200] },
-    { totalIds: 401, expectedChunks: [200, 200, 1] }
-  ])("chunks hydration requests at max 200 ids (count=$totalIds)", async ({ totalIds, expectedChunks }) => {
-    const ids = Array.from({ length: totalIds }, (_, index) => index + 1);
-    const requestedChunkSizes: number[] = [];
+    { totalIds: 50, expectedChunks: [50] },
+    { totalIds: 51, expectedChunks: [50, 1] },
+    { totalIds: 100, expectedChunks: [50, 50] },
+    { totalIds: 101, expectedChunks: [50, 50, 1] },
+    { totalIds: 300, expectedChunks: [50, 50, 50, 50, 50, 50] }
+  ])("chunks hydration requests at the default 50 ids (count=$totalIds)", async ({ totalIds, expectedChunks }) => {
+    const previousBatchSize = process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE;
+    delete process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE;
 
-    const client = makeClient((url) => {
-      if (url.includes("/_apis/wit/wiql/")) {
-        return {
-          status: 200,
-          json: {
-            queryType: "flat",
-            workItems: ids.map((id) => ({ id })),
-            workItemRelations: []
-          }
-        };
-      }
+    try {
+      const ids = Array.from({ length: totalIds }, (_, index) => index + 1);
+      const requestedChunkSizes: number[] = [];
 
-      if (url.includes("/_apis/wit/workitems")) {
-        const chunkIds = extractIdsFromWorkItemsUrl(url);
-        requestedChunkSizes.push(chunkIds.length);
+      const client = makeClient((url) => {
+        if (url.includes("/_apis/wit/wiql/")) {
+          return {
+            status: 200,
+            json: {
+              queryType: "flat",
+              workItems: ids.map((id) => ({ id })),
+              workItemRelations: []
+            }
+          };
+        }
 
-        return {
-          status: 200,
-          json: {
-            value: chunkIds.map((id) => makeHydratedItem(id))
-          }
-        };
-      }
+        if (url.includes("/_apis/wit/workitems")) {
+          const chunkIds = extractIdsFromWorkItemsUrl(url);
+          requestedChunkSizes.push(chunkIds.length);
 
-      throw new Error(`unexpected url ${url}`);
-    });
+          return {
+            status: 200,
+            json: {
+              value: chunkIds.map((id) => makeHydratedItem(id))
+            }
+          };
+        }
 
-    const adapter = makeAdapter(client);
+        throw new Error(`unexpected url ${url}`);
+      });
 
-    const snapshot = await adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+      const adapter = makeAdapter(client);
 
-    expect(requestedChunkSizes).toEqual(expectedChunks);
-    expect(requestedChunkSizes.every((size) => size <= 200)).toBe(true);
-    expect(snapshot.workItemIds).toEqual(ids);
-    expect(snapshot.workItems.map((item) => item.id)).toEqual(ids);
+      const snapshot = await adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+
+      expect(requestedChunkSizes).toEqual(expectedChunks);
+      expect(requestedChunkSizes.every((size) => size <= 50)).toBe(true);
+      expect(snapshot.hydration.maxIdsPerBatch).toBe(50);
+      expect(snapshot.workItemIds).toEqual(ids);
+      expect(snapshot.workItems.map((item) => item.id)).toEqual(ids);
+    } finally {
+      restoreEnvValue("AZURE_GANTTOPS_HYDRATION_BATCH_SIZE", previousBatchSize);
+    }
   });
 
-  it("allows script-style high hydration concurrency for many 200 item batches", async () => {
+  it("caps custom hydration batch size at Azure DevOps' 200 id limit", async () => {
+    const previousBatchSize = process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE;
+    process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE = "500";
+
+    try {
+      const ids = Array.from({ length: 401 }, (_, index) => index + 1);
+      const requestedChunkSizes: number[] = [];
+
+      const client = makeClient((url) => {
+        if (url.includes("/_apis/wit/wiql/")) {
+          return {
+            status: 200,
+            json: {
+              queryType: "flat",
+              workItems: ids.map((id) => ({ id })),
+              workItemRelations: []
+            }
+          };
+        }
+
+        if (url.includes("/_apis/wit/workitems")) {
+          const chunkIds = extractIdsFromWorkItemsUrl(url);
+          requestedChunkSizes.push(chunkIds.length);
+
+          return {
+            status: 200,
+            json: {
+              value: chunkIds.map((id) => makeHydratedItem(id))
+            }
+          };
+        }
+
+        throw new Error(`unexpected url ${url}`);
+      });
+
+      const adapter = makeAdapter(client);
+      const snapshot = await adapter.executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+
+      expect(requestedChunkSizes).toEqual([200, 200, 1]);
+      expect(snapshot.hydration.maxIdsPerBatch).toBe(200);
+    } finally {
+      restoreEnvValue("AZURE_GANTTOPS_HYDRATION_BATCH_SIZE", previousBatchSize);
+    }
+  });
+
+  it("allows script-style high hydration concurrency across many batches", async () => {
+    const previousBatchSize = process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE;
     const previousConcurrency = process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY;
+    process.env.AZURE_GANTTOPS_HYDRATION_BATCH_SIZE = "50";
     process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY = "40";
 
     const chunkCount = 13;
-    const ids = Array.from({ length: chunkCount * 200 }, (_, index) => index + 1);
+    const ids = Array.from({ length: chunkCount * 50 }, (_, index) => index + 1);
     let activeHydrationRequests = 0;
     let maxActiveHydrationRequests = 0;
     let startedHydrationRequests = 0;
@@ -229,6 +285,7 @@ describe("AzureQueryRuntimeAdapter", () => {
       } else {
         process.env.AZURE_GANTTOPS_HYDRATION_CONCURRENCY = previousConcurrency;
       }
+      restoreEnvValue("AZURE_GANTTOPS_HYDRATION_BATCH_SIZE", previousBatchSize);
     }
   });
 
@@ -614,6 +671,15 @@ function makeClient(
       return Promise.resolve(resolver(url));
     }
   };
+}
+
+function restoreEnvValue(key: string, value: string | undefined): void {
+  if (typeof value === "undefined") {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
 }
 
 function extractIdsFromWorkItemsUrl(rawUrl: string): number[] {
