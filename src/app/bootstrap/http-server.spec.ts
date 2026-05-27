@@ -742,7 +742,7 @@ describe("createHttpServer", () => {
         {
           url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
           body: [
-            { op: "add", path: "/fields/System.Title", value: "Original" },
+            { op: "add", path: "/fields/System.Title", value: "Original (copy)" },
             { op: "add", path: "/fields/System.Tags", value: "alpha" },
             {
               op: "add",

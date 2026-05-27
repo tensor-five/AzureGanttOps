@@ -182,7 +182,7 @@ describe("WriteCommandAzureAdapter", () => {
     expect(post).toHaveBeenCalledWith(
       "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
       [
-        { op: "add", path: "/fields/System.Title", value: "Original" },
+        { op: "add", path: "/fields/System.Title", value: "Original (copy)" },
         { op: "add", path: "/fields/System.Description", value: "<p>Details</p>" },
         { op: "add", path: "/fields/System.Tags", value: "alpha; beta" },
         { op: "add", path: "/fields/System.AssignedTo", value: "Ada Lovelace <ada@example.com>" },
@@ -252,7 +252,7 @@ describe("WriteCommandAzureAdapter", () => {
     expect(post).toHaveBeenCalledWith(
       "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
       [
-        { op: "add", path: "/fields/System.Title", value: "Original" },
+        { op: "add", path: "/fields/System.Title", value: "Original (copy)" },
         { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
         { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" }
       ],
@@ -261,6 +261,77 @@ describe("WriteCommandAzureAdapter", () => {
         accept: "application/json"
       }
     );
+  });
+
+  it("returns created work item fields from Azure create responses for local timeline reconciliation", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.Title": "Original",
+          "System.WorkItemType": "Task",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({
+      status: 200,
+      json: {
+        id: 1234,
+        fields: {
+          "System.Title": "Original (copy)",
+          "System.State": "New",
+          "System.WorkItemType": "Task",
+          "System.AssignedTo": {
+            uniqueName: "ada@example.com"
+          },
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        },
+        relations: [
+          {
+            rel: "System.LinkTypes.Hierarchy-Reverse",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/99"
+          }
+        ]
+      }
+    }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_DUPLICATE",
+      sourceWorkItemId: 42,
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    });
+
+    expect(result.createdWorkItem).toEqual({
+      id: 1234,
+      title: "Original (copy)",
+      state: "New",
+      descriptionHtml: null,
+      workItemType: "Task",
+      assignedTo: "ada@example.com",
+      fieldValues: {
+        "System.Title": "Original (copy)",
+        "System.State": "New",
+        "System.WorkItemType": "Task",
+        "Custom.StartDate2": "2026-04-01",
+        "Custom.TargetDate2": "2026-04-08"
+      },
+      parentWorkItemId: 99,
+      schedule: {
+        startDate: "2026-04-01",
+        endDate: "2026-04-08"
+      }
+    });
   });
 
   it("duplicates assigned identity objects by unique name", async () => {
@@ -298,7 +369,7 @@ describe("WriteCommandAzureAdapter", () => {
     expect(post).toHaveBeenCalledWith(
       "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
       [
-        { op: "add", path: "/fields/System.Title", value: "Original" },
+        { op: "add", path: "/fields/System.Title", value: "Original (copy)" },
         { op: "add", path: "/fields/System.AssignedTo", value: "ada@example.com" }
       ],
       {

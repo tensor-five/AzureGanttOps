@@ -29,6 +29,7 @@ import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../
 import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyDependencyLinkUpdate,
+  applyDuplicateWorkItemToResponse,
   applyReparentUpdate,
   applyScheduleUpdate,
   applyWorkItemMetadataUpdate,
@@ -1192,7 +1193,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             });
           },
           onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
-            await runTrackedWorkItemUpdate(async () => {
+            const writeResult = await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.duplicateWorkItem({
                 sourceWorkItemId,
                 ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
@@ -1201,8 +1202,31 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               if (!writeResult.accepted) {
                 throw toWritebackError(writeResult.reasonCode);
               }
+
+              return writeResult;
             });
-            await retryRefresh();
+
+            const createdWorkItem = writeResult.createdWorkItem ??
+              (writeResult.createdWorkItemId ? { id: writeResult.createdWorkItemId } : null);
+            if (!createdWorkItem) {
+              await retryRefresh();
+              return;
+            }
+
+            const nextResponse = applyDuplicateWorkItemToResponse(responseRef.current, sourceWorkItemId, createdWorkItem);
+            if (!nextResponse) {
+              await retryRefresh();
+              return;
+            }
+
+            if (nextResponse === responseRef.current) {
+              return;
+            }
+
+            timelineSelectionStoreRef.current.select(createdWorkItem.id);
+            responseRef.current = nextResponse;
+            setResponse(nextResponse);
+            setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
           },
           onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
             await scheduleReparentMutation({

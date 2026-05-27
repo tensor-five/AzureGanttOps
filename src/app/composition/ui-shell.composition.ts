@@ -1,7 +1,10 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
-import type { WriteCommandReasonCode } from "../../application/dto/write-boundary/write-command.dto.js";
+import type {
+  CreatedWorkItemSnapshot,
+  WriteCommandReasonCode
+} from "../../application/dto/write-boundary/write-command.dto.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
@@ -31,6 +34,7 @@ export type WriteCommandTransportResult = {
   operationCount: number;
   reasonCode: WriteCommandReasonCode;
   createdWorkItemId?: number;
+  createdWorkItem?: CreatedWorkItemSnapshot;
 };
 
 export type QueryIntakeTransport = {

@@ -1,4 +1,8 @@
-import type { WriteCommand, WriteCommandResult } from "../../../application/dto/write-boundary/write-command.dto.js";
+import type {
+  CreatedWorkItemSnapshot,
+  WriteCommand,
+  WriteCommandResult
+} from "../../../application/dto/write-boundary/write-command.dto.js";
 import type { WriteCommandPort } from "../../../application/ports/write-command.port.js";
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
 
@@ -194,13 +198,20 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_DUPLICATE_FAILED", createResponse.json));
     }
 
+    const createdWorkItemId = extractCreatedWorkItemId(createResponse.json) ?? undefined;
+    const createdWorkItem = extractCreatedWorkItemSnapshot(
+      createResponse.json,
+      resolveDuplicateScheduleFieldRefs(command.scheduleFieldRefs)
+    );
+
     return {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_DUPLICATE",
       operationCount: operations.length,
       reasonCode: "WRITE_ENABLED",
-      createdWorkItemId: extractCreatedWorkItemId(createResponse.json) ?? undefined
+      ...(createdWorkItemId ? { createdWorkItemId } : {}),
+      ...(createdWorkItem ? { createdWorkItem } : {})
     };
   }
 
@@ -374,7 +385,7 @@ function extractDuplicateSource(payload: unknown, scheduleFieldRefs: readonly st
 
 function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
   const operations: unknown[] = [
-    { op: "add", path: "/fields/System.Title", value: source.title }
+    { op: "add", path: "/fields/System.Title", value: appendCopySuffix(source.title) }
   ];
 
   if (source.descriptionHtml !== null) {
@@ -405,6 +416,10 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
   }
 
   return operations;
+}
+
+function appendCopySuffix(title: string): string {
+  return `${title} (copy)`;
 }
 
 function extractStringFields(fields: Record<string, unknown>, fieldRefs: readonly string[]): DuplicateFieldValue[] {
@@ -478,6 +493,86 @@ function extractParentRelationUrl(payload: unknown): string | null {
   }
 
   return null;
+}
+
+function extractCreatedWorkItemSnapshot(payload: unknown, scheduleFieldRefs: readonly string[]): CreatedWorkItemSnapshot | null {
+  const id = extractCreatedWorkItemId(payload);
+  if (id === null || !payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const fields = (payload as { fields?: unknown }).fields;
+  if (!fields || typeof fields !== "object") {
+    return null;
+  }
+
+  const fieldRecord = fields as Record<string, unknown>;
+  const schedule = extractCreatedWorkItemSchedule(fieldRecord, scheduleFieldRefs);
+  const parentWorkItemId = extractParentWorkItemId(payload);
+
+  return {
+    id,
+    title: extractStringFieldValue(fieldRecord["System.Title"]),
+    state: extractStringFieldValue(fieldRecord["System.State"]),
+    descriptionHtml: extractStringFieldValue(fieldRecord["System.Description"]),
+    workItemType: extractStringFieldValue(fieldRecord["System.WorkItemType"]),
+    assignedTo: extractAssignedToFieldValue(fieldRecord["System.AssignedTo"]),
+    fieldValues: extractPrimitiveFieldValues(fieldRecord),
+    ...(parentWorkItemId !== undefined ? { parentWorkItemId } : {}),
+    ...(schedule ? { schedule } : {})
+  };
+}
+
+function extractCreatedWorkItemSchedule(
+  fields: Record<string, unknown>,
+  scheduleFieldRefs: readonly string[]
+): CreatedWorkItemSnapshot["schedule"] | null {
+  const [startFieldRef, endFieldRef] = scheduleFieldRefs;
+  const schedule: NonNullable<CreatedWorkItemSnapshot["schedule"]> = {};
+
+  if (startFieldRef && Object.prototype.hasOwnProperty.call(fields, startFieldRef)) {
+    schedule.startDate = extractStringFieldValue(fields[startFieldRef]);
+  }
+
+  if (endFieldRef && Object.prototype.hasOwnProperty.call(fields, endFieldRef)) {
+    schedule.endDate = extractStringFieldValue(fields[endFieldRef]);
+  }
+
+  return Object.keys(schedule).length > 0 ? schedule : null;
+}
+
+function extractPrimitiveFieldValues(fields: Record<string, unknown>): Record<string, string | number | null> {
+  const result: Record<string, string | number | null> = {};
+  for (const [fieldRef, value] of Object.entries(fields)) {
+    if (typeof value === "string" || typeof value === "number" || value === null) {
+      result[fieldRef] = value;
+    }
+  }
+
+  return result;
+}
+
+function extractParentWorkItemId(payload: unknown): number | null | undefined {
+  const parentRelationUrl = extractParentRelationUrl(payload);
+  if (parentRelationUrl === null) {
+    return hasRelationsArray(payload) ? null : undefined;
+  }
+
+  return extractWorkItemIdFromRelationUrl(parentRelationUrl);
+}
+
+function hasRelationsArray(payload: unknown): boolean {
+  return Boolean(payload && typeof payload === "object" && Array.isArray((payload as { relations?: unknown }).relations));
+}
+
+function extractWorkItemIdFromRelationUrl(targetUrl: string): number | null {
+  const match = targetUrl.match(/\/_apis\/wit\/workitems\/(\d+)(?:$|[/?#])/i);
+  if (!match) {
+    return null;
+  }
+
+  const id = Number.parseInt(match[1], 10);
+  return Number.isFinite(id) && id > 0 ? id : null;
 }
 
 function extractCreatedWorkItemId(payload: unknown): number | null {

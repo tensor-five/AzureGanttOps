@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import {
   applyDependencyLinkUpdate,
+  applyDuplicateWorkItemToResponse,
+  applyDuplicateWorkItemUpdate,
   applyScheduleUpdate,
   applyWorkItemMetadataUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
+import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
 function makeTimeline(): TimelineReadModel {
   return {
@@ -79,5 +82,76 @@ describe("ui-client-timeline-mutations", () => {
 
     const removed = applyDependencyLinkUpdate(addedAgain, 11, 22, "remove");
     expect(removed?.dependencies).toHaveLength(0);
+  });
+
+  it("adds a created duplicate next to its source without copying dependency links", () => {
+    const timeline = {
+      ...makeTimeline(),
+      dependencies: [
+        {
+          predecessorWorkItemId: 11,
+          successorWorkItemId: 22,
+          dependencyType: "FS",
+          label: "#11 [end] -> #22 [start]"
+        }
+      ]
+    } satisfies TimelineReadModel;
+
+    const updated = applyDuplicateWorkItemUpdate(timeline, 11, {
+      id: 99,
+      state: "New",
+      fieldValues: {
+        "System.Title": "Item 11",
+        "System.State": "New",
+        "Custom.Team": "Delivery"
+      },
+      schedule: {
+        startDate: "2026-03-01T00:00:00.000Z",
+        endDate: "2026-03-03T00:00:00.000Z"
+      }
+    });
+
+    expect(updated?.bars.map((bar) => bar.workItemId)).toEqual([11, 99]);
+    expect(updated?.bars[1]).toMatchObject({
+      workItemId: 99,
+      title: "Item 11 (copy)",
+      state: {
+        code: "New"
+      },
+      details: {
+        mappedId: "99",
+        fieldValues: {
+          "System.Title": "Item 11 (copy)",
+          "Custom.Team": "Delivery"
+        }
+      }
+    });
+    expect(updated?.dependencies).toEqual(timeline.dependencies);
+  });
+
+  it("uses source timeline data when Azure only returns the created work item id", () => {
+    const updated = applyDuplicateWorkItemUpdate(makeTimeline(), 22, { id: 99 });
+
+    expect(updated?.unschedulable.map((item) => item.workItemId)).toEqual([22, 99]);
+    expect(updated?.unschedulable[1]).toMatchObject({
+      workItemId: 99,
+      title: "Item 22 (copy)",
+      details: {
+        mappedId: "99",
+        descriptionHtml: "<p>b</p>"
+      }
+    });
+  });
+
+  it("adds the created duplicate to the active response work item ids", () => {
+    const response = {
+      workItemIds: [11, 22],
+      timeline: makeTimeline()
+    } as QueryIntakeResponse;
+
+    const updated = applyDuplicateWorkItemToResponse(response, 11, { id: 99 });
+
+    expect(updated?.workItemIds).toEqual([11, 22, 99]);
+    expect(updated?.timeline?.bars.map((bar) => bar.workItemId)).toEqual([11, 99]);
   });
 });

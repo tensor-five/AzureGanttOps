@@ -43,6 +43,21 @@ export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | Hierar
 
 export type WriteCommandReasonCode = "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
 
+export type CreatedWorkItemSnapshot = {
+  id: number;
+  title?: string | null;
+  state?: string | null;
+  descriptionHtml?: string | null;
+  workItemType?: string | null;
+  assignedTo?: string | null;
+  fieldValues?: Record<string, string | number | null>;
+  parentWorkItemId?: number | null;
+  schedule?: {
+    startDate?: string | null;
+    endDate?: string | null;
+  };
+};
+
 export type WriteCommandResult = {
   accepted: boolean;
   mode: "NO_OP" | "EXECUTED";
@@ -50,4 +65,5 @@ export type WriteCommandResult = {
   operationCount: number;
   reasonCode: WriteCommandReasonCode;
   createdWorkItemId?: number;
+  createdWorkItem?: CreatedWorkItemSnapshot;
 };
