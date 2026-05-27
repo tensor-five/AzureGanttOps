@@ -22,6 +22,9 @@ const PORT = Number(process.env.PORT ?? "8080");
 if (process.env.ADO_VERBOSE_LOGS !== "0") {
   process.env.ADO_VERBOSE_LOGS = "0";
 }
+if (process.env.AZURE_GANTTOPS_PERF_LOGS !== "0") {
+  process.env.AZURE_GANTTOPS_PERF_LOGS = "1";
+}
 if (process.env.ADO_WRITE_ENABLED !== "1") {
   process.env.ADO_WRITE_ENABLED = "1";
 }
@@ -42,6 +45,9 @@ async function main(): Promise<void> {
     console.log("[ado-runtime] ADO_VERBOSE_LOGS=1");
     console.log(`[ado-runtime] ADO_WRITE_ENABLED=${process.env.ADO_WRITE_ENABLED === "1" ? "1" : "0"}`);
     console.log(`[ado-runtime] ADO_AZ_CLI_PATH=${detectedAzCliPath}`);
+  }
+  if (process.env.AZURE_GANTTOPS_PERF_LOGS === "1") {
+    console.log("[ado-runtime] AZURE_GANTTOPS_PERF_LOGS=1");
   }
 
   const authHeaderProvider = createAdoAuthHeaderProvider();

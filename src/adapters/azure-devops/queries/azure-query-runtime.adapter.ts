@@ -8,6 +8,7 @@ import type { AdoContext } from "../../../application/ports/context-settings.por
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
 import { resolveQueryShape } from "../../../domain/query-runtime/services/query-shape-policy.js";
 import { filterRuntimeRelations } from "../../../domain/query-runtime/services/relation-filter-policy.js";
+import { elapsedSince, writePerformanceLog } from "../../../shared/telemetry/performance-log.js";
 
 const API_VERSION = "7.1";
 const AZURE_DEVOPS_MAX_IDS_PER_BATCH = 200;
@@ -62,46 +63,102 @@ export class AzureQueryRuntimeAdapter {
   public async listSavedQueries(context?: AdoContext): Promise<SavedQuery[]> {
     const activeContext = await this.resolveContext(context);
     const url = `https://dev.azure.com/${activeContext.organization}/${activeContext.project}/_apis/wit/queries/Shared%20Queries?$depth=2&api-version=${API_VERSION}`;
+    const startedAt = Date.now();
+
+    writePerformanceLog("azure-query", "saved-queries.start", {
+      organization: activeContext.organization,
+      project: activeContext.project
+    });
 
     let response: HttpResponse;
     try {
       response = await this.httpClient.get(url);
     } catch (error) {
+      writePerformanceLog("azure-query", "saved-queries.failed", {
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error(`QUERY_LIST_FAILED:${toTransportFailureHint(error)}`);
     }
 
     if (response.status !== 200) {
+      writePerformanceLog("azure-query", "saved-queries.failed", {
+        status: response.status,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error(buildHttpFailureCode("QUERY_LIST_FAILED", response));
     }
 
-    return normalizeSavedQueries(response.json);
+    const savedQueries = normalizeSavedQueries(response.json);
+    writePerformanceLog("azure-query", "saved-queries.done", {
+      status: response.status,
+      count: savedQueries.length,
+      durationMs: elapsedSince(startedAt)
+    });
+
+    return savedQueries;
   }
 
   public async executeByQueryId(queryId: string, context?: AdoContext): Promise<IngestionSnapshot> {
     const activeContext = await this.resolveContext(context);
     const wiqlUrl = `https://dev.azure.com/${activeContext.organization}/${activeContext.project}/_apis/wit/wiql/${queryId}?api-version=${API_VERSION}`;
+    const startedAt = Date.now();
 
+    writePerformanceLog("azure-query", "execute.start", {
+      queryId,
+      organization: activeContext.organization,
+      project: activeContext.project
+    });
+
+    const wiqlStartedAt = Date.now();
     const wiqlResponse = await this.requestWithRetry(
       () => this.httpClient.get(wiqlUrl),
       "QUERY_EXECUTION_FAILED"
     );
+    writePerformanceLog("azure-query", "wiql.done", {
+      queryId,
+      status: wiqlResponse.response.status,
+      retriedRequests: wiqlResponse.retriedRequests,
+      durationMs: elapsedSince(wiqlStartedAt)
+    });
 
     if (wiqlResponse.response.status === 404) {
+      writePerformanceLog("azure-query", "execute.failed", {
+        queryId,
+        status: wiqlResponse.response.status,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error("QUERY_NOT_FOUND");
     }
 
     if (wiqlResponse.response.status !== 200) {
+      writePerformanceLog("azure-query", "execute.failed", {
+        queryId,
+        status: wiqlResponse.response.status,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error(buildHttpFailureCode("QUERY_EXECUTION_FAILED", wiqlResponse.response));
     }
 
     const wiqlResult = normalizeExecutionPayload(wiqlResponse.response.json);
 
     const queryShape = resolveQueryShape(wiqlResult.queryType);
+    writePerformanceLog("azure-query", "wiql.normalized", {
+      queryId,
+      queryType: queryShape,
+      workItemIds: wiqlResult.workItemIds.length,
+      queryRelations: wiqlResult.queryRelations.length
+    });
 
-    const hydration = await this.hydrateWorkItems(wiqlResult.workItemIds, activeContext);
+    const hydration = await this.hydrateWorkItems(wiqlResult.workItemIds, activeContext, queryId);
     const relations = deduplicateRelations(
       filterRuntimeRelations([...wiqlResult.workItemRelations, ...hydration.relationCandidates])
     );
+    writePerformanceLog("azure-query", "execute.done", {
+      queryId,
+      workItems: hydration.workItems.length,
+      relations: relations.length,
+      durationMs: elapsedSince(startedAt)
+    });
 
     return {
       queryType: queryShape,
@@ -115,7 +172,8 @@ export class AzureQueryRuntimeAdapter {
 
   private async hydrateWorkItems(
     workItemIds: number[],
-    context: AdoContext
+    context: AdoContext,
+    queryId: string
   ): Promise<{ workItems: IngestionWorkItem[]; metadata: IngestionHydrationMetadata; relationCandidates: unknown[] }> {
     if (workItemIds.length === 0) {
       return {
@@ -138,6 +196,15 @@ export class AzureQueryRuntimeAdapter {
     const idChunks = chunkIds(workItemIds, hydrationBatchSize);
     const chunkResults: HydrationChunkResult[] = new Array(idChunks.length);
     const hydrationConcurrency = resolveHydrationConcurrency();
+    const startedAt = Date.now();
+
+    writePerformanceLog("azure-query", "hydration.start", {
+      queryId,
+      requestedIds: workItemIds.length,
+      batches: idChunks.length,
+      batchSize: hydrationBatchSize,
+      concurrency: hydrationConcurrency
+    });
 
     let cursor = 0;
     const runWorker = async () => {
@@ -146,7 +213,11 @@ export class AzureQueryRuntimeAdapter {
         cursor += 1;
 
         const chunk = idChunks[chunkIndex];
-        chunkResults[chunkIndex] = await this.hydrateChunk(chunk, context);
+        chunkResults[chunkIndex] = await this.hydrateChunk(chunk, context, {
+          queryId,
+          chunkIndex,
+          totalChunks: idChunks.length
+        });
       }
     };
 
@@ -175,7 +246,11 @@ export class AzureQueryRuntimeAdapter {
 
     const partial = missingIds.length > 0;
 
-    return {
+    const result: {
+      workItems: IngestionWorkItem[];
+      metadata: IngestionHydrationMetadata;
+      relationCandidates: unknown[];
+    } = {
       workItems: orderedWorkItems,
       relationCandidates,
       metadata: {
@@ -189,13 +264,36 @@ export class AzureQueryRuntimeAdapter {
         statusCode: partial ? "HYDRATION_PARTIAL_FAILURE" : "OK"
       }
     };
+    writePerformanceLog("azure-query", "hydration.done", {
+      queryId,
+      requestedIds: result.metadata.requestedIds,
+      workItems: result.workItems.length,
+      batches: result.metadata.attemptedBatches,
+      missingIds: result.metadata.missingIds.length,
+      retriedRequests: result.metadata.retriedRequests,
+      durationMs: elapsedSince(startedAt)
+    });
+
+    return result;
   }
 
-  private async hydrateChunk(chunkIdsValue: number[], context: AdoContext): Promise<HydrationChunkResult> {
+  private async hydrateChunk(
+    chunkIdsValue: number[],
+    context: AdoContext,
+    logContext: { queryId: string; chunkIndex: number; totalChunks: number }
+  ): Promise<HydrationChunkResult> {
     const ids = chunkIdsValue.join(",");
     const url =
       `https://dev.azure.com/${context.organization}/${context.project}/_apis/wit/workitems` +
       `?ids=${ids}&errorPolicy=Omit&$expand=relations&api-version=${API_VERSION}`;
+    const startedAt = Date.now();
+
+    writePerformanceLog("azure-query", "hydration-batch.start", {
+      queryId: logContext.queryId,
+      batch: logContext.chunkIndex + 1,
+      batches: logContext.totalChunks,
+      ids: chunkIdsValue.length
+    });
 
     const { response, retriedRequests } = await this.requestWithRetry(
       () => this.httpClient.get(url),
@@ -203,6 +301,14 @@ export class AzureQueryRuntimeAdapter {
     );
 
     if (response.status !== 200) {
+      writePerformanceLog("azure-query", "hydration-batch.failed", {
+        queryId: logContext.queryId,
+        batch: logContext.chunkIndex + 1,
+        batches: logContext.totalChunks,
+        status: response.status,
+        retriedRequests,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error(buildHttpFailureCode("HYDRATION_REQUEST_FAILED", response));
     }
 
@@ -211,12 +317,26 @@ export class AzureQueryRuntimeAdapter {
     const returnedIds = new Set(items.map((item) => item.id));
     const missingIds = chunkIdsValue.filter((id) => !returnedIds.has(id));
 
-    return {
+    const result = {
       items,
       relations: normalized.relations,
       missingIds,
       retriedRequests
     };
+    writePerformanceLog("azure-query", "hydration-batch.done", {
+      queryId: logContext.queryId,
+      batch: logContext.chunkIndex + 1,
+      batches: logContext.totalChunks,
+      status: response.status,
+      ids: chunkIdsValue.length,
+      returnedItems: result.items.length,
+      relations: result.relations.length,
+      missingIds: result.missingIds.length,
+      retriedRequests,
+      durationMs: elapsedSince(startedAt)
+    });
+
+    return result;
   }
 
   private async requestWithRetry(
