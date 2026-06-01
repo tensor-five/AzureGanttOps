@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { createHttpServer } from "./http-server.js";
+import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 type StartedServer = {
   baseUrl: string;
@@ -16,6 +17,47 @@ describe("createHttpServer", () => {
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
     "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
   const tempDirs: string[] = [];
+  const readyAuthPreflightRunner: CliCommandRunner = {
+    run: async (command) => {
+      if (command.includes("--version")) {
+        return {
+          stdout: "azure-cli 2.0",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("extension show --name azure-devops")) {
+        return {
+          stdout: "{}",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("account show")) {
+        return {
+          stdout: "{}",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("devops configure --list")) {
+        return {
+          stdout: "organization = contoso\nproject = delivery",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      return {
+        stdout: "",
+        stderr: `Unexpected command: ${command}`,
+        exitCode: 1
+      };
+    }
+  };
 
   afterEach(async () => {
     await Promise.all(
@@ -345,14 +387,11 @@ describe("createHttpServer", () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
       distRootPath: fixture.distRootPath,
-      contextFilePath: fixture.contextFilePath
+      contextFilePath: fixture.contextFilePath,
+      authPreflightRunner: readyAuthPreflightRunner
     });
 
-    const originalPath = process.env.PATH;
-
     try {
-      process.env.PATH = `${path.dirname(fixture.azCliShimPath)}:${originalPath ?? ""}`;
-
       for (let index = 0; index < 120; index += 1) {
         await fetch(`${server.baseUrl}/phase2/query-intake`, {
           method: "POST",
@@ -371,7 +410,6 @@ describe("createHttpServer", () => {
 
       expect(capped.entries.length).toBeLessThanOrEqual(200);
     } finally {
-      process.env.PATH = originalPath;
       await server.close();
     }
   });
@@ -1051,6 +1089,7 @@ function startServer(params: {
   };
   azLoginRunner?: () => Promise<{ message: string }>;
   azCliPathResolver?: () => Promise<string>;
+  authPreflightRunner?: CliCommandRunner;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
@@ -1070,7 +1109,8 @@ function startServer(params: {
         })
       },
     azLoginRunner: params.azLoginRunner,
-    azCliPathResolver: params.azCliPathResolver
+    azCliPathResolver: params.azCliPathResolver,
+    authPreflightRunner: params.authPreflightRunner
   });
 
   return {

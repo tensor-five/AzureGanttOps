@@ -5,8 +5,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
 import { TimelinePane } from "./timeline-pane.js";
+import { TimelineLeftSidebarHeader } from "./timeline-left-sidebar-header.js";
 import { saveTimelineSortPreference } from "./timeline-sort-preference.js";
 import { makeFieldFilterTimeline, makeTimeline, registerTimelinePaneSpecCleanup } from "./timeline-pane.test-helpers.js";
+import type { TimelineReadModel, TimelineTreeNodeMeta } from "../../application/dto/timeline-read-model.js";
 
 registerTimelinePaneSpecCleanup();
 
@@ -260,6 +262,105 @@ describe("timeline-pane layout and labels", () => {
 
     expect((firstSidebarRow as HTMLElement).style.justifyContent).toBe("flex-end");
     expect(globalThis.localStorage.getItem("azure-ganttops.timeline-sidebar-row-justify.v1")).toBe("flex-end");
+  });
+
+  it("shows tree level controls only for relational tree layouts", () => {
+    const treeRender = render(
+      React.createElement(TimelinePane, {
+        timeline: makeRelationalTreeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    const treeLevelGroup = screen.getByRole("group", { name: "Timeline tree levels" });
+    expect(treeLevelGroup.closest(".timeline-left-sidebar-header")).not.toBeNull();
+    expect(screen.queryByRole("heading", { name: "Tree levels" })).toBeNull();
+
+    const levelOneControl = screen.getByRole("button", {
+      name: "Collapse timeline tree level 1: 1 item, 0 of 1 collapsible items collapsed"
+    });
+    expect(levelOneControl.textContent).toBe("L1");
+    expect(levelOneControl.className).toContain("timeline-tree-level-control");
+    expect(levelOneControl.getAttribute("title")).toBe("Collapse level 1: 1 item, 0/1 collapsed");
+    expect(
+      (screen.getByRole("button", { name: "Timeline tree level 3: 1 item, no collapsible items" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+
+    treeRender.unmount();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: {
+          ...makeRelationalTreeTimeline(),
+          queryType: "flat"
+        },
+        showDependencies: true
+      })
+    );
+
+    expect(screen.queryByRole("group", { name: "Timeline tree levels" })).toBeNull();
+  });
+
+  it("reports mixed tree level control state through aria-pressed", () => {
+    render(
+      React.createElement(TimelineLeftSidebarHeader, {
+        heightPx: 64,
+        rowJustify: "flex-start",
+        treeLevels: [
+          {
+            depth: 0,
+            itemCount: 3,
+            collapsibleCount: 2,
+            collapsedCount: 1,
+            disabled: false,
+            state: "mixed"
+          }
+        ],
+        onToggleTreeLevel: vi.fn(),
+        onToggleRowJustify: vi.fn()
+      })
+    );
+
+    const levelControl = screen.getByRole("button", {
+      name: "Collapse timeline tree level 1: 3 items, 1 of 2 collapsible items collapsed"
+    });
+    expect(levelControl.textContent).toBe("L1");
+    expect(levelControl.getAttribute("data-state")).toBe("mixed");
+    expect(levelControl.getAttribute("aria-pressed")).toBe("mixed");
+  });
+
+  it("toggles one tree level from the sidebar header and keeps row alignment usable", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeRelationalTreeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-sidebar-row-12")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: /timeline tree level 1:/i }));
+
+    expect(screen.getByLabelText("timeline-sidebar-row-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-sidebar-row-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /timeline tree level 1:/i }));
+
+    expect(screen.getByLabelText("timeline-sidebar-row-12")).toBeTruthy();
+
+    const rowJustifyBeforeAlignToggle = (screen.getByLabelText("timeline-sidebar-row-11") as HTMLElement).style.justifyContent;
+    await user.click(screen.getByLabelText("Toggle timeline sidebar row alignment"));
+
+    await waitFor(() => {
+      expect((screen.getByLabelText("timeline-sidebar-row-11") as HTMLElement).style.justifyContent).toBe(
+        rowJustifyBeforeAlignToggle === "flex-end" ? "flex-start" : "flex-end"
+      );
+    });
   });
 
   it("sorts bars by start date by default", () => {
@@ -587,3 +688,56 @@ describe("timeline-pane layout and labels", () => {
   });
 
 });
+
+function makeRelationalTreeTimeline(): TimelineReadModel {
+  const timeline = makeTimeline();
+
+  return {
+    ...timeline,
+    queryType: "tree",
+    bars: [
+      makeTreeBar(11, "Root", "2026-03-01T00:00:00.000Z", "2026-03-03T00:00:00.000Z"),
+      makeTreeBar(12, "Child parent", "2026-03-04T00:00:00.000Z", "2026-03-06T00:00:00.000Z"),
+      makeTreeBar(13, "Grandchild", "2026-03-07T00:00:00.000Z", "2026-03-09T00:00:00.000Z")
+    ],
+    unschedulable: [],
+    treeLayout: {
+      "11": makeTreeMeta(0, null, true),
+      "12": makeTreeMeta(1, 11, true),
+      "13": makeTreeMeta(2, 12, false)
+    }
+  };
+}
+
+function makeTreeBar(
+  workItemId: number,
+  title: string,
+  startDate: string,
+  endDate: string
+): TimelineReadModel["bars"][number] {
+  return {
+    workItemId,
+    title,
+    state: { code: "Active", badge: "A", color: "#2f855a" },
+    schedule: {
+      startDate,
+      endDate,
+      missingBoundary: null
+    },
+    details: { mappedId: String(workItemId) }
+  };
+}
+
+function makeTreeMeta(
+  depth: number,
+  parentWorkItemId: number | null,
+  hasChildren: boolean
+): TimelineTreeNodeMeta {
+  return {
+    depth,
+    parentWorkItemId,
+    hasChildren,
+    isLastSibling: false,
+    ancestorIsLastSibling: []
+  };
+}
