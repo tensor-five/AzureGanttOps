@@ -1,5 +1,6 @@
 import type { AdoContextStore } from "../config/ado-context.store.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { elapsedSince, writePerformanceLog } from "../../shared/telemetry/performance-log.js";
 
 type WorkItemStateOption = {
   name: string;
@@ -54,6 +55,13 @@ export async function fetchAllowedStateCodesForWorkItem(input: {
     throw new Error("ADO_CONTEXT_MISSING");
   }
 
+  const startedAt = Date.now();
+  writePerformanceLog("state-options", "start", {
+    workItemId: input.workItemId,
+    organization: context.organization,
+    project: context.project
+  });
+
   const workItemType = await getCachedWorkItemType({
     workItemId: input.workItemId,
     context,
@@ -61,15 +69,29 @@ export async function fetchAllowedStateCodesForWorkItem(input: {
     cache: input.workItemTypeCacheById
   });
   if (!workItemType) {
+    writePerformanceLog("state-options", "done", {
+      workItemId: input.workItemId,
+      workItemType: null,
+      states: 0,
+      durationMs: elapsedSince(startedAt)
+    });
     return [];
   }
 
-  return getCachedWorkItemTypeStates({
+  const states = await getCachedWorkItemTypeStates({
     workItemType,
     context,
     httpClient: input.httpClient,
     cache: input.stateOptionsCacheByType
   });
+  writePerformanceLog("state-options", "done", {
+    workItemId: input.workItemId,
+    workItemType,
+    states: states.length,
+    durationMs: elapsedSince(startedAt)
+  });
+
+  return states;
 }
 
 async function getCachedWorkItemType(input: {
@@ -81,19 +103,38 @@ async function getCachedWorkItemType(input: {
   const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemId}`;
   const existing = input.cache.get(cacheKey);
   if (existing) {
+    writePerformanceLog("state-options", "work-item-type.cache-hit", {
+      workItemId: input.workItemId
+    });
     return existing;
   }
 
   const promise = (async () => {
+    const startedAt = Date.now();
+    writePerformanceLog("state-options", "work-item-type.fetch.start", {
+      workItemId: input.workItemId
+    });
     const workItemUrl =
       `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
       `/_apis/wit/workitems/${input.workItemId}?fields=System.WorkItemType&api-version=7.1`;
     const workItemResponse = await input.httpClient.get(workItemUrl);
     if (workItemResponse.status < 200 || workItemResponse.status >= 300) {
+      writePerformanceLog("state-options", "work-item-type.fetch.failed", {
+        workItemId: input.workItemId,
+        status: workItemResponse.status,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error("WORK_ITEM_FETCH_FAILED");
     }
 
-    return extractWorkItemType(workItemResponse.json);
+    const workItemType = extractWorkItemType(workItemResponse.json);
+    writePerformanceLog("state-options", "work-item-type.fetch.done", {
+      workItemId: input.workItemId,
+      workItemType,
+      durationMs: elapsedSince(startedAt)
+    });
+
+    return workItemType;
   })();
 
   input.cache.set(cacheKey, promise);
@@ -109,19 +150,38 @@ async function getCachedWorkItemTypeStates(input: {
   const cacheKey = `${input.context.organization}/${input.context.project}/${input.workItemType.toLowerCase()}`;
   const existing = input.cache.get(cacheKey);
   if (existing) {
+    writePerformanceLog("state-options", "states.cache-hit", {
+      workItemType: input.workItemType
+    });
     return existing;
   }
 
   const promise = (async () => {
+    const startedAt = Date.now();
+    writePerformanceLog("state-options", "states.fetch.start", {
+      workItemType: input.workItemType
+    });
     const statesUrl =
       `https://dev.azure.com/${encodeURIComponent(input.context.organization)}/${encodeURIComponent(input.context.project)}` +
       `/_apis/wit/workitemtypes/${encodeURIComponent(input.workItemType)}/states?api-version=7.1`;
     const statesResponse = await input.httpClient.get(statesUrl);
     if (statesResponse.status < 200 || statesResponse.status >= 300) {
+      writePerformanceLog("state-options", "states.fetch.failed", {
+        workItemType: input.workItemType,
+        status: statesResponse.status,
+        durationMs: elapsedSince(startedAt)
+      });
       throw new Error("WORK_ITEM_STATES_FETCH_FAILED");
     }
 
-    return extractStateCodes(statesResponse.json);
+    const states = extractStateCodes(statesResponse.json);
+    writePerformanceLog("state-options", "states.fetch.done", {
+      workItemType: input.workItemType,
+      states: states.length,
+      durationMs: elapsedSince(startedAt)
+    });
+
+    return states;
   })();
 
   input.cache.set(cacheKey, promise);

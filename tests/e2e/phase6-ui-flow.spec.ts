@@ -330,7 +330,7 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
 
   await mountRuntimeUi(page, responses);
 
-  await expect(page.getByRole("heading", { name: "Azure GanttOps" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AzureGanttOps" })).toBeVisible();
   await expect(page.getByLabel("global-trust-badge")).toContainText("Needs attention");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
 

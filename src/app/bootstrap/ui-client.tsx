@@ -29,9 +29,11 @@ import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../
 import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyDependencyLinkUpdate,
+  applyDuplicateWorkItemToResponse,
   applyReparentUpdate,
   applyScheduleUpdate,
-  applyWorkItemMetadataUpdate
+  applyWorkItemMetadataUpdate,
+  applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import {
   persistUiShellState,
@@ -822,7 +824,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       React.createElement(
         "div",
         { className: "ui-shell-brand" },
-        React.createElement("h1", null, "Azure GanttOps")
+        React.createElement("h1", null, "AzureGanttOps")
       ),
       React.createElement(
         "div",
@@ -1172,6 +1174,59 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                 }
               }
             });
+          },
+          onUpdateWorkItemState: async ({ targetWorkItemId, state, stateColor }) => {
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) =>
+                applyWorkItemStateUpdate(timeline, targetWorkItemId, state, stateColor),
+              executeDetails: async () => {
+                const writeResult = await props.composition.controller.updateWorkItemState({
+                  targetWorkItemId,
+                  state
+                });
+
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
+              }
+            });
+          },
+          onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
+            const writeResult = await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.duplicateWorkItem({
+                sourceWorkItemId,
+                ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+              });
+
+              if (!writeResult.accepted) {
+                throw toWritebackError(writeResult.reasonCode);
+              }
+
+              return writeResult;
+            });
+
+            const createdWorkItem = writeResult.createdWorkItem ??
+              (writeResult.createdWorkItemId ? { id: writeResult.createdWorkItemId } : null);
+            if (!createdWorkItem) {
+              await retryRefresh();
+              return;
+            }
+
+            const nextResponse = applyDuplicateWorkItemToResponse(responseRef.current, sourceWorkItemId, createdWorkItem);
+            if (!nextResponse) {
+              await retryRefresh();
+              return;
+            }
+
+            if (nextResponse === responseRef.current) {
+              return;
+            }
+
+            timelineSelectionStoreRef.current.select(createdWorkItem.id);
+            responseRef.current = nextResponse;
+            setResponse(nextResponse);
+            setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
           },
           onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
             await scheduleReparentMutation({

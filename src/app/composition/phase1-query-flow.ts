@@ -29,6 +29,11 @@ export function createPhase1QueryFlow(params: {
       json: unknown;
       headers?: Record<string, string | undefined>;
     }>;
+    post?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers?: Record<string, string | undefined>;
+    }>;
   };
   contextFilePath: string;
   mappingFilePath?: string;
@@ -57,7 +62,10 @@ export function createPhase1QueryFlow(params: {
   const capabilities = resolveCapabilityFlags(params.capabilities);
   const writeCommandPort =
     capabilities.writeEnabled && params.httpClient.patch
-      ? new WriteCommandAzureAdapter({ get: params.httpClient.get, patch: params.httpClient.patch }, contextStore)
+      ? new WriteCommandAzureAdapter(
+          { get: params.httpClient.get, post: params.httpClient.post, patch: params.httpClient.patch },
+          contextStore
+        )
       : new WriteCommandNoopAdapter();
   const submitWriteCommand = new SubmitWriteCommandUseCase(writeCommandPort);
 

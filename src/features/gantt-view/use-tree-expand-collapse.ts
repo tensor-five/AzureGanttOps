@@ -1,16 +1,19 @@
 import * as React from "react";
 import type { TimelineTreeNodeMeta, TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import { listCollapsibleTreeIds, listTimelineTreeWorkItemIds } from "./timeline-tree-levels.js";
 
 export type TreeExpandCollapseState = {
   collapsedIds: ReadonlySet<number>;
   toggle: (workItemId: number) => void;
+  toggleLevel: (depth: number) => void;
   collapseAll: () => void;
   expandAll: () => void;
   isCollapsed: (workItemId: number) => boolean;
 };
 
 export function useTreeExpandCollapse(
-  treeLayout: Record<string, TimelineTreeNodeMeta> | null
+  treeLayout: Record<string, TimelineTreeNodeMeta> | null,
+  includedWorkItemIds: ReadonlySet<number> | null = null
 ): TreeExpandCollapseState {
   const [collapsedIds, setCollapsedIds] = React.useState<ReadonlySet<number>>(new Set());
 
@@ -31,16 +34,29 @@ export function useTreeExpandCollapse(
       return;
     }
 
-    const allParents = new Set<number>();
-    for (const id of Object.keys(treeLayout)) {
-      const meta = treeLayout[id];
-      if (meta.hasChildren) {
-        allParents.add(Number(id));
-      }
+    setCollapsedIds(new Set(listCollapsibleTreeIds(treeLayout, includedWorkItemIds)));
+  }, [includedWorkItemIds, treeLayout]);
+
+  const toggleLevel = React.useCallback((depth: number) => {
+    const levelIds = listCollapsibleTreeIds(treeLayout, includedWorkItemIds, depth);
+    if (levelIds.length === 0) {
+      return;
     }
 
-    setCollapsedIds(allParents);
-  }, [treeLayout]);
+    setCollapsedIds((previous) => {
+      const allCollapsed = levelIds.every((id) => previous.has(id));
+      const next = new Set(previous);
+      for (const id of levelIds) {
+        if (allCollapsed) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+      }
+
+      return next;
+    });
+  }, [includedWorkItemIds, treeLayout]);
 
   const expandAll = React.useCallback(() => {
     setCollapsedIds(new Set());
@@ -54,6 +70,7 @@ export function useTreeExpandCollapse(
   return {
     collapsedIds,
     toggle,
+    toggleLevel,
     collapseAll,
     expandAll,
     isCollapsed
@@ -69,6 +86,7 @@ export function applyTreeVisibility(
   }
 
   const treeLayout = timeline.treeLayout;
+  const visibleWorkItemIds = listTimelineTreeWorkItemIds(timeline);
 
   const isHidden = (workItemId: number): boolean => {
     const meta = treeLayout[workItemId];
@@ -78,7 +96,7 @@ export function applyTreeVisibility(
 
     let parentId = meta.parentWorkItemId;
     while (parentId !== null) {
-      if (collapsedIds.has(parentId)) {
+      if (visibleWorkItemIds.has(parentId) && collapsedIds.has(parentId)) {
         return true;
       }
 
