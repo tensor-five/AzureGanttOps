@@ -302,6 +302,28 @@ describe("timeline-pane layout and labels", () => {
     expect(screen.queryByRole("group", { name: "Timeline tree levels" })).toBeNull();
   });
 
+  it("renders tree level controls only for levels present in the current timeline scope", () => {
+    const timeline = makeRelationalTreeTimeline();
+    timeline.bars = [timeline.bars[0], timeline.bars[2]];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true
+      })
+    );
+
+    const treeLevelGroup = screen.getByRole("group", { name: "Timeline tree levels" });
+    expect(treeLevelGroup.querySelectorAll(".timeline-tree-level-control")).toHaveLength(2);
+    expect(screen.getByRole("button", {
+      name: "Collapse timeline tree level 1: 1 item, 0 of 1 collapsible items collapsed"
+    })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Timeline tree level 3: 1 item, no collapsible items" })
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /timeline tree level 2:/i })).toBeNull();
+  });
+
   it("reports mixed tree level control state through aria-pressed", () => {
     render(
       React.createElement(TimelineLeftSidebarHeader, {

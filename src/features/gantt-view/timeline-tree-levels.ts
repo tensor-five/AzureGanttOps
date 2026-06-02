@@ -32,7 +32,6 @@ export function summarizeTimelineTreeLevels(
 
   const visibleWorkItemIds = listTimelineTreeWorkItemIds(timeline);
   const countsByDepth = new Map<number, { itemCount: number; collapsibleCount: number; collapsedCount: number }>();
-  let maxDepth = -1;
 
   for (const workItemId of visibleWorkItemIds) {
     const meta = timeline.treeLayout[workItemId];
@@ -49,26 +48,22 @@ export function summarizeTimelineTreeLevels(
       }
     }
     countsByDepth.set(meta.depth, current);
-    maxDepth = Math.max(maxDepth, meta.depth);
   }
 
-  if (maxDepth < 0) {
-    return [];
-  }
+  return Array.from(countsByDepth.entries())
+    .sort(([leftDepth], [rightDepth]) => leftDepth - rightDepth)
+    .map(([depth, counts]) => {
+      const disabled = counts.collapsibleCount === 0;
 
-  return Array.from({ length: maxDepth + 1 }, (_, depth) => {
-    const counts = countsByDepth.get(depth) ?? { itemCount: 0, collapsibleCount: 0, collapsedCount: 0 };
-    const disabled = counts.collapsibleCount === 0;
-
-    return {
-      depth,
-      itemCount: counts.itemCount,
-      collapsibleCount: counts.collapsibleCount,
-      collapsedCount: counts.collapsedCount,
-      disabled,
-      state: resolveTimelineTreeLevelState(counts.collapsibleCount, counts.collapsedCount)
-    };
-  });
+      return {
+        depth,
+        itemCount: counts.itemCount,
+        collapsibleCount: counts.collapsibleCount,
+        collapsedCount: counts.collapsedCount,
+        disabled,
+        state: resolveTimelineTreeLevelState(counts.collapsibleCount, counts.collapsedCount)
+      };
+    });
 }
 
 export function listCollapsibleTreeIds(

@@ -53,6 +53,31 @@ describe("timeline tree levels", () => {
     ]);
   });
 
+  it("omits missing depths and unrelated tree layout levels from the filtered query scope", () => {
+    const timeline = makeTreeTimeline();
+    timeline.bars = [makeBar(1, "Root")];
+    timeline.unschedulable = [
+      {
+        workItemId: 5,
+        title: "Filtered grandchild",
+        state: { code: "New", badge: "N", color: "#2563eb" },
+        details: { mappedId: "5" },
+        reason: "missing-both-dates"
+      }
+    ];
+
+    const summaries = summarizeTimelineTreeLevels(timeline, new Set());
+
+    expect(summaries.map((summary) => ({
+      depth: summary.depth,
+      itemCount: summary.itemCount,
+      state: summary.state
+    }))).toEqual([
+      { depth: 0, itemCount: 1, state: "expanded" },
+      { depth: 2, itemCount: 1, state: "leaf-only" }
+    ]);
+  });
+
   it("reports expanded, collapsed, and mixed level states from collapsed ids", () => {
     const timeline = makeTreeTimeline();
     timeline.bars = [
