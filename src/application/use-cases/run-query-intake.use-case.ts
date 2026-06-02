@@ -17,6 +17,7 @@ import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors
 import { validateRequiredMappings } from "../../domain/mapping/mapping-validator.js";
 import { proposeDefaultMapping } from "../../domain/mapping/default-mapping-proposal.js";
 import { extractAvailableFieldRefs } from "../services/extract-available-field-refs.js";
+import { elapsedSince, writePerformanceLog } from "../../shared/telemetry/performance-log.js";
 
 export type RunQueryIntakeInput = {
   context: QueryContext;
@@ -89,9 +90,30 @@ export class RunQueryIntakeUseCase {
     const context = toAdoContext(input.context);
     const selectedQueryId = input.context.queryId.value;
     const runVersion = this.startRun(selectedQueryId);
+    const runStartedAt = Date.now();
+
+    writePerformanceLog("query-intake", "start", {
+      runVersion,
+      queryId: selectedQueryId,
+      organization: context.organization,
+      project: context.project
+    });
+
+    const preflightStartedAt = Date.now();
+    writePerformanceLog("query-intake", "preflight.start", { runVersion });
     const preflight = await this.authPreflight.check(context);
+    writePerformanceLog("query-intake", "preflight.done", {
+      runVersion,
+      status: preflight.status,
+      durationMs: elapsedSince(preflightStartedAt)
+    });
 
     if (preflight.status !== "READY") {
+      writePerformanceLog("query-intake", "blocked", {
+        runVersion,
+        status: preflight.status,
+        durationMs: elapsedSince(runStartedAt)
+      });
       return this.createResult({
         preflight,
         savedQueries: [],
@@ -107,15 +129,52 @@ export class RunQueryIntakeUseCase {
     let snapshot: IngestionSnapshot;
 
     try {
+      const runtimeStartedAt = Date.now();
+      writePerformanceLog("query-intake", "runtime.start", { runVersion });
       [savedQueries, snapshot] = await Promise.all([
         this.queryRuntime.listSavedQueries(context),
         this.queryRuntime.executeByQueryId(selectedQueryId, context)
       ]);
+      writePerformanceLog("query-intake", "runtime.done", {
+        runVersion,
+        savedQueries: savedQueries.length,
+        requestedIds: snapshot.hydration.requestedIds,
+        workItems: snapshot.workItems.length,
+        batches: snapshot.hydration.attemptedBatches,
+        batchSize: snapshot.hydration.maxIdsPerBatch,
+        retriedRequests: snapshot.hydration.retriedRequests,
+        partial: snapshot.hydration.partial,
+        durationMs: elapsedSince(runtimeStartedAt)
+      });
+
       const stale = this.isStale(runVersion);
       if (!stale) {
+        const mappingStartedAt = Date.now();
+        writePerformanceLog("query-intake", "mapping.start", { runVersion });
         await this.tryAutoApplyMappingFromSnapshot(snapshot, selectedQueryId, callerProvidedMutation);
+        writePerformanceLog("query-intake", "mapping.done", {
+          runVersion,
+          activeMappingProfileId: this.activeMappingProfile?.id ?? null,
+          durationMs: elapsedSince(mappingStartedAt)
+        });
+      }
+
+      const timelineStartedAt = Date.now();
+      if (!stale) {
+        writePerformanceLog("query-intake", "timeline.start", { runVersion });
       }
       const timeline = stale ? null : await this.buildTimeline(snapshot);
+      if (!stale) {
+        writePerformanceLog("query-intake", "timeline.done", {
+          runVersion,
+          bars: timeline?.bars.length ?? 0,
+          unschedulable: timeline?.unschedulable.length ?? 0,
+          dependencies: timeline?.dependencies.length ?? 0,
+          mappingStatus: timeline?.mappingValidation.status ?? null,
+          durationMs: elapsedSince(timelineStartedAt)
+        });
+      }
+
       const stableSnapshot = stale ? null : snapshot;
       const reload = this.currentMetadata(runVersion, stale ? "stale_discarded" : "full_reload");
 
@@ -146,7 +205,7 @@ export class RunQueryIntakeUseCase {
         };
       }
 
-      return this.createResult({
+      const result = this.createResult({
         preflight,
         savedQueries,
         selectedQueryId,
@@ -155,7 +214,23 @@ export class RunQueryIntakeUseCase {
         reload,
         failureCode: null
       });
+
+      writePerformanceLog("query-intake", "done", {
+        runVersion,
+        stale,
+        success: result.snapshot !== null && result.timeline !== null && result.timeline.mappingValidation.status === "valid",
+        durationMs: elapsedSince(runStartedAt)
+      });
+
+      return result;
     } catch (error: unknown) {
+      const failureCode = toErrorCode(error);
+      writePerformanceLog("query-intake", "failed", {
+        runVersion,
+        failureCode,
+        durationMs: elapsedSince(runStartedAt)
+      });
+
       return this.createResult({
         preflight,
         savedQueries,
@@ -163,7 +238,7 @@ export class RunQueryIntakeUseCase {
         snapshot: null,
         timeline: null,
         reload: this.currentMetadata(runVersion, "full_reload"),
-        failureCode: toErrorCode(error)
+        failureCode
       });
     }
   }

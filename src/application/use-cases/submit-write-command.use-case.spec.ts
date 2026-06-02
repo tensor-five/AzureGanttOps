@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+
 import type { WriteCommandPort } from "../ports/write-command.port.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { createPhase1QueryFlow } from "../../app/composition/phase1-query-flow.js";
@@ -66,6 +70,38 @@ describe("SubmitWriteCommandUseCase", () => {
       accepted: false,
       mode: "NO_OP",
       commandKind: "DEPENDENCY_LINK",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    });
+    expect(port.submit).not.toHaveBeenCalled();
+  });
+
+  it("does not call the port for disabled duplicate commands", async () => {
+    const port: WriteCommandPort = {
+      submit: vi.fn(async () => ({
+        accepted: true,
+        mode: "EXECUTED" as const,
+        commandKind: "WORK_ITEM_DUPLICATE" as const,
+        operationCount: 1,
+        reasonCode: "WRITE_ENABLED" as const,
+        createdWorkItemId: 77
+      }))
+    };
+
+    const useCase = new SubmitWriteCommandUseCase(port);
+
+    const result = await useCase.execute({
+      command: {
+        kind: "WORK_ITEM_DUPLICATE",
+        sourceWorkItemId: 42
+      },
+      writeEnabled: false
+    });
+
+    expect(result).toEqual({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_DUPLICATE",
       operationCount: 1,
       reasonCode: "WRITE_DISABLED"
     });
@@ -262,6 +298,61 @@ describe("phase1 composition write capability wiring", () => {
     },
     15000
   );
+
+  it("returns a controlled unsupported duplicate result when write transport has no POST", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "azure-ganttops-phase-flow-"));
+    const contextFilePath = path.join(tempDir, "ado-context.json");
+    const mappingFilePath = path.join(tempDir, "mapping-settings.json");
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+    const patch = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+
+    try {
+      await writeFile(
+        contextFilePath,
+        JSON.stringify({
+          organization: "contoso",
+          project: "delivery"
+        }),
+        "utf8"
+      );
+
+      const flow = createPhase1QueryFlow({
+        ...flowParams,
+        httpClient: { get, patch },
+        contextFilePath,
+        mappingFilePath,
+        capabilities: { writeEnabled: true }
+      });
+
+      const result = await flow.submitWriteCommand.execute({
+        command: {
+          kind: "WORK_ITEM_DUPLICATE",
+          sourceWorkItemId: 42
+        },
+        writeEnabled: flow.capabilities.writeEnabled
+      });
+
+      expect(result).toEqual({
+        accepted: false,
+        mode: "NO_OP",
+        commandKind: "WORK_ITEM_DUPLICATE",
+        operationCount: 1,
+        reasonCode: "WRITE_UNSUPPORTED"
+      });
+      expect(get).not.toHaveBeenCalled();
+      expect(patch).not.toHaveBeenCalled();
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
 
   it("guards against write adapter internals leaking into composition surface", () => {
     const flow = createPhase1QueryFlow(flowParams) as unknown as Record<string, unknown>;

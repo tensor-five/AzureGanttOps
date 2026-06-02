@@ -1,5 +1,10 @@
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
-import type { TimelineTreeNodeMeta } from "../../application/dto/timeline-read-model.js";
+import type {
+  TimelineBar,
+  TimelineTreeNodeMeta,
+  TimelineUnschedulableItem
+} from "../../application/dto/timeline-read-model.js";
+import type { CreatedWorkItemSnapshot } from "../../application/dto/write-boundary/write-command.dto.js";
 import { applyAdoptedSchedules } from "../../features/gantt-view/timeline-pane.js";
 import { buildTreeLayoutFromParentMap } from "../../domain/planning-model/tree-structure.js";
 
@@ -78,6 +83,39 @@ export function applyWorkItemMetadataUpdate(
   };
 }
 
+export function applyWorkItemStateUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  stateCode: string,
+  stateColor: string | null
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  const nextState = toTimelineStateBadge(stateCode, stateColor);
+
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) =>
+      bar.workItemId === targetWorkItemId
+        ? {
+            ...bar,
+            state: nextState
+          }
+        : bar
+    ),
+    unschedulable: timeline.unschedulable.map((item) =>
+      item.workItemId === targetWorkItemId
+        ? {
+            ...item,
+            state: nextState
+          }
+        : item
+    )
+  };
+}
+
 export function applyDependencyLinkUpdate(
   timeline: QueryIntakeResponse["timeline"],
   predecessorWorkItemId: number,
@@ -134,6 +172,79 @@ export function applyDependencyLinkUpdate(
   };
 }
 
+export function applyDuplicateWorkItemToResponse(
+  response: QueryIntakeResponse | null,
+  sourceWorkItemId: number,
+  createdWorkItem: CreatedWorkItemSnapshot
+): QueryIntakeResponse | null {
+  if (!response) {
+    return response;
+  }
+
+  const timeline = applyDuplicateWorkItemUpdate(response.timeline, sourceWorkItemId, createdWorkItem);
+  if (timeline === response.timeline) {
+    return response;
+  }
+
+  return {
+    ...response,
+    workItemIds: response.workItemIds.includes(createdWorkItem.id)
+      ? response.workItemIds
+      : [...response.workItemIds, createdWorkItem.id],
+    timeline
+  };
+}
+
+export function applyDuplicateWorkItemUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  sourceWorkItemId: number,
+  createdWorkItem: CreatedWorkItemSnapshot
+): QueryIntakeResponse["timeline"] {
+  if (!timeline || !Number.isFinite(createdWorkItem.id) || createdWorkItem.id <= 0) {
+    return timeline;
+  }
+
+  const alreadyVisible = timeline.bars.some((bar) => bar.workItemId === createdWorkItem.id) ||
+    timeline.unschedulable.some((item) => item.workItemId === createdWorkItem.id);
+  if (alreadyVisible) {
+    return timeline;
+  }
+
+  const sourceBarIndex = timeline.bars.findIndex((bar) => bar.workItemId === sourceWorkItemId);
+  if (sourceBarIndex !== -1) {
+    const sourceBar = timeline.bars[sourceBarIndex];
+    if (!sourceBar) {
+      return timeline;
+    }
+
+    const nextTimeline = {
+      ...timeline,
+      bars: insertAfter(timeline.bars, sourceBarIndex, buildDuplicateBar(sourceBar, createdWorkItem))
+    };
+    return rebuildTreeLayoutWhenNeeded(nextTimeline);
+  }
+
+  const sourceUnschedulableIndex = timeline.unschedulable.findIndex((item) => item.workItemId === sourceWorkItemId);
+  if (sourceUnschedulableIndex === -1) {
+    return timeline;
+  }
+
+  const sourceUnschedulable = timeline.unschedulable[sourceUnschedulableIndex];
+  if (!sourceUnschedulable) {
+    return timeline;
+  }
+
+  const nextTimeline = {
+    ...timeline,
+    unschedulable: insertAfter(
+      timeline.unschedulable,
+      sourceUnschedulableIndex,
+      buildDuplicateUnschedulableItem(sourceUnschedulable, createdWorkItem)
+    )
+  };
+  return rebuildTreeLayoutWhenNeeded(nextTimeline);
+}
+
 export function applyReparentUpdate(
   timeline: QueryIntakeResponse["timeline"],
   targetWorkItemId: number,
@@ -154,9 +265,155 @@ export function applyReparentUpdate(
       : item
   );
 
+  return rebuildTreeLayout({
+    ...timeline,
+    bars: updatedBars,
+    unschedulable: updatedUnschedulable
+  });
+}
+
+function buildDuplicateBar(source: TimelineBar, createdWorkItem: CreatedWorkItemSnapshot): TimelineBar {
+  const startDate = resolveCreatedScheduleDate(createdWorkItem.schedule, "startDate", source.schedule.startDate);
+  const endDate = resolveCreatedScheduleDate(createdWorkItem.schedule, "endDate", source.schedule.endDate);
+  const title = resolveDuplicateTitle(createdWorkItem.title, source.title);
+
+  return {
+    ...source,
+    workItemId: createdWorkItem.id,
+    title,
+    state: resolveCreatedState(createdWorkItem, source.state),
+    schedule: {
+      ...source.schedule,
+      startDate,
+      endDate,
+      missingBoundary: resolveMissingBoundary(startDate, endDate, source.schedule.missingBoundary)
+    },
+    details: buildDuplicateDetails(source.details, createdWorkItem, title)
+  };
+}
+
+function buildDuplicateUnschedulableItem(
+  source: TimelineUnschedulableItem,
+  createdWorkItem: CreatedWorkItemSnapshot
+): TimelineUnschedulableItem {
+  const title = resolveDuplicateTitle(createdWorkItem.title, source.title);
+
+  return {
+    ...source,
+    workItemId: createdWorkItem.id,
+    title,
+    state: resolveCreatedState(createdWorkItem, source.state),
+    details: buildDuplicateDetails(source.details, createdWorkItem, title),
+    ...(source.schedule
+      ? {
+          schedule: {
+            ...source.schedule,
+            startDate: resolveCreatedScheduleDate(createdWorkItem.schedule, "startDate", source.schedule.startDate),
+            endDate: resolveCreatedScheduleDate(createdWorkItem.schedule, "endDate", source.schedule.endDate)
+          }
+        }
+      : {})
+  };
+}
+
+function buildDuplicateDetails(
+  source: TimelineBar["details"],
+  createdWorkItem: CreatedWorkItemSnapshot,
+  title: string
+): TimelineBar["details"] {
+  return {
+    ...source,
+    mappedId: String(createdWorkItem.id),
+    descriptionHtml: resolveCreatedNullableString(createdWorkItem.descriptionHtml, source.descriptionHtml ?? null),
+    workItemType: resolveCreatedNullableString(createdWorkItem.workItemType, source.workItemType ?? null),
+    fieldValues: resolveDuplicateFieldValues(source.fieldValues, createdWorkItem.fieldValues, title),
+    assignedTo: resolveCreatedNullableString(createdWorkItem.assignedTo, source.assignedTo ?? null),
+    parentWorkItemId: createdWorkItem.parentWorkItemId !== undefined
+      ? createdWorkItem.parentWorkItemId
+      : (source.parentWorkItemId ?? null)
+  };
+}
+
+function resolveDuplicateTitle(createdTitle: string | null | undefined, sourceTitle: string): string {
+  return resolveCreatedString(createdTitle, `${sourceTitle} (copy)`);
+}
+
+function resolveDuplicateFieldValues(
+  sourceFieldValues: TimelineBar["details"]["fieldValues"],
+  createdFieldValues: CreatedWorkItemSnapshot["fieldValues"],
+  title: string
+): TimelineBar["details"]["fieldValues"] {
+  const fieldValues = createdFieldValues ?? sourceFieldValues;
+  if (!fieldValues) {
+    return fieldValues;
+  }
+
+  return Object.prototype.hasOwnProperty.call(fieldValues, "System.Title")
+    ? { ...fieldValues, "System.Title": title }
+    : fieldValues;
+}
+
+function resolveCreatedState(
+  createdWorkItem: CreatedWorkItemSnapshot,
+  sourceState: TimelineBar["state"]
+): TimelineBar["state"] {
+  const stateCode = resolveCreatedString(createdWorkItem.state, sourceState.code);
+  const preferredColor = stateCode === sourceState.code ? sourceState.color : null;
+  return toTimelineStateBadge(stateCode, preferredColor);
+}
+
+function resolveCreatedString(value: string | null | undefined, fallback: string): string {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function resolveCreatedNullableString(value: string | null | undefined, fallback: string | null): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function resolveCreatedScheduleDate(
+  schedule: CreatedWorkItemSnapshot["schedule"] | undefined,
+  field: "startDate" | "endDate",
+  fallback: string | null
+): string | null {
+  if (schedule && Object.prototype.hasOwnProperty.call(schedule, field)) {
+    return schedule[field] ?? null;
+  }
+
+  return fallback;
+}
+
+function resolveMissingBoundary(
+  startDate: string | null,
+  endDate: string | null,
+  fallback: "start" | "end" | null
+): "start" | "end" | null {
+  if (startDate && endDate) {
+    return null;
+  }
+
+  if (startDate) {
+    return "end";
+  }
+
+  if (endDate) {
+    return "start";
+  }
+
+  return fallback;
+}
+
+function insertAfter<T>(items: readonly T[], index: number, item: T): T[] {
+  return [...items.slice(0, index + 1), item, ...items.slice(index + 1)];
+}
+
+function rebuildTreeLayoutWhenNeeded(timeline: NonNullable<QueryIntakeResponse["timeline"]>): QueryIntakeResponse["timeline"] {
+  return timeline.treeLayout === null ? timeline : rebuildTreeLayout(timeline);
+}
+
+function rebuildTreeLayout(timeline: NonNullable<QueryIntakeResponse["timeline"]>): QueryIntakeResponse["timeline"] {
   const allItems = [
-    ...updatedBars.map((b) => ({ id: b.workItemId, parentId: b.details.parentWorkItemId ?? null })),
-    ...updatedUnschedulable.map((u) => ({ id: u.workItemId, parentId: u.details.parentWorkItemId ?? null }))
+    ...timeline.bars.map((bar) => ({ id: bar.workItemId, parentId: bar.details.parentWorkItemId ?? null })),
+    ...timeline.unschedulable.map((item) => ({ id: item.workItemId, parentId: item.details.parentWorkItemId ?? null }))
   ];
 
   const layout = buildTreeLayoutFromParentMap(allItems);
@@ -164,13 +421,13 @@ export function applyReparentUpdate(
   const barPosition = new Map<number, number>();
   layout.orderedIds.forEach((id, index) => barPosition.set(id, index));
 
-  const reorderedBars = [...updatedBars].sort((a, b) => {
+  const reorderedBars = [...timeline.bars].sort((a, b) => {
     const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
     const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
     return posA - posB;
   });
 
-  const reorderedUnschedulable = [...updatedUnschedulable].sort((a, b) => {
+  const reorderedUnschedulable = [...timeline.unschedulable].sort((a, b) => {
     const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
     const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
     return posA - posB;

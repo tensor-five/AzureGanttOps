@@ -29,6 +29,15 @@ describe("local UI CSS structure", () => {
     expect(shellCss).toContain(".timeline-details-input");
   });
 
+  it("uses the Eisenhower brand title typography in the shell header", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+
+    expect(shellCss).toContain("fontshare.com/v2/css?f[]=satoshi@900");
+    expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*font-family:\s*"Satoshi"/);
+    expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*font-weight:\s*var\(--font-black\)/);
+    expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*letter-spacing:\s*0/);
+  });
+
   it("retains required token contract", () => {
     const tokenCss = readFileSync(path.join(bootstrapDir, "local-ui-tokens.css"), "utf8");
 

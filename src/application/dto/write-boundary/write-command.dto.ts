@@ -30,12 +30,40 @@ export type HierarchyLinkCommand = {
   action: "reparent";
 };
 
-export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | HierarchyLinkCommand;
+export type WorkItemDuplicateCommand = {
+  kind: "WORK_ITEM_DUPLICATE";
+  sourceWorkItemId: number;
+  scheduleFieldRefs?: {
+    start: string;
+    endOrTarget: string;
+  };
+};
+
+export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | HierarchyLinkCommand | WorkItemDuplicateCommand;
+
+export type WriteCommandReasonCode = "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
+
+export type CreatedWorkItemSnapshot = {
+  id: number;
+  title?: string | null;
+  state?: string | null;
+  descriptionHtml?: string | null;
+  workItemType?: string | null;
+  assignedTo?: string | null;
+  fieldValues?: Record<string, string | number | null>;
+  parentWorkItemId?: number | null;
+  schedule?: {
+    startDate?: string | null;
+    endDate?: string | null;
+  };
+};
 
 export type WriteCommandResult = {
   accepted: boolean;
   mode: "NO_OP" | "EXECUTED";
   commandKind: WriteCommand["kind"];
   operationCount: number;
-  reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED";
+  reasonCode: WriteCommandReasonCode;
+  createdWorkItemId?: number;
+  createdWorkItem?: CreatedWorkItemSnapshot;
 };

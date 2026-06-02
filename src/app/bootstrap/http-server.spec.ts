@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { chmod, mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 import { createHttpServer } from "./http-server.js";
+import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 type StartedServer = {
   baseUrl: string;
@@ -16,6 +17,47 @@ describe("createHttpServer", () => {
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
     "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
   const tempDirs: string[] = [];
+  const readyAuthPreflightRunner: CliCommandRunner = {
+    run: async (command) => {
+      if (command.includes("--version")) {
+        return {
+          stdout: "azure-cli 2.0",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("extension show --name azure-devops")) {
+        return {
+          stdout: "{}",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("account show")) {
+        return {
+          stdout: "{}",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      if (command.includes("devops configure --list")) {
+        return {
+          stdout: "organization = contoso\nproject = delivery",
+          stderr: "",
+          exitCode: 0
+        };
+      }
+
+      return {
+        stdout: "",
+        stderr: `Unexpected command: ${command}`,
+        exitCode: 1
+      };
+    }
+  };
 
   afterEach(async () => {
     await Promise.all(
@@ -345,14 +387,11 @@ describe("createHttpServer", () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
       distRootPath: fixture.distRootPath,
-      contextFilePath: fixture.contextFilePath
+      contextFilePath: fixture.contextFilePath,
+      authPreflightRunner: readyAuthPreflightRunner
     });
 
-    const originalPath = process.env.PATH;
-
     try {
-      process.env.PATH = `${path.dirname(fixture.azCliShimPath)}:${originalPath ?? ""}`;
-
       for (let index = 0; index < 120; index += 1) {
         await fetch(`${server.baseUrl}/phase2/query-intake`, {
           method: "POST",
@@ -371,7 +410,6 @@ describe("createHttpServer", () => {
 
       expect(capped.entries.length).toBeLessThanOrEqual(200);
     } finally {
-      process.env.PATH = originalPath;
       await server.close();
     }
   });
@@ -533,6 +571,19 @@ describe("createHttpServer", () => {
             descriptionHtml: "<p>Safe</p>",
             state: "Active"
           }
+        },
+        {
+          path: "/phase2/work-item-state-update",
+          body: {
+            targetWorkItemId: 11,
+            state: "Active"
+          }
+        },
+        {
+          path: "/phase2/work-item-duplicate",
+          body: {
+            sourceWorkItemId: 11
+          }
         }
       ];
 
@@ -604,6 +655,276 @@ describe("createHttpServer", () => {
       expect(second).toMatch(/^[a-f0-9]{64}$/);
       expect(first).toBe(second);
     } finally {
+      await server.close();
+    }
+  });
+
+  it("updates only System.State via /phase2/work-item-state-update", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const patch = async (url: string, body: unknown) => ({
+      status: 200,
+      json: { url, body },
+      headers: {}
+    });
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        patch: async (url, body) => {
+          calls.push({ url, body });
+          return patch(url, body);
+        }
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-state-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          targetWorkItemId: 42,
+          state: "Closed"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.commandKind).toBe("WORK_ITEM_PATCH");
+      expect(calls).toEqual([
+        {
+          url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+          body: [{ op: "add", path: "/fields/System.State", value: "Closed" }]
+        }
+      ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("duplicates work items via /phase2/work-item-duplicate", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const postCalls: Array<{ url: string; body: unknown }> = [];
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({
+          status: 200,
+          json: {
+            fields: {
+              "System.Title": "Original",
+              "System.WorkItemType": "Task",
+              "System.Tags": "alpha",
+              "Microsoft.VSTS.Scheduling.StartDate": "2026-01-01T00:00:00.000Z",
+              "Custom.StartDate2": "2026-03-01T00:00:00.000Z",
+              "Custom.TargetDate2": "2026-03-03T00:00:00.000Z"
+            },
+            relations: [
+              {
+                rel: "System.LinkTypes.Hierarchy-Reverse",
+                url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/7"
+              }
+            ]
+          },
+          headers: {}
+        }),
+        patch: async () => ({ status: 200, json: {}, headers: {} }),
+        post: async (url, body) => {
+          postCalls.push({ url, body });
+          return { status: 200, json: { id: 99 }, headers: {} };
+        }
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-duplicate`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          sourceWorkItemId: 42,
+          scheduleFieldRefs: {
+            start: "Custom.StartDate2",
+            endOrTarget: "Custom.TargetDate2"
+          }
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toMatchObject({
+        commandKind: "WORK_ITEM_DUPLICATE",
+        createdWorkItemId: 99
+      });
+      expect(postCalls).toEqual([
+        {
+          url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Task?api-version=7.1",
+          body: [
+            { op: "add", path: "/fields/System.Title", value: "Original (copy)" },
+            { op: "add", path: "/fields/System.Tags", value: "alpha" },
+            {
+              op: "add",
+              path: "/fields/Custom.StartDate2",
+              value: "2026-03-01T00:00:00.000Z"
+            },
+            {
+              op: "add",
+              path: "/fields/Custom.TargetDate2",
+              value: "2026-03-03T00:00:00.000Z"
+            },
+            {
+              op: "add",
+              path: "/relations/-",
+              value: {
+                rel: "System.LinkTypes.Hierarchy-Reverse",
+                url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/7"
+              }
+            }
+          ]
+        }
+      ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("returns controlled unsupported response when duplicate POST transport is unavailable", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch: async () => ({ status: 200, json: {}, headers: {} })
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-duplicate`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          sourceWorkItemId: 42
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(501);
+      expect(body).toEqual({
+        code: "WRITE_UNSUPPORTED",
+        message: "Writeback operation is not supported by the configured Azure DevOps transport.",
+        result: {
+          accepted: false,
+          mode: "NO_OP",
+          commandKind: "WORK_ITEM_DUPLICATE",
+          operationCount: 1,
+          reasonCode: "WRITE_UNSUPPORTED"
+        }
+      });
+      expect(get).not.toHaveBeenCalled();
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("forwards Azure duplicate creation validation details", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({
+          status: 200,
+          json: {
+            fields: {
+              "System.Title": "Original",
+              "System.WorkItemType": "Task"
+            }
+          },
+          headers: {}
+        }),
+        patch: async () => ({ status: 200, json: {}, headers: {} }),
+        post: async () => ({
+          status: 400,
+          json: {
+            message: "TF401320: Rule Error for field Custom.Required. Required fields must have a value."
+          },
+          headers: {}
+        })
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-duplicate`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          sourceWorkItemId: 42
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body).toEqual({
+        code: "WRITE_FAILED",
+        message:
+          "WORK_ITEM_DUPLICATE_FAILED: TF401320: Rule Error for field Custom.Required. Required fields must have a value."
+      });
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
       await server.close();
     }
   });
@@ -755,9 +1076,20 @@ function startServer(params: {
       json: unknown;
       headers: Record<string, string | undefined>;
     }>;
+    patch?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers: Record<string, string | undefined>;
+    }>;
+    post?: (url: string, body: unknown, headers?: Record<string, string>) => Promise<{
+      status: number;
+      json: unknown;
+      headers: Record<string, string | undefined>;
+    }>;
   };
   azLoginRunner?: () => Promise<{ message: string }>;
   azCliPathResolver?: () => Promise<string>;
+  authPreflightRunner?: CliCommandRunner;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
@@ -777,7 +1109,8 @@ function startServer(params: {
         })
       },
     azLoginRunner: params.azLoginRunner,
-    azCliPathResolver: params.azCliPathResolver
+    azCliPathResolver: params.azCliPathResolver,
+    authPreflightRunner: params.authPreflightRunner
   });
 
   return {

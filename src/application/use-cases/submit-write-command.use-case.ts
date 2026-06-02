@@ -17,11 +17,19 @@ export class SubmitWriteCommandUseCase {
         accepted: false,
         mode: "NO_OP",
         commandKind: input.command.kind,
-        operationCount: input.command.kind === "WORK_ITEM_PATCH" ? input.command.operations.length : 1,
+        operationCount: countWriteCommandOperations(input.command),
         reasonCode: "WRITE_DISABLED"
       };
     }
 
     return this.port.submit(input.command);
   }
+}
+
+function countWriteCommandOperations(command: WriteCommand): number {
+  if (command.kind === "WORK_ITEM_PATCH") {
+    return command.operations.length;
+  }
+
+  return 1;
 }
