@@ -1,11 +1,18 @@
 import React from "react";
 import { createPortal } from "react-dom";
 
-type TimelineFieldFilter = {
-  slotId: number;
-  fieldRef: string | null;
-  selectedValueKeys: string[];
-};
+import {
+  EMPTY_TIMELINE_DATE_RANGE,
+  isTimelineDateRangeFilter,
+  type TimelineDateRange,
+  type TimelineFieldFilter
+} from "./timeline-filter-model.js";
+import {
+  formatTimelineDateRangeFilterLabel,
+  fromTimelineDateTimeLocalInputValue,
+  isTimelineDateRangeInvalid,
+  toTimelineDateTimeLocalInputValue
+} from "./timeline-field-filtering.js";
 
 type OpenFilterDropdownState = {
   slotId: number;
@@ -26,7 +33,6 @@ export type TimelineFilterPanelProps = {
   openFilterDropdown: OpenFilterDropdownState | null;
   openFilterFieldOptions: string[];
   openFilterValueOptions: ValueStatOption[];
-  effectiveTimelineValueOptionsForFilter: (fieldRef: string | null) => ValueStatOption[];
   maxFilterSlots: number;
   getFieldDisplayName: (fieldRef: string) => string;
   onSetOpenFilterDropdown: React.Dispatch<React.SetStateAction<OpenFilterDropdownState | null>>;
@@ -37,6 +43,7 @@ export type TimelineFilterPanelProps = {
   onApplyFieldFilterSelection: (slotId: number, fieldRef: string | null) => void;
   onToggleTimelineFieldValueSelection: (slotId: number, valueKey: string) => void;
   onToggleVisibleTimelineFieldValueSelections: (slotId: number, valueKeys: string[]) => void;
+  onUpdateTimelineDateRangeFilter: (slotId: number, dateRange: TimelineDateRange) => void;
   onRemoveTimelineFilterSlot: (slotId: number) => void;
   onAddTimelineFilterSlot: () => void;
 };
@@ -111,10 +118,17 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
           { className: "timeline-filter-grid" },
           ...props.timelineFieldFilters.map((filter, index) => {
             const selectedFieldDisplay = filter.fieldRef ? props.getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
+            const isDateFilter = isTimelineDateRangeFilter(filter);
+            const dateRange = isTimelineDateRangeFilter(filter) ? filter.dateRange : EMPTY_TIMELINE_DATE_RANGE;
+            const selectedValueKeys = filter.kind === "value" ? filter.selectedValueKeys : [];
             const valueLabel =
-              !filter.fieldRef || filter.selectedValueKeys.length === 0
+              !filter.fieldRef
                 ? "All values"
-                : `${filter.selectedValueKeys.length} selected`;
+                : isDateFilter
+                  ? formatTimelineDateRangeFilterLabel(dateRange)
+                  : selectedValueKeys.length > 0
+                    ? `${selectedValueKeys.length} selected`
+                    : "All values";
             const isFieldDropdownOpen =
               props.openFilterDropdown?.kind === "field" && props.openFilterDropdown.slotId === filter.slotId;
             const isValueDropdownOpen =
@@ -126,7 +140,9 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
             const visibleValueKeys = filterValueOptions.map((entry) => entry.key);
             const hasVisibleValueOptions = visibleValueKeys.length > 0;
             const areAllVisibleValuesSelected =
-              hasVisibleValueOptions && visibleValueKeys.every((key) => filter.selectedValueKeys.includes(key));
+              !isDateFilter &&
+              hasVisibleValueOptions &&
+              visibleValueKeys.every((key) => selectedValueKeys.includes(key));
 
             return React.createElement(
               "div",
@@ -260,89 +276,148 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
                 ),
                 isValueDropdownOpen
                   ? createPortal(
-                      React.createElement(
-                        "div",
-                        {
-                          className: "timeline-color-coding-dropdown",
-                          "data-timeline-filter-overlay": "true",
-                          style: filterDropdownStyle ?? undefined,
-                          role: "listbox",
-                          "aria-label": `Filter value options ${index + 1}`
-                        },
-                        React.createElement(
-                          "div",
-                          { className: "timeline-filter-value-search-row" },
-                          React.createElement(
-                            "button",
+                      isDateFilter
+                        ? React.createElement(
+                            "div",
                             {
-                              type: "button",
-                              className: areAllVisibleValuesSelected
-                                ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active"
-                                : "timeline-filter-bulk-toggle",
-                              "aria-label": areAllVisibleValuesSelected
-                                ? `Deselect all visible filter values ${index + 1}`
-                                : `Select all visible filter values ${index + 1}`,
-                              title: areAllVisibleValuesSelected
-                                ? "Deselect all currently filtered values"
-                                : "Select all currently filtered values",
-                              disabled: !hasVisibleValueOptions,
-                              onClick: () => {
-                                props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, visibleValueKeys);
-                              }
+                              className: "timeline-color-coding-dropdown timeline-filter-date-dropdown",
+                              "data-timeline-filter-overlay": "true",
+                              style: filterDropdownStyle ?? undefined,
+                              role: "group",
+                              "aria-label": `Filter value options ${index + 1}`
                             },
                             React.createElement(
-                              "svg",
-                              {
-                                viewBox: "0 0 24 24",
-                                className: "timeline-label-toggle-icon",
-                                "aria-hidden": "true"
-                              },
-                              React.createElement("path", {
-                                d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
+                              "div",
+                              { className: "timeline-filter-date-range" },
+                              React.createElement("input", {
+                                type: "datetime-local",
+                                className: "timeline-details-input timeline-filter-date-input",
+                                "aria-label": `Filter ${index + 1} date range start`,
+                                value: toTimelineDateTimeLocalInputValue(dateRange.startIso),
+                                onChange: (event) => {
+                                  props.onUpdateTimelineDateRangeFilter(filter.slotId, {
+                                    ...dateRange,
+                                    startIso: fromTimelineDateTimeLocalInputValue((event.target as HTMLInputElement).value)
+                                  });
+                                }
+                              }),
+                              React.createElement("input", {
+                                type: "datetime-local",
+                                className: "timeline-details-input timeline-filter-date-input",
+                                "aria-label": `Filter ${index + 1} date range end`,
+                                value: toTimelineDateTimeLocalInputValue(dateRange.endIso),
+                                onChange: (event) => {
+                                  props.onUpdateTimelineDateRangeFilter(filter.slotId, {
+                                    ...dateRange,
+                                    endIso: fromTimelineDateTimeLocalInputValue((event.target as HTMLInputElement).value)
+                                  });
+                                }
+                              }),
+                              dateRange.startIso || dateRange.endIso
+                                ? React.createElement(
+                                    "button",
+                                    {
+                                      type: "button",
+                                      className: "timeline-filter-date-clear",
+                                      onClick: () => {
+                                        props.onUpdateTimelineDateRangeFilter(filter.slotId, EMPTY_TIMELINE_DATE_RANGE);
+                                      }
+                                    },
+                                    "Clear"
+                                  )
+                                : null
+                            ),
+                            isTimelineDateRangeInvalid(dateRange)
+                              ? React.createElement(
+                                  "p",
+                                  { className: "timeline-filter-date-note", role: "status" },
+                                  "Start must be before end."
+                                )
+                              : null
+                          )
+                        : React.createElement(
+                            "div",
+                            {
+                              className: "timeline-color-coding-dropdown",
+                              "data-timeline-filter-overlay": "true",
+                              style: filterDropdownStyle ?? undefined,
+                              role: "listbox",
+                              "aria-label": `Filter value options ${index + 1}`
+                            },
+                            React.createElement(
+                              "div",
+                              { className: "timeline-filter-value-search-row" },
+                              React.createElement(
+                                "button",
+                                {
+                                  type: "button",
+                                  className: areAllVisibleValuesSelected
+                                    ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active"
+                                    : "timeline-filter-bulk-toggle",
+                                  "aria-label": areAllVisibleValuesSelected
+                                    ? `Deselect all visible filter values ${index + 1}`
+                                    : `Select all visible filter values ${index + 1}`,
+                                  title: areAllVisibleValuesSelected
+                                    ? "Deselect all currently filtered values"
+                                    : "Select all currently filtered values",
+                                  disabled: !hasVisibleValueOptions,
+                                  onClick: () => {
+                                    props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, visibleValueKeys);
+                                  }
+                                },
+                                React.createElement(
+                                  "svg",
+                                  {
+                                    viewBox: "0 0 24 24",
+                                    className: "timeline-label-toggle-icon",
+                                    "aria-hidden": "true"
+                                  },
+                                  React.createElement("path", {
+                                    d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
+                                  })
+                                )
+                              ),
+                              React.createElement("input", {
+                                type: "search",
+                                className: "timeline-color-coding-dropdown-search",
+                                "aria-label": `Search filter values ${index + 1}`,
+                                placeholder: "Search value",
+                                value: props.filterValueSearchDraft,
+                                onChange: (event) => {
+                                  props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
+                                }
                               })
+                            ),
+                            React.createElement(
+                              "div",
+                              { className: "timeline-color-coding-dropdown-options" },
+                              filterValueOptions.length === 0
+                                ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
+                                : filterValueOptions.map((entry) =>
+                                    React.createElement(
+                                      "label",
+                                      {
+                                        key: `${filter.slotId}-value-${entry.key}`,
+                                        className: "timeline-filter-value-option"
+                                      },
+                                      React.createElement("input", {
+                                        type: "checkbox",
+                                        checked: selectedValueKeys.includes(entry.key),
+                                        "aria-label": `Include ${entry.label} in filter ${index + 1}`,
+                                        onChange: () => {
+                                          props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
+                                        }
+                                      }),
+                                      React.createElement(
+                                        "span",
+                                        { className: "timeline-filter-value-option-meta" },
+                                        React.createElement("strong", null, entry.label),
+                                        React.createElement("span", null, `${entry.count} item(s)`)
+                                      )
+                                    )
+                                  )
                             )
                           ),
-                          React.createElement("input", {
-                            type: "search",
-                            className: "timeline-color-coding-dropdown-search",
-                            "aria-label": `Search filter values ${index + 1}`,
-                            placeholder: "Search value",
-                            value: props.filterValueSearchDraft,
-                            onChange: (event) => {
-                              props.onSetFilterValueSearchDraft((event.target as HTMLInputElement).value);
-                            }
-                          })
-                        ),
-                        React.createElement(
-                          "div",
-                          { className: "timeline-color-coding-dropdown-options" },
-                          filterValueOptions.length === 0
-                            ? React.createElement("p", { className: "timeline-details-muted" }, "No matching value.")
-                            : filterValueOptions.map((entry) =>
-                                React.createElement(
-                                  "label",
-                                  {
-                                    key: `${filter.slotId}-value-${entry.key}`,
-                                    className: "timeline-filter-value-option"
-                                  },
-                                  React.createElement("input", {
-                                    type: "checkbox",
-                                    checked: filter.selectedValueKeys.includes(entry.key),
-                                    "aria-label": `Include ${entry.label} in filter ${index + 1}`,
-                                    onChange: () => {
-                                      props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
-                                    }
-                                  }),
-                                  React.createElement(
-                                    "span",
-                                    { className: "timeline-filter-value-option-meta" },
-                                    React.createElement("strong", null, entry.label),
-                                    React.createElement("span", null, `${entry.count} item(s)`)
-                                  )
-                                )
-                              )
-                        )
-                      ),
                       document.body
                     )
                   : null

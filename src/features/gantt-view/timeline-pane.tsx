@@ -69,8 +69,7 @@ import {
 } from "./use-schedule-dragging.js";
 import {
   useTimelineFilters,
-  type OpenFilterDropdownState,
-  type TimelineFieldFilter
+  type OpenFilterDropdownState
 } from "./use-timeline-filters.js";
 import { useTimelineOverlayDismiss } from "./use-timeline-overlay-dismiss.js";
 import { useTimelineKeyboardShortcuts } from "./use-timeline-keyboard-shortcuts.js";
@@ -91,7 +90,29 @@ import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
 import { TimelineWorkItemContextMenu } from "./timeline-work-item-context-menu.js";
 import { useWorkItemContextMenu, type WorkItemContextMenuItem } from "./use-work-item-context-menu.js";
-import { extractFilterMatchKeys, extractFilterValueTokens } from "./timeline-field-filtering.js";
+import {
+  applyTimelineFieldFilters,
+  buildTimelineDateFilterContext,
+  countActiveTimelineFieldFilters,
+  extractFilterValueTokens,
+  isTimelineDateFieldRef
+} from "./timeline-field-filtering.js";
+import {
+  createInitialTimelineFieldFilters,
+  createTimelineDateRangeFieldFilter,
+  createTimelineFieldFilter,
+  createTimelineValueFieldFilter,
+  isTimelineDateRangeFilter,
+  isTimelineValueFieldFilter,
+  MAX_TIMELINE_FILTER_SLOTS,
+  type TimelineDateRange,
+  type TimelineFieldFilter
+} from "./timeline-filter-model.js";
+import {
+  hasTimelineFilterUrlSearchParams,
+  parseTimelineFiltersFromSearch,
+  syncTimelineFiltersToUrl
+} from "./timeline-filter-url.js";
 import { listTimelineTreeWorkItemIds, summarizeTimelineTreeLevels } from "./timeline-tree-levels.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
@@ -307,7 +328,7 @@ function useTimelineColorCoding(queryId?: string | null): TimelineColorCodingSta
 }
 
 export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
-  const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(), []);
+  const initialTimelineFilterState = React.useMemo(() => resolveInitialTimelineFilterState(props.timeline), []);
   const activeQueryId = props.activeQueryId ?? null;
   const initialViewportPreference = React.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
@@ -315,6 +336,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   const workItemContextMenu = useWorkItemContextMenu();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
   const timelineSorting = useTimelineSorting(activeQueryId);
+  const pendingTimelineFilterUrlHydrationRef = React.useRef(
+    props.timeline === null && hasCurrentTimelineFilterUrlSearchParams()
+  );
+  const timelineFiltersUserEditedRef = React.useRef(false);
+  const skipNextTimelineFilterUrlSyncRef = React.useRef(false);
   const internalSelectionStoreRef = React.useRef<TimelineSelectionStore | null>(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
@@ -399,6 +425,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
   }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
+  const timelineDateFilterContext = React.useMemo(
+    () => buildTimelineDateFilterContext(effectiveTimeline),
+    [effectiveTimeline]
+  );
   const [selectedWorkItemId, setSelectedWorkItemId] = React.useState<number | null>(() =>
     selectionStore.getSelectedWorkItemId()
   );
@@ -635,8 +665,33 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   }, [dependencyViewMode]);
 
   React.useEffect(() => {
+    if (
+      !pendingTimelineFilterUrlHydrationRef.current ||
+      timelineFiltersUserEditedRef.current ||
+      props.timeline === null
+    ) {
+      return;
+    }
+
+    const nextState = resolveInitialTimelineFilterState(props.timeline);
+    pendingTimelineFilterUrlHydrationRef.current = false;
+    skipNextTimelineFilterUrlSyncRef.current = true;
+    setTimelineFieldFilters(nextState.filters);
+    setNextFilterSlotId(nextState.nextSlotId);
+  }, [props.timeline, setNextFilterSlotId, setTimelineFieldFilters]);
+
+  React.useEffect(() => {
+    if (skipNextTimelineFilterUrlSyncRef.current) {
+      skipNextTimelineFilterUrlSyncRef.current = false;
+      return;
+    }
+
+    if (pendingTimelineFilterUrlHydrationRef.current && props.timeline === null && hasCurrentTimelineFilterUrlSearchParams()) {
+      return;
+    }
+
     syncTimelineFiltersToUrl(timelineFieldFilters);
-  }, [timelineFieldFilters]);
+  }, [props.timeline, timelineFieldFilters]);
 
   React.useEffect(() => {
     initialViewportAppliedRef.current = false;
@@ -655,8 +710,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     () => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters),
     [effectiveTimeline, timelineFieldFilters]
   );
-  const activeTimelineFilters = React.useMemo(
-    () => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)),
+  const activeTimelineFiltersCount = React.useMemo(
+    () => countActiveTimelineFieldFilters(timelineFieldFilters),
     [timelineFieldFilters]
   );
   const colorCodingOptions = React.useMemo(
@@ -1808,25 +1863,49 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     return true;
   }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
 
-  const applyFieldFilterSelection = React.useCallback((slotId: number, fieldRef: string | null) => {
-    const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
-    setTimelineFieldFilters((current) =>
-      current.map((filter) =>
-        filter.slotId === slotId
-          ? {
-              ...filter,
-              fieldRef: normalizedFieldRef,
-              selectedValueKeys: normalizedFieldRef && filter.fieldRef === normalizedFieldRef ? filter.selectedValueKeys : []
-            }
-          : filter
-      )
-    );
+  const markTimelineFiltersUserEdited = React.useCallback(() => {
+    timelineFiltersUserEditedRef.current = true;
+    pendingTimelineFilterUrlHydrationRef.current = false;
   }, []);
 
-  const toggleTimelineFieldValueSelection = React.useCallback((slotId: number, valueKey: string) => {
+  const applyFieldFilterSelection = React.useCallback((slotId: number, fieldRef: string | null) => {
+    markTimelineFiltersUserEdited();
+    const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
     setTimelineFieldFilters((current) =>
       current.map((filter) => {
         if (filter.slotId !== slotId) {
+          return filter;
+        }
+        if (!normalizedFieldRef) {
+          return createTimelineFieldFilter(filter.slotId);
+        }
+        if (isTimelineDateFieldRef(normalizedFieldRef, timelineDateFilterContext)) {
+          return createTimelineDateRangeFieldFilter(
+            filter.slotId,
+            normalizedFieldRef,
+            filter.fieldRef === normalizedFieldRef && isTimelineDateRangeFilter(filter)
+              ? filter.dateRange
+              : { startIso: null, endIso: null }
+          );
+        }
+
+        return createTimelineValueFieldFilter(
+          filter.slotId,
+          normalizedFieldRef,
+          filter.fieldRef === normalizedFieldRef && isTimelineValueFieldFilter(filter) ? filter.selectedValueKeys : []
+        );
+      })
+    );
+  }, [markTimelineFiltersUserEdited, timelineDateFilterContext]);
+
+  const toggleTimelineFieldValueSelection = React.useCallback((slotId: number, valueKey: string) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFieldFilters((current) =>
+      current.map((filter) => {
+        if (filter.slotId !== slotId) {
+          return filter;
+        }
+        if (!isTimelineValueFieldFilter(filter)) {
           return filter;
         }
 
@@ -1844,16 +1923,20 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         };
       })
     );
-  }, []);
+  }, [markTimelineFiltersUserEdited]);
 
   const toggleVisibleTimelineFieldValueSelections = React.useCallback((slotId: number, valueKeys: string[]) => {
     if (valueKeys.length === 0) {
       return;
     }
 
+    markTimelineFiltersUserEdited();
     setTimelineFieldFilters((current) =>
       current.map((filter) => {
         if (filter.slotId !== slotId) {
+          return filter;
+        }
+        if (!isTimelineValueFieldFilter(filter)) {
           return filter;
         }
 
@@ -1880,9 +1963,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         };
       })
     );
-  }, []);
+  }, [markTimelineFiltersUserEdited]);
 
   const addTimelineFilterSlot = React.useCallback(() => {
+    markTimelineFiltersUserEdited();
     setTimelineFieldFilters((current) => {
       if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
         return current;
@@ -1890,15 +1974,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       return [...current, createTimelineFieldFilter(nextFilterSlotId)];
     });
     setNextFilterSlotId((current) => current + 1);
-  }, [nextFilterSlotId]);
+  }, [markTimelineFiltersUserEdited, nextFilterSlotId]);
 
   const removeTimelineFilterSlot = React.useCallback(
     (slotId: number) => {
+      markTimelineFiltersUserEdited();
       setTimelineFieldFilters((current) => {
         if (current.length <= 1) {
-          return current.map((filter) =>
-            filter.slotId === slotId ? { ...filter, fieldRef: null, selectedValueKeys: [] } : filter
-          );
+          return current.map((filter) => (filter.slotId === slotId ? createTimelineFieldFilter(filter.slotId) : filter));
         }
 
         return current.filter((filter) => filter.slotId !== slotId);
@@ -1908,8 +1991,21 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         setOpenFilterDropdown(null);
       }
     },
-    [openFilterDropdown?.slotId]
+    [markTimelineFiltersUserEdited, openFilterDropdown?.slotId]
   );
+
+  const updateTimelineDateRangeFilter = React.useCallback((slotId: number, dateRange: TimelineDateRange) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFieldFilters((current) =>
+      current.map((filter) => {
+        if (filter.slotId !== slotId || !filter.fieldRef) {
+          return filter;
+        }
+
+        return createTimelineDateRangeFieldFilter(filter.slotId, filter.fieldRef, dateRange);
+      })
+    );
+  }, [markTimelineFiltersUserEdited]);
 
   const toggleTimelineLabelField = React.useCallback((fieldRef: string) => {
     const normalized = fieldRef.trim();
@@ -2018,11 +2114,14 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
       return [];
     }
+    if (isTimelineDateRangeFilter(openFilterSlot)) {
+      return [];
+    }
     return filterFieldValueStatsBySearch(
       listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef),
       filterValueSearchDraft
     );
-  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
+  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot, timelineDateFilterContext]);
 
   const handleAdoptSelectedSchedule = React.useCallback(
     async (input: { targetWorkItemId: number; startDate: string; endDate: string }) => {
@@ -2114,7 +2213,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       },
       filterToggleControlRef,
       timelineFiltersOpen,
-      activeTimelineFiltersCount: activeTimelineFilters.length,
+      activeTimelineFiltersCount,
       onToggleTimelineFilters: toggleTimelineFilters,
       sortControl: React.createElement(TimelineSortControl, {
         availableFieldRefs,
@@ -2167,8 +2266,6 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       openFilterDropdown,
       openFilterFieldOptions,
       openFilterValueOptions,
-      effectiveTimelineValueOptionsForFilter: (fieldRef) =>
-        filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, fieldRef), ""),
       maxFilterSlots: MAX_TIMELINE_FILTER_SLOTS,
       getFieldDisplayName,
       onSetOpenFilterDropdown: setOpenFilterDropdown,
@@ -2179,6 +2276,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onApplyFieldFilterSelection: applyFieldFilterSelection,
       onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
       onToggleVisibleTimelineFieldValueSelections: toggleVisibleTimelineFieldValueSelections,
+      onUpdateTimelineDateRangeFilter: updateTimelineDateRangeFilter,
       onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
       onAddTimelineFilterSlot: addTimelineFilterSlot
     }),
@@ -3258,9 +3356,6 @@ const OVERDUE_OK_TIMELINE_COLOR = "#475569";
 const DEPENDENCY_ENDPOINT_GAP_PX = 6;
 const DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
 const DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
-const MAX_TIMELINE_FILTER_SLOTS = 5;
-const TIMELINE_FILTERS_QUERY_PARAM = "tf";
-const LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
 const TIMELINE_LABEL_SPECIAL_FIELD_REFS = {
   title: "title",
   mappedId: "mappedId",
@@ -3685,19 +3780,7 @@ function resolveTimelineVisibleRange(timeline: TimelineReadModel | null): { star
   };
 }
 
-function createInitialTimelineFieldFilters(): TimelineFieldFilter[] {
-  return [createTimelineFieldFilter(0)];
-}
-
-function createTimelineFieldFilter(slotId: number): TimelineFieldFilter {
-  return {
-    slotId,
-    fieldRef: null,
-    selectedValueKeys: []
-  };
-}
-
-function resolveInitialTimelineFilterState(): { filters: TimelineFieldFilter[]; nextSlotId: number } {
+function resolveInitialTimelineFilterState(timeline: TimelineReadModel | null): { filters: TimelineFieldFilter[]; nextSlotId: number } {
   if (typeof globalThis.location === "undefined") {
     return {
       filters: createInitialTimelineFieldFilters(),
@@ -3705,7 +3788,9 @@ function resolveInitialTimelineFilterState(): { filters: TimelineFieldFilter[]; 
     };
   }
 
-  const parsed = parseTimelineFiltersFromSearch(globalThis.location.search);
+  const parsed = parseTimelineFiltersFromSearch(globalThis.location.search, {
+    dateFilterContext: buildTimelineDateFilterContext(timeline)
+  });
   if (parsed.length === 0) {
     return {
       filters: createInitialTimelineFieldFilters(),
@@ -3713,213 +3798,14 @@ function resolveInitialTimelineFilterState(): { filters: TimelineFieldFilter[]; 
     };
   }
 
-  const filters = parsed.map((entry, index) => ({
-    slotId: index,
-    fieldRef: entry.fieldRef,
-    selectedValueKeys: entry.selectedValueKeys
-  }));
-
   return {
-    filters,
-    nextSlotId: filters.length
+    filters: parsed,
+    nextSlotId: parsed.length
   };
 }
 
-function parseTimelineFiltersFromSearch(search: string): Array<{ fieldRef: string | null; selectedValueKeys: string[] }> {
-  try {
-    const params = new URLSearchParams(search);
-    const compactEntries = params.getAll(TIMELINE_FILTERS_QUERY_PARAM);
-    if (compactEntries.length > 0) {
-      return compactEntries
-        .map((entry) => parseCompactTimelineFilterParam(entry))
-        .filter((entry): entry is { fieldRef: string; selectedValueKeys: string[] } => entry !== null)
-        .slice(0, MAX_TIMELINE_FILTER_SLOTS);
-    }
-
-    const legacyRaw = params.get(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
-    if (!legacyRaw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(legacyRaw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .map((entry) => {
-        if (!entry || typeof entry !== "object") {
-          return null;
-        }
-
-        const maybeFieldRef = "fieldRef" in entry ? (entry.fieldRef as unknown) : null;
-        const maybeValues = "selectedValueKeys" in entry ? (entry.selectedValueKeys as unknown) : [];
-        const fieldRef =
-          typeof maybeFieldRef === "string" && maybeFieldRef.trim().length > 0 ? maybeFieldRef.trim() : null;
-        const selectedValueKeys = Array.isArray(maybeValues)
-          ? [...new Set(maybeValues.filter((value): value is string => typeof value === "string"))]
-          : [];
-        if (!fieldRef) {
-          return null;
-        }
-
-        return {
-          fieldRef,
-          selectedValueKeys
-        };
-      })
-      .filter((entry): entry is { fieldRef: string; selectedValueKeys: string[] } => entry !== null)
-      .slice(0, MAX_TIMELINE_FILTER_SLOTS);
-  } catch {
-    return [];
-  }
-}
-
-function serializeTimelineFiltersForUrl(
-  filters: TimelineFieldFilter[]
-): Array<{ fieldRef: string | null; selectedValueKeys: string[] }> {
-  return filters
-    .map((filter) => ({
-      fieldRef: filter.fieldRef?.trim() ? filter.fieldRef.trim() : null,
-      selectedValueKeys: [...new Set(filter.selectedValueKeys)]
-    }))
-    .filter((entry) => entry.fieldRef !== null);
-}
-
-function toCompactTimelineFilterParam(entry: { fieldRef: string | null; selectedValueKeys: string[] }): string | null {
-  const fieldRef = entry.fieldRef?.trim();
-  if (!fieldRef) {
-    return null;
-  }
-
-  const encodedFieldRef = encodeTimelineFilterToken(fieldRef);
-  const valuePart =
-    entry.selectedValueKeys.length > 0
-      ? entry.selectedValueKeys.map((value) => encodeTimelineFilterToken(value)).join(",")
-      : "";
-  return `${encodedFieldRef}~${valuePart}`;
-}
-
-function parseCompactTimelineFilterParam(value: string): { fieldRef: string; selectedValueKeys: string[] } | null {
-  try {
-    const [rawFieldRef, rawValues = ""] = value.split("~", 2);
-    if (!rawFieldRef) {
-      return null;
-    }
-
-    const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
-    if (fieldRef.length === 0) {
-      return null;
-    }
-
-    const selectedValueKeys = rawValues
-      .split(",")
-      .map((entry) => decodeTimelineFilterToken(entry).trim())
-      .filter((entry) => entry.length > 0);
-
-    return {
-      fieldRef,
-      selectedValueKeys: [...new Set(selectedValueKeys)]
-    };
-  } catch {
-    return null;
-  }
-}
-
-function decodeTimelineFilterToken(token: string): string {
-  try {
-    return decodeURIComponent(token);
-  } catch {
-    // Keep legacy unescaped tokens parseable even when they contain stray "%".
-    return token;
-  }
-}
-
-function encodeTimelineFilterToken(token: string): string {
-  return encodeURIComponent(token).replace(/~/g, "%7E");
-}
-
-function syncTimelineFiltersToUrl(filters: TimelineFieldFilter[]): void {
-  if (typeof globalThis.window === "undefined") {
-    return;
-  }
-
-  const params = new URLSearchParams(globalThis.window.location.search);
-  params.delete(TIMELINE_FILTERS_QUERY_PARAM);
-  params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
-  serializeTimelineFiltersForUrl(filters)
-    .map((entry) => toCompactTimelineFilterParam(entry))
-    .filter((entry): entry is string => entry !== null)
-    .forEach((entry) => {
-      params.append(TIMELINE_FILTERS_QUERY_PARAM, entry);
-    });
-
-  const nextSearch = params.toString();
-  const normalizedCurrentSearch = globalThis.window.location.search.startsWith("?")
-    ? globalThis.window.location.search.slice(1)
-    : globalThis.window.location.search;
-  if (nextSearch === normalizedCurrentSearch) {
-    return;
-  }
-
-  const nextUrl = `${globalThis.window.location.pathname}${nextSearch.length > 0 ? `?${nextSearch}` : ""}${globalThis.window.location.hash}`;
-  globalThis.window.history.replaceState(globalThis.window.history.state, "", nextUrl);
-}
-
-function isActiveTimelineFieldFilter(filter: TimelineFieldFilter): boolean {
-  return Boolean(filter.fieldRef && filter.selectedValueKeys.length > 0);
-}
-
-function applyTimelineFieldFilters(
-  timeline: TimelineReadModel | null,
-  filters: TimelineFieldFilter[]
-): TimelineReadModel | null {
-  if (!timeline) {
-    return null;
-  }
-
-  const activeFilters = filters.filter((filter) => isActiveTimelineFieldFilter(filter));
-  if (activeFilters.length === 0) {
-    return timeline;
-  }
-
-  const matchesAll = (fieldValues: Record<string, string | number | null> | undefined): boolean => {
-    return activeFilters.every((filter) => {
-      const normalizedFieldRef = filter.fieldRef?.trim();
-      if (!normalizedFieldRef || filter.selectedValueKeys.length === 0) {
-        return true;
-      }
-
-      const selectedValueKeys = new Set(filter.selectedValueKeys);
-      const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
-      return matchKeys.some((key) => selectedValueKeys.has(key));
-    });
-  };
-
-  const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
-  const unschedulable = timeline.unschedulable.filter((item) => matchesAll(item.details.fieldValues));
-  const visibleWorkItemIds = new Set<number>([
-    ...bars.map((bar) => bar.workItemId),
-    ...unschedulable.map((item) => item.workItemId)
-  ]);
-  const dependencies = timeline.dependencies.filter(
-    (dependency) =>
-      visibleWorkItemIds.has(dependency.predecessorWorkItemId) &&
-      visibleWorkItemIds.has(dependency.successorWorkItemId)
-  );
-  const suppressedDependencies = timeline.suppressedDependencies.filter(
-    (dependency) =>
-      visibleWorkItemIds.has(dependency.predecessorWorkItemId) &&
-      visibleWorkItemIds.has(dependency.successorWorkItemId)
-  );
-
-  return {
-    ...timeline,
-    bars,
-    unschedulable,
-    dependencies,
-    suppressedDependencies
-  };
+function hasCurrentTimelineFilterUrlSearchParams(): boolean {
+  return typeof globalThis.location !== "undefined" && hasTimelineFilterUrlSearchParams(globalThis.location.search);
 }
 
 function filterFieldRefsBySearch(fieldRefs: string[], search: string): string[] {
