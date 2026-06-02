@@ -9,6 +9,7 @@ import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js
 import {
   LowdbUserPreferencesAdapter
 } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
+import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
@@ -452,6 +453,7 @@ export function createHttpServer(params: {
   distRootPath?: string;
   azLoginRunner?: AzLoginRunner;
   azCliPathResolver?: AzCliPathResolver;
+  authPreflightRunner?: CliCommandRunner;
 }): HttpServer {
   const verboseLogs = process.env.ADO_VERBOSE_LOGS === "1";
   if (verboseLogs) {
@@ -539,6 +541,7 @@ export function createHttpServer(params: {
   const queryFlow = createPhase1QueryFlow({
     httpClient: instrumentedHttpClient,
     contextFilePath,
+    authPreflightRunner: params.authPreflightRunner,
     capabilities: {
       writeEnabled: process.env.ADO_WRITE_ENABLED === "1"
     }

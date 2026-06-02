@@ -85,12 +85,14 @@ import { useTreeExpandCollapse, applyTreeVisibility } from "./use-tree-expand-co
 import { useReparentDragging } from "./use-reparent-dragging.js";
 import { useTimelineResizing } from "./use-timeline-resizing.js";
 import { useDragAutoScroll } from "./use-drag-auto-scroll.js";
+import { TimelineLeftSidebarHeader } from "./timeline-left-sidebar-header.js";
 import { TimelinePaneActionsToolbar } from "./timeline-pane-actions-toolbar.js";
 import { TimelineFilterPanel } from "./timeline-filter-panel.js";
 import { TimelineColorCodingPanel } from "./timeline-color-coding-panel.js";
 import { TimelineWorkItemContextMenu } from "./timeline-work-item-context-menu.js";
 import { useWorkItemContextMenu, type WorkItemContextMenuItem } from "./use-work-item-context-menu.js";
 import { extractFilterMatchKeys, extractFilterValueTokens } from "./timeline-field-filtering.js";
+import { listTimelineTreeWorkItemIds, summarizeTimelineTreeLevels } from "./timeline-tree-levels.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
@@ -563,6 +565,12 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     }, activeQueryId);
   }, [activeQueryId]);
 
+  const toggleTimelineSidebarRowJustify = React.useCallback(() => {
+    const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
+    setTimelineSidebarRowJustify(next);
+    saveTimelineSidebarRowJustify(next, activeQueryId);
+  }, [activeQueryId, timelineSidebarRowJustify]);
+
   React.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
       setSidebarWidthPx((current) => {
@@ -668,9 +676,17 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     () => listModeValueStats(effectiveTimeline, colorCoding),
     [effectiveTimeline, colorCoding]
   );
-  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null);
+  const filteredTimelineTreeWorkItemIds = React.useMemo(
+    () => listTimelineTreeWorkItemIds(filteredTimeline),
+    [filteredTimeline]
+  );
+  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null, filteredTimelineTreeWorkItemIds);
   const reparentDrag = useReparentDragging(filteredTimeline?.treeLayout ?? null);
   const isTreeQuery = filteredTimeline?.queryType !== "flat" && filteredTimeline?.treeLayout !== null;
+  const treeLevelSummaries = React.useMemo(
+    () => (isTreeQuery ? summarizeTimelineTreeLevels(filteredTimeline, treeState.collapsedIds) : []),
+    [filteredTimeline, isTreeQuery, treeState.collapsedIds]
+  );
   const visibleTimeline = React.useMemo(
     () => applyTreeVisibility(filteredTimeline, treeState.collapsedIds),
     [filteredTimeline, treeState.collapsedIds]
@@ -2327,49 +2343,15 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                     )
                   : [
                       React.createElement(
-                        "div",
+                        TimelineLeftSidebarHeader,
                         {
-                          className: "timeline-left-sidebar-header",
-                          style: { height: `${CHART_TOP_PADDING}px` },
-                          key: "header"
-                        },
-                        React.createElement(
-                          "button",
-                          {
-                            type: "button",
-                            className: "timeline-left-sidebar-align-toggle",
-                            "aria-label": "Toggle timeline sidebar row alignment",
-                            title:
-                              timelineSidebarRowJustify === "flex-end"
-                                ? "Align sidebar rows left"
-                                : "Align sidebar rows right",
-                            "aria-pressed": timelineSidebarRowJustify === "flex-end",
-                            onClick: () => {
-                              const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
-                              setTimelineSidebarRowJustify(next);
-                              saveTimelineSidebarRowJustify(next, activeQueryId);
-                            }
-                          },
-                          React.createElement(
-                            "svg",
-                            {
-                              viewBox: "0 0 24 24",
-                              className: "timeline-left-sidebar-align-icon",
-                              "aria-hidden": "true"
-                            },
-                            timelineSidebarRowJustify === "flex-end"
-                              ? [
-                                  React.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-                                  React.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
-                                  React.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
-                                ]
-                              : [
-                                  React.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-                                  React.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
-                                  React.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
-                                ]
-                          )
-                        )
+                          key: "header",
+                          heightPx: CHART_TOP_PADDING,
+                          rowJustify: timelineSidebarRowJustify,
+                          treeLevels: treeLevelSummaries,
+                          onToggleTreeLevel: treeState.toggleLevel,
+                          onToggleRowJustify: toggleTimelineSidebarRowJustify
+                        }
                       ),
                       React.createElement(
                         "div",
