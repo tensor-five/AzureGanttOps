@@ -125,7 +125,8 @@ describe("SubmitWriteCommandUseCase", () => {
     const result = await useCase.execute({
       command: {
         kind: "WORK_ITEM_CHILD_CREATE",
-        parentWorkItemId: 42
+        parentWorkItemId: 42,
+        childWorkItemType: "Task"
       },
       writeEnabled: false
     });

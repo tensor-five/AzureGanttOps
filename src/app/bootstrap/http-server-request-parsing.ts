@@ -236,6 +236,7 @@ export function parseChildWorkItemCreatePayload(
   input: Record<string, unknown> | null
 ): {
   parentWorkItemId: number;
+  childWorkItemType: string;
   title?: string;
   scheduleFieldRefs?: {
     start: string;
@@ -255,6 +256,11 @@ export function parseChildWorkItemCreatePayload(
     return null;
   }
 
+  const childWorkItemType = input.childWorkItemType;
+  if (typeof childWorkItemType !== "string" || childWorkItemType.trim().length === 0) {
+    return null;
+  }
+
   const scheduleFieldRefs = parseScheduleFieldRefs(input.scheduleFieldRefs);
   if (input.scheduleFieldRefs !== undefined && !scheduleFieldRefs) {
     return null;
@@ -263,6 +269,7 @@ export function parseChildWorkItemCreatePayload(
   if (input.title === undefined || input.title === null) {
     return {
       parentWorkItemId,
+      childWorkItemType: childWorkItemType.trim(),
       ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
     };
   }
@@ -274,6 +281,7 @@ export function parseChildWorkItemCreatePayload(
   const title = input.title.trim();
   return {
     parentWorkItemId,
+    childWorkItemType: childWorkItemType.trim(),
     ...(title.length > 0 ? { title } : {}),
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };

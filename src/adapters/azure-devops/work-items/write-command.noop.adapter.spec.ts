@@ -63,7 +63,8 @@ describe("WriteCommandNoopAdapter", () => {
 
     const result = await adapter.submit({
       kind: "WORK_ITEM_CHILD_CREATE",
-      parentWorkItemId: 42
+      parentWorkItemId: 42,
+      childWorkItemType: "Task"
     });
 
     expect(result).toEqual({

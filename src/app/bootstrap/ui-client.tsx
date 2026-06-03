@@ -1230,10 +1230,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             setResponse(nextResponse);
             setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
           },
-          onCreateChildWorkItem: async ({ parentWorkItemId, title, scheduleFieldRefs }) => {
+          onCreateChildWorkItem: async ({ parentWorkItemId, childWorkItemType, title, scheduleFieldRefs }) => {
             const writeResult = await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.createChildWorkItem({
                 parentWorkItemId,
+                childWorkItemType,
                 ...(title ? { title } : {}),
                 ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
               });
@@ -1262,6 +1263,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             responseRef.current = nextResponse;
             setResponse(nextResponse);
             setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
+          },
+          onFetchWorkItemTypes: async () => {
+            const response = await props.composition.controller.fetchWorkItemTypes();
+            return response.workItemTypes;
           },
           onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
             await scheduleReparentMutation({

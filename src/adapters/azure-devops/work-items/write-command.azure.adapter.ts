@@ -5,7 +5,6 @@ import type {
 } from "../../../application/dto/write-boundary/write-command.dto.js";
 import type { WriteCommandPort } from "../../../application/ports/write-command.port.js";
 import { AdoContextStore } from "../../../app/config/ado-context.store.js";
-import { resolveChildWorkItemType } from "../../../domain/work-items/child-work-item-type.js";
 
 const API_VERSION = "7.1";
 const DEFAULT_DUPLICATE_SCHEDULE_FIELD_REFS = {
@@ -255,16 +254,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       throw new Error("WORK_ITEM_CHILD_PARENT_MALFORMED");
     }
 
-    const childWorkItemType = resolveChildWorkItemType(parent.workItemType);
-    if (childWorkItemType === null) {
-      return {
-        accepted: false,
-        mode: "NO_OP",
-        commandKind: "WORK_ITEM_CHILD_CREATE",
-        operationCount: 0,
-        reasonCode: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED"
-      };
-    }
+    const childWorkItemType = command.childWorkItemType.trim();
 
     const operations = buildChildCreateOperations({
       childWorkItemType,
@@ -445,7 +435,6 @@ type DuplicateScheduleFieldRefs = {
 };
 
 type ChildCreateParent = {
-  workItemType: string;
   systemFields: DuplicateFieldValue[];
 };
 
@@ -533,13 +522,7 @@ function extractChildCreateParent(payload: unknown): ChildCreateParent | null {
   }
 
   const fieldRecord = fields as Record<string, unknown>;
-  const workItemType = extractStringFieldValue(fieldRecord["System.WorkItemType"]);
-  if (workItemType === null) {
-    return null;
-  }
-
   return {
-    workItemType,
     systemFields: extractStringFields(fieldRecord, CHILD_CREATE_SYSTEM_FIELD_REFS)
   };
 }

@@ -1,6 +1,6 @@
 import "./local-ui.css";
 import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.js";
-import type { AdoCommLogEntry, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
+import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
 const container = document.getElementById("app");
@@ -269,7 +269,7 @@ const composition = createDefaultUiShellComposition({
 
       return payload as WriteCommandTransportResult;
     },
-    createChildWorkItem: async ({ parentWorkItemId, title, scheduleFieldRefs }) => {
+    createChildWorkItem: async ({ parentWorkItemId, childWorkItemType, title, scheduleFieldRefs }) => {
       const response = await fetch("/phase2/work-item-child-create", {
         method: "POST",
         headers: withCsrf({
@@ -278,6 +278,7 @@ const composition = createDefaultUiShellComposition({
         }),
         body: JSON.stringify({
           parentWorkItemId,
+          childWorkItemType,
           ...(title ? { title } : {}),
           ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
         })
@@ -294,6 +295,37 @@ const composition = createDefaultUiShellComposition({
       }
 
       return payload as WriteCommandTransportResult;
+    },
+    fetchWorkItemTypes: async () => {
+      const response = await fetch("/phase2/work-item-types", {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as { workItemTypes?: unknown; message?: string };
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && typeof payload.message === "string"
+            ? payload.message
+            : `Work item types request failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      const workItemTypes = Array.isArray(payload.workItemTypes)
+        ? payload.workItemTypes
+            .map((entry) => {
+              if (!entry || typeof entry !== "object") {
+                return null;
+              }
+
+              const name = (entry as { name?: unknown }).name;
+              return typeof name === "string" ? { name } : null;
+            })
+            .filter((entry): entry is WorkItemTypeOption => entry !== null)
+        : [];
+      return { workItemTypes };
     },
     reparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
       const response = await fetch("/phase2/work-item-reparent", {

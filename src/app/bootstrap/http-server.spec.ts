@@ -820,7 +820,7 @@ describe("createHttpServer", () => {
     }
   });
 
-  it("creates child work items via /phase2/work-item-child-create without accepting a client child type", async () => {
+  it("creates child work items via /phase2/work-item-child-create after validating the selected child type", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
     process.env.ADO_WRITE_ENABLED = "1";
@@ -832,6 +832,21 @@ describe("createHttpServer", () => {
       httpClient: {
         get: async (url) => {
           getCalls.push(url);
+          if (url.endsWith("/_apis/wit/workitemtypes?api-version=7.1")) {
+            return {
+              status: 200,
+              json: {
+                value: [
+                  { name: "Task" },
+                  { name: " User Story " },
+                  { name: "user story" },
+                  { name: "Blocked", isDisabled: true }
+                ]
+              },
+              headers: {}
+            };
+          }
+
           return {
             status: 200,
             json: {
@@ -889,6 +904,7 @@ describe("createHttpServer", () => {
         },
         body: JSON.stringify({
           parentWorkItemId: 42,
+          childWorkItemType: "user story",
           title: " Child story ",
           scheduleFieldRefs: {
             start: "Custom.StartDate2",
@@ -914,6 +930,7 @@ describe("createHttpServer", () => {
         }
       });
       expect(getCalls).toEqual([
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1",
         "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1"
       ]);
       expect(postCalls).toEqual([
@@ -944,24 +961,26 @@ describe("createHttpServer", () => {
     }
   });
 
-  it("returns 422 for unsupported child-create parent types and does not POST", async () => {
+  it("returns 422 for unavailable child-create types and does not POST", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
     process.env.ADO_WRITE_ENABLED = "1";
     const post = vi.fn(async () => ({ status: 200, json: { id: 99 }, headers: {} }));
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        value: [
+          { name: "Task" },
+          { name: "User Story" }
+        ]
+      },
+      headers: {}
+    }));
     const server = startServer({
       distRootPath: fixture.distRootPath,
       contextFilePath: fixture.contextFilePath,
       httpClient: {
-        get: async () => ({
-          status: 200,
-          json: {
-            fields: {
-              "System.WorkItemType": "Task"
-            }
-          },
-          headers: {}
-        }),
+        get,
         patch: async () => ({ status: 200, json: {}, headers: {} }),
         post
       }
@@ -977,23 +996,25 @@ describe("createHttpServer", () => {
           "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
-          parentWorkItemId: 42
+          parentWorkItemId: 42,
+          childWorkItemType: "Bug"
         })
       });
       const body = await response.json();
 
       expect(response.status).toBe(422);
       expect(body).toEqual({
-        code: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED",
-        message: "Child work item creation is not supported for this parent work item type.",
+        code: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE",
+        message: "Selected child work item type is not available in this Azure DevOps project.",
         result: {
           accepted: false,
           mode: "NO_OP",
           commandKind: "WORK_ITEM_CHILD_CREATE",
           operationCount: 0,
-          reasonCode: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED"
+          reasonCode: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE"
         }
       });
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
       expect(post).not.toHaveBeenCalled();
     } finally {
       if (previousWriteEnabled === undefined) {
@@ -1011,7 +1032,11 @@ describe("createHttpServer", () => {
     process.env.ADO_WRITE_ENABLED = "1";
     const get = vi.fn(async () => ({
       status: 200,
-      json: {},
+      json: {
+        value: [
+          { name: "Task" }
+        ]
+      },
       headers: {}
     }));
     const server = startServer({
@@ -1033,7 +1058,8 @@ describe("createHttpServer", () => {
           "x-ado-csrf-token": csrfToken
         },
         body: JSON.stringify({
-          parentWorkItemId: 42
+          parentWorkItemId: 42,
+          childWorkItemType: "Task"
         })
       });
       const body = await response.json();
@@ -1050,7 +1076,7 @@ describe("createHttpServer", () => {
           reasonCode: "WRITE_UNSUPPORTED"
         }
       });
-      expect(get).not.toHaveBeenCalled();
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
     } finally {
       if (previousWriteEnabled === undefined) {
         delete process.env.ADO_WRITE_ENABLED;
@@ -1264,6 +1290,92 @@ describe("createHttpServer", () => {
       expect(loadBody.preferences.filters).toEqual({
         assignee: "me"
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("loads available work item types via /phase2/work-item-types", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        value: [
+          { name: "Task" },
+          { name: " feature " },
+          { name: "Feature" },
+          { name: "Bug" },
+          { name: "Disabled Type", isDisabled: true },
+          { name: "Legacy Disabled", disabled: true },
+          { name: "" }
+        ]
+      },
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: { get }
+    });
+
+    try {
+      const firstResponse = await fetch(`${server.baseUrl}/phase2/work-item-types`);
+      const firstBody = await firstResponse.json();
+      const secondResponse = await fetch(`${server.baseUrl}/phase2/work-item-types`);
+
+      expect(firstResponse.status).toBe(200);
+      expect(firstBody).toEqual({
+        workItemTypes: [
+          { name: "Bug" },
+          { name: "feature" },
+          { name: "Task" }
+        ]
+      });
+      expect(secondResponse.status).toBe(200);
+      expect(get).toHaveBeenCalledTimes(1);
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("does not retain failed work item type cache entries", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const get = vi
+      .fn()
+      .mockResolvedValueOnce({
+        status: 500,
+        json: { message: "Temporary Azure outage" },
+        headers: {}
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        json: {
+          value: [
+            { name: "Task" }
+          ]
+        },
+        headers: {}
+      });
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: { get }
+    });
+
+    try {
+      const failedResponse = await fetch(`${server.baseUrl}/phase2/work-item-types`);
+      const retryResponse = await fetch(`${server.baseUrl}/phase2/work-item-types`);
+      const retryBody = await retryResponse.json();
+
+      expect(failedResponse.status).toBe(500);
+      expect(retryResponse.status).toBe(200);
+      expect(retryBody).toEqual({
+        workItemTypes: [
+          { name: "Task" }
+        ]
+      });
+      expect(get).toHaveBeenCalledTimes(2);
     } finally {
       await server.close();
     }

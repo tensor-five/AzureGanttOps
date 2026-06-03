@@ -25,6 +25,10 @@ export type WorkItemStateOption = {
   color: string | null;
 };
 
+export type WorkItemTypeOption = {
+  name: string;
+};
+
 export type WriteCommandKind =
   | "WORK_ITEM_PATCH"
   | "DEPENDENCY_LINK"
@@ -90,6 +94,7 @@ export type QueryIntakeTransport = {
   }) => Promise<WriteCommandTransportResult>;
   createChildWorkItem: (request: {
     parentWorkItemId: number;
+    childWorkItemType: string;
     title?: string;
     scheduleFieldRefs?: {
       start: string;
@@ -102,6 +107,9 @@ export type QueryIntakeTransport = {
   }) => Promise<WriteCommandTransportResult>;
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
     states: WorkItemStateOption[];
+  }>;
+  fetchWorkItemTypes: () => Promise<{
+    workItemTypes: WorkItemTypeOption[];
   }>;
   fetchQueryDetails: (request: { queryId: string }) => Promise<{
     id: string;
@@ -247,6 +255,9 @@ export function createLocalUiShellController(params: {
     }),
     fetchWorkItemStateOptions: async () => ({
       states: []
+    }),
+    fetchWorkItemTypes: async () => ({
+      workItemTypes: []
     }),
     fetchQueryDetails: async ({ queryId }) => ({
       id: queryId,

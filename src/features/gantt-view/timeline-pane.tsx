@@ -166,6 +166,7 @@ export type TimelinePaneProps = {
   canCreateChildWorkItem?: boolean;
   onCreateChildWorkItem?: (input: {
     parentWorkItemId: number;
+    childWorkItemType: string;
     title?: string;
     scheduleFieldRefs?: {
       start: string;
@@ -174,6 +175,7 @@ export type TimelinePaneProps = {
   }) => Promise<void>;
   onReparentWorkItem?: (input: { targetWorkItemId: number; newParentId: number | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
+  onFetchWorkItemTypes?: () => Promise<Array<{ name: string }>>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
   onSetLiveSyncEnabled?: (enabled: boolean) => void;
@@ -2331,6 +2333,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onDuplicateWorkItem: props.onDuplicateWorkItem,
       canCreateChildWorkItem: props.canCreateChildWorkItem,
       onCreateChildWorkItem: props.onCreateChildWorkItem,
+      onFetchWorkItemTypes: props.onFetchWorkItemTypes,
       onUpdateWorkItemState: props.onUpdateWorkItemState,
       onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
     }),

@@ -42,6 +42,7 @@ export type WorkItemDuplicateCommand = {
 export type WorkItemChildCreateCommand = {
   kind: "WORK_ITEM_CHILD_CREATE";
   parentWorkItemId: number;
+  childWorkItemType: string;
   title?: string;
   scheduleFieldRefs?: {
     start: string;
@@ -60,7 +61,7 @@ export type WriteCommandReasonCode =
   | "WRITE_DISABLED"
   | "WRITE_ENABLED"
   | "WRITE_UNSUPPORTED"
-  | "WORK_ITEM_CHILD_TYPE_UNSUPPORTED";
+  | "WORK_ITEM_CHILD_TYPE_UNAVAILABLE";
 
 export type CreatedWorkItemSnapshot = {
   id: number;

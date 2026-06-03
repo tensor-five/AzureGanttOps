@@ -368,6 +368,7 @@ describe("WriteCommandAzureAdapter", () => {
     const result = await adapter.submit({
       kind: "WORK_ITEM_CHILD_CREATE",
       parentWorkItemId: 42,
+      childWorkItemType: "User Story",
       title: " Draft story ",
       scheduleFieldRefs: {
         start: "Custom.StartDate2",
@@ -447,7 +448,8 @@ describe("WriteCommandAzureAdapter", () => {
 
     const result = await adapter.submit({
       kind: "WORK_ITEM_CHILD_CREATE",
-      parentWorkItemId: 42
+      parentWorkItemId: 42,
+      childWorkItemType: "Feature"
     });
 
     expect(result).toMatchObject({
@@ -480,7 +482,47 @@ describe("WriteCommandAzureAdapter", () => {
     );
   });
 
-  it("returns child-create as unsupported for parent types without a child mapping and does not POST", async () => {
+  it("URL-encodes selected custom child work item types", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {}
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 5678 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "Portfolio Item / Risk"
+    });
+
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Portfolio%20Item%20%2F%20Risk?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "New Portfolio Item / Risk" },
+        {
+          op: "add",
+          path: "/relations/-",
+          value: {
+            rel: "System.LinkTypes.Hierarchy-Reverse",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/42"
+          }
+        }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("creates the selected child type even when the parent type has no hierarchy preference", async () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
@@ -498,17 +540,23 @@ describe("WriteCommandAzureAdapter", () => {
 
     const result = await adapter.submit({
       kind: "WORK_ITEM_CHILD_CREATE",
-      parentWorkItemId: 42
+      parentWorkItemId: 42,
+      childWorkItemType: "User Story"
     });
 
-    expect(result).toEqual({
-      accepted: false,
-      mode: "NO_OP",
+    expect(result).toMatchObject({
+      accepted: true,
       commandKind: "WORK_ITEM_CHILD_CREATE",
-      operationCount: 0,
-      reasonCode: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED"
+      createdWorkItemId: 5678
     });
-    expect(post).not.toHaveBeenCalled();
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
+      expect.any(Array),
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
   });
 
   it("reports child-create as unsupported when GET or POST transport is unavailable", async () => {
@@ -521,7 +569,8 @@ describe("WriteCommandAzureAdapter", () => {
 
     const result = await adapter.submit({
       kind: "WORK_ITEM_CHILD_CREATE",
-      parentWorkItemId: 42
+      parentWorkItemId: 42,
+      childWorkItemType: "Task"
     });
 
     expect(result).toEqual({
@@ -551,7 +600,8 @@ describe("WriteCommandAzureAdapter", () => {
     await expect(
       adapter.submit({
         kind: "WORK_ITEM_CHILD_CREATE",
-        parentWorkItemId: 42
+        parentWorkItemId: 42,
+        childWorkItemType: "Task"
       })
     ).rejects.toThrow("WORK_ITEM_CHILD_PARENT_FETCH_FAILED: TF401232: Work item does not exist.");
     expect(post).not.toHaveBeenCalled();
@@ -574,7 +624,8 @@ describe("WriteCommandAzureAdapter", () => {
     await expect(
       adapter.submit({
         kind: "WORK_ITEM_CHILD_CREATE",
-        parentWorkItemId: 42
+        parentWorkItemId: 42,
+        childWorkItemType: "User Story"
       })
     ).rejects.toThrow("WORK_ITEM_CHILD_CREATE_FAILED: TF401320: Rule Error for field Custom.Required.");
   });

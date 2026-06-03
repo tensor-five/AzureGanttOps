@@ -86,9 +86,14 @@ describe("timeline-pane work item context menu", () => {
     });
   });
 
-  it("shows child-create actions for mapped bar work item types and invokes the callback", async () => {
+  it("opens child type selection for mapped bar work item types and confirms the preferred default with Enter", async () => {
     const user = userEvent.setup();
     const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Task" },
+      { name: "User Story" },
+      { name: "Bug" }
+    ]);
     const timeline = {
       ...makeTimeline(),
       scheduleFieldRefs: {
@@ -111,16 +116,26 @@ describe("timeline-pane work item context menu", () => {
         organization: "contoso",
         project: "delivery",
         canCreateChildWorkItem: true,
-        onCreateChildWorkItem
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
       })
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    await user.click(screen.getByRole("menuitem", { name: "User Story hinzufügen" }));
+    const childMenuButton = screen.getByRole("menuitem", { name: "Child hinzufügen" });
+    fireEvent.keyDown(childMenuButton, { key: "Enter" });
+    const userStoryOption = await screen.findByRole("menuitem", { name: "User Story" });
 
     await waitFor(() => {
+      expect(document.activeElement).toBe(userStoryOption);
+    });
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(onFetchWorkItemTypes).toHaveBeenCalled();
       expect(onCreateChildWorkItem).toHaveBeenCalledWith({
         parentWorkItemId: 11,
+        childWorkItemType: "User Story",
         scheduleFieldRefs: {
           start: "Custom.StartDate2",
           endOrTarget: "Custom.TargetDate2"
@@ -132,6 +147,10 @@ describe("timeline-pane work item context menu", () => {
   it("shows child-create actions for mapped unscheduled work item types", async () => {
     const user = userEvent.setup();
     const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Bug" },
+      { name: "Task" }
+    ]);
     const timeline = makeTimeline();
     timeline.unschedulable[0] = {
       ...timeline.unschedulable[0]!,
@@ -148,22 +167,97 @@ describe("timeline-pane work item context menu", () => {
         organization: "contoso",
         project: "delivery",
         canCreateChildWorkItem: true,
-        onCreateChildWorkItem
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
       })
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: /#22 Target Item/ }), { clientX: 120, clientY: 140 });
-    await user.click(screen.getByRole("menuitem", { name: "Task hinzufügen" }));
+    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Task" }));
 
     await waitFor(() => {
       expect(onCreateChildWorkItem).toHaveBeenCalledWith({
-        parentWorkItemId: 22
+        parentWorkItemId: 22,
+        childWorkItemType: "Task"
       });
     });
   });
 
-  it("does not show child-create actions for unsupported or unknown work item types", () => {
+  it("falls back to the first alphabetic child type when the preferred type is unavailable", async () => {
+    const user = userEvent.setup();
     const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Task" },
+      { name: "Bug" }
+    ]);
+    const timeline = makeTimeline();
+    timeline.bars[0] = {
+      ...timeline.bars[0]!,
+      details: {
+        ...timeline.bars[0]!.details,
+        workItemType: "Feature"
+      }
+    };
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    const bugOption = await screen.findByRole("menuitem", { name: "Bug" });
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(bugOption);
+    });
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(onCreateChildWorkItem).toHaveBeenCalledWith({
+        parentWorkItemId: 11,
+        childWorkItemType: "Bug"
+      });
+    });
+  });
+
+  it("shows an empty state when no child work item types are available", async () => {
+    const user = userEvent.setup();
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => []);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+
+    expect(await screen.findByText("Keine Work Item Types verfügbar.")).toBeTruthy();
+    expect(onCreateChildWorkItem).not.toHaveBeenCalled();
+  });
+
+  it("shows child-create actions for parent types without hierarchy preferences when fetcher exists", () => {
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Task" }
+    ]);
     const taskTimeline = makeTimeline();
     taskTimeline.bars[0] = {
       ...taskTimeline.bars[0]!,
@@ -180,12 +274,13 @@ describe("timeline-pane work item context menu", () => {
         organization: "contoso",
         project: "delivery",
         canCreateChildWorkItem: true,
-        onCreateChildWorkItem
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
       })
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    expect(screen.queryByRole("menuitem", { name: /hinzufügen/ })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Child hinzufügen" })).toBeTruthy();
 
     fireEvent.keyDown(document, { key: "Escape" });
     const unknownTimeline = makeTimeline();
@@ -203,12 +298,13 @@ describe("timeline-pane work item context menu", () => {
         organization: "contoso",
         project: "delivery",
         canCreateChildWorkItem: true,
-        onCreateChildWorkItem
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes
       })
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    expect(screen.queryByRole("menuitem", { name: /hinzufügen/ })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Child hinzufügen" })).toBeTruthy();
   });
 
   it("does not show child-create actions when writeback capability is disabled", () => {
@@ -235,7 +331,7 @@ describe("timeline-pane work item context menu", () => {
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
 
-    expect(screen.queryByRole("menuitem", { name: "User Story hinzufügen" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Child hinzufügen" })).toBeNull();
   });
 
   it("loads state options and applies a state-only update", async () => {

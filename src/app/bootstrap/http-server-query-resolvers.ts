@@ -1,10 +1,15 @@
 import type { AdoContextStore } from "../config/ado-context.store.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { normalizeAvailableWorkItemTypes } from "../../domain/work-items/child-work-item-type.js";
 import { elapsedSince, writePerformanceLog } from "../../shared/telemetry/performance-log.js";
 
 type WorkItemStateOption = {
   name: string;
   color: string | null;
+};
+
+export type WorkItemTypeOption = {
+  name: string;
 };
 
 export async function fetchQueryDetails(input: {
@@ -92,6 +97,26 @@ export async function fetchAllowedStateCodesForWorkItem(input: {
   });
 
   return states;
+}
+
+export async function fetchAvailableWorkItemTypes(input: {
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+}): Promise<WorkItemTypeOption[]> {
+  const context = await input.contextStore.getActiveContext();
+  if (!context) {
+    throw new Error("ADO_CONTEXT_MISSING");
+  }
+
+  const url =
+    `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
+    "/_apis/wit/workitemtypes?api-version=7.1";
+  const response = await input.httpClient.get(url);
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`WORK_ITEM_TYPES_FETCH_FAILED:${response.status}`);
+  }
+
+  return extractAvailableWorkItemTypes(response.json);
 }
 
 async function getCachedWorkItemType(input: {
@@ -233,4 +258,30 @@ function extractStateCodes(payload: unknown): WorkItemStateOption[] {
       return trimmed.length > 0 ? { name: trimmed, color: typeof color === "string" ? color : null } : null;
     })
     .filter((entry): entry is WorkItemStateOption => entry !== null);
+}
+
+function extractAvailableWorkItemTypes(payload: unknown): WorkItemTypeOption[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const value = (payload as { value?: unknown }).value;
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const names = value.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") {
+      return [];
+    }
+
+    const record = entry as Record<string, unknown>;
+    if (record.isDisabled === true || record.disabled === true) {
+      return [];
+    }
+
+    return typeof record.name === "string" ? [record.name] : [];
+  });
+
+  return normalizeAvailableWorkItemTypes(names).map((name) => ({ name }));
 }
