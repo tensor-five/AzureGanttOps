@@ -54,7 +54,11 @@ type ViewportConstrainedMenuStyle = ViewportConstrainedMenuPlacement & {
 
 export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuProps): React.ReactElement | null {
   const firstActionRef = React.useRef<HTMLButtonElement | null>(null);
+  const rootMenuItemRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const childMenuButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const childTypeOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const statusMenuButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const statusOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const [statusMenuOpen, setStatusMenuOpen] = React.useState(false);
   const [statusLoadState, setStatusLoadState] = React.useState<StatusLoadState>({
     status: "idle",
@@ -79,6 +83,10 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     parentWorkItemType: menuState?.item.workItemType,
     onFetchWorkItemTypes: props.onFetchWorkItemTypes
   });
+  const stateOptions =
+    props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded"
+      ? normalizeWorkItemStateOptions(statusLoadState.options)
+      : [];
 
   React.useEffect(() => {
     setStatusMenuOpen(false);
@@ -217,14 +225,28 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     }
   }, [childTypeMenu.activeIndex, childTypeMenu.isOpen, childTypeMenu.loadState.status]);
 
+  React.useEffect(() => {
+    if (!statusMenuOpen || statusLoadState.status !== "loaded" || stateOptions.length === 0) {
+      return;
+    }
+
+    const currentIndex = stateOptions.findIndex(
+      (option) => option.name.trim().toLowerCase() === currentState.trim().toLowerCase()
+    );
+    const focusStatusOption = () => {
+      statusOptionRefs.current[currentIndex >= 0 ? currentIndex : 0]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusStatusOption);
+    } else {
+      window.setTimeout(focusStatusOption, 0);
+    }
+  }, [currentState, stateOptions.length, statusLoadState.status, statusMenuOpen]);
+
   if (!menuState) {
     return null;
   }
 
-  const stateOptions =
-    props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded"
-      ? normalizeWorkItemStateOptions(statusLoadState.options)
-      : [];
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
   const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
@@ -329,11 +351,147 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     }
   };
 
+  const setRootMenuItemRef = (index: number, element: HTMLButtonElement | null) => {
+    rootMenuItemRefs.current[index] = element;
+  };
+
+  const focusRootMenuItem = (index: number) => {
+    const item = rootMenuItemRefs.current[index];
+    if (item && !item.disabled) {
+      item.focus();
+    }
+  };
+
+  const focusRootMenuItemByDelta = (currentIndex: number, delta: number) => {
+    const focusableIndexes = rootMenuItemRefs.current
+      .map((element, index) => ({ element, index }))
+      .filter((entry): entry is { element: HTMLButtonElement; index: number } => Boolean(entry.element && !entry.element.disabled))
+      .map((entry) => entry.index);
+
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusRootMenuItem(focusableIndexes[nextPosition] ?? focusableIndexes[0]!);
+  };
+
+  const focusFirstRootMenuItem = () => {
+    const firstFocusableIndex = rootMenuItemRefs.current.findIndex((element) => element && !element.disabled);
+    if (firstFocusableIndex >= 0) {
+      focusRootMenuItem(firstFocusableIndex);
+    }
+  };
+
+  const focusLastRootMenuItem = () => {
+    for (let index = rootMenuItemRefs.current.length - 1; index >= 0; index -= 1) {
+      const item = rootMenuItemRefs.current[index];
+      if (item && !item.disabled) {
+        item.focus();
+        return;
+      }
+    }
+  };
+
+  const handleRootMenuItemKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number,
+    input?: {
+      onArrowRight?: () => void;
+      onArrowLeft?: () => void;
+    }
+  ) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusRootMenuItemByDelta(index, 1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusRootMenuItemByDelta(index, -1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusFirstRootMenuItem();
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      focusLastRootMenuItem();
+      return;
+    }
+
+    if (event.key === "ArrowRight" && input?.onArrowRight) {
+      event.preventDefault();
+      input.onArrowRight();
+      return;
+    }
+
+    if (event.key === "ArrowLeft" && input?.onArrowLeft) {
+      event.preventDefault();
+      input.onArrowLeft();
+    }
+  };
+
+  const closeChildTypeMenuAndFocusButton = () => {
+    childTypeMenu.closeMenu();
+    childMenuButtonRef.current?.focus();
+  };
+
+  const closeStatusMenuAndFocusButton = () => {
+    setStatusMenuOpen(false);
+    statusMenuButtonRef.current?.focus();
+  };
+
+  const focusStatusOption = (index: number) => {
+    const option = statusOptionRefs.current[index];
+    if (option && !option.disabled) {
+      option.focus();
+    }
+  };
+
+  const focusStatusOptionByDelta = (currentIndex: number, delta: number) => {
+    const focusableIndexes = statusOptionRefs.current
+      .map((element, index) => ({ element, index }))
+      .filter((entry): entry is { element: HTMLButtonElement; index: number } => Boolean(entry.element && !entry.element.disabled))
+      .map((entry) => entry.index);
+
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusStatusOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]!);
+  };
+
   const handleChildMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       childTypeMenu.openMenu();
+      return;
     }
+
+    handleRootMenuItemKeyDown(event, 1, {
+      onArrowRight: childTypeMenu.openMenu,
+      onArrowLeft: closeChildTypeMenuAndFocusButton
+    });
+  };
+
+  const handleStatusMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    handleRootMenuItemKeyDown(event, 2, {
+      onArrowRight: () => {
+        setStatusMenuOpen(true);
+      },
+      onArrowLeft: closeStatusMenuAndFocusButton
+    });
   };
 
   const handleChildTypeOptionKeyDown = (
@@ -373,13 +531,54 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
 
     if (event.key === "Escape") {
       event.preventDefault();
-      childTypeMenu.closeMenu();
+      closeChildTypeMenuAndFocusButton();
       return;
     }
 
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      childTypeMenu.closeMenu();
+      closeChildTypeMenuAndFocusButton();
+    }
+  };
+
+  const handleStatusOptionKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number,
+    option: WorkItemStateOption
+  ) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusStatusOptionByDelta(index, 1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusStatusOptionByDelta(index, -1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusStatusOption(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      focusStatusOption(stateOptions.length - 1);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performStateUpdate(option);
+      return;
+    }
+
+    if (event.key === "Escape" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeStatusMenuAndFocusButton();
     }
   };
   const renderedMenuStyle =
@@ -418,11 +617,17 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       React.createElement(
         "button",
         {
-          ref: firstActionRef,
+          ref: (element: HTMLButtonElement | null) => {
+            firstActionRef.current = element;
+            setRootMenuItemRef(0, element);
+          },
           type: "button",
           role: "menuitem",
           className: "timeline-work-item-context-menu-action",
           disabled: duplicateDisabled,
+          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+            handleRootMenuItemKeyDown(event, 0);
+          },
           onClick: () => {
             void performDuplicate();
           }
@@ -436,6 +641,10 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
             React.createElement(
               "button",
               {
+                ref: (element: HTMLButtonElement | null) => {
+                  childMenuButtonRef.current = element;
+                  setRootMenuItemRef(1, element);
+                },
                 type: "button",
                 role: "menuitem",
                 className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
@@ -519,6 +728,10 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         React.createElement(
           "button",
           {
+            ref: (element: HTMLButtonElement | null) => {
+              statusMenuButtonRef.current = element;
+              setRootMenuItemRef(2, element);
+            },
             type: "button",
             role: "menuitem",
             className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
@@ -527,7 +740,8 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
             disabled: statusControlsDisabled,
             onClick: () => {
               setStatusMenuOpen((current) => !current);
-            }
+            },
+            onKeyDown: handleStatusMenuButtonKeyDown
           },
           "Status ändern"
         ),
@@ -556,11 +770,14 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                     "Keine Statusoptionen verfügbar."
                   )
                 : null,
-              ...stateOptions.map((option) =>
+              ...stateOptions.map((option, index) =>
                 React.createElement(
                   "button",
                   {
                     key: option.name,
+                    ref: (element: HTMLButtonElement | null) => {
+                      statusOptionRefs.current[index] = element;
+                    },
                     type: "button",
                     role: "menuitem",
                     className:
@@ -568,6 +785,9 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                         ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current"
                         : "timeline-work-item-context-menu-action",
                     disabled: busyAction !== null || !props.onUpdateWorkItemState,
+                    onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                      handleStatusOptionKeyDown(event, index, option);
+                    },
                     onClick: () => {
                       void performStateUpdate(option);
                     }
@@ -586,10 +806,16 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       React.createElement(
         "button",
         {
+          ref: (element: HTMLButtonElement | null) => {
+            setRootMenuItemRef(3, element);
+          },
           type: "button",
           role: "menuitem",
           className: "timeline-work-item-context-menu-action",
           disabled: linkControlsDisabled,
+          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+            handleRootMenuItemKeyDown(event, 3);
+          },
           onClick: openInAzureDevOps
         },
         "In Azure DevOps öffnen"
@@ -597,10 +823,16 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       React.createElement(
         "button",
         {
+          ref: (element: HTMLButtonElement | null) => {
+            setRootMenuItemRef(4, element);
+          },
           type: "button",
           role: "menuitem",
           className: "timeline-work-item-context-menu-action",
           disabled: linkControlsDisabled,
+          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+            handleRootMenuItemKeyDown(event, 4);
+          },
           onClick: () => {
             void copyLink();
           }

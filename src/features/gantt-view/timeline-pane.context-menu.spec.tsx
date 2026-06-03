@@ -214,6 +214,85 @@ describe("timeline-pane work item context menu", () => {
     });
   });
 
+  it("navigates context menu items and submenus with arrow keys", async () => {
+    const onDuplicateWorkItem = vi.fn(async () => undefined);
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const onFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Task" },
+      { name: "Bug" }
+    ]);
+    const onUpdateWorkItemState = vi.fn(async () => undefined);
+    const onFetchWorkItemStateOptions = vi.fn(async () => [
+      { name: "Active", color: "007acc" },
+      { name: "Closed", color: "339933" }
+    ]);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onDuplicateWorkItem,
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes,
+        onUpdateWorkItemState,
+        onFetchWorkItemStateOptions
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    const duplicateButton = screen.getByRole("menuitem", { name: "Duplizieren" });
+    const childMenuButton = screen.getByRole("menuitem", { name: "Child hinzufügen" });
+    const statusMenuButton = screen.getByRole("menuitem", { name: "Status ändern" });
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(duplicateButton);
+    });
+
+    fireEvent.keyDown(duplicateButton, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(childMenuButton);
+
+    fireEvent.keyDown(childMenuButton, { key: "ArrowRight" });
+    const bugOption = await screen.findByRole("menuitem", { name: "Bug" });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(bugOption);
+    });
+
+    fireEvent.keyDown(bugOption, { key: "ArrowDown" });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Task" }));
+    });
+
+    fireEvent.keyDown(document.activeElement as Element, { key: "ArrowLeft" });
+    await waitFor(() => {
+      expect(screen.queryByRole("menu", { name: "Child Work Item Type auswählen" })).toBeNull();
+      expect(document.activeElement).toBe(childMenuButton);
+    });
+
+    fireEvent.keyDown(childMenuButton, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(statusMenuButton);
+
+    fireEvent.keyDown(statusMenuButton, { key: "ArrowRight" });
+    const activeStatusOption = await screen.findByRole("menuitem", { name: /Active/ });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(activeStatusOption);
+    });
+
+    fireEvent.keyDown(activeStatusOption, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: /Closed/ }));
+
+    fireEvent.keyDown(document.activeElement as Element, { key: "ArrowLeft" });
+    await waitFor(() => {
+      expect(screen.queryByRole("menu", { name: "Status ändern" })).toBeNull();
+      expect(document.activeElement).toBe(statusMenuButton);
+    });
+    expect(onDuplicateWorkItem).not.toHaveBeenCalled();
+    expect(onCreateChildWorkItem).not.toHaveBeenCalled();
+    expect(onUpdateWorkItemState).not.toHaveBeenCalled();
+  });
+
   it("shows child-create actions for mapped unscheduled work item types", async () => {
     const user = userEvent.setup();
     const onCreateChildWorkItem = vi.fn(async () => undefined);
