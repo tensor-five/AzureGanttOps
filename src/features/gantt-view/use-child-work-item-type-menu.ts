@@ -35,6 +35,11 @@ export function useChildWorkItemTypeMenu(input: {
     error: null
   });
   const [activeWorkItemType, setActiveWorkItemType] = React.useState<string | null>(null);
+  const fetchWorkItemTypesRef = React.useRef(input.onFetchWorkItemTypes);
+
+  React.useEffect(() => {
+    fetchWorkItemTypesRef.current = input.onFetchWorkItemTypes;
+  }, [input.onFetchWorkItemTypes]);
 
   React.useEffect(() => {
     setIsOpen(false);
@@ -51,7 +56,8 @@ export function useChildWorkItemTypeMenu(input: {
       return;
     }
 
-    if (!input.onFetchWorkItemTypes) {
+    const fetchWorkItemTypes = fetchWorkItemTypesRef.current;
+    if (!fetchWorkItemTypes) {
       setLoadState({
         status: "loaded",
         options: [],
@@ -68,8 +74,7 @@ export function useChildWorkItemTypeMenu(input: {
       error: null
     }));
 
-    void input
-      .onFetchWorkItemTypes()
+    void fetchWorkItemTypes()
       .then((options) => {
         if (cancelled) {
           return;
@@ -99,7 +104,7 @@ export function useChildWorkItemTypeMenu(input: {
     return () => {
       cancelled = true;
     };
-  }, [input.onFetchWorkItemTypes, input.parentWorkItemType, isOpen]);
+  }, [input.parentWorkItemType, isOpen]);
 
   const options = loadState.status === "loaded" ? loadState.options : [];
   const activeIndex = options.findIndex((option) => option.name === activeWorkItemType);

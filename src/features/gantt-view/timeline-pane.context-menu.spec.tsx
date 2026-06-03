@@ -229,6 +229,61 @@ describe("timeline-pane work item context menu", () => {
     });
   });
 
+  it("does not refetch child types while the open menu rerenders with a new fetch callback", async () => {
+    const user = userEvent.setup();
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const firstFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Task" },
+      { name: "User Story" }
+    ]);
+    const secondFetchWorkItemTypes = vi.fn(async () => [
+      { name: "Epic" }
+    ]);
+    const timeline = makeTimeline();
+    timeline.bars[0] = {
+      ...timeline.bars[0]!,
+      details: {
+        ...timeline.bars[0]!.details,
+        workItemType: "Feature"
+      }
+    };
+
+    const { rerender } = render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes: firstFetchWorkItemTypes
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    expect(await screen.findByRole("menuitem", { name: "User Story" })).toBeTruthy();
+
+    rerender(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem,
+        onFetchWorkItemTypes: secondFetchWorkItemTypes
+      })
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 20));
+
+    expect(firstFetchWorkItemTypes).toHaveBeenCalledTimes(1);
+    expect(secondFetchWorkItemTypes).not.toHaveBeenCalled();
+    expect(screen.queryByText("Work Item Types werden geladen...")).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "User Story" })).toBeTruthy();
+    expect(screen.queryByRole("menuitem", { name: "Epic" })).toBeNull();
+  });
+
   it("shows an empty state when no child work item types are available", async () => {
     const user = userEvent.setup();
     const onCreateChildWorkItem = vi.fn(async () => undefined);
