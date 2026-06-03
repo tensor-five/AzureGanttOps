@@ -342,7 +342,9 @@ describe("WriteCommandAzureAdapter", () => {
           "System.Title": "Parent feature",
           "System.WorkItemType": "Feature",
           "System.AreaPath": "delivery\\Platform",
-          "System.IterationPath": "delivery\\Sprint 2"
+          "System.IterationPath": "delivery\\Sprint 2",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
         }
       }
     }));
@@ -380,7 +382,7 @@ describe("WriteCommandAzureAdapter", () => {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_CHILD_CREATE",
-      operationCount: 4,
+      operationCount: 6,
       reasonCode: "WRITE_ENABLED",
       createdWorkItemId: 5678,
       createdWorkItem: {
@@ -414,6 +416,8 @@ describe("WriteCommandAzureAdapter", () => {
         { op: "add", path: "/fields/System.Title", value: "Draft story" },
         { op: "add", path: "/fields/System.AreaPath", value: "delivery\\Platform" },
         { op: "add", path: "/fields/System.IterationPath", value: "delivery\\Sprint 2" },
+        { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
+        { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" },
         {
           op: "add",
           path: "/relations/-",

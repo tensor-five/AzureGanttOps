@@ -249,7 +249,8 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_CHILD_PARENT_FETCH_FAILED", parentResponse.json));
     }
 
-    const parent = extractChildCreateParent(parentResponse.json);
+    const scheduleFieldRefs = resolveDuplicateScheduleFieldRefs(command.scheduleFieldRefs);
+    const parent = extractChildCreateParent(parentResponse.json, scheduleFieldRefs);
     if (!parent) {
       throw new Error("WORK_ITEM_CHILD_PARENT_MALFORMED");
     }
@@ -260,6 +261,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       childWorkItemType,
       title: command.title,
       systemFields: parent.systemFields,
+      dateFields: parent.dateFields,
       parentRelationUrl: buildWorkItemReferenceUrl({
         organization: context.organization,
         project: context.project,
@@ -283,7 +285,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
     const createdWorkItem = extractCreatedChildWorkItemSnapshot(
       createResponse.json,
       command.parentWorkItemId,
-      resolveDuplicateScheduleFieldRefs(command.scheduleFieldRefs)
+      scheduleFieldRefs
     );
 
     return {
@@ -436,12 +438,14 @@ type DuplicateScheduleFieldRefs = {
 
 type ChildCreateParent = {
   systemFields: DuplicateFieldValue[];
+  dateFields: DuplicateFieldValue[];
 };
 
 type ChildCreateOperationsInput = {
   childWorkItemType: string;
   title?: string;
   systemFields: DuplicateFieldValue[];
+  dateFields: DuplicateFieldValue[];
   parentRelationUrl: string;
 };
 
@@ -511,7 +515,7 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
   return operations;
 }
 
-function extractChildCreateParent(payload: unknown): ChildCreateParent | null {
+function extractChildCreateParent(payload: unknown, scheduleFieldRefs: readonly string[]): ChildCreateParent | null {
   if (!payload || typeof payload !== "object") {
     return null;
   }
@@ -523,7 +527,8 @@ function extractChildCreateParent(payload: unknown): ChildCreateParent | null {
 
   const fieldRecord = fields as Record<string, unknown>;
   return {
-    systemFields: extractStringFields(fieldRecord, CHILD_CREATE_SYSTEM_FIELD_REFS)
+    systemFields: extractStringFields(fieldRecord, CHILD_CREATE_SYSTEM_FIELD_REFS),
+    dateFields: extractStringFields(fieldRecord, scheduleFieldRefs)
   };
 }
 
@@ -538,6 +543,10 @@ function buildChildCreateOperations(input: ChildCreateOperationsInput): unknown[
 
   for (const systemField of input.systemFields) {
     operations.push({ op: "add", path: `/fields/${systemField.fieldRef}`, value: systemField.value });
+  }
+
+  for (const dateField of input.dateFields) {
+    operations.push({ op: "add", path: `/fields/${dateField.fieldRef}`, value: dateField.value });
   }
 
   operations.push({
