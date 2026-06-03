@@ -25,6 +25,22 @@ function createDeferred<T>(): {
   return { promise, resolve, reject };
 }
 
+function makeClientRect(input: { left?: number; top?: number; width: number; height: number }): DOMRect {
+  const left = input.left ?? 0;
+  const top = input.top ?? 0;
+  return {
+    x: left,
+    y: top,
+    left,
+    top,
+    width: input.width,
+    height: input.height,
+    right: left + input.width,
+    bottom: top + input.height,
+    toJSON: () => ({})
+  } as DOMRect;
+}
+
 describe("timeline-pane work item context menu", () => {
   it("opens from sidebar rows with only the allowed actions", () => {
     render(
@@ -49,6 +65,60 @@ describe("timeline-pane work item context menu", () => {
     expect(screen.queryByText(/Abhängigkeit hinzufügen/i)).toBeNull();
     expect(screen.queryByText(/Tags bearbeiten/i)).toBeNull();
     expect(screen.queryByText(/Löschen/i)).toBeNull();
+  });
+
+  it("keeps the expanded context menu within the viewport", async () => {
+    const user = userEvent.setup();
+    const originalInnerWidth = window.innerWidth;
+    const originalInnerHeight = window.innerHeight;
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+    const getBoundingClientRect = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains("timeline-work-item-context-menu")) {
+          return makeClientRect({
+            width: 260,
+            height: this.querySelector('[aria-label="Child Work Item Type auswählen"]') ? 500 : 240
+          });
+        }
+
+        return originalGetBoundingClientRect.call(this);
+      });
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 800 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 600 });
+
+    try {
+      render(
+        React.createElement(TimelinePane, {
+          timeline: makeTimeline(),
+          showDependencies: true,
+          organization: "contoso",
+          project: "delivery",
+          canCreateChildWorkItem: true,
+          onCreateChildWorkItem: vi.fn(async () => undefined),
+          onFetchWorkItemTypes: vi.fn(async () => [
+            { name: "Epic" },
+            { name: "Issue" },
+            { name: "Task" }
+          ])
+        })
+      );
+
+      fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 790, clientY: 590 });
+      await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+      expect(await screen.findByRole("menuitem", { name: "Task" })).toBeTruthy();
+
+      const contextMenu = screen.getByRole("menu", { name: /Work item #11 context menu/ }) as HTMLElement;
+      await waitFor(() => {
+        expect(contextMenu.style.left).toBe("532px");
+        expect(contextMenu.style.top).toBe("92px");
+        expect(contextMenu.style.maxHeight).toBe("584px");
+      });
+    } finally {
+      getBoundingClientRect.mockRestore();
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: originalInnerWidth });
+      Object.defineProperty(window, "innerHeight", { configurable: true, value: originalInnerHeight });
+    }
   });
 
   it("opens from Gantt bars and duplicates the selected work item", async () => {

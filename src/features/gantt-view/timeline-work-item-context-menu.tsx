@@ -7,6 +7,11 @@ import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item
 import { useChildWorkItemTypeMenu } from "./use-child-work-item-type-menu.js";
 import { normalizeWorkItemStateOptions, type WorkItemStateOption } from "./work-item-state-options.js";
 import type { WorkItemContextMenuState } from "./use-work-item-context-menu.js";
+import {
+  getViewportAvailableMenuHeightPx,
+  resolveViewportConstrainedMenuPlacement,
+  type ViewportConstrainedMenuPlacement
+} from "./viewport-constrained-menu.js";
 
 export type TimelineWorkItemContextMenuProps = {
   menuState: WorkItemContextMenuState | null;
@@ -43,6 +48,10 @@ type StatusLoadState =
   | { status: "loaded"; options: WorkItemStateOption[]; error: null }
   | { status: "error"; options: WorkItemStateOption[]; error: string };
 
+type ViewportConstrainedMenuStyle = ViewportConstrainedMenuPlacement & {
+  key: string;
+};
+
 export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuProps): React.ReactElement | null {
   const firstActionRef = React.useRef<HTMLButtonElement | null>(null);
   const childTypeOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
@@ -54,9 +63,13 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
   });
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [busyAction, setBusyAction] = React.useState<"duplicate" | "child" | "state" | "copy" | null>(null);
+  const [constrainedMenuStyle, setConstrainedMenuStyle] = React.useState<ViewportConstrainedMenuStyle | null>(null);
 
   const menuState = props.menuState;
   const workItemId = menuState?.item.workItemId ?? null;
+  const menuPositionKey = menuState
+    ? `${menuState.item.workItemId}:${menuState.position.x}:${menuState.position.y}`
+    : null;
   const currentState = menuState?.item.state ?? "";
   const azureUrl = menuState
     ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId)
@@ -77,6 +90,53 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     setActionError(null);
     setBusyAction(null);
   }, [workItemId]);
+
+  React.useLayoutEffect(() => {
+    if (!menuState || !menuPositionKey) {
+      setConstrainedMenuStyle(null);
+      return;
+    }
+
+    const menuElement = props.menuRef.current;
+    if (!menuElement || typeof window === "undefined") {
+      return;
+    }
+
+    const bounds = menuElement.getBoundingClientRect();
+    const nextPlacement = resolveViewportConstrainedMenuPlacement({
+      requestedLeftPx: menuState.position.x,
+      requestedTopPx: menuState.position.y,
+      menuWidthPx: bounds.width,
+      menuHeightPx: bounds.height,
+      viewportWidthPx: window.innerWidth,
+      viewportHeightPx: window.innerHeight
+    });
+    const nextStyle = {
+      key: menuPositionKey,
+      ...nextPlacement
+    };
+
+    setConstrainedMenuStyle((current) =>
+      current?.key === nextStyle.key &&
+      current.leftPx === nextStyle.leftPx &&
+      current.topPx === nextStyle.topPx &&
+      current.maxHeightPx === nextStyle.maxHeightPx
+        ? current
+        : nextStyle
+    );
+  }, [
+    actionError,
+    busyAction,
+    childTypeMenu.isOpen,
+    childTypeMenu.loadState.status,
+    childTypeMenu.options.length,
+    menuPositionKey,
+    menuState,
+    props.menuRef,
+    statusLoadState.options.length,
+    statusLoadState.status,
+    statusMenuOpen
+  ]);
 
   React.useEffect(() => {
     if (!menuState) {
@@ -322,6 +382,14 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       childTypeMenu.closeMenu();
     }
   };
+  const renderedMenuStyle =
+    menuState && constrainedMenuStyle?.key === menuPositionKey
+      ? constrainedMenuStyle
+      : {
+          leftPx: menuState.position.x,
+          topPx: menuState.position.y,
+          maxHeightPx: getViewportMaxMenuHeightPx()
+        };
 
   return createPortal(
     React.createElement(
@@ -333,8 +401,9 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         "aria-label": `Work item #${menuState.item.workItemId} context menu`,
         style: {
           position: "fixed",
-          left: `${menuState.position.x}px`,
-          top: `${menuState.position.y}px`
+          left: `${renderedMenuStyle.leftPx}px`,
+          top: `${renderedMenuStyle.topPx}px`,
+          maxHeight: `${renderedMenuStyle.maxHeightPx}px`
         },
         onContextMenu: (event: React.MouseEvent) => {
           event.preventDefault();
@@ -584,4 +653,12 @@ async function copyTextToClipboard(text: string): Promise<void> {
 function normalizeStateColor(color: string): string {
   const trimmed = color.trim();
   return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+}
+
+function getViewportMaxMenuHeightPx(): number {
+  if (typeof window === "undefined") {
+    return 320;
+  }
+
+  return getViewportAvailableMenuHeightPx(window.innerHeight);
 }
