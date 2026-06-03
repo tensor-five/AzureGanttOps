@@ -14,6 +14,7 @@ import {
 import {
   LEGACY_TIMELINE_FILTERS_QUERY_PARAM,
   serializeTimelineFiltersForUrl,
+  TIMELINE_FILTER_GROUPS_QUERY_PARAM,
   TIMELINE_DATE_FILTERS_QUERY_PARAM,
   TIMELINE_VALUE_FILTERS_QUERY_PARAM
 } from "./timeline-filter-url.js";
@@ -224,6 +225,60 @@ describe("timeline-pane filters", () => {
     expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
     expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
     expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("applies two filter groups with OR semantics and syncs tfg to the URL", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeFieldFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    await user.click(screen.getByLabelText("Select filter field 1"));
+    await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 1"));
+    await user.click(screen.getByLabelText("Include Alpha in filter 1"));
+
+    await user.click(screen.getByLabelText("Add timeline filter"));
+    await user.click(screen.getByLabelText("Select filter field 2"));
+    await user.type(screen.getByLabelText("Search filter fields 2"), "stream");
+    await user.click(screen.getByRole("button", { name: /Stream/ }));
+    await user.click(screen.getByLabelText("Select filter values 2"));
+    await user.click(screen.getByLabelText("Include Platform in filter 2"));
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-12")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+
+    await user.click(screen.getByLabelText("Add OR filter group"));
+    await user.click(screen.getByLabelText("Select filter field 3"));
+    await user.type(screen.getByLabelText("Search filter fields 3"), "team");
+    await user.click(screen.getByRole("button", { name: /Team/ }));
+    await user.click(screen.getByLabelText("Select filter values 3"));
+    await user.click(screen.getByLabelText("Include Beta in filter 3"));
+
+    expect(screen.getByText("AND").getAttribute("aria-hidden")).toBeNull();
+    expect(screen.getByText("OR").getAttribute("aria-hidden")).toBeNull();
+
+    expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-13")).toBeNull();
+    expect(screen.getByRole("button", { name: /#22 Unsched Beta/ })).toBeTruthy();
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      expect(params.getAll(TIMELINE_VALUE_FILTERS_QUERY_PARAM)).toHaveLength(0);
+      expect(params.getAll(TIMELINE_DATE_FILTERS_QUERY_PARAM)).toHaveLength(0);
+      const groupParam = params.get(TIMELINE_FILTER_GROUPS_QUERY_PARAM);
+      expect(groupParam).not.toBeNull();
+      expect(JSON.parse(groupParam ?? "{}").groups).toHaveLength(2);
+    });
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
   it("hydrates timeline filters from URL query params", async () => {

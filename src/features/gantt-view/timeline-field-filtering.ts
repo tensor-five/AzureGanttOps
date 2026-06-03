@@ -2,7 +2,8 @@ import type { TimelineReadModel } from "../../application/dto/timeline-read-mode
 import {
   isTimelineDateRangeFilter,
   type TimelineDateRange,
-  type TimelineFieldFilter
+  type TimelineFieldFilter,
+  type TimelineFilterGroup
 } from "./timeline-filter-model.js";
 
 export const EMPTY_FIELD_FILTER_KEY = "__null__";
@@ -341,34 +342,30 @@ export function applyTimelineFieldFilters(
   timeline: TimelineReadModel | null,
   filters: TimelineFieldFilter[]
 ): TimelineReadModel | null {
+  return applyTimelineFieldFilterGroups(timeline, [{ groupId: 0, filters }]);
+}
+
+export function applyTimelineFieldFilterGroups(
+  timeline: TimelineReadModel | null,
+  groups: TimelineFilterGroup[]
+): TimelineReadModel | null {
   if (!timeline) {
     return null;
   }
 
-  const activeFilters = filters.filter((filter) => isActiveTimelineFieldFilter(filter));
-  if (activeFilters.length === 0) {
+  const activeGroups = groups
+    .map((group) => group.filters.filter((filter) => isActiveTimelineFieldFilter(filter)))
+    .filter((filters) => filters.length > 0);
+  if (activeGroups.length === 0) {
     return timeline;
   }
 
-  const matchesAll = (fieldValues: Record<string, string | number | null> | undefined): boolean => {
-    return activeFilters.every((filter) => {
-      const normalizedFieldRef = normalizeFieldRef(filter.fieldRef);
-      if (!normalizedFieldRef) {
-        return true;
-      }
-
-      if (isTimelineDateRangeFilter(filter)) {
-        return matchesTimelineDateRangeValue(fieldValues?.[normalizedFieldRef], filter.dateRange);
-      }
-
-      const selectedValueKeys = new Set(filter.selectedValueKeys);
-      const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
-      return matchKeys.some((key) => selectedValueKeys.has(key));
-    });
+  const matchesAnyGroup = (fieldValues: Record<string, string | number | null> | undefined): boolean => {
+    return activeGroups.some((filters) => filters.every((filter) => matchesTimelineFieldFilter(filter, fieldValues)));
   };
 
-  const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
-  const unschedulable = timeline.unschedulable.filter((item) => matchesAll(item.details.fieldValues));
+  const bars = timeline.bars.filter((bar) => matchesAnyGroup(bar.details.fieldValues));
+  const unschedulable = timeline.unschedulable.filter((item) => matchesAnyGroup(item.details.fieldValues));
   const visibleWorkItemIds = new Set<number>([
     ...bars.map((bar) => bar.workItemId),
     ...unschedulable.map((item) => item.workItemId)
@@ -391,6 +388,24 @@ export function applyTimelineFieldFilters(
     dependencies,
     suppressedDependencies
   };
+}
+
+function matchesTimelineFieldFilter(
+  filter: TimelineFieldFilter,
+  fieldValues: Record<string, string | number | null> | undefined
+): boolean {
+  const normalizedFieldRef = normalizeFieldRef(filter.fieldRef);
+  if (!normalizedFieldRef) {
+    return true;
+  }
+
+  if (isTimelineDateRangeFilter(filter)) {
+    return matchesTimelineDateRangeValue(fieldValues?.[normalizedFieldRef], filter.dateRange);
+  }
+
+  const selectedValueKeys = new Set(filter.selectedValueKeys);
+  const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
+  return matchKeys.some((key) => selectedValueKeys.has(key));
 }
 
 export function formatTimelineDateRangeFilterLabel(dateRange: TimelineDateRange): string {
