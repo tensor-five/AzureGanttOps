@@ -265,6 +265,8 @@ describe("timeline-pane filters", () => {
 
     expect(screen.getByText("AND").getAttribute("aria-hidden")).toBeNull();
     expect(screen.getByText("OR").getAttribute("aria-hidden")).toBeNull();
+    expect(screen.getByLabelText("Timeline filter group 1").className).toContain("timeline-filter-group-or-branch");
+    expect(screen.getByLabelText("Timeline filter group 2").className).toContain("timeline-filter-group-or-branch");
 
     expect(screen.getByLabelText("timeline-bar-11")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();

@@ -162,6 +162,8 @@ function renderTimelineFilterGroupSections(
   let nextFilterIndex = 0;
 
   props.timelineFilterGroups.forEach((group, groupIndex) => {
+    const isOrGrouped = props.timelineFilterGroups.length > 1;
+
     if (groupIndex > 0) {
       nodes.push(
         React.createElement(
@@ -181,7 +183,7 @@ function renderTimelineFilterGroupSections(
         group,
         groupIndex,
         firstFilterIndex: nextFilterIndex,
-        showRemoveGroup: props.timelineFilterGroups.length > 1,
+        isOrGrouped,
         totalFilterSlots,
         maxFilterSlots: props.maxFilterSlots,
         filterDropdownTriggerRefs,
@@ -233,7 +235,7 @@ type TimelineFilterGroupSectionProps = Pick<
   group: TimelineFilterGroup;
   groupIndex: number;
   firstFilterIndex: number;
-  showRemoveGroup: boolean;
+  isOrGrouped: boolean;
   totalFilterSlots: number;
   filterDropdownTriggerRefs: FilterDropdownTriggerRefs;
   filterDropdownStyle: React.CSSProperties | null;
@@ -300,7 +302,7 @@ function TimelineFilterGroupSection(props: TimelineFilterGroupSectionProps): Rea
     )
   );
 
-  if (props.showRemoveGroup) {
+  if (props.isOrGrouped) {
     conditionNodes.push(
       React.createElement(
         "button",
@@ -321,7 +323,9 @@ function TimelineFilterGroupSection(props: TimelineFilterGroupSectionProps): Rea
   return React.createElement(
     "div",
     {
-      className: "timeline-filter-group",
+      className: props.isOrGrouped
+        ? "timeline-filter-group timeline-filter-group-or-branch"
+        : "timeline-filter-group",
       role: "group",
       "aria-label": `Timeline filter group ${props.groupIndex + 1}`
     },
@@ -421,7 +425,7 @@ function renderTimelineFilterFieldControl(
 ): React.ReactElement {
   return React.createElement(
     "div",
-    { className: "timeline-filter-dropdown-anchor" },
+    { className: "timeline-filter-dropdown-anchor timeline-filter-field-anchor" },
     renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen),
     isFieldDropdownOpen ? renderTimelineFilterFieldDropdown(props) : null
   );
@@ -535,7 +539,7 @@ function renderTimelineFilterValueControl(
 ): React.ReactElement {
   return React.createElement(
     "div",
-    { className: "timeline-filter-dropdown-anchor" },
+    { className: "timeline-filter-dropdown-anchor timeline-filter-value-anchor" },
     renderTimelineFilterValueTrigger(props, state),
     state.isValueDropdownOpen ? renderTimelineFilterValueDropdown(props, state) : null
   );
