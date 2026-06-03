@@ -85,6 +85,7 @@ describe("createHttpServer", () => {
       expect(response.headers.get("x-frame-options")).toBe("DENY");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
       expect(text).toContain('<div id="app"></div>');
+      expect(text).toMatch(/<meta name="ado-write-enabled" content="[01]" \/>/);
       expect(text).toContain('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />');
       expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.css');
@@ -584,6 +585,12 @@ describe("createHttpServer", () => {
           body: {
             sourceWorkItemId: 11
           }
+        },
+        {
+          path: "/phase2/work-item-child-create",
+          body: {
+            parentWorkItemId: 11
+          }
         }
       ];
 
@@ -803,6 +810,247 @@ describe("createHttpServer", () => {
           ]
         }
       ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("creates child work items via /phase2/work-item-child-create without accepting a client child type", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const getCalls: string[] = [];
+    const postCalls: Array<{ url: string; body: unknown }> = [];
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async (url) => {
+          getCalls.push(url);
+          return {
+            status: 200,
+            json: {
+              fields: {
+                "System.WorkItemType": "Feature",
+                "System.AreaPath": "delivery\\Platform",
+                "System.IterationPath": "delivery\\Sprint 2"
+              }
+            },
+            headers: {}
+          };
+        },
+        patch: async () => ({ status: 200, json: {}, headers: {} }),
+        post: async (url, body) => {
+          postCalls.push({ url, body });
+          return {
+            status: 200,
+            json: {
+              id: 99,
+              fields: {
+                "System.Title": "Child story",
+                "System.WorkItemType": "User Story",
+                "Custom.StartDate2": "2026-04-01",
+                "Custom.TargetDate2": "2026-04-08"
+              }
+            },
+            headers: {}
+          };
+        }
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const invalidResponse = await fetch(`${server.baseUrl}/phase2/work-item-child-create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          parentWorkItemId: 42,
+          childType: "Task"
+        })
+      });
+      expect(invalidResponse.status).toBe(400);
+
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-child-create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          parentWorkItemId: 42,
+          title: " Child story ",
+          scheduleFieldRefs: {
+            start: "Custom.StartDate2",
+            endOrTarget: "Custom.TargetDate2"
+          }
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toMatchObject({
+        commandKind: "WORK_ITEM_CHILD_CREATE",
+        createdWorkItemId: 99,
+        createdWorkItem: {
+          id: 99,
+          title: "Child story",
+          workItemType: "User Story",
+          parentWorkItemId: 42,
+          schedule: {
+            startDate: "2026-04-01",
+            endDate: "2026-04-08"
+          }
+        }
+      });
+      expect(getCalls).toEqual([
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1"
+      ]);
+      expect(postCalls).toEqual([
+        {
+          url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
+          body: [
+            { op: "add", path: "/fields/System.Title", value: "Child story" },
+            { op: "add", path: "/fields/System.AreaPath", value: "delivery\\Platform" },
+            { op: "add", path: "/fields/System.IterationPath", value: "delivery\\Sprint 2" },
+            {
+              op: "add",
+              path: "/relations/-",
+              value: {
+                rel: "System.LinkTypes.Hierarchy-Reverse",
+                url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/42"
+              }
+            }
+          ]
+        }
+      ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("returns 422 for unsupported child-create parent types and does not POST", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const post = vi.fn(async () => ({ status: 200, json: { id: 99 }, headers: {} }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({
+          status: 200,
+          json: {
+            fields: {
+              "System.WorkItemType": "Task"
+            }
+          },
+          headers: {}
+        }),
+        patch: async () => ({ status: 200, json: {}, headers: {} }),
+        post
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-child-create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          parentWorkItemId: 42
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(422);
+      expect(body).toEqual({
+        code: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED",
+        message: "Child work item creation is not supported for this parent work item type.",
+        result: {
+          accepted: false,
+          mode: "NO_OP",
+          commandKind: "WORK_ITEM_CHILD_CREATE",
+          operationCount: 0,
+          reasonCode: "WORK_ITEM_CHILD_TYPE_UNSUPPORTED"
+        }
+      });
+      expect(post).not.toHaveBeenCalled();
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("returns controlled unsupported response when child-create POST transport is unavailable", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch: async () => ({ status: 200, json: {}, headers: {} })
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-child-create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          parentWorkItemId: 42
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(501);
+      expect(body).toEqual({
+        code: "WRITE_UNSUPPORTED",
+        message: "Writeback operation is not supported by the configured Azure DevOps transport.",
+        result: {
+          accepted: false,
+          mode: "NO_OP",
+          commandKind: "WORK_ITEM_CHILD_CREATE",
+          operationCount: 1,
+          reasonCode: "WRITE_UNSUPPORTED"
+        }
+      });
+      expect(get).not.toHaveBeenCalled();
     } finally {
       if (previousWriteEnabled === undefined) {
         delete process.env.ADO_WRITE_ENABLED;

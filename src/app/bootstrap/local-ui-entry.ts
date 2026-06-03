@@ -5,6 +5,7 @@ import type { QueryIntakeResponse } from "../../features/query-switching/query-i
 
 const container = document.getElementById("app");
 const csrfToken = readCsrfToken();
+const writeEnabled = readWriteEnabled();
 
 if (!(container instanceof HTMLElement)) {
   throw new Error("Missing required #app container.");
@@ -31,7 +32,15 @@ function readCsrfToken(): string | null {
   return token.length > 0 ? token : null;
 }
 
+function readWriteEnabled(): boolean {
+  const meta = document.querySelector('meta[name="ado-write-enabled"]');
+  return meta instanceof HTMLMetaElement && meta.content.trim() === "1";
+}
+
 const composition = createDefaultUiShellComposition({
+  capabilities: {
+    writeEnabled
+  },
   controller: {
     submit: async (request) => {
       const response = await fetch("/phase2/query-intake", {
@@ -255,6 +264,32 @@ const composition = createDefaultUiShellComposition({
           typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
             ? payload.message
             : `Work item duplicate failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as WriteCommandTransportResult;
+    },
+    createChildWorkItem: async ({ parentWorkItemId, title, scheduleFieldRefs }) => {
+      const response = await fetch("/phase2/work-item-child-create", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          parentWorkItemId,
+          ...(title ? { title } : {}),
+          ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+        })
+      });
+
+      const payload = (await response.json()) as WriteCommandTransportResult | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Child work item create failed (${response.status})`;
         throw new Error(message);
       }
 

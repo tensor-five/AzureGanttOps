@@ -108,6 +108,38 @@ describe("SubmitWriteCommandUseCase", () => {
     expect(port.submit).not.toHaveBeenCalled();
   });
 
+  it("does not call the port for disabled child-create commands", async () => {
+    const port: WriteCommandPort = {
+      submit: vi.fn(async () => ({
+        accepted: true,
+        mode: "EXECUTED" as const,
+        commandKind: "WORK_ITEM_CHILD_CREATE" as const,
+        operationCount: 2,
+        reasonCode: "WRITE_ENABLED" as const,
+        createdWorkItemId: 77
+      }))
+    };
+
+    const useCase = new SubmitWriteCommandUseCase(port);
+
+    const result = await useCase.execute({
+      command: {
+        kind: "WORK_ITEM_CHILD_CREATE",
+        parentWorkItemId: 42
+      },
+      writeEnabled: false
+    });
+
+    expect(result).toEqual({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    });
+    expect(port.submit).not.toHaveBeenCalled();
+  });
+
   it("delegates to port when write is enabled", async () => {
     const port: WriteCommandPort = {
       submit: vi.fn(async () => ({

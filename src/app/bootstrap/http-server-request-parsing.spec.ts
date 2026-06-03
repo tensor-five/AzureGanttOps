@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  parseChildWorkItemCreatePayload,
   parseDuplicateWorkItemPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload
@@ -72,5 +73,54 @@ describe("parseDuplicateWorkItemPayload", () => {
         scheduleFieldRefs: { start: "", endOrTarget: "Custom.TargetDate2" }
       })
     ).toBeNull();
+  });
+});
+
+describe("parseChildWorkItemCreatePayload", () => {
+  it("accepts a parent work item id and trimmed optional title", () => {
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 42 })).toEqual({
+      parentWorkItemId: 42
+    });
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 42, title: " New child " })).toEqual({
+      parentWorkItemId: 42,
+      title: "New child"
+    });
+  });
+
+  it("omits empty optional titles so the backend default title can apply", () => {
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 42, title: " " })).toEqual({
+      parentWorkItemId: 42
+    });
+  });
+
+  it("accepts active schedule field refs for child-create commands", () => {
+    expect(
+      parseChildWorkItemCreatePayload({
+        parentWorkItemId: 42,
+        scheduleFieldRefs: {
+          start: " Custom.StartDate2 ",
+          endOrTarget: " Custom.TargetDate2 "
+        }
+      })
+    ).toEqual({
+      parentWorkItemId: 42,
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    });
+  });
+
+  it("rejects invalid ids, invalid titles, and client-provided child types", () => {
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 0 })).toBeNull();
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: "42" })).toBeNull();
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 42, title: 123 })).toBeNull();
+    expect(
+      parseChildWorkItemCreatePayload({
+        parentWorkItemId: 42,
+        scheduleFieldRefs: { start: "", endOrTarget: "Custom.TargetDate2" }
+      })
+    ).toBeNull();
+    expect(parseChildWorkItemCreatePayload({ parentWorkItemId: 42, childType: "Task" })).toBeNull();
   });
 });

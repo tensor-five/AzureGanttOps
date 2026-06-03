@@ -2,6 +2,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import { resolveChildWorkItemType } from "../../domain/work-items/child-work-item-type.js";
 import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
 import { normalizeWorkItemStateOptions, type WorkItemStateOption } from "./work-item-state-options.js";
 import type { WorkItemContextMenuState } from "./use-work-item-context-menu.js";
@@ -15,6 +16,15 @@ export type TimelineWorkItemContextMenuProps = {
   onClose: () => void;
   onDuplicateWorkItem?: (input: {
     sourceWorkItemId: number;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<void>;
+  canCreateChildWorkItem?: boolean;
+  onCreateChildWorkItem?: (input: {
+    parentWorkItemId: number;
+    title?: string;
     scheduleFieldRefs?: {
       start: string;
       endOrTarget: string;
@@ -39,11 +49,12 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     error: null
   });
   const [actionError, setActionError] = React.useState<string | null>(null);
-  const [busyAction, setBusyAction] = React.useState<"duplicate" | "state" | "copy" | null>(null);
+  const [busyAction, setBusyAction] = React.useState<"duplicate" | "child" | "state" | "copy" | null>(null);
 
   const menuState = props.menuState;
   const workItemId = menuState?.item.workItemId ?? null;
   const currentState = menuState?.item.state ?? "";
+  const childWorkItemType = resolveChildWorkItemType(menuState?.item.workItemType);
   const azureUrl = menuState
     ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId)
     : null;
@@ -133,6 +144,8 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       : [];
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
+  const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && childWorkItemType);
+  const childCreateDisabled = busyAction !== null || !props.onCreateChildWorkItem;
   const linkControlsDisabled = busyAction !== null || !azureUrl;
 
   const performDuplicate = async () => {
@@ -151,6 +164,27 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       props.onClose();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const performCreateChild = async () => {
+    if (!props.onCreateChildWorkItem || !childWorkItemType || busyAction !== null) {
+      return;
+    }
+
+    setActionError(null);
+    setBusyAction("child");
+    try {
+      const scheduleFieldRefs = menuState.item.scheduleFieldRefs ?? props.timeline?.scheduleFieldRefs;
+      await props.onCreateChildWorkItem({
+        parentWorkItemId: menuState.item.workItemId,
+        ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : `${childWorkItemType} konnte nicht erstellt werden.`);
     } finally {
       setBusyAction(null);
     }
@@ -248,6 +282,21 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         },
         "Duplizieren"
       ),
+      canCreateChild
+        ? React.createElement(
+            "button",
+            {
+              type: "button",
+              role: "menuitem",
+              className: "timeline-work-item-context-menu-action",
+              disabled: childCreateDisabled,
+              onClick: () => {
+                void performCreateChild();
+              }
+            },
+            `${childWorkItemType} hinzufügen`
+          )
+        : null,
       React.createElement(
         "div",
         { className: "timeline-work-item-context-menu-status" },

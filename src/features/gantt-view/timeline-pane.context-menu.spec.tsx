@@ -86,6 +86,158 @@ describe("timeline-pane work item context menu", () => {
     });
   });
 
+  it("shows child-create actions for mapped bar work item types and invokes the callback", async () => {
+    const user = userEvent.setup();
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const timeline = {
+      ...makeTimeline(),
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    };
+    timeline.bars[0] = {
+      ...timeline.bars[0]!,
+      details: {
+        ...timeline.bars[0]!.details,
+        workItemType: "Feature"
+      }
+    };
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    await user.click(screen.getByRole("menuitem", { name: "User Story hinzufügen" }));
+
+    await waitFor(() => {
+      expect(onCreateChildWorkItem).toHaveBeenCalledWith({
+        parentWorkItemId: 11,
+        scheduleFieldRefs: {
+          start: "Custom.StartDate2",
+          endOrTarget: "Custom.TargetDate2"
+        }
+      });
+    });
+  });
+
+  it("shows child-create actions for mapped unscheduled work item types", async () => {
+    const user = userEvent.setup();
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    timeline.unschedulable[0] = {
+      ...timeline.unschedulable[0]!,
+      details: {
+        ...timeline.unschedulable[0]!.details,
+        workItemType: "User Story"
+      }
+    };
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: /#22 Target Item/ }), { clientX: 120, clientY: 140 });
+    await user.click(screen.getByRole("menuitem", { name: "Task hinzufügen" }));
+
+    await waitFor(() => {
+      expect(onCreateChildWorkItem).toHaveBeenCalledWith({
+        parentWorkItemId: 22
+      });
+    });
+  });
+
+  it("does not show child-create actions for unsupported or unknown work item types", () => {
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const taskTimeline = makeTimeline();
+    taskTimeline.bars[0] = {
+      ...taskTimeline.bars[0]!,
+      details: {
+        ...taskTimeline.bars[0]!.details,
+        workItemType: "Task"
+      }
+    };
+
+    const { rerender } = render(
+      React.createElement(TimelinePane, {
+        timeline: taskTimeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    expect(screen.queryByRole("menuitem", { name: /hinzufügen/ })).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    const unknownTimeline = makeTimeline();
+    unknownTimeline.bars[0] = {
+      ...unknownTimeline.bars[0]!,
+      details: {
+        ...unknownTimeline.bars[0]!.details,
+        workItemType: "Bug"
+      }
+    };
+    rerender(
+      React.createElement(TimelinePane, {
+        timeline: unknownTimeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: true,
+        onCreateChildWorkItem
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+    expect(screen.queryByRole("menuitem", { name: /hinzufügen/ })).toBeNull();
+  });
+
+  it("does not show child-create actions when writeback capability is disabled", () => {
+    const onCreateChildWorkItem = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    timeline.bars[0] = {
+      ...timeline.bars[0]!,
+      details: {
+        ...timeline.bars[0]!.details,
+        workItemType: "Feature"
+      }
+    };
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        canCreateChildWorkItem: false,
+        onCreateChildWorkItem
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
+
+    expect(screen.queryByRole("menuitem", { name: "User Story hinzufügen" })).toBeNull();
+  });
+
   it("loads state options and applies a state-only update", async () => {
     const user = userEvent.setup();
     const onUpdateWorkItemState = vi.fn(async () => undefined);

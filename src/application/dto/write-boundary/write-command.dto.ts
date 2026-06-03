@@ -39,9 +39,28 @@ export type WorkItemDuplicateCommand = {
   };
 };
 
-export type WriteCommand = WorkItemPatchCommand | DependencyLinkCommand | HierarchyLinkCommand | WorkItemDuplicateCommand;
+export type WorkItemChildCreateCommand = {
+  kind: "WORK_ITEM_CHILD_CREATE";
+  parentWorkItemId: number;
+  title?: string;
+  scheduleFieldRefs?: {
+    start: string;
+    endOrTarget: string;
+  };
+};
 
-export type WriteCommandReasonCode = "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
+export type WriteCommand =
+  | WorkItemPatchCommand
+  | DependencyLinkCommand
+  | HierarchyLinkCommand
+  | WorkItemDuplicateCommand
+  | WorkItemChildCreateCommand;
+
+export type WriteCommandReasonCode =
+  | "WRITE_DISABLED"
+  | "WRITE_ENABLED"
+  | "WRITE_UNSUPPORTED"
+  | "WORK_ITEM_CHILD_TYPE_UNSUPPORTED";
 
 export type CreatedWorkItemSnapshot = {
   id: number;

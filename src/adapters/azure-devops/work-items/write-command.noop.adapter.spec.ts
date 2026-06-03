@@ -58,6 +58,23 @@ describe("WriteCommandNoopAdapter", () => {
     });
   });
 
+  it("returns deterministic NO_OP result for child-create command", async () => {
+    const adapter = new WriteCommandNoopAdapter();
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42
+    });
+
+    expect(result).toEqual({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    });
+  });
+
   it("does not perform mutation side effects across repeated calls", async () => {
     const adapter = new WriteCommandNoopAdapter();
 
