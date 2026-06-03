@@ -21,6 +21,7 @@ import type { SubmitWriteCommandUseCase } from "../../application/use-cases/subm
 import {
   parseAdoptSchedulePayload,
   parseAzCliPathPayload,
+  parseChildWorkItemCreatePayload,
   parseDependencyLinkPayload,
   parseReparentPayload,
   parseMappingProfileUpsert,
@@ -33,8 +34,10 @@ import {
   parseUserPreferencesPatch
 } from "./http-server-request-parsing.js";
 import {
+  fetchAvailableWorkItemTypes,
   fetchAllowedStateCodesForWorkItem,
-  fetchQueryDetails
+  fetchQueryDetails,
+  type WorkItemTypeOption
 } from "./http-server-query-resolvers.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
@@ -63,6 +66,7 @@ const ROOT_HTML = `<!doctype html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="ado-csrf-token" content="__ADO_CSRF_TOKEN__" />
+    <meta name="ado-write-enabled" content="__ADO_WRITE_ENABLED__" />
     <title>Azure DevOps Query-Driven Gantt</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -142,6 +146,8 @@ const REPARENT_ROUTE_PATH = "/phase2/work-item-reparent";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const UPDATE_STATE_ROUTE_PATH = "/phase2/work-item-state-update";
 const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
+const CHILD_WORK_ITEM_CREATE_ROUTE_PATH = "/phase2/work-item-child-create";
+const WORK_ITEM_TYPES_ROUTE_PATH = "/phase2/work-item-types";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
@@ -390,6 +396,14 @@ function isDuplicateWorkItemRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === DUPLICATE_WORK_ITEM_ROUTE_PATH;
 }
 
+function isChildWorkItemCreateRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === CHILD_WORK_ITEM_CREATE_ROUTE_PATH;
+}
+
+function isWorkItemTypesRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === WORK_ITEM_TYPES_ROUTE_PATH;
+}
+
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_STATE_OPTIONS_ROUTE_PATH;
 }
@@ -424,7 +438,8 @@ function isCsrfProtectedRoute(method: string, pathname: string): boolean {
     isReparentRoute(method, pathname) ||
     isUpdateDetailsRoute(method, pathname) ||
     isUpdateStateRoute(method, pathname) ||
-    isDuplicateWorkItemRoute(method, pathname)
+    isDuplicateWorkItemRoute(method, pathname) ||
+    isChildWorkItemCreateRoute(method, pathname)
   );
 }
 
@@ -553,6 +568,7 @@ export function createHttpServer(params: {
   const userPreferences = new LowdbUserPreferencesAdapter(userPreferencesFilePath, userId);
   const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
   const workItemTypeCacheById = new Map<string, Promise<string | null>>();
+  const workItemTypesCacheByProject = new Map<string, Promise<WorkItemTypeOption[]>>();
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
@@ -572,6 +588,7 @@ export function createHttpServer(params: {
       instrumentedHttpClient,
       stateOptionsCacheByType,
       workItemTypeCacheById,
+      workItemTypesCacheByProject,
       userPreferences,
       azLoginRunner,
       azCliPathResolver,
@@ -617,6 +634,7 @@ async function route(
   httpClient: HttpClient,
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>,
   workItemTypeCacheById: Map<string, Promise<string | null>>,
+  workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>,
   userPreferences: LowdbUserPreferencesAdapter,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver,
@@ -639,13 +657,22 @@ async function route(
       httpClient,
       stateOptionsCacheByType,
       workItemTypeCacheById,
+      workItemTypesCacheByProject,
       verboseLogs
     })
   ) {
     return;
   }
 
-  if (await handleTimelineWritesRoute(req, res, method, url.pathname, { submitWriteCommand, writeEnabled })) {
+  if (
+    await handleTimelineWritesRoute(req, res, method, url.pathname, {
+      submitWriteCommand,
+      writeEnabled,
+      contextStore,
+      httpClient,
+      workItemTypesCacheByProject
+    })
+  ) {
     return;
   }
 
@@ -663,7 +690,8 @@ async function route(
     await handleDiagnosticsAndAssetsRoute(req, res, method, url, {
       adoCommLogStore,
       distRootPath,
-      csrfToken
+      csrfToken,
+      writeEnabled
     })
   ) {
     return;
@@ -678,6 +706,7 @@ type QueryDomainDeps = {
   httpClient: HttpClient;
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
   workItemTypeCacheById: Map<string, Promise<string | null>>;
+  workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
   verboseLogs: boolean;
 };
 
@@ -725,6 +754,32 @@ async function handleQueryDomainRoute(
       });
     }
     return true;
+  }
+
+  if (isWorkItemTypesRoute(method, url.pathname)) {
+    try {
+      const workItemTypes = await getCachedAvailableWorkItemTypes({
+        contextStore: deps.contextStore,
+        httpClient: deps.httpClient,
+        cache: deps.workItemTypesCacheByProject
+      });
+      writeJson(res, 200, { workItemTypes });
+      return true;
+    } catch (error) {
+      if (error instanceof Error && error.message === "ADO_CONTEXT_MISSING") {
+        writeJson(res, 400, {
+          code: "CONTEXT_REQUIRED",
+          message: "Set Azure DevOps organization and project first."
+        });
+        return true;
+      }
+
+      writeJson(res, 500, {
+        code: "WORK_ITEM_TYPES_FAILED",
+        message: error instanceof Error ? error.message : "Unable to fetch work item types."
+      });
+      return true;
+    }
   }
 
   if (isWorkItemStateOptionsRoute(method, url.pathname)) {
@@ -803,12 +858,64 @@ async function handleQueryDomainRoute(
   return false;
 }
 
+async function getCachedAvailableWorkItemTypes(input: {
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+  cache: Map<string, Promise<WorkItemTypeOption[]>>;
+}): Promise<WorkItemTypeOption[]> {
+  const context = await input.contextStore.getActiveContext();
+  if (!context) {
+    throw new Error("ADO_CONTEXT_MISSING");
+  }
+
+  const cacheKey = `${context.organization}/${context.project}`;
+  const existing = input.cache.get(cacheKey);
+  if (existing) {
+    return existing;
+  }
+
+  const promise = fetchAvailableWorkItemTypes({
+    contextStore: input.contextStore,
+    httpClient: input.httpClient
+  }).catch((error) => {
+    input.cache.delete(cacheKey);
+    throw error;
+  });
+  input.cache.set(cacheKey, promise);
+  return promise;
+}
+
+function resolveCanonicalWorkItemType(requestedType: string, availableTypes: readonly WorkItemTypeOption[]): string | null {
+  const requestedKey = normalizeWorkItemTypeKey(requestedType);
+  if (!requestedKey) {
+    return null;
+  }
+
+  return availableTypes.find((availableType) => normalizeWorkItemTypeKey(availableType.name) === requestedKey)?.name ?? null;
+}
+
+function normalizeWorkItemTypeKey(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 type TimelineWritesDeps = {
   submitWriteCommand: SubmitWriteCommandUseCase;
   writeEnabled: boolean;
+  contextStore: AdoContextStore;
+  httpClient: HttpClient;
+  workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
 };
 
 function writeRejectedWriteResult(res: ServerResponse, writeResult: WriteCommandResult): void {
+  if (writeResult.reasonCode === "WORK_ITEM_CHILD_TYPE_UNAVAILABLE") {
+    writeJson(res, 422, {
+      code: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE",
+      message: "Selected child work item type is not available in this Azure DevOps project.",
+      result: writeResult
+    });
+    return;
+  }
+
   if (writeResult.reasonCode === "WRITE_UNSUPPORTED") {
     writeJson(res, 501, {
       code: "WRITE_UNSUPPORTED",
@@ -1078,6 +1185,92 @@ async function handleTimelineWritesRoute(
     }
   }
 
+  if (isChildWorkItemCreateRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const childCreate = parseChildWorkItemCreatePayload(payload);
+
+    if (!childCreate) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide parentWorkItemId and childWorkItemType."
+      });
+      return true;
+    }
+
+    try {
+      const workItemTypes = await getCachedAvailableWorkItemTypes({
+        contextStore: deps.contextStore,
+        httpClient: deps.httpClient,
+        cache: deps.workItemTypesCacheByProject
+      });
+      const canonicalChildWorkItemType = resolveCanonicalWorkItemType(childCreate.childWorkItemType, workItemTypes);
+      if (!canonicalChildWorkItemType) {
+        writeJson(res, 422, {
+          code: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE",
+          message: "Selected child work item type is not available in this Azure DevOps project.",
+          result: {
+            accepted: false,
+            mode: "NO_OP",
+            commandKind: "WORK_ITEM_CHILD_CREATE",
+            operationCount: 0,
+            reasonCode: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE"
+          }
+        });
+        return true;
+      }
+
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "WORK_ITEM_CHILD_CREATE",
+          parentWorkItemId: childCreate.parentWorkItemId,
+          childWorkItemType: canonicalChildWorkItemType,
+          ...(childCreate.title ? { title: childCreate.title } : {}),
+          ...(childCreate.scheduleFieldRefs ? { scheduleFieldRefs: childCreate.scheduleFieldRefs } : {})
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeRejectedWriteResult(res, writeResult);
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      if (error instanceof Error && error.message === "ADO_CONTEXT_MISSING") {
+        writeJson(res, 400, {
+          code: "CONTEXT_REQUIRED",
+          message: "Set Azure DevOps organization and project first."
+        });
+        return true;
+      }
+
+      if (error instanceof Error && error.message.startsWith("WORK_ITEM_TYPES_FETCH_FAILED")) {
+        writeJson(res, 500, {
+          code: "WORK_ITEM_TYPES_FAILED",
+          message: error.message
+        });
+        return true;
+      }
+
+      if (error instanceof Error && error.message.startsWith("WORK_ITEM_CHILD_CREATE_FAILED")) {
+        writeJson(res, 422, {
+          code: "WORK_ITEM_CHILD_CREATE_FAILED",
+          message: error.message
+        });
+        return true;
+      }
+
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to create child work item."
+      });
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -1198,6 +1391,7 @@ type DiagnosticsRouteDeps = {
   adoCommLogStore: AdoCommLogStore;
   distRootPath: string;
   csrfToken: string;
+  writeEnabled: boolean;
 };
 
 async function handleDiagnosticsAndAssetsRoute(
@@ -1218,7 +1412,7 @@ async function handleDiagnosticsAndAssetsRoute(
   }
 
   if (isRootRoute(method, url.pathname)) {
-    writeHtml(res, 200, renderRootHtml(deps.csrfToken));
+    writeHtml(res, 200, renderRootHtml(deps.csrfToken, deps.writeEnabled));
     return true;
   }
 
@@ -1278,8 +1472,10 @@ function createCsrfToken(): string {
   return randomBytes(32).toString("hex");
 }
 
-function renderRootHtml(csrfToken: string): string {
-  return ROOT_HTML.replace("__ADO_CSRF_TOKEN__", csrfToken);
+function renderRootHtml(csrfToken: string, writeEnabled: boolean): string {
+  return ROOT_HTML
+    .replace("__ADO_CSRF_TOKEN__", csrfToken)
+    .replace("__ADO_WRITE_ENABLED__", writeEnabled ? "1" : "0");
 }
 
 function isValidCsrfRequest(req: IncomingMessage, expectedToken: string): boolean {

@@ -25,7 +25,16 @@ export type WorkItemStateOption = {
   color: string | null;
 };
 
-export type WriteCommandKind = "WORK_ITEM_PATCH" | "DEPENDENCY_LINK" | "HIERARCHY_LINK" | "WORK_ITEM_DUPLICATE";
+export type WorkItemTypeOption = {
+  name: string;
+};
+
+export type WriteCommandKind =
+  | "WORK_ITEM_PATCH"
+  | "DEPENDENCY_LINK"
+  | "HIERARCHY_LINK"
+  | "WORK_ITEM_DUPLICATE"
+  | "WORK_ITEM_CHILD_CREATE";
 
 export type WriteCommandTransportResult = {
   accepted: boolean;
@@ -83,12 +92,24 @@ export type QueryIntakeTransport = {
       endOrTarget: string;
     };
   }) => Promise<WriteCommandTransportResult>;
+  createChildWorkItem: (request: {
+    parentWorkItemId: number;
+    childWorkItemType: string;
+    title?: string;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<WriteCommandTransportResult>;
   reparentWorkItem: (request: {
     targetWorkItemId: number;
     newParentId: number | null;
   }) => Promise<WriteCommandTransportResult>;
   fetchWorkItemStateOptions: (request: { targetWorkItemId: number }) => Promise<{
     states: WorkItemStateOption[];
+  }>;
+  fetchWorkItemTypes: () => Promise<{
+    workItemTypes: WorkItemTypeOption[];
   }>;
   fetchQueryDetails: (request: { queryId: string }) => Promise<{
     id: string;
@@ -105,9 +126,14 @@ export type QueryIntakeTransport = {
   }>;
 };
 
+export type UiShellCapabilities = {
+  writeEnabled: boolean;
+};
+
 export type UiShellComposition = {
   queryClient: QueryClient;
   controller: QueryIntakeTransport;
+  capabilities: UiShellCapabilities;
   runQuerySelectionFlow: (params: {
     queryId: string;
     mappingProfileId?: string;
@@ -130,6 +156,7 @@ export type UiShellComposition = {
 export function createUiShellComposition(params: {
   controller: QueryIntakeTransport;
   contextStore?: AdoContextStore;
+  capabilities?: Partial<UiShellCapabilities>;
 }): UiShellComposition {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -142,6 +169,9 @@ export function createUiShellComposition(params: {
   return {
     queryClient,
     controller: params.controller,
+    capabilities: {
+      writeEnabled: params.capabilities?.writeEnabled ?? false
+    },
     runQuerySelectionFlow: async ({ queryId, mappingProfileId, mappingProfileUpsert }) => {
       const response = await params.controller.submit({
         queryInput: queryId,
@@ -209,6 +239,13 @@ export function createLocalUiShellController(params: {
       operationCount: 1,
       reasonCode: "WRITE_DISABLED"
     }),
+    createChildWorkItem: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    }),
     reparentWorkItem: async () => ({
       accepted: false,
       mode: "NO_OP",
@@ -218,6 +255,9 @@ export function createLocalUiShellController(params: {
     }),
     fetchWorkItemStateOptions: async () => ({
       states: []
+    }),
+    fetchWorkItemTypes: async () => ({
+      workItemTypes: []
     }),
     fetchQueryDetails: async ({ queryId }) => ({
       id: queryId,

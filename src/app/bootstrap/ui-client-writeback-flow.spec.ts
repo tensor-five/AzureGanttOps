@@ -43,6 +43,9 @@ describe("ui-client-writeback-flow", () => {
     expect(toWritebackError("WRITE_UNSUPPORTED").message).toBe(
       "Writeback operation is not supported by this Azure DevOps connection."
     );
+    expect(toWritebackError("WORK_ITEM_CHILD_TYPE_UNAVAILABLE").message).toBe(
+      "Selected child work item type is not available in this Azure DevOps project."
+    );
     expect(toWritebackError("ANY_OTHER").message).toBe("Write failed.");
   });
 

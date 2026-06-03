@@ -2,7 +2,9 @@ import React from "react";
 import { createPortal } from "react-dom";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import type { WorkItemTypeOption } from "../../domain/work-items/child-work-item-type.js";
 import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
+import { useChildWorkItemTypeMenu } from "./use-child-work-item-type-menu.js";
 import { normalizeWorkItemStateOptions, type WorkItemStateOption } from "./work-item-state-options.js";
 import type { WorkItemContextMenuState } from "./use-work-item-context-menu.js";
 
@@ -20,6 +22,17 @@ export type TimelineWorkItemContextMenuProps = {
       endOrTarget: string;
     };
   }) => Promise<void>;
+  canCreateChildWorkItem?: boolean;
+  onCreateChildWorkItem?: (input: {
+    parentWorkItemId: number;
+    childWorkItemType: string;
+    title?: string;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<void>;
+  onFetchWorkItemTypes?: () => Promise<WorkItemTypeOption[]>;
   onUpdateWorkItemState?: (input: { targetWorkItemId: number; state: string; stateColor: string | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<WorkItemStateOption[]>;
 };
@@ -32,6 +45,7 @@ type StatusLoadState =
 
 export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuProps): React.ReactElement | null {
   const firstActionRef = React.useRef<HTMLButtonElement | null>(null);
+  const childTypeOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const [statusMenuOpen, setStatusMenuOpen] = React.useState(false);
   const [statusLoadState, setStatusLoadState] = React.useState<StatusLoadState>({
     status: "idle",
@@ -39,7 +53,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     error: null
   });
   const [actionError, setActionError] = React.useState<string | null>(null);
-  const [busyAction, setBusyAction] = React.useState<"duplicate" | "state" | "copy" | null>(null);
+  const [busyAction, setBusyAction] = React.useState<"duplicate" | "child" | "state" | "copy" | null>(null);
 
   const menuState = props.menuState;
   const workItemId = menuState?.item.workItemId ?? null;
@@ -47,6 +61,11 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
   const azureUrl = menuState
     ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId)
     : null;
+  const childTypeMenu = useChildWorkItemTypeMenu({
+    menuKey: workItemId,
+    parentWorkItemType: menuState?.item.workItemType,
+    onFetchWorkItemTypes: props.onFetchWorkItemTypes
+  });
 
   React.useEffect(() => {
     setStatusMenuOpen(false);
@@ -123,6 +142,21 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     };
   }, [menuState, props.onFetchWorkItemStateOptions, statusMenuOpen]);
 
+  React.useEffect(() => {
+    if (!childTypeMenu.isOpen || childTypeMenu.loadState.status !== "loaded" || childTypeMenu.activeIndex < 0) {
+      return;
+    }
+
+    const focusActiveChildType = () => {
+      childTypeOptionRefs.current[childTypeMenu.activeIndex]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusActiveChildType);
+    } else {
+      window.setTimeout(focusActiveChildType, 0);
+    }
+  }, [childTypeMenu.activeIndex, childTypeMenu.isOpen, childTypeMenu.loadState.status]);
+
   if (!menuState) {
     return null;
   }
@@ -133,6 +167,8 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       : [];
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
+  const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
+  const childCreateDisabled = busyAction !== null || !props.onCreateChildWorkItem || !props.onFetchWorkItemTypes;
   const linkControlsDisabled = busyAction !== null || !azureUrl;
 
   const performDuplicate = async () => {
@@ -151,6 +187,28 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       props.onClose();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const performCreateChild = async (childWorkItemType: string) => {
+    if (!props.onCreateChildWorkItem || busyAction !== null) {
+      return;
+    }
+
+    setActionError(null);
+    setBusyAction("child");
+    try {
+      const scheduleFieldRefs = menuState.item.scheduleFieldRefs ?? props.timeline?.scheduleFieldRefs;
+      await props.onCreateChildWorkItem({
+        parentWorkItemId: menuState.item.workItemId,
+        childWorkItemType,
+        ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : `${childWorkItemType} konnte nicht erstellt werden.`);
     } finally {
       setBusyAction(null);
     }
@@ -211,6 +269,60 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     }
   };
 
+  const handleChildMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+      event.preventDefault();
+      childTypeMenu.openMenu();
+    }
+  };
+
+  const handleChildTypeOptionKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number,
+    option: WorkItemTypeOption
+  ) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      childTypeMenu.moveActive(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      childTypeMenu.moveActive(-1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      childTypeMenu.setActiveByIndex(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      childTypeMenu.setActiveByIndex(childTypeMenu.options.length - 1);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performCreateChild(option.name);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      childTypeMenu.closeMenu();
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      childTypeMenu.closeMenu();
+    }
+  };
+
   return createPortal(
     React.createElement(
       "div",
@@ -248,6 +360,90 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         },
         "Duplizieren"
       ),
+      canCreateChild
+        ? React.createElement(
+            "div",
+            { className: "timeline-work-item-context-menu-status" },
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                role: "menuitem",
+                className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
+                "aria-haspopup": "menu",
+                "aria-expanded": childTypeMenu.isOpen ? "true" : "false",
+                disabled: childCreateDisabled,
+                onClick: () => {
+                  childTypeMenu.toggleMenu();
+                },
+                onKeyDown: handleChildMenuButtonKeyDown
+              },
+              "Child hinzufügen"
+            ),
+            childTypeMenu.isOpen
+              ? React.createElement(
+                  "div",
+                  {
+                    className: "timeline-work-item-context-submenu",
+                    role: "menu",
+                    "aria-label": "Child Work Item Type auswählen"
+                  },
+                  childTypeMenu.loadState.status === "loading"
+                    ? React.createElement(
+                        "p",
+                        { className: "timeline-work-item-context-menu-note" },
+                        "Work Item Types werden geladen..."
+                      )
+                    : null,
+                  childTypeMenu.loadState.status === "error"
+                    ? React.createElement(
+                        "p",
+                        { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" },
+                        childTypeMenu.loadState.error
+                      )
+                    : null,
+                  childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0
+                    ? React.createElement(
+                        "p",
+                        { className: "timeline-work-item-context-menu-note" },
+                        "Keine Work Item Types verfügbar."
+                      )
+                    : null,
+                  ...childTypeMenu.options.map((option, index) =>
+                    React.createElement(
+                      "button",
+                      {
+                        key: option.name,
+                        ref: (element: HTMLButtonElement | null) => {
+                          childTypeOptionRefs.current[index] = element;
+                        },
+                        type: "button",
+                        role: "menuitem",
+                        className:
+                          index === childTypeMenu.activeIndex
+                            ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current"
+                            : "timeline-work-item-context-menu-action",
+                        disabled: busyAction !== null || !props.onCreateChildWorkItem,
+                        onMouseEnter: () => {
+                          childTypeMenu.setActiveByIndex(index);
+                        },
+                        onFocus: () => {
+                          childTypeMenu.setActiveByIndex(index);
+                        },
+                        onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                          handleChildTypeOptionKeyDown(event, index, option);
+                        },
+                        onClick: () => {
+                          void performCreateChild(option.name);
+                        }
+                      },
+                      option.name
+                    )
+                  )
+                )
+              : null
+          )
+        : null,
       React.createElement(
         "div",
         { className: "timeline-work-item-context-menu-status" },

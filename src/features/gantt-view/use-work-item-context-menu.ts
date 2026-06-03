@@ -4,6 +4,7 @@ export type WorkItemContextMenuItem = {
   workItemId: number;
   title: string;
   state: string;
+  workItemType?: string | null;
   scheduleFieldRefs?: {
     start: string;
     endOrTarget: string;

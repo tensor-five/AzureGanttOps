@@ -16,6 +16,10 @@ const DUPLICATE_SYSTEM_FIELD_REFS = [
   "System.AreaPath",
   "System.IterationPath"
 ];
+const CHILD_CREATE_SYSTEM_FIELD_REFS = [
+  "System.AreaPath",
+  "System.IterationPath"
+];
 
 type HttpResponse = {
   status: number;
@@ -75,6 +79,10 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
 
     if (command.kind === "WORK_ITEM_DUPLICATE") {
       return this.submitWorkItemDuplicate(command, context);
+    }
+
+    if (command.kind === "WORK_ITEM_CHILD_CREATE") {
+      return this.submitWorkItemChildCreate(command, context);
     }
 
     const sourceWorkItemUrl = buildWorkItemUrl({
@@ -208,6 +216,82 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_DUPLICATE",
+      operationCount: operations.length,
+      reasonCode: "WRITE_ENABLED",
+      ...(createdWorkItemId ? { createdWorkItemId } : {}),
+      ...(createdWorkItem ? { createdWorkItem } : {})
+    };
+  }
+
+  private async submitWorkItemChildCreate(
+    command: Extract<WriteCommand, { kind: "WORK_ITEM_CHILD_CREATE" }>,
+    context: { organization: string; project: string }
+  ): Promise<WriteCommandResult> {
+    if (!this.httpClient.get || !this.httpClient.post) {
+      return {
+        accepted: false,
+        mode: "NO_OP",
+        commandKind: "WORK_ITEM_CHILD_CREATE",
+        operationCount: 1,
+        reasonCode: "WRITE_UNSUPPORTED"
+      };
+    }
+
+    const parentUrl = buildWorkItemUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemId: command.parentWorkItemId
+    });
+    const parentResponse = await this.httpClient.get(parentUrl, {
+      accept: "application/json"
+    });
+    if (parentResponse.status < 200 || parentResponse.status >= 300) {
+      throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_CHILD_PARENT_FETCH_FAILED", parentResponse.json));
+    }
+
+    const scheduleFieldRefs = resolveDuplicateScheduleFieldRefs(command.scheduleFieldRefs);
+    const parent = extractChildCreateParent(parentResponse.json, scheduleFieldRefs);
+    if (!parent) {
+      throw new Error("WORK_ITEM_CHILD_PARENT_MALFORMED");
+    }
+
+    const childWorkItemType = command.childWorkItemType.trim();
+
+    const operations = buildChildCreateOperations({
+      childWorkItemType,
+      title: command.title,
+      systemFields: parent.systemFields,
+      dateFields: parent.dateFields,
+      parentRelationUrl: buildWorkItemReferenceUrl({
+        organization: context.organization,
+        project: context.project,
+        workItemId: command.parentWorkItemId
+      })
+    });
+    const createUrl = buildWorkItemCreateUrl({
+      organization: context.organization,
+      project: context.project,
+      workItemType: childWorkItemType
+    });
+    const createResponse = await this.httpClient.post(createUrl, operations, {
+      "content-type": "application/json-patch+json",
+      accept: "application/json"
+    });
+    if (createResponse.status < 200 || createResponse.status >= 300) {
+      throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_CHILD_CREATE_FAILED", createResponse.json));
+    }
+
+    const createdWorkItemId = extractCreatedWorkItemId(createResponse.json) ?? undefined;
+    const createdWorkItem = extractCreatedChildWorkItemSnapshot(
+      createResponse.json,
+      command.parentWorkItemId,
+      scheduleFieldRefs
+    );
+
+    return {
+      accepted: true,
+      mode: "EXECUTED",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
       operationCount: operations.length,
       reasonCode: "WRITE_ENABLED",
       ...(createdWorkItemId ? { createdWorkItemId } : {}),
@@ -352,6 +436,19 @@ type DuplicateScheduleFieldRefs = {
   endOrTarget: string;
 };
 
+type ChildCreateParent = {
+  systemFields: DuplicateFieldValue[];
+  dateFields: DuplicateFieldValue[];
+};
+
+type ChildCreateOperationsInput = {
+  childWorkItemType: string;
+  title?: string;
+  systemFields: DuplicateFieldValue[];
+  dateFields: DuplicateFieldValue[];
+  parentRelationUrl: string;
+};
+
 function extractDuplicateSource(payload: unknown, scheduleFieldRefs: readonly string[]): DuplicateSource | null {
   if (!payload || typeof payload !== "object") {
     return null;
@@ -416,6 +513,57 @@ function buildDuplicateCreateOperations(source: DuplicateSource): unknown[] {
   }
 
   return operations;
+}
+
+function extractChildCreateParent(payload: unknown, scheduleFieldRefs: readonly string[]): ChildCreateParent | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const fields = (payload as { fields?: unknown }).fields;
+  if (!fields || typeof fields !== "object") {
+    return null;
+  }
+
+  const fieldRecord = fields as Record<string, unknown>;
+  return {
+    systemFields: extractStringFields(fieldRecord, CHILD_CREATE_SYSTEM_FIELD_REFS),
+    dateFields: extractStringFields(fieldRecord, scheduleFieldRefs)
+  };
+}
+
+function buildChildCreateOperations(input: ChildCreateOperationsInput): unknown[] {
+  const operations: unknown[] = [
+    {
+      op: "add",
+      path: "/fields/System.Title",
+      value: resolveChildCreateTitle(input.title, input.childWorkItemType)
+    }
+  ];
+
+  for (const systemField of input.systemFields) {
+    operations.push({ op: "add", path: `/fields/${systemField.fieldRef}`, value: systemField.value });
+  }
+
+  for (const dateField of input.dateFields) {
+    operations.push({ op: "add", path: `/fields/${dateField.fieldRef}`, value: dateField.value });
+  }
+
+  operations.push({
+    op: "add",
+    path: "/relations/-",
+    value: {
+      rel: "System.LinkTypes.Hierarchy-Reverse",
+      url: input.parentRelationUrl
+    }
+  });
+
+  return operations;
+}
+
+function resolveChildCreateTitle(title: string | undefined, childWorkItemType: string): string {
+  const trimmed = title?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : `New ${childWorkItemType}`;
 }
 
 function appendCopySuffix(title: string): string {
@@ -521,6 +669,28 @@ function extractCreatedWorkItemSnapshot(payload: unknown, scheduleFieldRefs: rea
     ...(parentWorkItemId !== undefined ? { parentWorkItemId } : {}),
     ...(schedule ? { schedule } : {})
   };
+}
+
+function extractCreatedChildWorkItemSnapshot(
+  payload: unknown,
+  parentWorkItemId: number,
+  scheduleFieldRefs: readonly string[]
+): CreatedWorkItemSnapshot | null {
+  const snapshot = extractCreatedWorkItemSnapshot(payload, scheduleFieldRefs);
+  if (snapshot) {
+    return {
+      ...snapshot,
+      parentWorkItemId
+    };
+  }
+
+  const id = extractCreatedWorkItemId(payload);
+  return id !== null
+    ? {
+        id,
+        parentWorkItemId
+      }
+    : null;
 }
 
 function extractCreatedWorkItemSchedule(

@@ -13,6 +13,10 @@ export function toWritebackError(reasonCode: string): Error {
     return new Error("Writeback operation is not supported by this Azure DevOps connection.");
   }
 
+  if (reasonCode === "WORK_ITEM_CHILD_TYPE_UNAVAILABLE") {
+    return new Error("Selected child work item type is not available in this Azure DevOps project.");
+  }
+
   return new Error("Write failed.");
 }
 

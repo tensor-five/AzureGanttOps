@@ -334,6 +334,306 @@ describe("WriteCommandAzureAdapter", () => {
     });
   });
 
+  it("creates child work items from the server-side parent type mapping", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.Title": "Parent feature",
+          "System.WorkItemType": "Feature",
+          "System.AreaPath": "delivery\\Platform",
+          "System.IterationPath": "delivery\\Sprint 2",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({
+      status: 200,
+      json: {
+        id: 5678,
+        fields: {
+          "System.Title": "Draft story",
+          "System.State": "New",
+          "System.WorkItemType": "User Story",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        }
+      }
+    }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "User Story",
+      title: " Draft story ",
+      scheduleFieldRefs: {
+        start: "Custom.StartDate2",
+        endOrTarget: "Custom.TargetDate2"
+      }
+    });
+
+    expect(result).toEqual({
+      accepted: true,
+      mode: "EXECUTED",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 6,
+      reasonCode: "WRITE_ENABLED",
+      createdWorkItemId: 5678,
+      createdWorkItem: {
+        id: 5678,
+        title: "Draft story",
+        state: "New",
+        descriptionHtml: null,
+        workItemType: "User Story",
+        assignedTo: null,
+        fieldValues: {
+          "System.Title": "Draft story",
+          "System.State": "New",
+          "System.WorkItemType": "User Story",
+          "Custom.StartDate2": "2026-04-01",
+          "Custom.TargetDate2": "2026-04-08"
+        },
+        parentWorkItemId: 42,
+        schedule: {
+          startDate: "2026-04-01",
+          endDate: "2026-04-08"
+        }
+      }
+    });
+    expect(get).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+      { accept: "application/json" }
+    );
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "Draft story" },
+        { op: "add", path: "/fields/System.AreaPath", value: "delivery\\Platform" },
+        { op: "add", path: "/fields/System.IterationPath", value: "delivery\\Sprint 2" },
+        { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
+        { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" },
+        {
+          op: "add",
+          path: "/relations/-",
+          value: {
+            rel: "System.LinkTypes.Hierarchy-Reverse",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/42"
+          }
+        }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("uses a default child title when the child-create command omits one", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.WorkItemType": "EpicPPM"
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 5678 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "Feature"
+    });
+
+    expect(result).toMatchObject({
+      accepted: true,
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 2,
+      createdWorkItemId: 5678,
+      createdWorkItem: {
+        id: 5678,
+        parentWorkItemId: 42
+      }
+    });
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Feature?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "New Feature" },
+        {
+          op: "add",
+          path: "/relations/-",
+          value: {
+            rel: "System.LinkTypes.Hierarchy-Reverse",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/42"
+          }
+        }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("URL-encodes selected custom child work item types", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {}
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 5678 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "Portfolio Item / Risk"
+    });
+
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$Portfolio%20Item%20%2F%20Risk?api-version=7.1",
+      [
+        { op: "add", path: "/fields/System.Title", value: "New Portfolio Item / Risk" },
+        {
+          op: "add",
+          path: "/relations/-",
+          value: {
+            rel: "System.LinkTypes.Hierarchy-Reverse",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/42"
+          }
+        }
+      ],
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("creates the selected child type even when the parent type has no hierarchy preference", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        fields: {
+          "System.WorkItemType": "Task"
+        }
+      }
+    }));
+    const post = vi.fn(async () => ({ status: 200, json: { id: 5678 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "User Story"
+    });
+
+    expect(result).toMatchObject({
+      accepted: true,
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      createdWorkItemId: 5678
+    });
+    expect(post).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
+      expect.any(Array),
+      {
+        "content-type": "application/json-patch+json",
+        accept: "application/json"
+      }
+    );
+  });
+
+  it("reports child-create as unsupported when GET or POST transport is unavailable", async () => {
+    const get = vi.fn(async () => ({ status: 200, json: {}, headers: {} }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "WORK_ITEM_CHILD_CREATE",
+      parentWorkItemId: 42,
+      childWorkItemType: "Task"
+    });
+
+    expect(result).toEqual({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_CHILD_CREATE",
+      operationCount: 1,
+      reasonCode: "WRITE_UNSUPPORTED"
+    });
+    expect(get).not.toHaveBeenCalled();
+  });
+
+  it("includes Azure child-create parent fetch and creation error details", async () => {
+    const get = vi.fn(async (): Promise<{ status: number; json: unknown }> => ({
+      status: 400,
+      json: {
+        message: "TF401232: Work item does not exist."
+      }
+    }));
+    const post = vi.fn(async (): Promise<{ status: number; json: unknown }> => ({ status: 200, json: { id: 5678 } }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, post, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await expect(
+      adapter.submit({
+        kind: "WORK_ITEM_CHILD_CREATE",
+        parentWorkItemId: 42,
+        childWorkItemType: "Task"
+      })
+    ).rejects.toThrow("WORK_ITEM_CHILD_PARENT_FETCH_FAILED: TF401232: Work item does not exist.");
+    expect(post).not.toHaveBeenCalled();
+
+    get.mockResolvedValueOnce({
+      status: 200,
+      json: {
+        fields: {
+          "System.WorkItemType": "Feature"
+        }
+      }
+    });
+    post.mockResolvedValueOnce({
+      status: 400,
+      json: {
+        message: "TF401320: Rule Error for field Custom.Required."
+      }
+    });
+
+    await expect(
+      adapter.submit({
+        kind: "WORK_ITEM_CHILD_CREATE",
+        parentWorkItemId: 42,
+        childWorkItemType: "User Story"
+      })
+    ).rejects.toThrow("WORK_ITEM_CHILD_CREATE_FAILED: TF401320: Rule Error for field Custom.Required.");
+  });
+
   it("duplicates assigned identity objects by unique name", async () => {
     const get = vi.fn(async () => ({
       status: 200,

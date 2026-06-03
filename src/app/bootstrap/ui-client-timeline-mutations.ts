@@ -245,6 +245,69 @@ export function applyDuplicateWorkItemUpdate(
   return rebuildTreeLayoutWhenNeeded(nextTimeline);
 }
 
+export function applyCreatedChildWorkItemToResponse(
+  response: QueryIntakeResponse | null,
+  parentWorkItemId: number,
+  createdWorkItem: CreatedWorkItemSnapshot
+): QueryIntakeResponse | null {
+  if (!response) {
+    return response;
+  }
+
+  const timeline = applyCreatedChildWorkItemUpdate(response.timeline, parentWorkItemId, createdWorkItem);
+  if (timeline === response.timeline) {
+    return response;
+  }
+
+  return {
+    ...response,
+    workItemIds: response.workItemIds.includes(createdWorkItem.id)
+      ? response.workItemIds
+      : [...response.workItemIds, createdWorkItem.id],
+    timeline
+  };
+}
+
+export function applyCreatedChildWorkItemUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  parentWorkItemId: number,
+  createdWorkItem: CreatedWorkItemSnapshot
+): QueryIntakeResponse["timeline"] {
+  if (!timeline || !Number.isFinite(createdWorkItem.id) || createdWorkItem.id <= 0) {
+    return timeline;
+  }
+
+  const alreadyVisible = timeline.bars.some((bar) => bar.workItemId === createdWorkItem.id) ||
+    timeline.unschedulable.some((item) => item.workItemId === createdWorkItem.id);
+  if (alreadyVisible || !isWorkItemVisible(timeline, parentWorkItemId)) {
+    return timeline;
+  }
+
+  const parentByWorkItemId = buildParentLookup(timeline);
+  const title = resolveCreatedChildTitle(createdWorkItem);
+  const state = toTimelineStateBadge(resolveCreatedString(createdWorkItem.state, "New"), null);
+  const details = buildCreatedChildDetails(createdWorkItem, title, parentWorkItemId);
+  const schedule = buildCreatedChildSchedule(createdWorkItem);
+
+  if (schedule) {
+    const childBar = buildCreatedChildBar(createdWorkItem, title, state, details, schedule);
+    const insertionIndex = resolveChildInsertionIndex(timeline.bars, parentWorkItemId, parentByWorkItemId);
+    const nextTimeline = {
+      ...timeline,
+      bars: insertAfter(timeline.bars, insertionIndex, childBar)
+    };
+    return rebuildTreeLayoutWhenNeeded(nextTimeline);
+  }
+
+  const childUnschedulable = buildCreatedChildUnschedulableItem(createdWorkItem, title, state, details);
+  const insertionIndex = resolveChildInsertionIndex(timeline.unschedulable, parentWorkItemId, parentByWorkItemId);
+  const nextTimeline = {
+    ...timeline,
+    unschedulable: insertAfter(timeline.unschedulable, insertionIndex, childUnschedulable)
+  };
+  return rebuildTreeLayoutWhenNeeded(nextTimeline);
+}
+
 export function applyReparentUpdate(
   timeline: QueryIntakeResponse["timeline"],
   targetWorkItemId: number,
@@ -270,6 +333,137 @@ export function applyReparentUpdate(
     bars: updatedBars,
     unschedulable: updatedUnschedulable
   });
+}
+
+function buildCreatedChildBar(
+  createdWorkItem: CreatedWorkItemSnapshot,
+  title: string,
+  state: TimelineBar["state"],
+  details: TimelineBar["details"],
+  schedule: TimelineBar["schedule"]
+): TimelineBar {
+  return {
+    workItemId: createdWorkItem.id,
+    title,
+    state,
+    schedule,
+    details
+  };
+}
+
+function buildCreatedChildSchedule(createdWorkItem: CreatedWorkItemSnapshot): TimelineBar["schedule"] | null {
+  const startDate = resolveCreatedNullableString(createdWorkItem.schedule?.startDate, null);
+  const endDate = resolveCreatedNullableString(createdWorkItem.schedule?.endDate, null);
+  if (startDate === null && endDate === null) {
+    return null;
+  }
+
+  return {
+    startDate,
+    endDate,
+    missingBoundary: resolveMissingBoundary(startDate, endDate, null)
+  };
+}
+
+function buildCreatedChildUnschedulableItem(
+  createdWorkItem: CreatedWorkItemSnapshot,
+  title: string,
+  state: TimelineUnschedulableItem["state"],
+  details: TimelineUnschedulableItem["details"]
+): TimelineUnschedulableItem {
+  return {
+    workItemId: createdWorkItem.id,
+    title,
+    state,
+    details,
+    reason: "missing-both-dates"
+  };
+}
+
+function buildCreatedChildDetails(
+  createdWorkItem: CreatedWorkItemSnapshot,
+  title: string,
+  parentWorkItemId: number
+): TimelineBar["details"] {
+  return {
+    mappedId: String(createdWorkItem.id),
+    descriptionHtml: resolveCreatedNullableString(createdWorkItem.descriptionHtml, null),
+    workItemType: resolveCreatedNullableString(createdWorkItem.workItemType, null),
+    fieldValues: resolveCreatedChildFieldValues(createdWorkItem.fieldValues, title),
+    assignedTo: resolveCreatedNullableString(createdWorkItem.assignedTo, null),
+    parentWorkItemId
+  };
+}
+
+function resolveCreatedChildFieldValues(
+  createdFieldValues: CreatedWorkItemSnapshot["fieldValues"],
+  title: string
+): TimelineBar["details"]["fieldValues"] {
+  if (!createdFieldValues) {
+    return undefined;
+  }
+
+  return Object.prototype.hasOwnProperty.call(createdFieldValues, "System.Title")
+    ? { ...createdFieldValues, "System.Title": title }
+    : createdFieldValues;
+}
+
+function resolveCreatedChildTitle(createdWorkItem: CreatedWorkItemSnapshot): string {
+  const typeFallback = resolveCreatedNullableString(createdWorkItem.workItemType, null);
+  return resolveCreatedString(createdWorkItem.title, typeFallback ? `New ${typeFallback}` : `#${createdWorkItem.id}`);
+}
+
+function isWorkItemVisible(timeline: NonNullable<QueryIntakeResponse["timeline"]>, workItemId: number): boolean {
+  return timeline.bars.some((bar) => bar.workItemId === workItemId) ||
+    timeline.unschedulable.some((item) => item.workItemId === workItemId);
+}
+
+function buildParentLookup(timeline: NonNullable<QueryIntakeResponse["timeline"]>): Map<number, number | null> {
+  return new Map([
+    ...timeline.bars.map((bar) => [bar.workItemId, bar.details.parentWorkItemId ?? null] as const),
+    ...timeline.unschedulable.map((item) => [item.workItemId, item.details.parentWorkItemId ?? null] as const)
+  ]);
+}
+
+function resolveChildInsertionIndex<T extends { workItemId: number }>(
+  items: readonly T[],
+  parentWorkItemId: number,
+  parentByWorkItemId: ReadonlyMap<number, number | null>
+): number {
+  let insertionIndex = items.findIndex((item) => item.workItemId === parentWorkItemId);
+
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    if (item && isDescendantOfWorkItem(item.workItemId, parentWorkItemId, parentByWorkItemId)) {
+      insertionIndex = Math.max(insertionIndex, index);
+    }
+  }
+
+  return insertionIndex === -1 ? items.length - 1 : insertionIndex;
+}
+
+function isDescendantOfWorkItem(
+  candidateWorkItemId: number,
+  ancestorWorkItemId: number,
+  parentByWorkItemId: ReadonlyMap<number, number | null>
+): boolean {
+  let currentParentId = parentByWorkItemId.get(candidateWorkItemId) ?? null;
+  const visited = new Set<number>();
+
+  while (currentParentId !== null) {
+    if (currentParentId === ancestorWorkItemId) {
+      return true;
+    }
+
+    if (visited.has(currentParentId)) {
+      return false;
+    }
+
+    visited.add(currentParentId);
+    currentParentId = parentByWorkItemId.get(currentParentId) ?? null;
+  }
+
+  return false;
 }
 
 function buildDuplicateBar(source: TimelineBar, createdWorkItem: CreatedWorkItemSnapshot): TimelineBar {

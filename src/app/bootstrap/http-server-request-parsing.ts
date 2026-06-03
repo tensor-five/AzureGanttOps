@@ -232,6 +232,61 @@ export function parseDuplicateWorkItemPayload(
   };
 }
 
+export function parseChildWorkItemCreatePayload(
+  input: Record<string, unknown> | null
+): {
+  parentWorkItemId: number;
+  childWorkItemType: string;
+  title?: string;
+  scheduleFieldRefs?: {
+    start: string;
+    endOrTarget: string;
+  };
+} | null {
+  if (!input || Object.prototype.hasOwnProperty.call(input, "childType")) {
+    return null;
+  }
+
+  const parentWorkItemId = input.parentWorkItemId;
+  if (
+    typeof parentWorkItemId !== "number" ||
+    !Number.isFinite(parentWorkItemId) ||
+    parentWorkItemId <= 0
+  ) {
+    return null;
+  }
+
+  const childWorkItemType = input.childWorkItemType;
+  if (typeof childWorkItemType !== "string" || childWorkItemType.trim().length === 0) {
+    return null;
+  }
+
+  const scheduleFieldRefs = parseScheduleFieldRefs(input.scheduleFieldRefs);
+  if (input.scheduleFieldRefs !== undefined && !scheduleFieldRefs) {
+    return null;
+  }
+
+  if (input.title === undefined || input.title === null) {
+    return {
+      parentWorkItemId,
+      childWorkItemType: childWorkItemType.trim(),
+      ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+    };
+  }
+
+  if (typeof input.title !== "string") {
+    return null;
+  }
+
+  const title = input.title.trim();
+  return {
+    parentWorkItemId,
+    childWorkItemType: childWorkItemType.trim(),
+    ...(title.length > 0 ? { title } : {}),
+    ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+  };
+}
+
 function parseScheduleFieldRefs(input: unknown): { start: string; endOrTarget: string } | null {
   if (input === undefined) {
     return null;

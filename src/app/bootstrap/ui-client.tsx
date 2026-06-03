@@ -28,6 +28,7 @@ import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/time
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
 import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
+  applyCreatedChildWorkItemToResponse,
   applyDependencyLinkUpdate,
   applyDuplicateWorkItemToResponse,
   applyReparentUpdate,
@@ -1062,6 +1063,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           project,
           detailsDraftResetKey,
           selectionStore: timelineSelectionStoreRef.current,
+          canCreateChildWorkItem: props.composition.capabilities.writeEnabled,
           onSetLiveSyncEnabled: handleSetLiveSyncEnabled,
           onPushPendingWorkItemChanges: () => {
             void flushQueuedWorkItemMutations();
@@ -1227,6 +1229,44 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             responseRef.current = nextResponse;
             setResponse(nextResponse);
             setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
+          },
+          onCreateChildWorkItem: async ({ parentWorkItemId, childWorkItemType, title, scheduleFieldRefs }) => {
+            const writeResult = await runTrackedWorkItemUpdate(async () => {
+              const writeResult = await props.composition.controller.createChildWorkItem({
+                parentWorkItemId,
+                childWorkItemType,
+                ...(title ? { title } : {}),
+                ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
+              });
+
+              if (!writeResult.accepted) {
+                throw toWritebackError(writeResult.reasonCode);
+              }
+
+              return writeResult;
+            });
+
+            const createdWorkItem = writeResult.createdWorkItem ??
+              (writeResult.createdWorkItemId ? { id: writeResult.createdWorkItemId } : null);
+            if (!createdWorkItem) {
+              await retryRefresh();
+              return;
+            }
+
+            const nextResponse = applyCreatedChildWorkItemToResponse(responseRef.current, parentWorkItemId, createdWorkItem);
+            if (!nextResponse || nextResponse === responseRef.current) {
+              await retryRefresh();
+              return;
+            }
+
+            timelineSelectionStoreRef.current.select(createdWorkItem.id);
+            responseRef.current = nextResponse;
+            setResponse(nextResponse);
+            setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
+          },
+          onFetchWorkItemTypes: async () => {
+            const response = await props.composition.controller.fetchWorkItemTypes();
+            return response.workItemTypes;
           },
           onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
             await scheduleReparentMutation({

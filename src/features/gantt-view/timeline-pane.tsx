@@ -173,8 +173,19 @@ export type TimelinePaneProps = {
       endOrTarget: string;
     };
   }) => Promise<void>;
+  canCreateChildWorkItem?: boolean;
+  onCreateChildWorkItem?: (input: {
+    parentWorkItemId: number;
+    childWorkItemType: string;
+    title?: string;
+    scheduleFieldRefs?: {
+      start: string;
+      endOrTarget: string;
+    };
+  }) => Promise<void>;
   onReparentWorkItem?: (input: { targetWorkItemId: number; newParentId: number | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
+  onFetchWorkItemTypes?: () => Promise<Array<{ name: string }>>;
   onDensityChange?: (density: TimelineDensity) => void;
   onRetryRefresh?: () => void;
   onSetLiveSyncEnabled?: (enabled: boolean) => void;
@@ -2291,6 +2302,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       project: props.project,
       onClose: workItemContextMenu.closeMenu,
       onDuplicateWorkItem: props.onDuplicateWorkItem,
+      canCreateChildWorkItem: props.canCreateChildWorkItem,
+      onCreateChildWorkItem: props.onCreateChildWorkItem,
+      onFetchWorkItemTypes: props.onFetchWorkItemTypes,
       onUpdateWorkItemState: props.onUpdateWorkItemState,
       onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
     }),
@@ -3372,6 +3386,7 @@ type VisualTimelineBar = {
   title: string;
   displayLabel: string;
   stateCode: string;
+  workItemType: string | null;
   color: string;
   stateColor: string;
   stateBadge: string;
@@ -3426,6 +3441,7 @@ function buildContextMenuItemFromVisualBar(
     workItemId: bar.workItemId,
     title: bar.title,
     state: bar.stateCode,
+    workItemType: bar.workItemType,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
 }
@@ -3438,6 +3454,7 @@ function buildContextMenuItemFromUnschedulable(
     workItemId: item.workItemId,
     title: item.title,
     state: item.state.code,
+    workItemType: item.details.workItemType ?? null,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
 }
@@ -3561,6 +3578,7 @@ function buildVisualChartModel(
       title: bar.source.title,
       displayLabel: buildTimelineBarLabel(bar.source, timelineLabelFields),
       stateCode: bar.source.state.code,
+      workItemType: bar.source.details.workItemType ?? null,
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
