@@ -5,19 +5,29 @@ import type { AdoContextStore } from "../config/ado-context.store.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
 
 describe("fetchAvailableWorkItemTypes", () => {
-  it("loads enabled work item type names sorted and deduplicated", async () => {
+  it("loads planning work item type names sorted and deduplicated", async () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
-        value: [
-          { name: "Task" },
-          { name: " feature " },
-          { name: "Feature" },
-          { name: "Bug" },
-          { name: "Disabled", isDisabled: true },
-          { name: "Legacy Disabled", disabled: true },
-          { name: " " },
-          {}
+        taskBacklog: {
+          workItemTypes: [
+            { name: "Task" }
+          ]
+        },
+        requirementBacklog: {
+          workItemTypes: [
+            { name: " feature " },
+            { name: "Feature" },
+            { name: " " },
+            {}
+          ]
+        },
+        portfolioBacklogs: [
+          {
+            workItemTypes: [
+              { name: "Bug" }
+            ]
+          }
         ]
       },
       headers: {}
@@ -33,7 +43,7 @@ describe("fetchAvailableWorkItemTypes", () => {
       { name: "feature" },
       { name: "Task" }
     ]);
-    expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
+    expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/work/processconfiguration?api-version=7.1");
   });
 
   it("throws a stable error for failed Azure responses", async () => {

@@ -832,16 +832,22 @@ describe("createHttpServer", () => {
       httpClient: {
         get: async (url) => {
           getCalls.push(url);
-          if (url.endsWith("/_apis/wit/workitemtypes?api-version=7.1")) {
+          if (url.endsWith("/_apis/work/processconfiguration?api-version=7.1")) {
             return {
               status: 200,
               json: {
-                value: [
-                  { name: "Task" },
-                  { name: " User Story " },
-                  { name: "user story" },
-                  { name: "Blocked", isDisabled: true }
-                ]
+                taskBacklog: {
+                  workItemTypes: [
+                    { name: "Task" }
+                  ]
+                },
+                requirementBacklog: {
+                  workItemTypes: [
+                    { name: " User Story " },
+                    { name: "user story" }
+                  ]
+                },
+                portfolioBacklogs: []
               },
               headers: {}
             };
@@ -930,7 +936,7 @@ describe("createHttpServer", () => {
         }
       });
       expect(getCalls).toEqual([
-        "https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1",
+        "https://dev.azure.com/contoso/delivery/_apis/work/processconfiguration?api-version=7.1",
         "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1"
       ]);
       expect(postCalls).toEqual([
@@ -969,10 +975,17 @@ describe("createHttpServer", () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
-        value: [
-          { name: "Task" },
-          { name: "User Story" }
-        ]
+        taskBacklog: {
+          workItemTypes: [
+            { name: "Task" }
+          ]
+        },
+        requirementBacklog: {
+          workItemTypes: [
+            { name: "User Story" }
+          ]
+        },
+        portfolioBacklogs: []
       },
       headers: {}
     }));
@@ -1014,8 +1027,88 @@ describe("createHttpServer", () => {
           reasonCode: "WORK_ITEM_CHILD_TYPE_UNAVAILABLE"
         }
       });
-      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/work/processconfiguration?api-version=7.1");
       expect(post).not.toHaveBeenCalled();
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("returns a controlled validation response when Azure rejects child creation", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const post = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "TF401320: Rule Error for field Custom.Required."
+      },
+      headers: {}
+    }));
+    const get = vi.fn(async (url: string) => {
+      if (url.endsWith("/_apis/work/processconfiguration?api-version=7.1")) {
+        return {
+          status: 200,
+          json: {
+            taskBacklog: {
+              workItemTypes: [
+                { name: "Task" }
+              ]
+            },
+            requirementBacklog: null,
+            portfolioBacklogs: []
+          },
+          headers: {}
+        };
+      }
+
+      return {
+        status: 200,
+        json: {
+          fields: {
+            "System.AreaPath": "delivery\\Platform",
+            "System.IterationPath": "delivery\\Sprint 2"
+          }
+        },
+        headers: {}
+      };
+    });
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch: async () => ({ status: 200, json: {}, headers: {} }),
+        post
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-child-create`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          parentWorkItemId: 42,
+          childWorkItemType: "Task"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(422);
+      expect(body).toEqual({
+        code: "WORK_ITEM_CHILD_CREATE_FAILED",
+        message: "WORK_ITEM_CHILD_CREATE_FAILED: TF401320: Rule Error for field Custom.Required."
+      });
     } finally {
       if (previousWriteEnabled === undefined) {
         delete process.env.ADO_WRITE_ENABLED;
@@ -1033,9 +1126,13 @@ describe("createHttpServer", () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
-        value: [
-          { name: "Task" }
-        ]
+        taskBacklog: {
+          workItemTypes: [
+            { name: "Task" }
+          ]
+        },
+        requirementBacklog: null,
+        portfolioBacklogs: []
       },
       headers: {}
     }));
@@ -1076,7 +1173,7 @@ describe("createHttpServer", () => {
           reasonCode: "WRITE_UNSUPPORTED"
         }
       });
-      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/work/processconfiguration?api-version=7.1");
     } finally {
       if (previousWriteEnabled === undefined) {
         delete process.env.ADO_WRITE_ENABLED;
@@ -1300,14 +1397,24 @@ describe("createHttpServer", () => {
     const get = vi.fn(async () => ({
       status: 200,
       json: {
-        value: [
-          { name: "Task" },
-          { name: " feature " },
-          { name: "Feature" },
-          { name: "Bug" },
-          { name: "Disabled Type", isDisabled: true },
-          { name: "Legacy Disabled", disabled: true },
-          { name: "" }
+        taskBacklog: {
+          workItemTypes: [
+            { name: "Task" }
+          ]
+        },
+        requirementBacklog: {
+          workItemTypes: [
+            { name: " feature " },
+            { name: "Feature" },
+            { name: "" }
+          ]
+        },
+        portfolioBacklogs: [
+          {
+            workItemTypes: [
+              { name: "Bug" }
+            ]
+          }
         ]
       },
       headers: {}
@@ -1333,7 +1440,7 @@ describe("createHttpServer", () => {
       });
       expect(secondResponse.status).toBe(200);
       expect(get).toHaveBeenCalledTimes(1);
-      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/wit/workitemtypes?api-version=7.1");
+      expect(get).toHaveBeenCalledWith("https://dev.azure.com/contoso/delivery/_apis/work/processconfiguration?api-version=7.1");
     } finally {
       await server.close();
     }
@@ -1351,9 +1458,13 @@ describe("createHttpServer", () => {
       .mockResolvedValueOnce({
         status: 200,
         json: {
-          value: [
-            { name: "Task" }
-          ]
+          taskBacklog: {
+            workItemTypes: [
+              { name: "Task" }
+            ]
+          },
+          requirementBacklog: null,
+          portfolioBacklogs: []
         },
         headers: {}
       });

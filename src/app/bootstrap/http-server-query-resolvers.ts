@@ -110,13 +110,13 @@ export async function fetchAvailableWorkItemTypes(input: {
 
   const url =
     `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}` +
-    "/_apis/wit/workitemtypes?api-version=7.1";
+    "/_apis/work/processconfiguration?api-version=7.1";
   const response = await input.httpClient.get(url);
   if (response.status < 200 || response.status >= 300) {
     throw new Error(`WORK_ITEM_TYPES_FETCH_FAILED:${response.status}`);
   }
 
-  return extractAvailableWorkItemTypes(response.json);
+  return extractPlanningWorkItemTypes(response.json);
 }
 
 async function getCachedWorkItemType(input: {
@@ -260,28 +260,46 @@ function extractStateCodes(payload: unknown): WorkItemStateOption[] {
     .filter((entry): entry is WorkItemStateOption => entry !== null);
 }
 
-function extractAvailableWorkItemTypes(payload: unknown): WorkItemTypeOption[] {
+function extractPlanningWorkItemTypes(payload: unknown): WorkItemTypeOption[] {
   if (!payload || typeof payload !== "object") {
     return [];
   }
 
-  const value = (payload as { value?: unknown }).value;
-  if (!Array.isArray(value)) {
+  const processConfiguration = payload as Record<string, unknown>;
+  const names = [
+    ...extractBacklogWorkItemTypeNames(processConfiguration.taskBacklog),
+    ...extractBacklogWorkItemTypeNames(processConfiguration.requirementBacklog),
+    ...extractPortfolioBacklogWorkItemTypeNames(processConfiguration.portfolioBacklogs),
+    ...extractBacklogWorkItemTypeNames(processConfiguration.bugWorkItems)
+  ];
+
+  return normalizeAvailableWorkItemTypes(names).map((name) => ({ name }));
+}
+
+function extractPortfolioBacklogWorkItemTypeNames(input: unknown): string[] {
+  if (!Array.isArray(input)) {
     return [];
   }
 
-  const names = value.flatMap((entry) => {
+  return input.flatMap(extractBacklogWorkItemTypeNames);
+}
+
+function extractBacklogWorkItemTypeNames(input: unknown): string[] {
+  if (!input || typeof input !== "object") {
+    return [];
+  }
+
+  const workItemTypes = (input as { workItemTypes?: unknown }).workItemTypes;
+  if (!Array.isArray(workItemTypes)) {
+    return [];
+  }
+
+  return workItemTypes.flatMap((entry) => {
     if (!entry || typeof entry !== "object") {
       return [];
     }
 
-    const record = entry as Record<string, unknown>;
-    if (record.isDisabled === true || record.disabled === true) {
-      return [];
-    }
-
-    return typeof record.name === "string" ? [record.name] : [];
+    const name = (entry as { name?: unknown }).name;
+    return typeof name === "string" ? [name] : [];
   });
-
-  return normalizeAvailableWorkItemTypes(names).map((name) => ({ name }));
 }

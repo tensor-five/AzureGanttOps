@@ -1255,6 +1255,14 @@ async function handleTimelineWritesRoute(
         return true;
       }
 
+      if (error instanceof Error && error.message.startsWith("WORK_ITEM_CHILD_CREATE_FAILED")) {
+        writeJson(res, 422, {
+          code: "WORK_ITEM_CHILD_CREATE_FAILED",
+          message: error.message
+        });
+        return true;
+      }
+
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to create child work item."
