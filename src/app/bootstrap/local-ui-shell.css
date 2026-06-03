@@ -2197,6 +2197,39 @@ button {
   color: var(--color-primary);
 }
 
+.timeline-filter-date-dropdown {
+  min-width: min(460px, 92vw);
+}
+
+.timeline-filter-date-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-filter-date-input {
+  min-width: 0;
+  min-height: 34px;
+  padding-block: 0.375rem;
+}
+
+.timeline-filter-date-clear {
+  min-height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  padding: 0 10px;
+}
+
+.timeline-filter-date-note {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
 .timeline-work-item-context-menu {
   z-index: 1250;
   width: min(260px, calc(100vw - 16px));
@@ -3720,6 +3753,10 @@ input {
   .timeline-filter-dropdown-anchor {
     min-width: 0;
     margin: 0 2px;
+  }
+
+  .timeline-filter-date-range {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .timeline-label-menu-grid {

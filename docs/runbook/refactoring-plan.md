@@ -207,6 +207,7 @@ Status: ✅ Abgeschlossen (2026-03-11)
 
 - E1-E5 wurden ohne beabsichtigte Verhaltensänderung umgesetzt.
 - `timeline-pane.tsx` nutzt extrahierte Hooks (`useScheduleDragging`, `useDependencyEditing`, `useTimelineFilters`) und hat zusätzliche Hook-Tests.
+- Timeline-Filter-Modelle, URL-Serialisierung und Matching-Logik liegen in dedizierten Modulen (`timeline-filter-model.ts`, `timeline-filter-url.ts`, `timeline-field-filtering.ts`); `timeline-pane.tsx` bleibt fuer Filter nur Orchestrator.
 - Color-Coding-Preferences sind auf die generische Store-Factory migriert, Persistenzpfad für Field-Config blieb stabil.
 - `ui-client.tsx` wurde weiter entkoppelt (Header-Query-Service + Runtime-State-Color-Enrichment in dedizierte Module).
 

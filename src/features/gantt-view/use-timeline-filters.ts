@@ -1,10 +1,8 @@
 import React from "react";
 
-export type TimelineFieldFilter = {
-  slotId: number;
-  fieldRef: string | null;
-  selectedValueKeys: string[];
-};
+import type { TimelineFieldFilter } from "./timeline-filter-model.js";
+
+export type { TimelineFieldFilter } from "./timeline-filter-model.js";
 
 export type OpenFilterDropdownState =
   | {
