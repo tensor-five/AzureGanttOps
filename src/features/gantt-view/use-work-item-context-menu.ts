@@ -1,5 +1,11 @@
 import React from "react";
 
+import {
+  DEFAULT_CONTEXT_MENU_HEIGHT_PX,
+  DEFAULT_CONTEXT_MENU_WIDTH_PX,
+  resolveViewportConstrainedMenuPlacement
+} from "./viewport-constrained-menu.js";
+
 export type WorkItemContextMenuItem = {
   workItemId: number;
   title: string;
@@ -18,10 +24,6 @@ export type WorkItemContextMenuState = {
     y: number;
   };
 };
-
-const MENU_WIDTH_PX = 260;
-const MENU_HEIGHT_PX = 320;
-const VIEWPORT_INSET_PX = 8;
 
 export function useWorkItemContextMenu(): {
   menuState: WorkItemContextMenuState | null;
@@ -112,11 +114,17 @@ function resolveMenuPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
 
-  const maxX = Math.max(VIEWPORT_INSET_PX, window.innerWidth - MENU_WIDTH_PX - VIEWPORT_INSET_PX);
-  const maxY = Math.max(VIEWPORT_INSET_PX, window.innerHeight - MENU_HEIGHT_PX - VIEWPORT_INSET_PX);
+  const placement = resolveViewportConstrainedMenuPlacement({
+    requestedLeftPx: x,
+    requestedTopPx: y,
+    menuWidthPx: DEFAULT_CONTEXT_MENU_WIDTH_PX,
+    menuHeightPx: DEFAULT_CONTEXT_MENU_HEIGHT_PX,
+    viewportWidthPx: window.innerWidth,
+    viewportHeightPx: window.innerHeight
+  });
 
   return {
-    x: Math.min(Math.max(VIEWPORT_INSET_PX, x), maxX),
-    y: Math.min(Math.max(VIEWPORT_INSET_PX, y), maxY)
+    x: placement.leftPx,
+    y: placement.topPx
   };
 }
