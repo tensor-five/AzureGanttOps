@@ -341,8 +341,13 @@ describe("WriteCommandAzureAdapter", () => {
         fields: {
           "System.Title": "Parent feature",
           "System.WorkItemType": "Feature",
+          "System.AssignedTo": {
+            displayName: "Ada Lovelace",
+            uniqueName: "ada@example.com"
+          },
           "System.AreaPath": "delivery\\Platform",
           "System.IterationPath": "delivery\\Sprint 2",
+          "System.Tags": "alpha; beta",
           "Custom.StartDate2": "2026-04-01",
           "Custom.TargetDate2": "2026-04-08"
         }
@@ -382,7 +387,7 @@ describe("WriteCommandAzureAdapter", () => {
       accepted: true,
       mode: "EXECUTED",
       commandKind: "WORK_ITEM_CHILD_CREATE",
-      operationCount: 6,
+      operationCount: 8,
       reasonCode: "WRITE_ENABLED",
       createdWorkItemId: 5678,
       createdWorkItem: {
@@ -414,8 +419,10 @@ describe("WriteCommandAzureAdapter", () => {
       "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/$User%20Story?api-version=7.1",
       [
         { op: "add", path: "/fields/System.Title", value: "Draft story" },
+        { op: "add", path: "/fields/System.AssignedTo", value: "ada@example.com" },
         { op: "add", path: "/fields/System.AreaPath", value: "delivery\\Platform" },
         { op: "add", path: "/fields/System.IterationPath", value: "delivery\\Sprint 2" },
+        { op: "add", path: "/fields/System.Tags", value: "alpha; beta" },
         { op: "add", path: "/fields/Custom.StartDate2", value: "2026-04-01" },
         { op: "add", path: "/fields/Custom.TargetDate2", value: "2026-04-08" },
         {

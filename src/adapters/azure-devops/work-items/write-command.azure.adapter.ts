@@ -17,8 +17,10 @@ const DUPLICATE_SYSTEM_FIELD_REFS = [
   "System.IterationPath"
 ];
 const CHILD_CREATE_SYSTEM_FIELD_REFS = [
+  "System.AssignedTo",
   "System.AreaPath",
-  "System.IterationPath"
+  "System.IterationPath",
+  "System.Tags"
 ];
 
 type HttpResponse = {
@@ -527,7 +529,7 @@ function extractChildCreateParent(payload: unknown, scheduleFieldRefs: readonly 
 
   const fieldRecord = fields as Record<string, unknown>;
   return {
-    systemFields: extractStringFields(fieldRecord, CHILD_CREATE_SYSTEM_FIELD_REFS),
+    systemFields: extractChildCreateSystemFields(fieldRecord),
     dateFields: extractStringFields(fieldRecord, scheduleFieldRefs)
   };
 }
@@ -579,7 +581,15 @@ function extractStringFields(fields: Record<string, unknown>, fieldRefs: readonl
 }
 
 function extractDuplicateSystemFields(fields: Record<string, unknown>): DuplicateFieldValue[] {
-  return DUPLICATE_SYSTEM_FIELD_REFS.flatMap((fieldRef) => {
+  return extractSystemFields(fields, DUPLICATE_SYSTEM_FIELD_REFS);
+}
+
+function extractChildCreateSystemFields(fields: Record<string, unknown>): DuplicateFieldValue[] {
+  return extractSystemFields(fields, CHILD_CREATE_SYSTEM_FIELD_REFS);
+}
+
+function extractSystemFields(fields: Record<string, unknown>, fieldRefs: readonly string[]): DuplicateFieldValue[] {
+  return fieldRefs.flatMap((fieldRef) => {
     const value = fieldRef === "System.AssignedTo"
       ? extractAssignedToFieldValue(fields[fieldRef])
       : extractStringFieldValue(fields[fieldRef]);
