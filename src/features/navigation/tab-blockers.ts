@@ -1,5 +1,9 @@
 import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import type { TabId } from "../../shared/ui-state/tab-id.js";
+import {
+  AZURE_SESSION_EXPIRED_NEXT_ACTION,
+  AZURE_SESSION_EXPIRED_REASON
+} from "../../shared/azure-devops/azure-session-recovery.js";
 
 export type TabBlocker = {
   blocked: boolean;
@@ -27,8 +31,8 @@ export function resolveTabBlocker(tab: TabId, model: QueryIntakeUiModel): TabBlo
   if (model.statusCode === "SESSION_EXPIRED") {
     return {
       blocked: true,
-      reason: "Azure session expired.",
-      nextAction: "Run az login and retry query intake."
+      reason: AZURE_SESSION_EXPIRED_REASON,
+      nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
     };
   }
 

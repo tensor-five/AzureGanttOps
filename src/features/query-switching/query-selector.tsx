@@ -5,6 +5,7 @@ import {
   persistQueryMappingSelection,
   readPersistedQueryMappingSelection
 } from "../field-mapping/query-profile-storage.js";
+import { AZURE_SESSION_EXPIRED_QUERY_HINT } from "../../shared/azure-devops/azure-session-recovery.js";
 
 export type QuerySelectorProps = {
   savedQueries: Array<{
@@ -276,7 +277,7 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
             React.createElement(
               "div",
               { className: "query-selector-hint" },
-              "Starts `az login --use-device-code`. Complete sign-in, then run query again."
+              AZURE_SESSION_EXPIRED_QUERY_HINT
             ),
             authMessage
               ? React.createElement(

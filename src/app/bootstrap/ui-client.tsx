@@ -52,7 +52,12 @@ import {
 } from "./ui-client-theme.js";
 import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
-import { resolvePersistedRefreshQueryInput, runRetryRefreshFlow, type RunRequest } from "./ui-client-refresh-flow.js";
+import {
+  buildSessionExpiredRefreshBlocker,
+  resolvePersistedRefreshQueryInput,
+  runRetryRefreshFlow,
+  type RunRequest
+} from "./ui-client-refresh-flow.js";
 import {
   createRefreshDiscardWarningInput,
   runWithInFlightGuard,
@@ -428,23 +433,31 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       }
 
       if (result.kind === "refreshed") {
-        if (discardPendingChanges) {
-          setResponse(result.response);
-          setUiModel(mapQueryIntakeResponseToUiModel(result.response));
-        } else {
-          const refreshedResponse = applyPendingWorkItemMutationsToResponse(
-            result.response,
-            pendingWorkItemMutationsRef.current
-          );
-          setResponse(refreshedResponse);
-          setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
-        }
+        const refreshedResponse = discardPendingChanges
+          ? result.response
+          : applyPendingWorkItemMutationsToResponse(
+              result.response,
+              pendingWorkItemMutationsRef.current
+            );
+
+        setResponse(refreshedResponse);
+        setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
           setControlsOpen(true);
+          setBlockerMessage(null);
         } else {
-          setActiveTab("timeline");
+          setMappingFixResponse(null);
+          setActiveTab(result.activeTab);
+          if (result.activeTab === "query") {
+            setControlsOpen(true);
+          }
+          setBlockerMessage(
+            result.response.preflightStatus === "SESSION_EXPIRED"
+              ? buildSessionExpiredRefreshBlocker()
+              : null
+          );
         }
       }
       if (discardPendingChanges) {

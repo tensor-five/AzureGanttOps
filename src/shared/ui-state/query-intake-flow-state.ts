@@ -10,5 +10,9 @@ export function shouldOpenMappingFixTab(response: QueryIntakeResponse): boolean 
 }
 
 export function deriveActiveTabForQueryResponse(response: QueryIntakeResponse): TabId {
+  if (response.preflightStatus !== "READY") {
+    return "query";
+  }
+
   return shouldOpenMappingFixTab(response) ? "mapping" : "timeline";
 }

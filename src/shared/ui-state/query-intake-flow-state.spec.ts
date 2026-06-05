@@ -65,4 +65,23 @@ describe("query-intake-flow-state", () => {
     expect(shouldOpenMappingFixTab(timelineResponse)).toBe(false);
     expect(deriveActiveTabForQueryResponse(timelineResponse)).toBe("timeline");
   });
+
+  it("routes preflight failures back to query controls", () => {
+    const sessionExpiredResponse = createResponse({
+      preflightStatus: "SESSION_EXPIRED",
+      statusCode: "SESSION_EXPIRED",
+      uiState: "auth_failure",
+      success: false,
+      capabilities: {
+        canRefresh: false,
+        canSwitchQuery: false,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      }
+    });
+
+    expect(shouldOpenMappingFixTab(sessionExpiredResponse)).toBe(false);
+    expect(deriveActiveTabForQueryResponse(sessionExpiredResponse)).toBe("query");
+  });
 });

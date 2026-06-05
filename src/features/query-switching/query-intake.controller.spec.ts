@@ -506,6 +506,7 @@ describe("QueryIntakeController", () => {
     expect(response.capabilities.canRefresh).toBe(false);
     expect(response.capabilities.canSwitchQuery).toBe(false);
     expect(response.capabilities.canOpenDetails).toBe(true);
+    expect(response.guidance).toContain("Reload again");
     expect(response.view).toContain("[NOTICE] No active session: timeline remains read-only");
   });
 

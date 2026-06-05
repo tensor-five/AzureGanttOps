@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCapabilities,
   deriveDiagnosticsStatusCodeFromResult,
+  guidanceForPreflight,
   guidanceForRuntimeError,
   noStrictFailState,
   strictFailMessage,
@@ -10,6 +11,7 @@ import {
   toDiagnosticsStatusCode,
   toTrustState
 } from "./query-intake.controller.mappers.js";
+import { AZURE_SESSION_EXPIRED_GUIDANCE } from "../../shared/azure-devops/azure-session-recovery.js";
 
 describe("query-intake.controller.mappers", () => {
   it("maps known and unknown diagnostics codes deterministically", () => {
@@ -44,6 +46,7 @@ describe("query-intake.controller.mappers", () => {
   });
 
   it("returns unchanged runtime guidance and trust/capability defaults", () => {
+    expect(guidanceForPreflight("SESSION_EXPIRED")).toBe(AZURE_SESSION_EXPIRED_GUIDANCE);
     expect(guidanceForRuntimeError(new Error("QRY_SHAPE_UNSUPPORTED"))).toBe(
       "Only flat queries are supported in this phase. Use a flat query and retry."
     );

@@ -9,6 +9,10 @@ import { TopTabs } from "./top-tabs.js";
 import type { QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { resolveTabBlocker } from "./tab-blockers.js";
 import { createRoutesStub } from "../../shared/testing/routes-stub.js";
+import {
+  AZURE_SESSION_EXPIRED_NEXT_ACTION,
+  AZURE_SESSION_EXPIRED_REASON
+} from "../../shared/azure-devops/azure-session-recovery.js";
 
 function makeModel(overrides?: Partial<QueryIntakeUiModel>): QueryIntakeUiModel {
   return {
@@ -161,5 +165,27 @@ describe("top-tabs routed interactions", () => {
     expect(blocker.blocked).toBe(false);
     expect(blocker.reason).toBe("");
     expect(blocker.nextAction).toBe("");
+  });
+
+  it("explains that reload is blocked until Azure CLI login is refreshed", () => {
+    const blockedModel = makeModel({
+      statusCode: "SESSION_EXPIRED",
+      uiState: "auth_failure",
+      capabilities: {
+        canRefresh: false,
+        canSwitchQuery: false,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      }
+    });
+
+    const blocker = resolveTabBlocker("timeline", blockedModel);
+
+    expect(blocker).toEqual({
+      blocked: true,
+      reason: AZURE_SESSION_EXPIRED_REASON,
+      nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
+    });
   });
 });

@@ -6,6 +6,7 @@ import type {
 import type { QueryReloadSource } from "../../application/use-cases/run-query-intake.use-case.js";
 import type { MappingValidationIssue } from "../../domain/mapping/mapping-errors.js";
 import type { TimelineUiState } from "./timeline-trust-state.js";
+import { AZURE_SESSION_EXPIRED_GUIDANCE } from "../../shared/azure-devops/azure-session-recovery.js";
 
 export const FLAT_ONLY_NOTE = "Phase 2 note: only flat queries are supported.";
 
@@ -14,7 +15,7 @@ export function guidanceForPreflight(status: QueryIntakePreflightStatus): string
     case "READY":
       return null;
     case "SESSION_EXPIRED":
-      return "Session expired. Sign in to Azure and retry.";
+      return AZURE_SESSION_EXPIRED_GUIDANCE;
     case "MISSING_EXTENSION":
       return "Azure DevOps extension missing. Install it and retry.";
     case "CONTEXT_MISMATCH":

@@ -1222,18 +1222,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React43 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React47 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React47.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React43 = {
+      React47 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React43.react_stack_bottom_frame.bind(
-        React43,
+      var unknownOwnerDebugStack = React47.react_stack_bottom_frame.bind(
+        React47,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1597,7 +1597,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React43 = require_react(), Internals = {
+      var React47 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1615,7 +1615,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React47.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3150,7 +3150,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node.ownerDocument) === node || node.defaultValue === "" + value || (node.defaultValue = "" + value);
       }
       function validateOptionProps(element, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React43.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React47.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18782,14 +18782,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React43 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React47 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React43.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React47.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21577,7 +21577,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React43.version;
+        var isomorphicReactPackageVersion = React47.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -23779,6 +23779,9 @@ function createUiShellComposition(params) {
   return {
     queryClient,
     controller: params.controller,
+    capabilities: {
+      writeEnabled: params.capabilities?.writeEnabled ?? false
+    },
     runQuerySelectionFlow: async ({ queryId, mappingProfileId, mappingProfileUpsert }) => {
       const response = await params.controller.submit({
         queryInput: queryId,
@@ -23794,7 +23797,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react28 = __toESM(require_react(), 1);
+var import_react32 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs
@@ -26338,6 +26341,11 @@ function useViewTransitionState(to, { relative } = {}) {
 // dist/src/features/navigation/top-tabs.js
 var import_react = __toESM(require_react(), 1);
 
+// dist/src/shared/azure-devops/azure-session-recovery.js
+var AZURE_SESSION_EXPIRED_REASON = "Azure CLI session expired; Reload cannot run until Azure CLI has a fresh session.";
+var AZURE_SESSION_EXPIRED_NEXT_ACTION = "Open the Query tab, choose Sign in with Azure CLI, complete the Azure login, then run Reload again.";
+var AZURE_SESSION_EXPIRED_QUERY_HINT = "Azure CLI session expired. Use Sign in with Azure CLI to open Azure login again; Reload stays blocked until Azure CLI has a fresh session.";
+
 // dist/src/features/navigation/tab-blockers.js
 function resolveTabBlocker(tab, model) {
   if (tab === "query") {
@@ -26357,8 +26365,8 @@ function resolveTabBlocker(tab, model) {
   if (model.statusCode === "SESSION_EXPIRED") {
     return {
       blocked: true,
-      reason: "Azure session expired.",
-      nextAction: "Run az login and retry query intake."
+      reason: AZURE_SESSION_EXPIRED_REASON,
+      nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
     };
   }
   if (model.statusCode === "CLI_NOT_FOUND") {
@@ -26653,7 +26661,7 @@ function QuerySelector(props) {
         setAuthInFlight(false);
       });
     }
-  }, authInFlight ? "Signing in..." : "Sign in with Azure CLI"), import_react2.default.createElement("div", { className: "query-selector-hint" }, "Starts `az login --use-device-code`. Complete sign-in, then run query again."), authMessage ? import_react2.default.createElement("div", {
+  }, authInFlight ? "Signing in..." : "Sign in with Azure CLI"), import_react2.default.createElement("div", { className: "query-selector-hint" }, AZURE_SESSION_EXPIRED_QUERY_HINT), authMessage ? import_react2.default.createElement("div", {
     role: "status",
     "aria-live": "polite",
     className: "query-selector-auth-message"
@@ -26841,7 +26849,7 @@ function MappingFixPanel(props) {
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
-var import_react22 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 
 // dist/src/shared/user-preferences/user-preferences.schema.js
 function sanitizeUserPreferences(value) {
@@ -27438,6 +27446,16 @@ function sanitizeOverdueExcludedStateCodes(value) {
 // dist/src/features/gantt-view/timeline-details-panel.js
 var import_react4 = __toESM(require_react(), 1);
 
+// dist/src/shared/azure-devops/azure-work-item-url.js
+function buildAzureWorkItemUrl(organization, project, workItemId) {
+  const trimmedOrg = organization?.trim();
+  const trimmedProject = project?.trim();
+  if (!trimmedOrg || !trimmedProject || typeof workItemId !== "number" || !Number.isFinite(workItemId) || workItemId <= 0) {
+    return null;
+  }
+  return `https://dev.azure.com/${encodeURIComponent(trimmedOrg)}/${encodeURIComponent(trimmedProject)}/_workitems/edit/${workItemId}`;
+}
+
 // node_modules/dompurify/dist/purify.es.mjs
 var {
   entries,
@@ -27486,13 +27504,19 @@ var arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
 var arrayPop = unapply(Array.prototype.pop);
 var arrayPush = unapply(Array.prototype.push);
 var arraySplice = unapply(Array.prototype.splice);
+var arrayIsArray = Array.isArray;
 var stringToLowerCase = unapply(String.prototype.toLowerCase);
 var stringToString = unapply(String.prototype.toString);
 var stringMatch = unapply(String.prototype.match);
 var stringReplace = unapply(String.prototype.replace);
 var stringIndexOf = unapply(String.prototype.indexOf);
 var stringTrim = unapply(String.prototype.trim);
+var numberToString = unapply(Number.prototype.toString);
+var booleanToString = unapply(Boolean.prototype.toString);
+var bigintToString = typeof BigInt === "undefined" ? null : unapply(BigInt.prototype.toString);
+var symbolToString = typeof Symbol === "undefined" ? null : unapply(Symbol.prototype.toString);
 var objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
+var objectToString = unapply(Object.prototype.toString);
 var regExpTest = unapply(RegExp.prototype.test);
 var typeErrorCreate = unconstruct(TypeError);
 function unapply(func) {
@@ -27518,6 +27542,9 @@ function addToSet(set, array) {
   let transformCaseFunc = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : stringToLowerCase;
   if (setPrototypeOf) {
     setPrototypeOf(set, null);
+  }
+  if (!arrayIsArray(array)) {
+    return set;
   }
   let l = array.length;
   while (l--) {
@@ -27549,7 +27576,7 @@ function clone(object) {
   for (const [property, value] of entries(object)) {
     const isPropertyExist = objectHasOwnProperty(object, property);
     if (isPropertyExist) {
-      if (Array.isArray(value)) {
+      if (arrayIsArray(value)) {
         newObject[property] = cleanArray(value);
       } else if (value && typeof value === "object" && value.constructor === Object) {
         newObject[property] = clone(value);
@@ -27559,6 +27586,44 @@ function clone(object) {
     }
   }
   return newObject;
+}
+function stringifyValue(value) {
+  switch (typeof value) {
+    case "string": {
+      return value;
+    }
+    case "number": {
+      return numberToString(value);
+    }
+    case "boolean": {
+      return booleanToString(value);
+    }
+    case "bigint": {
+      return bigintToString ? bigintToString(value) : "0";
+    }
+    case "symbol": {
+      return symbolToString ? symbolToString(value) : "Symbol()";
+    }
+    case "undefined": {
+      return objectToString(value);
+    }
+    case "function":
+    case "object": {
+      if (value === null) {
+        return objectToString(value);
+      }
+      const valueAsRecord = value;
+      const valueToString = lookupGetter(valueAsRecord, "toString");
+      if (typeof valueToString === "function") {
+        const stringified = valueToString(valueAsRecord);
+        return typeof stringified === "string" ? stringified : objectToString(stringified);
+      }
+      return objectToString(value);
+    }
+    default: {
+      return objectToString(value);
+    }
+  }
 }
 function lookupGetter(object, prop) {
   while (object !== null) {
@@ -27578,6 +27643,14 @@ function lookupGetter(object, prop) {
   }
   return fallbackValue;
 }
+function isRegex(value) {
+  try {
+    regExpTest(value, "");
+    return true;
+  } catch (_unused) {
+    return false;
+  }
+}
 var html$1 = freeze(["a", "abbr", "acronym", "address", "area", "article", "aside", "audio", "b", "bdi", "bdo", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "content", "data", "datalist", "dd", "decorator", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "img", "input", "ins", "kbd", "label", "legend", "li", "main", "map", "mark", "marquee", "menu", "menuitem", "meter", "nav", "nobr", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "search", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"]);
 var svg$1 = freeze(["svg", "a", "altglyph", "altglyphdef", "altglyphitem", "animatecolor", "animatemotion", "animatetransform", "circle", "clippath", "defs", "desc", "ellipse", "enterkeyhint", "exportparts", "filter", "font", "g", "glyph", "glyphref", "hkern", "image", "inputmode", "line", "lineargradient", "marker", "mask", "metadata", "mpath", "part", "path", "pattern", "polygon", "polyline", "radialgradient", "rect", "stop", "style", "switch", "symbol", "text", "textpath", "title", "tref", "tspan", "view", "vkern"]);
 var svgFilters = freeze(["feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence"]);
@@ -27585,9 +27658,9 @@ var svgDisallowed = freeze(["animate", "color-profile", "cursor", "discard", "fo
 var mathMl$1 = freeze(["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmultiscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mspace", "msqrt", "mstyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "mprescripts"]);
 var mathMlDisallowed = freeze(["maction", "maligngroup", "malignmark", "mlongdiv", "mscarries", "mscarry", "msgroup", "mstack", "msline", "msrow", "semantics", "annotation", "annotation-xml", "mprescripts", "none"]);
 var text = freeze(["#text"]);
-var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns", "slot"]);
+var html = freeze(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns"]);
 var svg = freeze(["accent-height", "accumulate", "additive", "alignment-baseline", "amplitude", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clippathunits", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dur", "edgemode", "elevation", "end", "exponent", "fill", "fill-opacity", "fill-rule", "filter", "filterunits", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "intercept", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "mask-type", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "primitiveunits", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "slope", "specularconstant", "specularexponent", "spreadmethod", "startoffset", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "systemlanguage", "tabindex", "tablevalues", "targetx", "targety", "transform", "transform-origin", "text-anchor", "text-decoration", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "version", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"]);
-var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnsalign", "columnlines", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lspace", "lquote", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
+var mathMl = freeze(["accent", "accentunder", "align", "bevelled", "close", "columnalign", "columnlines", "columnspacing", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lquote", "lspace", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]);
 var xml = freeze(["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"]);
 var MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm);
 var ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
@@ -27620,20 +27693,11 @@ var EXPRESSIONS = /* @__PURE__ */ Object.freeze({
 });
 var NODE_TYPE = {
   element: 1,
-  attribute: 2,
   text: 3,
-  cdataSection: 4,
-  entityReference: 5,
-  // Deprecated
-  entityNode: 6,
   // Deprecated
   progressingInstruction: 7,
   comment: 8,
-  document: 9,
-  documentType: 10,
-  documentFragment: 11,
-  notation: 12
-  // Deprecated
+  document: 9
 };
 var getGlobal = function getGlobal2() {
   return typeof window === "undefined" ? null : window;
@@ -27678,7 +27742,7 @@ var _createHooksMap = function _createHooksMap2() {
 function createDOMPurify() {
   let window2 = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : getGlobal();
   const DOMPurify = (root) => createDOMPurify(root);
-  DOMPurify.version = "3.3.3";
+  DOMPurify.version = "3.4.2";
   DOMPurify.removed = [];
   if (!window2 || !window2.document || window2.document.nodeType !== NODE_TYPE.document || !window2.Element) {
     DOMPurify.isSupported = false;
@@ -27692,7 +27756,7 @@ function createDOMPurify() {
   const {
     DocumentFragment,
     HTMLTemplateElement,
-    Node,
+    Node: Node2,
     Element: Element2,
     NodeFilter,
     NamedNodeMap = window2.NamedNodeMap || window2.MozNamedAttrMap,
@@ -27833,15 +27897,15 @@ function createDOMPurify() {
     PARSER_MEDIA_TYPE = // eslint-disable-next-line unicorn/prefer-includes
     SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
     transformCaseFunc = PARSER_MEDIA_TYPE === "application/xhtml+xml" ? stringToString : stringToLowerCase;
-    ALLOWED_TAGS2 = objectHasOwnProperty(cfg, "ALLOWED_TAGS") ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
-    ALLOWED_ATTR2 = objectHasOwnProperty(cfg, "ALLOWED_ATTR") ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
-    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
-    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
-    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
-    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
-    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
-    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
-    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES : false;
+    ALLOWED_TAGS2 = objectHasOwnProperty(cfg, "ALLOWED_TAGS") && arrayIsArray(cfg.ALLOWED_TAGS) ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR2 = objectHasOwnProperty(cfg, "ALLOWED_ATTR") && arrayIsArray(cfg.ALLOWED_ATTR) ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
+    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, "ALLOWED_NAMESPACES") && arrayIsArray(cfg.ALLOWED_NAMESPACES) ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
+    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") && arrayIsArray(cfg.ADD_URI_SAFE_ATTR) ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = objectHasOwnProperty(cfg, "ADD_DATA_URI_TAGS") && arrayIsArray(cfg.ADD_DATA_URI_TAGS) ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
+    FORBID_CONTENTS = objectHasOwnProperty(cfg, "FORBID_CONTENTS") && arrayIsArray(cfg.FORBID_CONTENTS) ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
+    FORBID_TAGS = objectHasOwnProperty(cfg, "FORBID_TAGS") && arrayIsArray(cfg.FORBID_TAGS) ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
+    FORBID_ATTR = objectHasOwnProperty(cfg, "FORBID_ATTR") && arrayIsArray(cfg.FORBID_ATTR) ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
+    USE_PROFILES = objectHasOwnProperty(cfg, "USE_PROFILES") ? cfg.USE_PROFILES && typeof cfg.USE_PROFILES === "object" ? clone(cfg.USE_PROFILES) : cfg.USE_PROFILES : false;
     ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false;
     ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false;
     ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false;
@@ -27857,19 +27921,20 @@ function createDOMPurify() {
     SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false;
     KEEP_CONTENT = cfg.KEEP_CONTENT !== false;
     IN_PLACE = cfg.IN_PLACE || false;
-    IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
-    NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
-    MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
-    HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
-    CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
-    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
-      CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
+    IS_ALLOWED_URI$1 = isRegex(cfg.ALLOWED_URI_REGEXP) ? cfg.ALLOWED_URI_REGEXP : IS_ALLOWED_URI;
+    NAMESPACE = typeof cfg.NAMESPACE === "string" ? cfg.NAMESPACE : HTML_NAMESPACE;
+    MATHML_TEXT_INTEGRATION_POINTS = objectHasOwnProperty(cfg, "MATHML_TEXT_INTEGRATION_POINTS") && cfg.MATHML_TEXT_INTEGRATION_POINTS && typeof cfg.MATHML_TEXT_INTEGRATION_POINTS === "object" ? clone(cfg.MATHML_TEXT_INTEGRATION_POINTS) : addToSet({}, ["mi", "mo", "mn", "ms", "mtext"]);
+    HTML_INTEGRATION_POINTS = objectHasOwnProperty(cfg, "HTML_INTEGRATION_POINTS") && cfg.HTML_INTEGRATION_POINTS && typeof cfg.HTML_INTEGRATION_POINTS === "object" ? clone(cfg.HTML_INTEGRATION_POINTS) : addToSet({}, ["annotation-xml"]);
+    const customElementHandling = objectHasOwnProperty(cfg, "CUSTOM_ELEMENT_HANDLING") && cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING === "object" ? clone(cfg.CUSTOM_ELEMENT_HANDLING) : create(null);
+    CUSTOM_ELEMENT_HANDLING = create(null);
+    if (objectHasOwnProperty(customElementHandling, "tagNameCheck") && isRegexOrFunction(customElementHandling.tagNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.tagNameCheck = customElementHandling.tagNameCheck;
     }
-    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
-      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
+    if (objectHasOwnProperty(customElementHandling, "attributeNameCheck") && isRegexOrFunction(customElementHandling.attributeNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = customElementHandling.attributeNameCheck;
     }
-    if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === "boolean") {
-      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
+    if (objectHasOwnProperty(customElementHandling, "allowCustomizedBuiltInElements") && typeof customElementHandling.allowCustomizedBuiltInElements === "boolean") {
+      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = customElementHandling.allowCustomizedBuiltInElements;
     }
     if (SAFE_FOR_TEMPLATES) {
       ALLOW_DATA_ATTR = false;
@@ -27900,42 +27965,38 @@ function createDOMPurify() {
         addToSet(ALLOWED_ATTR2, xml);
       }
     }
-    if (!objectHasOwnProperty(cfg, "ADD_TAGS")) {
-      EXTRA_ELEMENT_HANDLING.tagCheck = null;
-    }
-    if (!objectHasOwnProperty(cfg, "ADD_ATTR")) {
-      EXTRA_ELEMENT_HANDLING.attributeCheck = null;
-    }
-    if (cfg.ADD_TAGS) {
+    EXTRA_ELEMENT_HANDLING.tagCheck = null;
+    EXTRA_ELEMENT_HANDLING.attributeCheck = null;
+    if (objectHasOwnProperty(cfg, "ADD_TAGS")) {
       if (typeof cfg.ADD_TAGS === "function") {
         EXTRA_ELEMENT_HANDLING.tagCheck = cfg.ADD_TAGS;
-      } else {
+      } else if (arrayIsArray(cfg.ADD_TAGS)) {
         if (ALLOWED_TAGS2 === DEFAULT_ALLOWED_TAGS) {
           ALLOWED_TAGS2 = clone(ALLOWED_TAGS2);
         }
         addToSet(ALLOWED_TAGS2, cfg.ADD_TAGS, transformCaseFunc);
       }
     }
-    if (cfg.ADD_ATTR) {
+    if (objectHasOwnProperty(cfg, "ADD_ATTR")) {
       if (typeof cfg.ADD_ATTR === "function") {
         EXTRA_ELEMENT_HANDLING.attributeCheck = cfg.ADD_ATTR;
-      } else {
+      } else if (arrayIsArray(cfg.ADD_ATTR)) {
         if (ALLOWED_ATTR2 === DEFAULT_ALLOWED_ATTR) {
           ALLOWED_ATTR2 = clone(ALLOWED_ATTR2);
         }
         addToSet(ALLOWED_ATTR2, cfg.ADD_ATTR, transformCaseFunc);
       }
     }
-    if (cfg.ADD_URI_SAFE_ATTR) {
+    if (objectHasOwnProperty(cfg, "ADD_URI_SAFE_ATTR") && arrayIsArray(cfg.ADD_URI_SAFE_ATTR)) {
       addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
     }
-    if (cfg.FORBID_CONTENTS) {
+    if (objectHasOwnProperty(cfg, "FORBID_CONTENTS") && arrayIsArray(cfg.FORBID_CONTENTS)) {
       if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
         FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
       addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
     }
-    if (cfg.ADD_FORBID_CONTENTS) {
+    if (objectHasOwnProperty(cfg, "ADD_FORBID_CONTENTS") && arrayIsArray(cfg.ADD_FORBID_CONTENTS)) {
       if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
         FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
@@ -28105,7 +28166,7 @@ function createDOMPurify() {
     return element instanceof HTMLFormElement && (typeof element.nodeName !== "string" || typeof element.textContent !== "string" || typeof element.removeChild !== "function" || !(element.attributes instanceof NamedNodeMap) || typeof element.removeAttribute !== "function" || typeof element.setAttribute !== "function" || typeof element.namespaceURI !== "string" || typeof element.insertBefore !== "function" || typeof element.hasChildNodes !== "function");
   };
   const _isNode = function _isNode2(value) {
-    return typeof Node === "function" && value instanceof Node;
+    return typeof Node2 === "function" && value instanceof Node2;
   };
   function _executeHooks(hooks2, currentNode, data2) {
     arrayForEach(hooks2, (hook) => {
@@ -28128,6 +28189,10 @@ function createDOMPurify() {
       _forceRemove(currentNode);
       return true;
     }
+    if (SAFE_FOR_XML && currentNode.namespaceURI === HTML_NAMESPACE && tagName === "style" && _isNode(currentNode.firstElementChild)) {
+      _forceRemove(currentNode);
+      return true;
+    }
     if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
       _forceRemove(currentNode);
       return true;
@@ -28136,7 +28201,7 @@ function createDOMPurify() {
       _forceRemove(currentNode);
       return true;
     }
-    if (!(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName])) {
+    if (FORBID_TAGS[tagName] || !(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && !ALLOWED_TAGS2[tagName]) {
       if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
         if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
           return false;
@@ -28152,7 +28217,6 @@ function createDOMPurify() {
           const childCount = childNodes.length;
           for (let i = childCount - 1; i >= 0; --i) {
             const childClone = cloneNode(childNodes[i], true);
-            childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
             parentNode.insertBefore(childClone, getNextSibling(currentNode));
           }
         }
@@ -28190,10 +28254,10 @@ function createDOMPurify() {
     if (SANITIZE_DOM && (lcName === "id" || lcName === "name") && (value in document2 || value in formElement)) {
       return false;
     }
+    const nameIsPermitted = ALLOWED_ATTR2[lcName] || EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag);
     if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR2, lcName)) ;
     else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR2, lcName)) ;
-    else if (EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag)) ;
-    else if (!ALLOWED_ATTR2[lcName] || FORBID_ATTR[lcName]) {
+    else if (!nameIsPermitted || FORBID_ATTR[lcName]) {
       if (
         // First condition does a very basic check if a) it's basically a valid custom element tagname AND
         // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
@@ -28214,8 +28278,9 @@ function createDOMPurify() {
     } else ;
     return true;
   };
+  const RESERVED_CUSTOM_ELEMENT_NAMES = addToSet({}, ["annotation-xml", "color-profile", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "missing-glyph"]);
   const _isBasicCustomElement = function _isBasicCustomElement2(tagName) {
-    return tagName !== "annotation-xml" && stringMatch(tagName, CUSTOM_ELEMENT2);
+    return !RESERVED_CUSTOM_ELEMENT_NAMES[stringToLowerCase(tagName)] && regExpTest(CUSTOM_ELEMENT2, tagName);
   };
   const _sanitizeAttributes = function _sanitizeAttributes2(currentNode) {
     _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
@@ -28249,7 +28314,7 @@ function createDOMPurify() {
       hookEvent.forceKeepAttr = void 0;
       _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
       value = hookEvent.attrValue;
-      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name")) {
+      if (SANITIZE_NAMED_PROPS && (lcName === "id" || lcName === "name") && stringIndexOf(value, SANITIZE_NAMED_PROPS_PREFIX) !== 0) {
         _removeAttribute(name, currentNode);
         value = SANITIZE_NAMED_PROPS_PREFIX + value;
       }
@@ -28316,7 +28381,7 @@ function createDOMPurify() {
     }
     _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
   };
-  const _sanitizeShadowDOM = function _sanitizeShadowDOM2(fragment) {
+  const _sanitizeShadowDOM2 = function _sanitizeShadowDOM(fragment) {
     let shadowNode = null;
     const shadowIterator = _createNodeIterator(fragment);
     _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
@@ -28341,13 +28406,9 @@ function createDOMPurify() {
       dirty = "<!-->";
     }
     if (typeof dirty !== "string" && !_isNode(dirty)) {
-      if (typeof dirty.toString === "function") {
-        dirty = dirty.toString();
-        if (typeof dirty !== "string") {
-          throw typeErrorCreate("dirty is not a string, aborting");
-        }
-      } else {
-        throw typeErrorCreate("toString is not a function");
+      dirty = stringifyValue(dirty);
+      if (typeof dirty !== "string") {
+        throw typeErrorCreate("dirty is not a string, aborting");
       }
     }
     if (!DOMPurify.isSupported) {
@@ -28361,13 +28422,14 @@ function createDOMPurify() {
       IN_PLACE = false;
     }
     if (IN_PLACE) {
-      if (dirty.nodeName) {
-        const tagName = transformCaseFunc(dirty.nodeName);
+      const nn = dirty.nodeName;
+      if (typeof nn === "string") {
+        const tagName = transformCaseFunc(nn);
         if (!ALLOWED_TAGS2[tagName] || FORBID_TAGS[tagName]) {
           throw typeErrorCreate("root node is forbidden and cannot be sanitized in-place");
         }
       }
-    } else if (dirty instanceof Node) {
+    } else if (dirty instanceof Node2) {
       body = _initDocument("<!---->");
       importedNode = body.ownerDocument.importNode(dirty, true);
       if (importedNode.nodeType === NODE_TYPE.element && importedNode.nodeName === "BODY") {
@@ -28395,13 +28457,21 @@ function createDOMPurify() {
       _sanitizeElements(currentNode);
       _sanitizeAttributes(currentNode);
       if (currentNode.content instanceof DocumentFragment) {
-        _sanitizeShadowDOM(currentNode.content);
+        _sanitizeShadowDOM2(currentNode.content);
       }
     }
     if (IN_PLACE) {
       return dirty;
     }
     if (RETURN_DOM) {
+      if (SAFE_FOR_TEMPLATES) {
+        body.normalize();
+        let html2 = body.innerHTML;
+        arrayForEach([MUSTACHE_EXPR2, ERB_EXPR2, TMPLIT_EXPR2], (expr) => {
+          html2 = stringReplace(html2, expr, " ");
+        });
+        body.innerHTML = html2;
+      }
       if (RETURN_DOM_FRAGMENT) {
         returnNode = createDocumentFragment.call(body.ownerDocument);
         while (body.firstChild) {
@@ -28518,8 +28588,69 @@ function sanitizeHtmlFragment(value) {
   });
 }
 
-// dist/src/features/gantt-view/timeline-details-panel.js
+// dist/src/features/gantt-view/work-item-state-options.js
 var KNOWN_STATE_ORDER = ["To Do", "New", "Active", "Resolved", "Closed", "Done"];
+function resolveWorkItemStateOptions(input) {
+  const selectedState = input.selectedState.trim();
+  const normalizedServerOptions = normalizeWorkItemStateOptions(input.serverStateOptions);
+  if (normalizedServerOptions.length > 0) {
+    if (selectedState.length > 0 && !normalizedServerOptions.some((entry) => sameStateName(entry.name, selectedState))) {
+      return [{ name: selectedState, color: null }, ...normalizedServerOptions];
+    }
+    return normalizedServerOptions;
+  }
+  const discovered = discoverTimelineStates(input.timeline);
+  if (selectedState.length > 0) {
+    discovered.set(selectedState.toLowerCase(), selectedState);
+  }
+  const result = [];
+  for (const state2 of KNOWN_STATE_ORDER) {
+    result.push({ name: state2, color: null });
+    discovered.delete(state2.toLowerCase());
+  }
+  [...discovered.values()].sort((left, right) => left.localeCompare(right)).forEach((state2) => {
+    result.push({ name: state2, color: null });
+  });
+  return result.length > 0 ? result : [{ name: selectedState || "To Do", color: null }];
+}
+function normalizeWorkItemStateOptions(options) {
+  const seen = /* @__PURE__ */ new Set();
+  const normalized = [];
+  for (const option of options) {
+    const name = option.name.trim();
+    if (name.length === 0) {
+      continue;
+    }
+    const key = name.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    normalized.push({ name, color: option.color });
+  }
+  return normalized;
+}
+function discoverTimelineStates(timeline) {
+  const discovered = /* @__PURE__ */ new Map();
+  timeline?.bars.forEach((bar) => {
+    const state2 = bar.state.code.trim();
+    if (state2.length > 0 && !discovered.has(state2.toLowerCase())) {
+      discovered.set(state2.toLowerCase(), state2);
+    }
+  });
+  timeline?.unschedulable.forEach((item) => {
+    const state2 = item.state.code.trim();
+    if (state2.length > 0 && !discovered.has(state2.toLowerCase())) {
+      discovered.set(state2.toLowerCase(), state2);
+    }
+  });
+  return discovered;
+}
+function sameStateName(left, right) {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
+// dist/src/features/gantt-view/timeline-details-panel.js
 function TimelineDetailsPanel(props) {
   const contentHidden = props.contentHidden ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
@@ -28612,12 +28743,12 @@ function TimelineDetailsPanel(props) {
   import_react4.default.useEffect(() => {
     props.onDirtyChange?.(isDirty);
   }, [isDirty]);
-  const azureLink = selected ? buildAzureWorkItemUrl({
-    organization: props.organization,
-    project: props.project,
-    workItemId: selected.workItemId
-  }) : null;
-  const stateOptions = import_react4.default.useMemo(() => resolveStateOptions(props.timeline, selected?.state ?? "", serverStateOptions), [props.timeline, selected?.state, serverStateOptions]);
+  const azureLink = selected ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId) : null;
+  const stateOptions = import_react4.default.useMemo(() => resolveWorkItemStateOptions({
+    timeline: props.timeline,
+    selectedState: selected?.state ?? "",
+    serverStateOptions
+  }), [props.timeline, selected?.state, serverStateOptions]);
   const selectedStateColor = stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
   const hasDescriptionContent = stripHtmlToText(descriptionDraft).length > 0;
   const applyDescriptionCommand = (command, value) => {
@@ -28866,14 +28997,6 @@ function resolveSelectedWorkItem(timeline, selectedWorkItemId) {
   }
   return null;
 }
-function buildAzureWorkItemUrl(input) {
-  const organization = (input.organization ?? "").trim();
-  const project = (input.project ?? "").trim();
-  if (!organization || !project) {
-    return null;
-  }
-  return `https://dev.azure.com/${encodeURIComponent(organization)}/${encodeURIComponent(project)}/_workitems/edit/${input.workItemId}`;
-}
 function parseTimelineDetailLine(line) {
   const match = /^- ([^:]+):\s?(.*)$/.exec(line);
   if (!match) {
@@ -28908,38 +29031,6 @@ function formatDateForDisplay(raw) {
   const hours = String(parsed.getHours()).padStart(2, "0");
   const minutes = String(parsed.getMinutes()).padStart(2, "0");
   return `${day}.${month}.${year} ${hours}:${minutes}`;
-}
-function resolveStateOptions(timeline, selectedState, serverStateOptions) {
-  if (serverStateOptions.length > 0) {
-    const normalizedServerOptions = serverStateOptions.map((state2) => ({ name: state2.name.trim(), color: state2.color })).filter((state2) => state2.name.length > 0);
-    if (selectedState.trim().length > 0 && !normalizedServerOptions.some((entry) => entry.name.toLowerCase() === selectedState.trim().toLowerCase())) {
-      normalizedServerOptions.unshift({ name: selectedState.trim(), color: null });
-    }
-    return normalizedServerOptions;
-  }
-  const discovered = /* @__PURE__ */ new Set();
-  timeline?.bars.forEach((bar) => {
-    if (bar.state.code.trim().length > 0) {
-      discovered.add(bar.state.code.trim());
-    }
-  });
-  timeline?.unschedulable.forEach((item) => {
-    if (item.state.code.trim().length > 0) {
-      discovered.add(item.state.code.trim());
-    }
-  });
-  if (selectedState.trim().length > 0) {
-    discovered.add(selectedState.trim());
-  }
-  const result = [];
-  KNOWN_STATE_ORDER.forEach((state2) => {
-    result.push({ name: state2, color: null });
-    discovered.delete(state2);
-  });
-  [...discovered].sort((left, right) => left.localeCompare(right)).forEach((state2) => {
-    result.push({ name: state2, color: null });
-  });
-  return result.length > 0 ? result : [{ name: selectedState || "To Do", color: null }];
 }
 
 // dist/src/features/gantt-view/timeline-viewport-preference.js
@@ -29246,20 +29337,644 @@ function useScheduleDragging() {
 
 // dist/src/features/gantt-view/use-timeline-filters.js
 var import_react8 = __toESM(require_react(), 1);
+
+// dist/src/features/gantt-view/timeline-filter-model.js
+var MAX_TIMELINE_FILTER_SLOTS = 5;
+var EMPTY_TIMELINE_DATE_RANGE = {
+  startIso: null,
+  endIso: null
+};
+function createInitialTimelineFieldFilters() {
+  return [createTimelineFieldFilter(0)];
+}
+function createInitialTimelineFilterGroups() {
+  return [createTimelineFilterGroup(0, createInitialTimelineFieldFilters())];
+}
+function createTimelineFilterGroup(groupId, filters) {
+  return {
+    groupId,
+    filters: filters.map((filter) => cloneTimelineFieldFilter(filter))
+  };
+}
+function createTimelineFieldFilter(slotId) {
+  return createTimelineValueFieldFilter(slotId);
+}
+function createTimelineValueFieldFilter(slotId, fieldRef = null, selectedValueKeys = []) {
+  return {
+    slotId,
+    fieldRef: normalizeTimelineFilterFieldRef(fieldRef),
+    kind: "value",
+    selectedValueKeys: [...new Set(selectedValueKeys)]
+  };
+}
+function createTimelineDateRangeFieldFilter(slotId, fieldRef, dateRange = EMPTY_TIMELINE_DATE_RANGE) {
+  return {
+    slotId,
+    fieldRef: normalizeTimelineFilterFieldRef(fieldRef),
+    kind: "dateRange",
+    dateRange: normalizeTimelineDateRange(dateRange)
+  };
+}
+function normalizeTimelineFilterFieldRef(fieldRef) {
+  if (typeof fieldRef !== "string") {
+    return null;
+  }
+  const normalized = fieldRef.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+function normalizeTimelineDateRange(dateRange) {
+  return {
+    startIso: normalizeDateRangeIso(dateRange.startIso),
+    endIso: normalizeDateRangeIso(dateRange.endIso)
+  };
+}
+function isTimelineValueFieldFilter(filter) {
+  return filter.kind === "value";
+}
+function isTimelineDateRangeFilter(filter) {
+  return filter.kind === "dateRange";
+}
+function cloneTimelineFieldFilter(filter) {
+  if (isTimelineDateRangeFilter(filter)) {
+    return {
+      ...filter,
+      dateRange: normalizeTimelineDateRange(filter.dateRange)
+    };
+  }
+  return {
+    ...filter,
+    selectedValueKeys: [...filter.selectedValueKeys]
+  };
+}
+function normalizeDateRangeIso(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+// dist/src/features/gantt-view/timeline-field-filtering.js
+var EMPTY_FIELD_FILTER_KEY = "__null__";
+var TAG_FIELD_NAMES = /* @__PURE__ */ new Set(["tag", "tags"]);
+var TAG_SPLIT_DELIMITER = ";";
+var DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+var DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|[+-]\d{2}:\d{2})?$/;
+var MS_PER_DAY = 864e5;
+var DATE_FIELD_LEAF_PATTERN = /^(?:date|datetime|startdate|startdatetime|targetdate|targetdatetime|enddate|enddatetime|finishdate|finishdatetime|duedate|duedatetime|changeddate|changeddatetime|createddate|createddatetime|activateddate|activateddatetime|closeddate|closeddatetime|resolveddate|resolveddatetime|statechangedate|statechangedatetime)\d*$/i;
+var KNOWN_AZURE_DATE_FIELD_REFS = new Set([
+  "System.CreatedDate",
+  "System.ChangedDate",
+  "Microsoft.VSTS.Common.ActivatedDate",
+  "Microsoft.VSTS.Common.ClosedDate",
+  "Microsoft.VSTS.Common.ResolvedDate",
+  "Microsoft.VSTS.Common.StateChangeDate",
+  "Microsoft.VSTS.Scheduling.StartDate",
+  "Microsoft.VSTS.Scheduling.TargetDate",
+  "Microsoft.VSTS.Scheduling.DueDate",
+  "Microsoft.VSTS.Scheduling.FinishDate"
+].map((fieldRef) => fieldRef.toLowerCase()));
+function isTagFieldRef(fieldRef) {
+  const normalized = normalizeFieldRef(fieldRef);
+  if (!normalized) {
+    return false;
+  }
+  const parts = normalized.split(".");
+  const leaf = parts[parts.length - 1] ?? normalized;
+  return TAG_FIELD_NAMES.has(leaf.toLowerCase());
+}
+function extractFilterValueTokens(fieldRef, value) {
+  if (value === null || typeof value === "undefined") {
+    return [toEmptyToken()];
+  }
+  if (!isTagFieldRef(fieldRef)) {
+    const text2 = String(value).trim();
+    return text2.length > 0 ? [{ key: String(value), label: text2 }] : [toEmptyToken()];
+  }
+  const raw = String(value);
+  const tokens = [...new Set(raw.split(TAG_SPLIT_DELIMITER).map((entry) => entry.trim()).filter((entry) => entry.length > 0))];
+  if (tokens.length === 0) {
+    return [toEmptyToken()];
+  }
+  return tokens.map((token) => ({ key: token, label: token }));
+}
+function extractFilterMatchKeys(fieldRef, value) {
+  const keys = extractFilterValueTokens(fieldRef, value).map((token) => token.key);
+  if (value !== null && typeof value !== "undefined" && isTagFieldRef(fieldRef)) {
+    keys.push(String(value));
+  }
+  return [...new Set(keys)];
+}
+function buildTimelineDateFilterContext(timeline) {
+  if (!timeline) {
+    return {};
+  }
+  const sampleValuesByFieldRef = /* @__PURE__ */ new Map();
+  const register = (fieldValues) => {
+    if (!fieldValues) {
+      return;
+    }
+    Object.entries(fieldValues).forEach(([fieldRef, value]) => {
+      const normalizedFieldRef = normalizeFieldRef(fieldRef);
+      if (!normalizedFieldRef) {
+        return;
+      }
+      const samples = sampleValuesByFieldRef.get(normalizedFieldRef) ?? [];
+      samples.push(value);
+      sampleValuesByFieldRef.set(normalizedFieldRef, samples);
+    });
+  };
+  timeline.bars.forEach((bar) => register(bar.details.fieldValues));
+  timeline.unschedulable.forEach((item) => register(item.details.fieldValues));
+  return {
+    scheduleFieldRefs: timeline.scheduleFieldRefs ?? null,
+    sampleValuesByFieldRef
+  };
+}
+function isTimelineDateFieldRef(fieldRef, context = {}) {
+  const normalized = normalizeFieldRef(fieldRef);
+  if (!normalized) {
+    return false;
+  }
+  const normalizedLower = normalized.toLowerCase();
+  if (KNOWN_AZURE_DATE_FIELD_REFS.has(normalizedLower)) {
+    return true;
+  }
+  const scheduleFieldRefs = context.scheduleFieldRefs;
+  if (scheduleFieldRefs && (scheduleFieldRefs.start.trim().toLowerCase() === normalizedLower || scheduleFieldRefs.endOrTarget.trim().toLowerCase() === normalizedLower)) {
+    return true;
+  }
+  const parts = normalized.split(".");
+  const leaf = parts[parts.length - 1] ?? normalized;
+  if (DATE_FIELD_LEAF_PATTERN.test(leaf)) {
+    return true;
+  }
+  const sampleValues = context.sampleValuesByFieldRef?.get(normalized);
+  return sampleValues ? doSamplesLookStrictlyDateLike(sampleValues) : false;
+}
+function toTimelineDateTimeLocalInputValue(iso) {
+  const timestamp = parseTimelineDateToTimestamp(iso);
+  if (timestamp === null) {
+    return "";
+  }
+  const date = new Date(timestamp);
+  return [
+    `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`,
+    `${padDatePart(date.getHours())}:${padDatePart(date.getMinutes())}`
+  ].join("T");
+}
+function fromTimelineDateTimeLocalInputValue(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return null;
+  }
+  const match = DATE_TIME_PATTERN.exec(normalized);
+  if (!match) {
+    return null;
+  }
+  const [, yearRaw, monthRaw, dayRaw, hourRaw, minuteRaw, secondRaw, fractionRaw, zoneRaw] = match;
+  if (typeof zoneRaw === "string") {
+    return null;
+  }
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+  const second = typeof secondRaw === "string" ? Number(secondRaw) : 0;
+  const millisecond = typeof fractionRaw === "string" ? Number(fractionRaw.slice(0, 3).padEnd(3, "0")) : 0;
+  if (!areDateTimePartsValid(year, month, day, hour, minute, second, millisecond)) {
+    return null;
+  }
+  const localDate = new Date(year, month - 1, day, hour, minute, second, millisecond);
+  if (localDate.getFullYear() !== year || localDate.getMonth() !== month - 1 || localDate.getDate() !== day || localDate.getHours() !== hour || localDate.getMinutes() !== minute || localDate.getSeconds() !== second || localDate.getMilliseconds() !== millisecond) {
+    return null;
+  }
+  return localDate.toISOString();
+}
+function normalizeTimelineDateIso(value) {
+  const timestamp = parseTimelineDateToTimestamp(value);
+  return timestamp === null ? null : new Date(timestamp).toISOString();
+}
+function normalizeLegacyTimelineDateFilterValueIso(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  const dateOnlyParts = parseTimelineDateOnlyParts(normalized);
+  if (dateOnlyParts) {
+    return fromTimelineDateTimeLocalInputValue(`${dateOnlyParts.year}-${padDatePart(dateOnlyParts.month)}-${padDatePart(dateOnlyParts.day)}T00:00`);
+  }
+  return normalizeTimelineDateIso(normalized);
+}
+function parseTimelineDateToTimestamp(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return null;
+  }
+  const dateOnlyParts = parseTimelineDateOnlyParts(normalized);
+  if (dateOnlyParts) {
+    return Date.UTC(dateOnlyParts.year, dateOnlyParts.month - 1, dateOnlyParts.day);
+  }
+  const dateTimeMatch = DATE_TIME_PATTERN.exec(normalized);
+  if (!dateTimeMatch) {
+    return null;
+  }
+  const [, yearRaw, monthRaw, dayRaw, hourRaw, minuteRaw, secondRaw, fractionRaw, zoneRaw] = dateTimeMatch;
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+  const second = typeof secondRaw === "string" ? Number(secondRaw) : 0;
+  const millisecond = typeof fractionRaw === "string" ? Number(fractionRaw.slice(0, 3).padEnd(3, "0")) : 0;
+  if (!areDateTimePartsValid(year, month, day, hour, minute, second, millisecond)) {
+    return null;
+  }
+  if (typeof zoneRaw === "string") {
+    const parsed = Date.parse(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return Date.UTC(year, month - 1, day, hour, minute, second, millisecond);
+}
+function isTimelineDateRangeInvalid(dateRange) {
+  const startTimestamp = parseTimelineDateToTimestamp(dateRange.startIso);
+  const endTimestamp = parseTimelineDateToTimestamp(dateRange.endIso);
+  return startTimestamp !== null && endTimestamp !== null && startTimestamp > endTimestamp;
+}
+function isActiveTimelineDateRange(dateRange) {
+  const startTimestamp = parseTimelineDateToTimestamp(dateRange.startIso);
+  const endTimestamp = parseTimelineDateToTimestamp(dateRange.endIso);
+  if (startTimestamp === null && endTimestamp === null) {
+    return false;
+  }
+  return !(startTimestamp !== null && endTimestamp !== null && startTimestamp > endTimestamp);
+}
+function isActiveTimelineFieldFilter(filter) {
+  if (!filter.fieldRef) {
+    return false;
+  }
+  if (isTimelineDateRangeFilter(filter)) {
+    return isActiveTimelineDateRange(filter.dateRange);
+  }
+  return filter.selectedValueKeys.length > 0;
+}
+function countActiveTimelineFieldFilters(filters) {
+  return filters.filter((filter) => isActiveTimelineFieldFilter(filter)).length;
+}
+function matchesTimelineDateRangeValue(value, dateRange) {
+  if (!isActiveTimelineDateRange(dateRange)) {
+    return true;
+  }
+  const startTimestamp = parseTimelineDateToTimestamp(dateRange.startIso);
+  const endTimestamp = parseTimelineDateToTimestamp(dateRange.endIso);
+  const dateOnlyParts = typeof value === "string" ? parseTimelineDateOnlyParts(value.trim()) : null;
+  if (dateOnlyParts) {
+    return matchesTimelineDateOnlyValueWithinRange(dateOnlyParts, startTimestamp, endTimestamp);
+  }
+  const valueTimestamp = parseTimelineDateToTimestamp(value);
+  if (valueTimestamp === null) {
+    return false;
+  }
+  if (startTimestamp !== null && valueTimestamp < startTimestamp) {
+    return false;
+  }
+  if (endTimestamp !== null && valueTimestamp > endTimestamp) {
+    return false;
+  }
+  return true;
+}
+function applyTimelineFieldFilterGroups(timeline, groups) {
+  if (!timeline) {
+    return null;
+  }
+  const activeGroups = groups.map((group) => group.filters.filter((filter) => isActiveTimelineFieldFilter(filter))).filter((filters) => filters.length > 0);
+  if (activeGroups.length === 0) {
+    return timeline;
+  }
+  const matchesAnyGroup = (fieldValues) => {
+    return activeGroups.some((filters) => filters.every((filter) => matchesTimelineFieldFilter(filter, fieldValues)));
+  };
+  const bars = timeline.bars.filter((bar) => matchesAnyGroup(bar.details.fieldValues));
+  const unschedulable = timeline.unschedulable.filter((item) => matchesAnyGroup(item.details.fieldValues));
+  const visibleWorkItemIds = /* @__PURE__ */ new Set([
+    ...bars.map((bar) => bar.workItemId),
+    ...unschedulable.map((item) => item.workItemId)
+  ]);
+  const dependencies = timeline.dependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
+  const suppressedDependencies = timeline.suppressedDependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
+  return {
+    ...timeline,
+    bars,
+    unschedulable,
+    dependencies,
+    suppressedDependencies
+  };
+}
+function matchesTimelineFieldFilter(filter, fieldValues) {
+  const normalizedFieldRef = normalizeFieldRef(filter.fieldRef);
+  if (!normalizedFieldRef) {
+    return true;
+  }
+  if (isTimelineDateRangeFilter(filter)) {
+    return matchesTimelineDateRangeValue(fieldValues?.[normalizedFieldRef], filter.dateRange);
+  }
+  const selectedValueKeys = new Set(filter.selectedValueKeys);
+  const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
+  return matchKeys.some((key) => selectedValueKeys.has(key));
+}
+function formatTimelineDateRangeFilterLabel(dateRange) {
+  if (isTimelineDateRangeInvalid(dateRange)) {
+    return "Invalid range";
+  }
+  const startLabel = formatTimelineDateRangeEndpoint(dateRange.startIso);
+  const endLabel = formatTimelineDateRangeEndpoint(dateRange.endIso);
+  if (!startLabel && !endLabel) {
+    return "Date range";
+  }
+  if (startLabel && !endLabel) {
+    return `From ${startLabel}`;
+  }
+  if (!startLabel && endLabel) {
+    return `Until ${endLabel}`;
+  }
+  if (dateRange.startIso === dateRange.endIso) {
+    return `On ${startLabel}`;
+  }
+  return `${startLabel} - ${endLabel}`;
+}
+function toEmptyToken() {
+  return { key: EMPTY_FIELD_FILTER_KEY, label: "Empty" };
+}
+function normalizeFieldRef(fieldRef) {
+  if (typeof fieldRef !== "string") {
+    return null;
+  }
+  const normalized = fieldRef.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+function doSamplesLookStrictlyDateLike(values) {
+  let hasDateLikeSample = false;
+  for (const value of values) {
+    if (value === null || typeof value === "undefined") {
+      continue;
+    }
+    if (typeof value !== "string") {
+      return false;
+    }
+    if (value.trim().length === 0) {
+      continue;
+    }
+    if (parseTimelineDateToTimestamp(value) === null) {
+      return false;
+    }
+    hasDateLikeSample = true;
+  }
+  return hasDateLikeSample;
+}
+function parseTimelineDateOnlyParts(value) {
+  const dateOnlyMatch = DATE_ONLY_PATTERN.exec(value);
+  if (!dateOnlyMatch) {
+    return null;
+  }
+  const [, yearRaw, monthRaw, dayRaw] = dateOnlyMatch;
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  if (!areDateTimePartsValid(year, month, day, 0, 0, 0, 0)) {
+    return null;
+  }
+  return { year, month, day };
+}
+function matchesTimelineDateOnlyValueWithinRange(valueParts, startTimestamp, endTimestamp) {
+  const valueLocalDay = toDateOnlyDayOrdinal(valueParts);
+  const startLocalDay = startTimestamp === null ? null : toTimestampLocalDayOrdinal(startTimestamp);
+  const endLocalDay = endTimestamp === null ? null : toTimestampLocalDayOrdinal(endTimestamp);
+  if (startLocalDay !== null && valueLocalDay < startLocalDay) {
+    return false;
+  }
+  if (endLocalDay !== null && valueLocalDay > endLocalDay) {
+    return false;
+  }
+  return true;
+}
+function toTimestampLocalDayOrdinal(timestamp) {
+  const date = new Date(timestamp);
+  return toDateOnlyDayOrdinal({
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate()
+  });
+}
+function toDateOnlyDayOrdinal(parts) {
+  return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / MS_PER_DAY);
+}
+function areDateTimePartsValid(year, month, day, hour, minute, second, millisecond) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) || !Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second) || !Number.isInteger(millisecond) || month < 1 || month > 12 || day < 1 || hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59 || millisecond < 0 || millisecond > 999) {
+    return false;
+  }
+  const candidate = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
+  return candidate.getUTCFullYear() === year && candidate.getUTCMonth() === month - 1 && candidate.getUTCDate() === day && candidate.getUTCHours() === hour && candidate.getUTCMinutes() === minute && candidate.getUTCSeconds() === second && candidate.getUTCMilliseconds() === millisecond;
+}
+function padDatePart(value) {
+  return String(value).padStart(2, "0");
+}
+function formatTimelineDateRangeEndpoint(iso) {
+  const timestamp = parseTimelineDateToTimestamp(iso);
+  if (timestamp === null) {
+    return null;
+  }
+  const date = new Date(timestamp);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+// dist/src/features/gantt-view/timeline-filter-groups.js
+function flattenTimelineFilterGroups(groups) {
+  return groups.flatMap((group) => group.filters);
+}
+function createTimelineFilterGroupsFromFilters(filters) {
+  return filters.length === 0 ? [] : [createTimelineFilterGroup(0, filters)];
+}
+function countTimelineFilterSlots(groups) {
+  return groups.reduce((count, group) => count + group.filters.length, 0);
+}
+function findTimelineFilterBySlotId(groups, slotId) {
+  for (const group of groups) {
+    const filter = group.filters.find((entry) => entry.slotId === slotId);
+    if (filter) {
+      return filter;
+    }
+  }
+  return null;
+}
+function resolveNextTimelineFilterSlotId(groups) {
+  const slotIds = flattenTimelineFilterGroups(groups).map((filter) => filter.slotId);
+  return slotIds.length === 0 ? 0 : Math.max(...slotIds) + 1;
+}
+function resolveNextTimelineFilterGroupId(groups) {
+  const groupIds = groups.map((group) => group.groupId);
+  return groupIds.length === 0 ? 0 : Math.max(...groupIds) + 1;
+}
+function addTimelineFilterGroup(groups, groupId, slotId) {
+  if (countTimelineFilterSlots(groups) >= MAX_TIMELINE_FILTER_SLOTS) {
+    return groups;
+  }
+  return [...groups, createTimelineFilterGroup(groupId, [createTimelineFieldFilter(slotId)])];
+}
+function removeTimelineFilterGroup(groups, groupId) {
+  if (!groups.some((group) => group.groupId === groupId)) {
+    return groups;
+  }
+  if (groups.length <= 1) {
+    const onlyGroup = groups[0];
+    if (!onlyGroup) {
+      return createInitialTimelineFilterGroups();
+    }
+    const firstSlotId = onlyGroup.filters[0]?.slotId ?? 0;
+    return [createTimelineFilterGroup(onlyGroup.groupId, [createTimelineFieldFilter(firstSlotId)])];
+  }
+  const nextGroups = groups.filter((group) => group.groupId !== groupId);
+  return nextGroups.length === 0 ? createInitialTimelineFilterGroups() : nextGroups;
+}
+function addTimelineFilterConditionToGroup(groups, groupId, slotId) {
+  if (countTimelineFilterSlots(groups) >= MAX_TIMELINE_FILTER_SLOTS) {
+    return groups;
+  }
+  return groups.map((group) => group.groupId === groupId ? createTimelineFilterGroup(group.groupId, [...group.filters, createTimelineFieldFilter(slotId)]) : group);
+}
+function removeTimelineFilterCondition(groups, slotId) {
+  const targetGroup = groups.find((group) => group.filters.some((filter) => filter.slotId === slotId));
+  if (!targetGroup) {
+    return groups;
+  }
+  if (targetGroup.filters.length <= 1) {
+    if (groups.length <= 1) {
+      return [createTimelineFilterGroup(targetGroup.groupId, [createTimelineFieldFilter(slotId)])];
+    }
+    return groups.filter((group) => group.groupId !== targetGroup.groupId);
+  }
+  return groups.map((group) => group.groupId === targetGroup.groupId ? createTimelineFilterGroup(group.groupId, group.filters.filter((filter) => filter.slotId !== slotId)) : group);
+}
+function updateTimelineFilterFieldSelection(groups, slotId, fieldRef, dateFilterContext) {
+  const normalizedFieldRef = normalizeTimelineFilterFieldRef(fieldRef);
+  return mapTimelineFilterBySlotId(groups, slotId, (filter) => {
+    if (!normalizedFieldRef) {
+      return createTimelineFieldFilter(filter.slotId);
+    }
+    if (isTimelineDateFieldRef(normalizedFieldRef, dateFilterContext)) {
+      return createTimelineDateRangeFieldFilter(filter.slotId, normalizedFieldRef, filter.fieldRef === normalizedFieldRef && isTimelineDateRangeFilter(filter) ? filter.dateRange : { startIso: null, endIso: null });
+    }
+    return createTimelineValueFieldFilter(filter.slotId, normalizedFieldRef, filter.fieldRef === normalizedFieldRef && isTimelineValueFieldFilter(filter) ? filter.selectedValueKeys : []);
+  });
+}
+function toggleTimelineFilterValueSelection(groups, slotId, valueKey) {
+  return mapTimelineFilterBySlotId(groups, slotId, (filter) => {
+    if (!isTimelineValueFieldFilter(filter)) {
+      return filter;
+    }
+    const selectedValueKeys = filter.selectedValueKeys.includes(valueKey) ? filter.selectedValueKeys.filter((entry) => entry !== valueKey) : [...filter.selectedValueKeys, valueKey];
+    return {
+      ...filter,
+      selectedValueKeys
+    };
+  });
+}
+function toggleVisibleTimelineFilterValueSelections(groups, slotId, valueKeys) {
+  if (valueKeys.length === 0) {
+    return groups;
+  }
+  return mapTimelineFilterBySlotId(groups, slotId, (filter) => {
+    if (!isTimelineValueFieldFilter(filter)) {
+      return filter;
+    }
+    const visibleValueKeySet = new Set(valueKeys);
+    const allVisibleValuesSelected = valueKeys.every((valueKey) => filter.selectedValueKeys.includes(valueKey));
+    if (allVisibleValuesSelected) {
+      return {
+        ...filter,
+        selectedValueKeys: filter.selectedValueKeys.filter((valueKey) => !visibleValueKeySet.has(valueKey))
+      };
+    }
+    const selectedValueKeys = [...filter.selectedValueKeys];
+    for (const valueKey of valueKeys) {
+      if (!selectedValueKeys.includes(valueKey)) {
+        selectedValueKeys.push(valueKey);
+      }
+    }
+    return {
+      ...filter,
+      selectedValueKeys
+    };
+  });
+}
+function updateTimelineFilterDateRange(groups, slotId, dateRange) {
+  return mapTimelineFilterBySlotId(groups, slotId, (filter) => {
+    if (!filter.fieldRef) {
+      return filter;
+    }
+    return createTimelineDateRangeFieldFilter(filter.slotId, filter.fieldRef, dateRange);
+  });
+}
+function findTimelineFilterGroupIdBySlotId(groups, slotId) {
+  const group = groups.find((entry) => entry.filters.some((filter) => filter.slotId === slotId));
+  return group?.groupId ?? null;
+}
+function mapTimelineFilterBySlotId(groups, slotId, mapFilter) {
+  return groups.map((group) => {
+    if (!group.filters.some((filter) => filter.slotId === slotId)) {
+      return group;
+    }
+    return createTimelineFilterGroup(group.groupId, group.filters.map((filter) => filter.slotId === slotId ? mapFilter(filter) : filter));
+  });
+}
+
+// dist/src/features/gantt-view/use-timeline-filters.js
 function useTimelineFilters(initialState) {
+  const [resolvedInitialState] = import_react8.default.useState(() => {
+    const groups = resolveInitialTimelineFilterGroups(initialState);
+    return {
+      groups,
+      nextGroupId: initialState.nextGroupId ?? resolveNextTimelineFilterGroupId(groups)
+    };
+  });
   const [timelineFiltersOpen, setTimelineFiltersOpen] = import_react8.default.useState(false);
-  const [timelineFieldFilters, setTimelineFieldFilters] = import_react8.default.useState(() => initialState.filters);
+  const [timelineFilterGroups, setTimelineFilterGroups] = import_react8.default.useState(() => resolvedInitialState.groups);
   const [nextFilterSlotId, setNextFilterSlotId] = import_react8.default.useState(() => initialState.nextSlotId);
+  const [nextFilterGroupId, setNextFilterGroupId] = import_react8.default.useState(() => resolvedInitialState.nextGroupId);
   const [openFilterDropdown, setOpenFilterDropdown] = import_react8.default.useState(null);
   const [filterFieldSearchDraft, setFilterFieldSearchDraft] = import_react8.default.useState("");
   const [filterValueSearchDraft, setFilterValueSearchDraft] = import_react8.default.useState("");
+  const timelineFieldFilters = import_react8.default.useMemo(() => flattenTimelineFilterGroups(timelineFilterGroups), [timelineFilterGroups]);
+  const setTimelineFieldFilters = import_react8.default.useCallback((next) => {
+    setTimelineFilterGroups((currentGroups) => {
+      const currentFilters = flattenTimelineFilterGroups(currentGroups);
+      const nextFilters = typeof next === "function" ? next(currentFilters) : next;
+      const nextGroups = createTimelineFilterGroupsFromFilters(nextFilters);
+      return nextGroups.length > 0 ? nextGroups : createInitialTimelineFilterGroups();
+    });
+  }, []);
   return {
     timelineFiltersOpen,
     setTimelineFiltersOpen,
+    timelineFilterGroups,
+    setTimelineFilterGroups,
     timelineFieldFilters,
     setTimelineFieldFilters,
     nextFilterSlotId,
     setNextFilterSlotId,
+    nextFilterGroupId,
+    setNextFilterGroupId,
     openFilterDropdown,
     setOpenFilterDropdown,
     filterFieldSearchDraft,
@@ -29267,6 +29982,15 @@ function useTimelineFilters(initialState) {
     filterValueSearchDraft,
     setFilterValueSearchDraft
   };
+}
+function resolveInitialTimelineFilterGroups(initialState) {
+  if (initialState.groups && initialState.groups.length > 0) {
+    return initialState.groups;
+  }
+  if (initialState.filters && initialState.filters.length > 0) {
+    return createTimelineFilterGroupsFromFilters(initialState.filters);
+  }
+  return createInitialTimelineFilterGroups();
 }
 
 // dist/src/features/gantt-view/use-timeline-overlay-dismiss.js
@@ -29771,7 +30495,7 @@ function dfsCollect(parentId, depth, ancestorIsLastSibling, childrenByParent, or
 
 // dist/src/features/gantt-view/timeline-sorting.js
 var DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
-var MS_PER_DAY = 864e5;
+var MS_PER_DAY2 = 864e5;
 var BUILT_IN_SORT_OPTIONS = [
   { value: "startDate", label: "Start date", subtitle: "Built-in" },
   { value: "endDate", label: "End date", subtitle: "Built-in" },
@@ -29965,7 +30689,7 @@ function resolveStartDateSortTimestamp(item) {
   if (endTimestamp === null) {
     return null;
   }
-  return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY;
+  return endTimestamp - (DEFAULT_UNSCHEDULED_DURATION_DAYS - 1) * MS_PER_DAY2;
 }
 function normalizeString(value) {
   if (value === null || typeof value === "undefined") {
@@ -30272,7 +30996,77 @@ function useTimelineSorting(queryId) {
 
 // dist/src/features/gantt-view/use-tree-expand-collapse.js
 var React28 = __toESM(require_react(), 1);
-function useTreeExpandCollapse(treeLayout) {
+
+// dist/src/features/gantt-view/timeline-tree-levels.js
+function listTimelineTreeWorkItemIds(timeline) {
+  if (!timeline) {
+    return /* @__PURE__ */ new Set();
+  }
+  return /* @__PURE__ */ new Set([
+    ...timeline.bars.map((bar) => bar.workItemId),
+    ...timeline.unschedulable.map((item) => item.workItemId)
+  ]);
+}
+function summarizeTimelineTreeLevels(timeline, collapsedIds) {
+  if (!timeline?.treeLayout) {
+    return [];
+  }
+  const visibleWorkItemIds = listTimelineTreeWorkItemIds(timeline);
+  const countsByDepth = /* @__PURE__ */ new Map();
+  for (const workItemId of visibleWorkItemIds) {
+    const meta = timeline.treeLayout[workItemId];
+    if (!meta) {
+      continue;
+    }
+    const current = countsByDepth.get(meta.depth) ?? { itemCount: 0, collapsibleCount: 0, collapsedCount: 0 };
+    current.itemCount += 1;
+    if (meta.hasChildren) {
+      current.collapsibleCount += 1;
+      if (collapsedIds.has(workItemId)) {
+        current.collapsedCount += 1;
+      }
+    }
+    countsByDepth.set(meta.depth, current);
+  }
+  return Array.from(countsByDepth.entries()).sort(([leftDepth], [rightDepth]) => leftDepth - rightDepth).map(([depth, counts]) => {
+    const disabled = counts.collapsibleCount === 0;
+    return {
+      depth,
+      itemCount: counts.itemCount,
+      collapsibleCount: counts.collapsibleCount,
+      collapsedCount: counts.collapsedCount,
+      disabled,
+      state: resolveTimelineTreeLevelState(counts.collapsibleCount, counts.collapsedCount)
+    };
+  });
+}
+function listCollapsibleTreeIds(treeLayout, includedWorkItemIds, depth) {
+  if (!treeLayout) {
+    return [];
+  }
+  return Object.keys(treeLayout).map((id) => Number(id)).filter((workItemId) => {
+    if (!Number.isFinite(workItemId)) {
+      return false;
+    }
+    if (includedWorkItemIds && !includedWorkItemIds.has(workItemId)) {
+      return false;
+    }
+    const meta = treeLayout[workItemId];
+    return Boolean(meta?.hasChildren) && (typeof depth === "undefined" || meta.depth === depth);
+  });
+}
+function resolveTimelineTreeLevelState(collapsibleCount, collapsedCount) {
+  if (collapsibleCount === 0) {
+    return "leaf-only";
+  }
+  if (collapsedCount === 0) {
+    return "expanded";
+  }
+  return collapsedCount === collapsibleCount ? "collapsed" : "mixed";
+}
+
+// dist/src/features/gantt-view/use-tree-expand-collapse.js
+function useTreeExpandCollapse(treeLayout, includedWorkItemIds = null) {
   const [collapsedIds, setCollapsedIds] = React28.useState(/* @__PURE__ */ new Set());
   const toggle = React28.useCallback((workItemId) => {
     setCollapsedIds((previous) => {
@@ -30289,15 +31083,26 @@ function useTreeExpandCollapse(treeLayout) {
     if (!treeLayout) {
       return;
     }
-    const allParents = /* @__PURE__ */ new Set();
-    for (const id of Object.keys(treeLayout)) {
-      const meta = treeLayout[id];
-      if (meta.hasChildren) {
-        allParents.add(Number(id));
-      }
+    setCollapsedIds(new Set(listCollapsibleTreeIds(treeLayout, includedWorkItemIds)));
+  }, [includedWorkItemIds, treeLayout]);
+  const toggleLevel = React28.useCallback((depth) => {
+    const levelIds = listCollapsibleTreeIds(treeLayout, includedWorkItemIds, depth);
+    if (levelIds.length === 0) {
+      return;
     }
-    setCollapsedIds(allParents);
-  }, [treeLayout]);
+    setCollapsedIds((previous) => {
+      const allCollapsed = levelIds.every((id) => previous.has(id));
+      const next = new Set(previous);
+      for (const id of levelIds) {
+        if (allCollapsed) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+      }
+      return next;
+    });
+  }, [includedWorkItemIds, treeLayout]);
   const expandAll = React28.useCallback(() => {
     setCollapsedIds(/* @__PURE__ */ new Set());
   }, []);
@@ -30305,6 +31110,7 @@ function useTreeExpandCollapse(treeLayout) {
   return {
     collapsedIds,
     toggle,
+    toggleLevel,
     collapseAll,
     expandAll,
     isCollapsed
@@ -30315,6 +31121,7 @@ function applyTreeVisibility(timeline, collapsedIds) {
     return timeline;
   }
   const treeLayout = timeline.treeLayout;
+  const visibleWorkItemIds = listTimelineTreeWorkItemIds(timeline);
   const isHidden = (workItemId) => {
     const meta = treeLayout[workItemId];
     if (!meta) {
@@ -30322,7 +31129,7 @@ function applyTreeVisibility(timeline, collapsedIds) {
     }
     let parentId = meta.parentWorkItemId;
     while (parentId !== null) {
-      if (collapsedIds.has(parentId)) {
+      if (visibleWorkItemIds.has(parentId) && collapsedIds.has(parentId)) {
         return true;
       }
       const parentMeta = treeLayout[parentId];
@@ -30681,26 +31488,106 @@ function useDragAutoScroll(scrollRef, isActive, onAutoScroll) {
   }, []);
 }
 
+// dist/src/features/gantt-view/timeline-left-sidebar-header.js
+var import_react18 = __toESM(require_react(), 1);
+function TimelineLeftSidebarHeader(props) {
+  return import_react18.default.createElement("div", {
+    className: "timeline-left-sidebar-header",
+    style: { height: `${props.heightPx}px` }
+  }, props.treeLevels.length > 0 ? import_react18.default.createElement("div", {
+    className: "timeline-tree-level-controls",
+    role: "group",
+    "aria-label": "Timeline tree levels"
+  }, import_react18.default.createElement("div", {
+    className: "timeline-tree-level-list"
+  }, props.treeLevels.map((level) => buildTreeLevelControl(level, props.onToggleTreeLevel)))) : null, import_react18.default.createElement("button", {
+    type: "button",
+    className: "timeline-left-sidebar-align-toggle",
+    "aria-label": "Toggle timeline sidebar row alignment",
+    title: props.rowJustify === "flex-end" ? "Align sidebar rows left" : "Align sidebar rows right",
+    "aria-pressed": props.rowJustify === "flex-end",
+    onClick: props.onToggleRowJustify
+  }, import_react18.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-left-sidebar-align-icon",
+    "aria-hidden": "true"
+  }, props.rowJustify === "flex-end" ? [
+    import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+    import_react18.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
+    import_react18.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
+  ] : [
+    import_react18.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+    import_react18.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
+    import_react18.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
+  ])));
+}
+function buildTreeLevelControl(level, onToggleTreeLevel) {
+  const label = level.depth + 1;
+  return import_react18.default.createElement("button", {
+    key: level.depth,
+    type: "button",
+    className: "timeline-tree-level-control",
+    disabled: level.disabled,
+    "aria-label": buildTreeLevelControlAriaLabel(level),
+    "aria-pressed": buildTreeLevelAriaPressed(level),
+    title: buildTreeLevelControlTitle(level),
+    "data-state": level.state,
+    onClick: level.disabled ? void 0 : () => onToggleTreeLevel(level.depth)
+  }, import_react18.default.createElement("span", {
+    className: "timeline-tree-level-state-icon",
+    "aria-hidden": "true"
+  }), import_react18.default.createElement("span", {
+    className: "timeline-tree-level-label"
+  }, `L${label}`));
+}
+function buildTreeLevelControlAriaLabel(level) {
+  const label = level.depth + 1;
+  const itemCountLabel = formatTreeLevelItemCount(level.itemCount);
+  if (level.disabled) {
+    return `Timeline tree level ${label}: ${itemCountLabel}, no collapsible items`;
+  }
+  const action = level.state === "collapsed" ? "Expand" : "Collapse";
+  return `${action} timeline tree level ${label}: ${itemCountLabel}, ${level.collapsedCount} of ${level.collapsibleCount} collapsible items collapsed`;
+}
+function buildTreeLevelAriaPressed(level) {
+  if (level.disabled) {
+    return void 0;
+  }
+  return level.state === "mixed" ? "mixed" : level.state === "collapsed" ? "true" : "false";
+}
+function buildTreeLevelControlTitle(level) {
+  const label = level.depth + 1;
+  const itemCountLabel = formatTreeLevelItemCount(level.itemCount);
+  if (level.disabled) {
+    return `Level ${label}: ${itemCountLabel}, no collapsible items`;
+  }
+  const action = level.state === "collapsed" ? "Expand" : "Collapse";
+  return `${action} level ${label}: ${itemCountLabel}, ${level.collapsedCount}/${level.collapsibleCount} collapsed`;
+}
+function formatTreeLevelItemCount(itemCount) {
+  return `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+}
+
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
-var import_react19 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 var import_react_dom = __toESM(require_react_dom(), 1);
 
 // dist/src/features/gantt-view/timeline-label-settings-panel.js
-var import_react18 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 function TimelineLabelSettingsPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react18.default.createElement("div", {
+  return import_react19.default.createElement("div", {
     className: "timeline-label-menu",
     role: "group",
     "aria-label": "Timeline label fields",
     ref: props.panelRef
-  }, import_react18.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react18.default.createElement("section", { className: "timeline-label-menu-column" }, import_react18.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react18.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react18.default.createElement("button", {
+  }, import_react19.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react19.default.createElement("section", { className: "timeline-label-menu-column" }, import_react19.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react19.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineSidebarFields
-  }, "Nothing in sidebar"), import_react18.default.createElement("input", {
+  }, "Nothing in sidebar"), import_react19.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sidebar fields",
@@ -30709,25 +31596,25 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeSidebarFieldSearchDraft(event.target.value);
     }
-  }), import_react18.default.createElement("div", {
+  }), import_react19.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuSidebarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromSidebar
-  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react18.default.createElement("label", {
+  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react19.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react19.default.createElement("label", {
     key: `timeline-sidebar-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react18.default.createElement("input", {
+  }, import_react19.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineSidebarFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline sidebar`,
     onChange: () => {
       props.onToggleTimelineSidebarField(option.fieldRef);
     }
-  }), import_react18.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react18.default.createElement("strong", null, option.label), import_react18.default.createElement("span", null, option.subtitle)))))), import_react18.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react18.default.createElement("section", { className: "timeline-label-menu-column" }, import_react18.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react18.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react18.default.createElement("button", {
+  }), import_react19.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react19.default.createElement("strong", null, option.label), import_react19.default.createElement("span", null, option.subtitle)))))), import_react19.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react19.default.createElement("section", { className: "timeline-label-menu-column" }, import_react19.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react19.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react19.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineLabelFields
-  }, "Nothing in bars"), import_react18.default.createElement("input", {
+  }, "Nothing in bars"), import_react19.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline label fields",
@@ -30736,28 +31623,28 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeLabelFieldSearchDraft(event.target.value);
     }
-  }), import_react18.default.createElement("div", {
+  }), import_react19.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuBarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromBar
-  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react18.default.createElement("label", {
+  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react19.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react19.default.createElement("label", {
     key: `timeline-label-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react18.default.createElement("input", {
+  }, import_react19.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineLabelFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline bars`,
     onChange: () => {
       props.onToggleTimelineLabelField(option.fieldRef);
     }
-  }), import_react18.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react18.default.createElement("strong", null, option.label), import_react18.default.createElement("span", null, option.subtitle))))))));
+  }), import_react19.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react19.default.createElement("strong", null, option.label), import_react19.default.createElement("span", null, option.subtitle))))))));
 }
 
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
 function TimelinePaneActionsToolbar(props) {
-  const colorCodingTriggerRef = import_react19.default.useRef(null);
-  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = import_react19.default.useState(null);
-  import_react19.default.useLayoutEffect(() => {
+  const colorCodingTriggerRef = import_react20.default.useRef(null);
+  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = import_react20.default.useState(null);
+  import_react20.default.useLayoutEffect(() => {
     if (!props.colorCodingDropdownOpen) {
       setColorCodingDropdownStyle(null);
       return;
@@ -30792,55 +31679,55 @@ function TimelinePaneActionsToolbar(props) {
   }, [props.colorCodingDropdownOpen]);
   const pushButtonLabel = props.pendingWorkItemSyncCount > 0 ? `Push changes (${props.pendingWorkItemSyncCount})` : "Push changes";
   const shouldShowPushButton = !props.liveSyncEnabled && props.pendingWorkItemSyncCount > 0;
-  return import_react19.default.createElement(import_react19.default.Fragment, null, import_react19.default.createElement("div", {
+  return import_react20.default.createElement(import_react20.default.Fragment, null, import_react20.default.createElement("div", {
     className: "timeline-pane-actions"
-  }, import_react19.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react19.default.createElement("button", {
+  }, import_react20.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     disabled: props.isRefreshing,
     "aria-busy": props.isRefreshing ? "true" : void 0,
     onClick: props.onRetryRefresh
-  }, props.isRefreshing ? import_react19.default.createElement("span", { className: "timeline-action-button-content" }, import_react19.default.createElement("span", {
+  }, props.isRefreshing ? import_react20.default.createElement("span", { className: "timeline-action-button-content" }, import_react20.default.createElement("span", {
     className: "timeline-action-button-spinner",
     "aria-hidden": "true"
-  }), import_react19.default.createElement("span", null, "Updating...")) : "Refresh"), import_react19.default.createElement("div", {
+  }), import_react20.default.createElement("span", null, "Updating...")) : "Refresh"), import_react20.default.createElement("div", {
     className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
     role: "group",
     "aria-label": "Timeline zoom"
-  }, import_react19.default.createElement("button", {
+  }, import_react20.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "week",
     "aria-label": "Zoom in to week view",
     onClick: props.onSelectWeekZoom
-  }, "Week"), import_react19.default.createElement("button", {
+  }, "Week"), import_react20.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "month",
     "aria-label": "Zoom out to month view",
     onClick: props.onSelectMonthZoom
-  }, "Month"), import_react19.default.createElement("button", {
+  }, "Month"), import_react20.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "quarter" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "quarter",
     "aria-label": "Zoom out to quarter view",
     onClick: props.onSelectQuarterZoom
-  }, "Quarter"), import_react19.default.createElement("button", {
+  }, "Quarter"), import_react20.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "year" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "year",
     "aria-label": "Zoom out to year view",
     onClick: props.onSelectYearZoom
-  }, "Year")), import_react19.default.createElement("div", {
+  }, "Year")), import_react20.default.createElement("div", {
     className: "timeline-dependency-control timeline-control-cluster"
-  }, import_react19.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react19.default.createElement("select", {
+  }, import_react20.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react20.default.createElement("select", {
     className: "timeline-dependency-select",
     "aria-label": "Dependency mode",
     value: props.dependencyViewMode,
     onChange: (event) => {
       props.onChangeDependencyMode(event.target.value);
     }
-  }, props.dependencyModeOptions.map((option) => import_react19.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react19.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react19.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react19.default.createElement("button", {
+  }, props.dependencyModeOptions.map((option) => import_react20.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react20.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react20.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
     ref: colorCodingTriggerRef,
@@ -30849,13 +31736,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-haspopup": "listbox",
     "aria-expanded": props.colorCodingDropdownOpen ? "true" : "false",
     onClick: props.onToggleColorCodingDropdown
-  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? (0, import_react_dom.createPortal)(import_react19.default.createElement("div", {
+  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? (0, import_react_dom.createPortal)(import_react20.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     "data-timeline-color-coding-overlay": "true",
     style: colorCodingDropdownStyle ?? void 0,
     role: "listbox",
     "aria-label": "Color coding options"
-  }, import_react19.default.createElement("input", {
+  }, import_react20.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search color coding",
@@ -30871,26 +31758,26 @@ function TimelinePaneActionsToolbar(props) {
       event.preventDefault();
       props.onApplyFirstFilteredColorCodingOption();
     }
-  }), import_react19.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react19.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react19.default.createElement("button", {
+  }), import_react20.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react20.default.createElement("button", {
     key: option.key,
     type: "button",
     className: option.mode === props.colorCoding && (option.mode !== "field" && props.colorCoding !== "field" || option.fieldRef === props.fieldColorCoding.fieldRef) ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
     onClick: () => {
       props.onSelectColorCodingOption(option);
     }
-  }, import_react19.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react19.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))), document.body) : null, import_react19.default.createElement("button", {
+  }, import_react20.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react20.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))), document.body) : null, import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-settings-button",
     "aria-label": "Open color coding settings",
     title: "Open color-coding settings and set colors per value.",
     onClick: props.onOpenColorSettings
-  }, import_react19.default.createElement("svg", {
+  }, import_react20.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-color-coding-settings-icon",
     "aria-hidden": "true"
-  }, import_react19.default.createElement("path", {
+  }, import_react20.default.createElement("path", {
     d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
-  })))), import_react19.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react19.default.createElement("button", {
+  })))), import_react20.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react20.default.createElement("button", {
     type: "button",
     className: props.timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
     "aria-label": "Toggle timeline filters",
@@ -30898,13 +31785,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.timelineFiltersOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleTimelineFilters
-  }, import_react19.default.createElement("svg", {
+  }, import_react20.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-filter-toggle-icon",
     "aria-hidden": "true"
-  }, import_react19.default.createElement("path", {
+  }, import_react20.default.createElement("path", {
     d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
-  })), props.activeTimelineFiltersCount > 0 ? import_react19.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react19.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react19.default.createElement("button", {
+  })), props.activeTimelineFiltersCount > 0 ? import_react20.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react20.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react20.default.createElement("button", {
     type: "button",
     className: props.labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
     "aria-label": "Toggle timeline label fields",
@@ -30912,13 +31799,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.labelSettingsOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleLabelSettings
-  }, import_react19.default.createElement("svg", {
+  }, import_react20.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react19.default.createElement("path", {
+  }, import_react20.default.createElement("path", {
     d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
-  })), import_react19.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react19.default.createElement(TimelineLabelSettingsPanel, {
+  })), import_react20.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react20.default.createElement(TimelineLabelSettingsPanel, {
     open: props.labelSettingsOpen,
     panelRef: props.labelPanelRef,
     sidebarFieldSearchDraft: props.sidebarFieldSearchDraft,
@@ -30937,22 +31824,22 @@ function TimelinePaneActionsToolbar(props) {
     onSyncLabelMenuScrollFromBar: props.onSyncLabelMenuScrollFromBar,
     onToggleTimelineSidebarField: props.onToggleTimelineSidebarField,
     onToggleTimelineLabelField: props.onToggleTimelineLabelField
-  }))), import_react19.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react19.default.createElement("label", {
+  }))), import_react20.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react20.default.createElement("label", {
     className: "timeline-live-sync-toggle",
     title: props.liveSyncEnabled ? "Pause automatic work item sync" : "Resume automatic work item sync and flush queued changes"
-  }, import_react19.default.createElement("input", {
+  }, import_react20.default.createElement("input", {
     type: "checkbox",
     className: "timeline-live-sync-toggle-input",
     checked: props.liveSyncEnabled,
     onChange: (event) => {
       props.onSetLiveSyncEnabled(event.target.checked);
     }
-  }), import_react19.default.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }), import_react19.default.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")), shouldShowPushButton ? import_react19.default.createElement("button", {
+  }), import_react20.default.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }), import_react20.default.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")), shouldShowPushButton ? import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     disabled: props.workItemSyncState === "syncing",
     onClick: props.onPushPendingWorkItemChanges
-  }, pushButtonLabel) : null, shouldShowPushButton ? import_react19.default.createElement("button", {
+  }, pushButtonLabel) : null, shouldShowPushButton ? import_react20.default.createElement("button", {
     type: "button",
     className: "timeline-action-button",
     disabled: props.workItemSyncState === "syncing",
@@ -30962,12 +31849,12 @@ function TimelinePaneActionsToolbar(props) {
 }
 
 // dist/src/features/gantt-view/timeline-filter-panel.js
-var import_react20 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 var import_react_dom2 = __toESM(require_react_dom(), 1);
 function TimelineFilterPanel(props) {
-  const filterDropdownTriggerRefs = import_react20.default.useRef({});
-  const [filterDropdownStyle, setFilterDropdownStyle] = import_react20.default.useState(null);
-  import_react20.default.useLayoutEffect(() => {
+  const filterDropdownTriggerRefs = import_react21.default.useRef({});
+  const [filterDropdownStyle, setFilterDropdownStyle] = import_react21.default.useState(null);
+  import_react21.default.useLayoutEffect(() => {
     if (!props.openFilterDropdown) {
       setFilterDropdownStyle(null);
       return;
@@ -31001,163 +31888,348 @@ function TimelineFilterPanel(props) {
       window.removeEventListener("scroll", updateDropdownPosition, true);
     };
   }, [props.openFilterDropdown]);
+  const totalFilterSlots = countTimelineFilterSlots(props.timelineFilterGroups);
   if (!props.open) {
     return null;
   }
-  return import_react20.default.createElement("div", {
+  const filterGroupNodes = renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdownTriggerRefs, filterDropdownStyle);
+  return import_react21.default.createElement("div", {
     className: "timeline-filter-panel-motion"
-  }, import_react20.default.createElement("div", {
+  }, import_react21.default.createElement("div", {
     className: "timeline-filter-panel",
     role: "group",
     "aria-label": "Timeline filters",
     ref: props.panelRef
-  }, props.availableFieldRefs.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react20.default.createElement("div", { className: "timeline-filter-grid" }, ...props.timelineFieldFilters.map((filter, index) => {
-    const selectedFieldDisplay = filter.fieldRef ? props.getFieldDisplayName(filter.fieldRef) : `Filter ${index + 1}`;
-    const valueLabel = !filter.fieldRef || filter.selectedValueKeys.length === 0 ? "All values" : `${filter.selectedValueKeys.length} selected`;
-    const isFieldDropdownOpen = props.openFilterDropdown?.kind === "field" && props.openFilterDropdown.slotId === filter.slotId;
-    const isValueDropdownOpen = props.openFilterDropdown?.kind === "value" && props.openFilterDropdown.slotId === filter.slotId;
-    const filterValueOptions = isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId ? props.openFilterValueOptions : [];
-    const visibleValueKeys = filterValueOptions.map((entry) => entry.key);
-    const hasVisibleValueOptions = visibleValueKeys.length > 0;
-    const areAllVisibleValuesSelected = hasVisibleValueOptions && visibleValueKeys.every((key) => filter.selectedValueKeys.includes(key));
-    return import_react20.default.createElement("div", {
-      key: `timeline-filter-slot-${filter.slotId}`,
-      className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
-    }, import_react20.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react20.default.createElement("button", {
-      type: "button",
-      className: "timeline-color-coding-select timeline-color-coding-select-trigger",
-      ref: (element) => {
-        filterDropdownTriggerRefs.current[`${filter.slotId}-field`] = element;
-      },
-      "aria-label": `Select filter field ${index + 1}`,
-      "aria-haspopup": "listbox",
-      "aria-expanded": isFieldDropdownOpen ? "true" : "false",
-      onClick: () => {
-        props.onSetOpenFilterDropdown((current) => current?.kind === "field" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "field" });
-        props.onSetFilterFieldSearchDraft("");
-        props.onSetFilterValueSearchDraft("");
-      }
-    }, selectedFieldDisplay), isFieldDropdownOpen ? (0, import_react_dom2.createPortal)(import_react20.default.createElement("div", {
-      className: "timeline-color-coding-dropdown",
-      "data-timeline-filter-overlay": "true",
-      style: filterDropdownStyle ?? void 0,
-      role: "listbox",
-      "aria-label": `Filter field options ${index + 1}`
-    }, import_react20.default.createElement("input", {
-      type: "search",
-      className: "timeline-color-coding-dropdown-search",
-      "aria-label": `Search filter fields ${index + 1}`,
-      placeholder: "Search field",
-      value: props.filterFieldSearchDraft,
-      onChange: (event) => {
-        props.onSetFilterFieldSearchDraft(event.target.value);
-      },
-      onKeyDown: (event) => {
-        if (event.key !== "Enter") {
-          return;
-        }
-        event.preventDefault();
-        const firstField = props.openFilterFieldOptions[0] ?? null;
-        if (!firstField) {
-          return;
-        }
-        props.onApplyFieldFilterSelection(filter.slotId, firstField);
-        props.onSetOpenFilterDropdown(null);
-      }
-    }), import_react20.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react20.default.createElement("button", {
-      key: `${filter.slotId}-${fieldRef}`,
-      type: "button",
-      className: filter.fieldRef === fieldRef ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
-      onClick: () => {
-        props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
-        props.onSetOpenFilterDropdown(null);
-      }
-    }, import_react20.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react20.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))), document.body) : null), import_react20.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react20.default.createElement("button", {
-      type: "button",
-      className: "timeline-color-coding-select timeline-color-coding-select-trigger",
-      ref: (element) => {
-        filterDropdownTriggerRefs.current[`${filter.slotId}-value`] = element;
-      },
-      "aria-label": `Select filter values ${index + 1}`,
-      "aria-haspopup": "listbox",
-      "aria-expanded": isValueDropdownOpen ? "true" : "false",
-      disabled: !filter.fieldRef,
-      onClick: () => {
-        if (!filter.fieldRef) {
-          return;
-        }
-        props.onSetOpenFilterDropdown((current) => current?.kind === "value" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "value" });
-        props.onSetFilterValueSearchDraft("");
-        props.onSetFilterFieldSearchDraft("");
-      }
-    }, valueLabel), isValueDropdownOpen ? (0, import_react_dom2.createPortal)(import_react20.default.createElement("div", {
-      className: "timeline-color-coding-dropdown",
-      "data-timeline-filter-overlay": "true",
-      style: filterDropdownStyle ?? void 0,
-      role: "listbox",
-      "aria-label": `Filter value options ${index + 1}`
-    }, import_react20.default.createElement("div", { className: "timeline-filter-value-search-row" }, import_react20.default.createElement("button", {
-      type: "button",
-      className: areAllVisibleValuesSelected ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active" : "timeline-filter-bulk-toggle",
-      "aria-label": areAllVisibleValuesSelected ? `Deselect all visible filter values ${index + 1}` : `Select all visible filter values ${index + 1}`,
-      title: areAllVisibleValuesSelected ? "Deselect all currently filtered values" : "Select all currently filtered values",
-      disabled: !hasVisibleValueOptions,
-      onClick: () => {
-        props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, visibleValueKeys);
-      }
-    }, import_react20.default.createElement("svg", {
-      viewBox: "0 0 24 24",
-      className: "timeline-label-toggle-icon",
-      "aria-hidden": "true"
-    }, import_react20.default.createElement("path", {
-      d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
-    }))), import_react20.default.createElement("input", {
-      type: "search",
-      className: "timeline-color-coding-dropdown-search",
-      "aria-label": `Search filter values ${index + 1}`,
-      placeholder: "Search value",
-      value: props.filterValueSearchDraft,
-      onChange: (event) => {
-        props.onSetFilterValueSearchDraft(event.target.value);
-      }
-    })), import_react20.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filterValueOptions.length === 0 ? import_react20.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : filterValueOptions.map((entry) => import_react20.default.createElement("label", {
-      key: `${filter.slotId}-value-${entry.key}`,
-      className: "timeline-filter-value-option"
-    }, import_react20.default.createElement("input", {
-      type: "checkbox",
-      checked: filter.selectedValueKeys.includes(entry.key),
-      "aria-label": `Include ${entry.label} in filter ${index + 1}`,
-      onChange: () => {
-        props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
-      }
-    }), import_react20.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react20.default.createElement("strong", null, entry.label), import_react20.default.createElement("span", null, `${entry.count} item(s)`)))))), document.body) : null), import_react20.default.createElement("button", {
-      type: "button",
-      className: "timeline-filter-row-clear",
-      "aria-label": props.timelineFieldFilters.length > 1 ? `Remove filter ${index + 1}` : `Clear filter ${index + 1}`,
-      onClick: () => {
-        props.onRemoveTimelineFilterSlot(filter.slotId);
-      }
-    }, props.timelineFieldFilters.length > 1 ? "Remove" : "Clear"));
-  }), import_react20.default.createElement("button", {
+  }, props.availableFieldRefs.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react21.default.createElement("div", { className: "timeline-filter-grid" }, ...filterGroupNodes, import_react21.default.createElement("button", {
     type: "button",
-    className: "timeline-filter-add",
-    "aria-label": "Add timeline filter",
-    disabled: props.timelineFieldFilters.length >= props.maxFilterSlots,
-    onClick: props.onAddTimelineFilterSlot
-  }, "+"))));
+    className: "timeline-filter-add timeline-filter-add-group",
+    "aria-label": "Add OR filter group",
+    disabled: totalFilterSlots >= props.maxFilterSlots,
+    onClick: props.onAddTimelineFilterGroup
+  }, "+ OR Group"))));
+}
+function renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdownTriggerRefs, filterDropdownStyle) {
+  const nodes = [];
+  let nextFilterIndex = 0;
+  props.timelineFilterGroups.forEach((group, groupIndex) => {
+    const isOrGrouped = props.timelineFilterGroups.length > 1;
+    if (groupIndex > 0) {
+      nodes.push(import_react21.default.createElement("span", {
+        key: `timeline-filter-group-or-${group.groupId}`,
+        className: "timeline-filter-joiner timeline-filter-joiner-or"
+      }, "OR"));
+    }
+    nodes.push(import_react21.default.createElement(TimelineFilterGroupSection, {
+      key: `timeline-filter-group-${group.groupId}`,
+      group,
+      groupIndex,
+      firstFilterIndex: nextFilterIndex,
+      isOrGrouped,
+      totalFilterSlots,
+      maxFilterSlots: props.maxFilterSlots,
+      filterDropdownTriggerRefs,
+      filterDropdownStyle,
+      openFilterDropdown: props.openFilterDropdown,
+      openFilterFieldOptions: props.openFilterFieldOptions,
+      openFilterValueOptions: props.openFilterValueOptions,
+      getFieldDisplayName: props.getFieldDisplayName,
+      onSetOpenFilterDropdown: props.onSetOpenFilterDropdown,
+      onSetFilterFieldSearchDraft: props.onSetFilterFieldSearchDraft,
+      onSetFilterValueSearchDraft: props.onSetFilterValueSearchDraft,
+      filterFieldSearchDraft: props.filterFieldSearchDraft,
+      filterValueSearchDraft: props.filterValueSearchDraft,
+      onApplyFieldFilterSelection: props.onApplyFieldFilterSelection,
+      onToggleTimelineFieldValueSelection: props.onToggleTimelineFieldValueSelection,
+      onToggleVisibleTimelineFieldValueSelections: props.onToggleVisibleTimelineFieldValueSelections,
+      onUpdateTimelineDateRangeFilter: props.onUpdateTimelineDateRangeFilter,
+      onRemoveTimelineFilterSlot: props.onRemoveTimelineFilterSlot,
+      onRemoveTimelineFilterGroup: props.onRemoveTimelineFilterGroup,
+      onAddTimelineFilterCondition: props.onAddTimelineFilterCondition
+    }));
+    nextFilterIndex += group.filters.length;
+  });
+  return nodes;
+}
+function TimelineFilterGroupSection(props) {
+  const conditionNodes = [];
+  props.group.filters.forEach((filter, conditionIndex) => {
+    if (conditionIndex > 0) {
+      conditionNodes.push(import_react21.default.createElement("span", {
+        key: `timeline-filter-group-${props.group.groupId}-and-${filter.slotId}`,
+        className: "timeline-filter-joiner timeline-filter-joiner-and"
+      }, "AND"));
+    }
+    conditionNodes.push(import_react21.default.createElement(TimelineFilterRow, {
+      key: `timeline-filter-slot-${filter.slotId}`,
+      filter,
+      filterIndex: props.firstFilterIndex + conditionIndex,
+      totalFilterSlots: props.totalFilterSlots,
+      filterDropdownTriggerRefs: props.filterDropdownTriggerRefs,
+      filterDropdownStyle: props.filterDropdownStyle,
+      openFilterDropdown: props.openFilterDropdown,
+      openFilterFieldOptions: props.openFilterFieldOptions,
+      openFilterValueOptions: props.openFilterValueOptions,
+      getFieldDisplayName: props.getFieldDisplayName,
+      onSetOpenFilterDropdown: props.onSetOpenFilterDropdown,
+      onSetFilterFieldSearchDraft: props.onSetFilterFieldSearchDraft,
+      onSetFilterValueSearchDraft: props.onSetFilterValueSearchDraft,
+      filterFieldSearchDraft: props.filterFieldSearchDraft,
+      filterValueSearchDraft: props.filterValueSearchDraft,
+      onApplyFieldFilterSelection: props.onApplyFieldFilterSelection,
+      onToggleTimelineFieldValueSelection: props.onToggleTimelineFieldValueSelection,
+      onToggleVisibleTimelineFieldValueSelections: props.onToggleVisibleTimelineFieldValueSelections,
+      onUpdateTimelineDateRangeFilter: props.onUpdateTimelineDateRangeFilter,
+      onRemoveTimelineFilterSlot: props.onRemoveTimelineFilterSlot
+    }));
+  });
+  conditionNodes.push(import_react21.default.createElement("button", {
+    key: `timeline-filter-group-${props.group.groupId}-add-condition`,
+    type: "button",
+    className: "timeline-filter-add timeline-filter-add-condition",
+    "aria-label": props.groupIndex === 0 ? "Add timeline filter" : `Add condition to filter group ${props.groupIndex + 1}`,
+    disabled: props.totalFilterSlots >= props.maxFilterSlots,
+    onClick: () => {
+      props.onAddTimelineFilterCondition(props.group.groupId);
+    }
+  }, "+ Condition"));
+  if (props.isOrGrouped) {
+    conditionNodes.push(import_react21.default.createElement("button", {
+      key: `timeline-filter-group-${props.group.groupId}-remove`,
+      type: "button",
+      className: "timeline-filter-row-clear timeline-filter-group-remove",
+      "aria-label": `Remove filter group ${props.groupIndex + 1}`,
+      onClick: () => {
+        props.onRemoveTimelineFilterGroup(props.group.groupId);
+      }
+    }, "Remove group"));
+  }
+  return import_react21.default.createElement("div", {
+    className: props.isOrGrouped ? "timeline-filter-group timeline-filter-group-or-branch" : "timeline-filter-group",
+    role: "group",
+    "aria-label": `Timeline filter group ${props.groupIndex + 1}`
+  }, ...conditionNodes);
+}
+function TimelineFilterRow(props) {
+  const { filter, filterIndex } = props;
+  const selectedFieldDisplay = filter.fieldRef ? props.getFieldDisplayName(filter.fieldRef) : `Filter ${filterIndex + 1}`;
+  const isDateFilter = isTimelineDateRangeFilter(filter);
+  const dateRange = isTimelineDateRangeFilter(filter) ? filter.dateRange : EMPTY_TIMELINE_DATE_RANGE;
+  const selectedValueKeys = filter.kind === "value" ? filter.selectedValueKeys : [];
+  const valueLabel = !filter.fieldRef ? "All values" : isDateFilter ? formatTimelineDateRangeFilterLabel(dateRange) : selectedValueKeys.length > 0 ? `${selectedValueKeys.length} selected` : "All values";
+  const isFieldDropdownOpen = props.openFilterDropdown?.kind === "field" && props.openFilterDropdown.slotId === filter.slotId;
+  const isValueDropdownOpen = props.openFilterDropdown?.kind === "value" && props.openFilterDropdown.slotId === filter.slotId;
+  const filterValueOptions = isValueDropdownOpen && props.openFilterDropdown?.slotId === filter.slotId ? props.openFilterValueOptions : [];
+  const visibleValueKeys = filterValueOptions.map((entry) => entry.key);
+  const hasVisibleValueOptions = visibleValueKeys.length > 0;
+  const areAllVisibleValuesSelected = !isDateFilter && hasVisibleValueOptions && visibleValueKeys.every((key) => selectedValueKeys.includes(key));
+  const valueControlState = {
+    isValueDropdownOpen,
+    isDateFilter,
+    dateRange,
+    selectedValueKeys,
+    valueLabel,
+    filterValueOptions,
+    visibleValueKeys,
+    hasVisibleValueOptions,
+    areAllVisibleValuesSelected
+  };
+  return import_react21.default.createElement("div", {
+    className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
+  }, renderTimelineFilterFieldControl(props, selectedFieldDisplay, isFieldDropdownOpen), renderTimelineFilterValueControl(props, valueControlState), renderTimelineFilterRemoveButton(props));
+}
+function renderTimelineFilterFieldControl(props, selectedFieldDisplay, isFieldDropdownOpen) {
+  return import_react21.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-field-anchor" }, renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen), isFieldDropdownOpen ? renderTimelineFilterFieldDropdown(props) : null);
+}
+function renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen) {
+  const { filter, filterIndex } = props;
+  return import_react21.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+    ref: (element) => {
+      props.filterDropdownTriggerRefs.current[`${filter.slotId}-field`] = element;
+    },
+    "aria-label": `Select filter field ${filterIndex + 1}`,
+    "aria-haspopup": "listbox",
+    "aria-expanded": isFieldDropdownOpen ? "true" : "false",
+    onClick: () => {
+      props.onSetOpenFilterDropdown((current) => current?.kind === "field" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "field" });
+      props.onSetFilterFieldSearchDraft("");
+      props.onSetFilterValueSearchDraft("");
+    }
+  }, selectedFieldDisplay);
+}
+function renderTimelineFilterFieldDropdown(props) {
+  const { filter, filterIndex } = props;
+  return (0, import_react_dom2.createPortal)(import_react21.default.createElement("div", {
+    className: "timeline-color-coding-dropdown",
+    "data-timeline-filter-overlay": "true",
+    style: props.filterDropdownStyle ?? void 0,
+    role: "listbox",
+    "aria-label": `Filter field options ${filterIndex + 1}`
+  }, import_react21.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": `Search filter fields ${filterIndex + 1}`,
+    placeholder: "Search field",
+    value: props.filterFieldSearchDraft,
+    onChange: (event) => {
+      props.onSetFilterFieldSearchDraft(event.target.value);
+    },
+    onKeyDown: (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      event.preventDefault();
+      const firstField = props.openFilterFieldOptions[0] ?? null;
+      if (!firstField) {
+        return;
+      }
+      props.onApplyFieldFilterSelection(filter.slotId, firstField);
+      props.onSetOpenFilterDropdown(null);
+    }
+  }), import_react21.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react21.default.createElement("button", {
+    key: `${filter.slotId}-${fieldRef}`,
+    type: "button",
+    className: filter.fieldRef === fieldRef ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
+    onClick: () => {
+      props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
+      props.onSetOpenFilterDropdown(null);
+    }
+  }, import_react21.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react21.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))), document.body);
+}
+function renderTimelineFilterValueControl(props, state2) {
+  return import_react21.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-value-anchor" }, renderTimelineFilterValueTrigger(props, state2), state2.isValueDropdownOpen ? renderTimelineFilterValueDropdown(props, state2) : null);
+}
+function renderTimelineFilterValueTrigger(props, state2) {
+  const { filter, filterIndex } = props;
+  return import_react21.default.createElement("button", {
+    type: "button",
+    className: "timeline-color-coding-select timeline-color-coding-select-trigger",
+    ref: (element) => {
+      props.filterDropdownTriggerRefs.current[`${filter.slotId}-value`] = element;
+    },
+    "aria-label": `Select filter values ${filterIndex + 1}`,
+    "aria-haspopup": "listbox",
+    "aria-expanded": state2.isValueDropdownOpen ? "true" : "false",
+    disabled: !filter.fieldRef,
+    onClick: () => {
+      if (!filter.fieldRef) {
+        return;
+      }
+      props.onSetOpenFilterDropdown((current) => current?.kind === "value" && current.slotId === filter.slotId ? null : { slotId: filter.slotId, kind: "value" });
+      props.onSetFilterValueSearchDraft("");
+      props.onSetFilterFieldSearchDraft("");
+    }
+  }, state2.valueLabel);
+}
+function renderTimelineFilterValueDropdown(props, state2) {
+  return (0, import_react_dom2.createPortal)(state2.isDateFilter ? renderTimelineFilterDateDropdown(props, state2.dateRange) : renderTimelineFilterValueMultiSelectDropdown(props, state2), document.body);
+}
+function renderTimelineFilterDateDropdown(props, dateRange) {
+  const { filter, filterIndex } = props;
+  return import_react21.default.createElement("div", {
+    className: "timeline-color-coding-dropdown timeline-filter-date-dropdown",
+    "data-timeline-filter-overlay": "true",
+    style: props.filterDropdownStyle ?? void 0,
+    role: "group",
+    "aria-label": `Filter value options ${filterIndex + 1}`
+  }, import_react21.default.createElement("div", { className: "timeline-filter-date-range" }, import_react21.default.createElement("input", {
+    type: "datetime-local",
+    className: "timeline-details-input timeline-filter-date-input",
+    "aria-label": `Filter ${filterIndex + 1} date range start`,
+    value: toTimelineDateTimeLocalInputValue(dateRange.startIso),
+    onChange: (event) => {
+      props.onUpdateTimelineDateRangeFilter(filter.slotId, {
+        ...dateRange,
+        startIso: fromTimelineDateTimeLocalInputValue(event.target.value)
+      });
+    }
+  }), import_react21.default.createElement("input", {
+    type: "datetime-local",
+    className: "timeline-details-input timeline-filter-date-input",
+    "aria-label": `Filter ${filterIndex + 1} date range end`,
+    value: toTimelineDateTimeLocalInputValue(dateRange.endIso),
+    onChange: (event) => {
+      props.onUpdateTimelineDateRangeFilter(filter.slotId, {
+        ...dateRange,
+        endIso: fromTimelineDateTimeLocalInputValue(event.target.value)
+      });
+    }
+  }), dateRange.startIso || dateRange.endIso ? import_react21.default.createElement("button", {
+    type: "button",
+    className: "timeline-filter-date-clear",
+    onClick: () => {
+      props.onUpdateTimelineDateRangeFilter(filter.slotId, EMPTY_TIMELINE_DATE_RANGE);
+    }
+  }, "Clear") : null), isTimelineDateRangeInvalid(dateRange) ? import_react21.default.createElement("p", { className: "timeline-filter-date-note", role: "status" }, "Start must be before end.") : null);
+}
+function renderTimelineFilterValueMultiSelectDropdown(props, state2) {
+  const { filter, filterIndex } = props;
+  return import_react21.default.createElement("div", {
+    className: "timeline-color-coding-dropdown",
+    "data-timeline-filter-overlay": "true",
+    style: props.filterDropdownStyle ?? void 0,
+    role: "listbox",
+    "aria-label": `Filter value options ${filterIndex + 1}`
+  }, import_react21.default.createElement("div", { className: "timeline-filter-value-search-row" }, import_react21.default.createElement("button", {
+    type: "button",
+    className: state2.areAllVisibleValuesSelected ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active" : "timeline-filter-bulk-toggle",
+    "aria-label": state2.areAllVisibleValuesSelected ? `Deselect all visible filter values ${filterIndex + 1}` : `Select all visible filter values ${filterIndex + 1}`,
+    title: state2.areAllVisibleValuesSelected ? "Deselect all currently filtered values" : "Select all currently filtered values",
+    disabled: !state2.hasVisibleValueOptions,
+    onClick: () => {
+      props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, state2.visibleValueKeys);
+    }
+  }, import_react21.default.createElement("svg", {
+    viewBox: "0 0 24 24",
+    className: "timeline-label-toggle-icon",
+    "aria-hidden": "true"
+  }, import_react21.default.createElement("path", {
+    d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
+  }))), import_react21.default.createElement("input", {
+    type: "search",
+    className: "timeline-color-coding-dropdown-search",
+    "aria-label": `Search filter values ${filterIndex + 1}`,
+    placeholder: "Search value",
+    value: props.filterValueSearchDraft,
+    onChange: (event) => {
+      props.onSetFilterValueSearchDraft(event.target.value);
+    }
+  })), import_react21.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, state2.filterValueOptions.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : state2.filterValueOptions.map((entry) => import_react21.default.createElement("label", {
+    key: `${filter.slotId}-value-${entry.key}`,
+    className: "timeline-filter-value-option"
+  }, import_react21.default.createElement("input", {
+    type: "checkbox",
+    checked: state2.selectedValueKeys.includes(entry.key),
+    "aria-label": `Include ${entry.label} in filter ${filterIndex + 1}`,
+    onChange: () => {
+      props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
+    }
+  }), import_react21.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`))))));
+}
+function renderTimelineFilterRemoveButton(props) {
+  const { filter, filterIndex } = props;
+  return import_react21.default.createElement("button", {
+    type: "button",
+    className: "timeline-filter-row-clear",
+    "aria-label": props.totalFilterSlots > 1 ? `Remove filter ${filterIndex + 1}` : `Clear filter ${filterIndex + 1}`,
+    onClick: () => {
+      props.onRemoveTimelineFilterSlot(filter.slotId);
+    }
+  }, props.totalFilterSlots > 1 ? "Remove" : "Clear");
 }
 
 // dist/src/features/gantt-view/timeline-color-coding-panel.js
-var import_react21 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 function TimelineColorCodingPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react21.default.createElement("div", {
+  return import_react22.default.createElement("div", {
     className: "timeline-color-coding-modal-backdrop",
     role: "presentation",
     onClick: props.onClose
-  }, import_react21.default.createElement("section", {
+  }, import_react22.default.createElement("section", {
     className: "timeline-color-coding-modal",
     role: "dialog",
     "aria-modal": "true",
@@ -31165,117 +32237,1081 @@ function TimelineColorCodingPanel(props) {
     onClick: (event) => {
       event.stopPropagation();
     }
-  }, import_react21.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react21.default.createElement("h4", null, "Color coding settings"), import_react21.default.createElement("button", {
+  }, import_react22.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react22.default.createElement("h4", null, "Color coding settings"), import_react22.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-settings-button",
     onClick: props.onClose
-  }, "Close")), import_react21.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react21.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
+  }, "Close")), import_react22.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react22.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react22.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
     const scopedKey = props.toScopedFieldValueColorKey(props.selectedFieldRef, entry.key);
     const customColor = (scopedKey ? props.fieldColorCoding.valueColors[scopedKey] : null) ?? props.fieldColorCoding.valueColors[entry.key] ?? null;
     const effectiveColor = customColor ?? entry.defaultColor;
-    return import_react21.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react21.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)), import_react21.default.createElement("input", {
+    return import_react22.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react22.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react22.default.createElement("strong", null, entry.label), import_react22.default.createElement("span", null, `${entry.count} item(s)`)), import_react22.default.createElement("input", {
       type: "color",
       value: effectiveColor,
       "aria-label": `Color for ${entry.label}`,
       onChange: (event) => {
         props.onUpdateFieldValueColor(entry.key, event.target.value);
       }
-    }), import_react21.default.createElement("button", {
+    }), import_react22.default.createElement("button", {
       type: "button",
       className: "timeline-color-coding-value-reset",
       onClick: () => {
         props.onUpdateFieldValueColor(entry.key, null);
       }
     }, "Auto"));
-  })) : props.isOverdueColorCodingMode ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react21.default.createElement("p", { className: "timeline-details-muted" }, "Select statuses that should be treated as completed (not overdue/red)."), props.selectedModeValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.") : props.selectedModeValueStats.map((entry) => {
+  })) : props.isOverdueColorCodingMode ? import_react22.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react22.default.createElement("p", { className: "timeline-details-muted" }, "Select statuses that should be treated as completed (not overdue/red)."), props.selectedModeValueStats.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.") : props.selectedModeValueStats.map((entry) => {
     const checked = props.overdueExcludedStateCodes.includes(entry.key.trim().toLowerCase());
-    return import_react21.default.createElement("label", { key: entry.key, className: "timeline-filter-value-option" }, import_react21.default.createElement("input", {
+    return import_react22.default.createElement("label", { key: entry.key, className: "timeline-filter-value-option" }, import_react22.default.createElement("input", {
       type: "checkbox",
       checked,
       "aria-label": `Treat ${entry.label} as completed`,
       onChange: (event) => {
         props.onToggleOverdueExcludedState(entry.label, event.target.checked);
       }
-    }), import_react21.default.createElement("div", { className: "timeline-filter-value-option-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)));
-  })) : props.isReadOnlyStatusColorCodingMode ? import_react21.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react21.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react21.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
-    return import_react21.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react21.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react21.default.createElement("strong", null, entry.label), import_react21.default.createElement("span", null, `${entry.count} item(s)`)));
-  })) : import_react21.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
+    }), import_react22.default.createElement("div", { className: "timeline-filter-value-option-meta" }, import_react22.default.createElement("strong", null, entry.label), import_react22.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : props.isReadOnlyStatusColorCodingMode ? import_react22.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react22.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
+    return import_react22.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react22.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react22.default.createElement("strong", null, entry.label), import_react22.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : import_react22.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
 }
 
-// dist/src/features/gantt-view/timeline-field-filtering.js
-var EMPTY_FIELD_FILTER_KEY = "__null__";
-var TAG_FIELD_NAMES = /* @__PURE__ */ new Set(["tag", "tags"]);
-var TAG_SPLIT_DELIMITER = ";";
-function isTagFieldRef(fieldRef) {
-  const normalized = normalizeFieldRef(fieldRef);
-  if (!normalized) {
-    return false;
+// dist/src/features/gantt-view/timeline-work-item-context-menu.js
+var import_react24 = __toESM(require_react(), 1);
+var import_react_dom3 = __toESM(require_react_dom(), 1);
+
+// dist/src/features/gantt-view/use-child-work-item-type-menu.js
+var import_react23 = __toESM(require_react(), 1);
+
+// dist/src/domain/work-items/child-work-item-type.js
+function resolvePreferredChildWorkItemType(parentType) {
+  const normalized = normalizeWorkItemType(parentType);
+  switch (normalized) {
+    case "epic":
+    case "epicppm":
+      return "Feature";
+    case "feature":
+      return "User Story";
+    case "user story":
+      return "Task";
+    default:
+      return null;
   }
-  const parts = normalized.split(".");
-  const leaf = parts[parts.length - 1] ?? normalized;
-  return TAG_FIELD_NAMES.has(leaf.toLowerCase());
 }
-function extractFilterValueTokens(fieldRef, value) {
-  if (value === null || typeof value === "undefined") {
-    return [toEmptyToken()];
+function normalizeAvailableWorkItemTypes(availableTypes) {
+  if (!availableTypes) {
+    return [];
   }
-  if (!isTagFieldRef(fieldRef)) {
-    const text2 = String(value).trim();
-    return text2.length > 0 ? [{ key: String(value), label: text2 }] : [toEmptyToken()];
+  const seen = /* @__PURE__ */ new Set();
+  const normalizedTypes = [];
+  for (const candidate of availableTypes) {
+    const rawName = typeof candidate === "string" ? candidate : candidate.name;
+    const name = rawName.trim().replace(/\s+/g, " ");
+    if (name.length === 0) {
+      continue;
+    }
+    const key = normalizeWorkItemType(name);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    normalizedTypes.push(name);
   }
-  const raw = String(value);
-  const tokens = [...new Set(raw.split(TAG_SPLIT_DELIMITER).map((entry) => entry.trim()).filter((entry) => entry.length > 0))];
-  if (tokens.length === 0) {
-    return [toEmptyToken()];
-  }
-  return tokens.map((token) => ({ key: token, label: token }));
+  return normalizedTypes.sort(compareWorkItemTypeNames);
 }
-function extractFilterMatchKeys(fieldRef, value) {
-  const keys = extractFilterValueTokens(fieldRef, value).map((token) => token.key);
-  if (value !== null && typeof value !== "undefined" && isTagFieldRef(fieldRef)) {
-    keys.push(String(value));
-  }
-  return [...new Set(keys)];
-}
-function toEmptyToken() {
-  return { key: EMPTY_FIELD_FILTER_KEY, label: "Empty" };
-}
-function normalizeFieldRef(fieldRef) {
-  if (typeof fieldRef !== "string") {
+function resolveDefaultChildWorkItemType(parentType, availableTypes) {
+  const sortedTypes = normalizeAvailableWorkItemTypes(availableTypes);
+  if (sortedTypes.length === 0) {
     return null;
   }
-  const normalized = fieldRef.trim();
-  return normalized.length > 0 ? normalized : null;
+  const preferredType = resolvePreferredChildWorkItemType(parentType);
+  if (preferredType) {
+    const matchedType = sortedTypes.find((availableType) => normalizeWorkItemType(availableType) === normalizeWorkItemType(preferredType));
+    if (matchedType) {
+      return matchedType;
+    }
+  }
+  return sortedTypes[0] ?? null;
+}
+function normalizeWorkItemType(value) {
+  return typeof value === "string" ? value.trim().replace(/\s+/g, " ").toLowerCase() : "";
+}
+function compareWorkItemTypeNames(a, b) {
+  return a.localeCompare(b, void 0, { sensitivity: "base" }) || a.localeCompare(b);
+}
+
+// dist/src/features/gantt-view/use-child-work-item-type-menu.js
+function useChildWorkItemTypeMenu(input) {
+  const [isOpen, setIsOpen] = import_react23.default.useState(false);
+  const [loadState, setLoadState] = import_react23.default.useState({
+    status: "idle",
+    options: [],
+    error: null
+  });
+  const [activeWorkItemType, setActiveWorkItemType] = import_react23.default.useState(null);
+  const fetchWorkItemTypesRef = import_react23.default.useRef(input.onFetchWorkItemTypes);
+  import_react23.default.useEffect(() => {
+    fetchWorkItemTypesRef.current = input.onFetchWorkItemTypes;
+  }, [input.onFetchWorkItemTypes]);
+  import_react23.default.useEffect(() => {
+    setIsOpen(false);
+    setLoadState({
+      status: "idle",
+      options: [],
+      error: null
+    });
+    setActiveWorkItemType(null);
+  }, [input.menuKey]);
+  import_react23.default.useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const fetchWorkItemTypes = fetchWorkItemTypesRef.current;
+    if (!fetchWorkItemTypes) {
+      setLoadState({
+        status: "loaded",
+        options: [],
+        error: null
+      });
+      setActiveWorkItemType(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadState((current) => ({
+      status: "loading",
+      options: current.options,
+      error: null
+    }));
+    void fetchWorkItemTypes().then((options2) => {
+      if (cancelled) {
+        return;
+      }
+      const normalizedOptions = normalizeAvailableWorkItemTypes(options2).map((name) => ({ name }));
+      setLoadState({
+        status: "loaded",
+        options: normalizedOptions,
+        error: null
+      });
+      setActiveWorkItemType(resolveDefaultChildWorkItemType(input.parentWorkItemType, normalizedOptions));
+    }).catch((error) => {
+      if (cancelled) {
+        return;
+      }
+      setLoadState({
+        status: "error",
+        options: [],
+        error: error instanceof Error ? error.message : "Work Item Types konnten nicht geladen werden."
+      });
+      setActiveWorkItemType(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [input.parentWorkItemType, isOpen]);
+  const options = loadState.status === "loaded" ? loadState.options : [];
+  const activeIndex = options.findIndex((option) => option.name === activeWorkItemType);
+  const setActiveByIndex = import_react23.default.useCallback((index) => {
+    if (options.length === 0) {
+      setActiveWorkItemType(null);
+      return;
+    }
+    const normalizedIndex = Math.max(0, Math.min(options.length - 1, index));
+    setActiveWorkItemType(options[normalizedIndex]?.name ?? null);
+  }, [options]);
+  const moveActive = import_react23.default.useCallback((delta) => {
+    if (options.length === 0) {
+      return;
+    }
+    const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+    const nextIndex = (currentIndex + delta + options.length) % options.length;
+    setActiveByIndex(nextIndex);
+  }, [activeIndex, options.length, setActiveByIndex]);
+  return {
+    isOpen,
+    loadState,
+    options,
+    activeIndex,
+    activeWorkItemType,
+    openMenu: () => setIsOpen(true),
+    toggleMenu: () => setIsOpen((current) => !current),
+    closeMenu: () => setIsOpen(false),
+    setActiveByIndex,
+    moveActive
+  };
+}
+
+// dist/src/features/gantt-view/timeline-work-item-context-menu.js
+function TimelineWorkItemContextMenu(props) {
+  const firstActionRef = import_react24.default.useRef(null);
+  const childTypeOptionRefs = import_react24.default.useRef([]);
+  const [statusMenuOpen, setStatusMenuOpen] = import_react24.default.useState(false);
+  const [statusLoadState, setStatusLoadState] = import_react24.default.useState({
+    status: "idle",
+    options: [],
+    error: null
+  });
+  const [actionError, setActionError] = import_react24.default.useState(null);
+  const [busyAction, setBusyAction] = import_react24.default.useState(null);
+  const menuState = props.menuState;
+  const workItemId = menuState?.item.workItemId ?? null;
+  const currentState = menuState?.item.state ?? "";
+  const azureUrl = menuState ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId) : null;
+  const childTypeMenu = useChildWorkItemTypeMenu({
+    menuKey: workItemId,
+    parentWorkItemType: menuState?.item.workItemType,
+    onFetchWorkItemTypes: props.onFetchWorkItemTypes
+  });
+  import_react24.default.useEffect(() => {
+    setStatusMenuOpen(false);
+    setStatusLoadState({
+      status: "idle",
+      options: [],
+      error: null
+    });
+    setActionError(null);
+    setBusyAction(null);
+  }, [workItemId]);
+  import_react24.default.useEffect(() => {
+    if (!menuState) {
+      return;
+    }
+    const focusFirstAction = () => {
+      firstActionRef.current?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusFirstAction);
+    } else {
+      window.setTimeout(focusFirstAction, 0);
+    }
+  }, [menuState]);
+  import_react24.default.useEffect(() => {
+    if (!statusMenuOpen || !menuState) {
+      return;
+    }
+    if (!props.onFetchWorkItemStateOptions) {
+      setStatusLoadState({
+        status: "loaded",
+        options: [],
+        error: null
+      });
+      return;
+    }
+    let cancelled = false;
+    setStatusLoadState((current) => ({
+      status: "loading",
+      options: current.options,
+      error: null
+    }));
+    void props.onFetchWorkItemStateOptions({ targetWorkItemId: menuState.item.workItemId }).then((options) => {
+      if (cancelled) {
+        return;
+      }
+      setStatusLoadState({
+        status: "loaded",
+        options,
+        error: null
+      });
+    }).catch((error) => {
+      if (cancelled) {
+        return;
+      }
+      setStatusLoadState({
+        status: "error",
+        options: [],
+        error: error instanceof Error ? error.message : "Status konnten nicht geladen werden."
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [menuState, props.onFetchWorkItemStateOptions, statusMenuOpen]);
+  import_react24.default.useEffect(() => {
+    if (!childTypeMenu.isOpen || childTypeMenu.loadState.status !== "loaded" || childTypeMenu.activeIndex < 0) {
+      return;
+    }
+    const focusActiveChildType = () => {
+      childTypeOptionRefs.current[childTypeMenu.activeIndex]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusActiveChildType);
+    } else {
+      window.setTimeout(focusActiveChildType, 0);
+    }
+  }, [childTypeMenu.activeIndex, childTypeMenu.isOpen, childTypeMenu.loadState.status]);
+  if (!menuState) {
+    return null;
+  }
+  const stateOptions = props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded" ? normalizeWorkItemStateOptions(statusLoadState.options) : [];
+  const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
+  const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
+  const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
+  const childCreateDisabled = busyAction !== null || !props.onCreateChildWorkItem || !props.onFetchWorkItemTypes;
+  const linkControlsDisabled = busyAction !== null || !azureUrl;
+  const performDuplicate = async () => {
+    if (!props.onDuplicateWorkItem || busyAction !== null) {
+      return;
+    }
+    setActionError(null);
+    setBusyAction("duplicate");
+    try {
+      const scheduleFieldRefs = menuState.item.scheduleFieldRefs ?? props.timeline?.scheduleFieldRefs;
+      await props.onDuplicateWorkItem({
+        sourceWorkItemId: menuState.item.workItemId,
+        ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+  const performCreateChild = async (childWorkItemType) => {
+    if (!props.onCreateChildWorkItem || busyAction !== null) {
+      return;
+    }
+    setActionError(null);
+    setBusyAction("child");
+    try {
+      const scheduleFieldRefs = menuState.item.scheduleFieldRefs ?? props.timeline?.scheduleFieldRefs;
+      await props.onCreateChildWorkItem({
+        parentWorkItemId: menuState.item.workItemId,
+        childWorkItemType,
+        ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : `${childWorkItemType} konnte nicht erstellt werden.`);
+    } finally {
+      setBusyAction(null);
+    }
+  };
+  const performStateUpdate = async (option) => {
+    if (!props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions || busyAction !== null || statusLoadState.status !== "loaded") {
+      return;
+    }
+    setActionError(null);
+    setBusyAction("state");
+    try {
+      await props.onUpdateWorkItemState({
+        targetWorkItemId: menuState.item.workItemId,
+        state: option.name,
+        stateColor: option.color
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Statuswechsel fehlgeschlagen.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+  const openInAzureDevOps = () => {
+    if (!azureUrl || busyAction !== null) {
+      return;
+    }
+    const opened = window.open(azureUrl, "_blank", "noopener,noreferrer");
+    if (opened) {
+      opened.opener = null;
+    }
+    props.onClose();
+  };
+  const copyLink = async () => {
+    if (!azureUrl || busyAction !== null) {
+      return;
+    }
+    setActionError(null);
+    setBusyAction("copy");
+    try {
+      await copyTextToClipboard(azureUrl);
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Link konnte nicht kopiert werden.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+  const handleChildMenuButtonKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+      event.preventDefault();
+      childTypeMenu.openMenu();
+    }
+  };
+  const handleChildTypeOptionKeyDown = (event, index, option) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      childTypeMenu.moveActive(1);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      childTypeMenu.moveActive(-1);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      childTypeMenu.setActiveByIndex(0);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      childTypeMenu.setActiveByIndex(childTypeMenu.options.length - 1);
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performCreateChild(option.name);
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      childTypeMenu.closeMenu();
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      childTypeMenu.closeMenu();
+    }
+  };
+  return (0, import_react_dom3.createPortal)(import_react24.default.createElement("div", {
+    ref: props.menuRef,
+    className: "timeline-work-item-context-menu",
+    role: "menu",
+    "aria-label": `Work item #${menuState.item.workItemId} context menu`,
+    style: {
+      position: "fixed",
+      left: `${menuState.position.x}px`,
+      top: `${menuState.position.y}px`
+    },
+    onContextMenu: (event) => {
+      event.preventDefault();
+    }
+  }, import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-title" }, import_react24.default.createElement("span", null, `#${menuState.item.workItemId}`), import_react24.default.createElement("strong", null, menuState.item.title)), import_react24.default.createElement("button", {
+    ref: firstActionRef,
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action",
+    disabled: duplicateDisabled,
+    onClick: () => {
+      void performDuplicate();
+    }
+  }, "Duplizieren"), canCreateChild ? import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react24.default.createElement("button", {
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
+    "aria-haspopup": "menu",
+    "aria-expanded": childTypeMenu.isOpen ? "true" : "false",
+    disabled: childCreateDisabled,
+    onClick: () => {
+      childTypeMenu.toggleMenu();
+    },
+    onKeyDown: handleChildMenuButtonKeyDown
+  }, "Child hinzuf\xFCgen"), childTypeMenu.isOpen ? import_react24.default.createElement("div", {
+    className: "timeline-work-item-context-submenu",
+    role: "menu",
+    "aria-label": "Child Work Item Type ausw\xE4hlen"
+  }, childTypeMenu.loadState.status === "loading" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Work Item Types werden geladen...") : null, childTypeMenu.loadState.status === "error" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, childTypeMenu.loadState.error) : null, childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0 ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Work Item Types verf\xFCgbar.") : null, ...childTypeMenu.options.map((option, index) => import_react24.default.createElement("button", {
+    key: option.name,
+    ref: (element) => {
+      childTypeOptionRefs.current[index] = element;
+    },
+    type: "button",
+    role: "menuitem",
+    className: index === childTypeMenu.activeIndex ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current" : "timeline-work-item-context-menu-action",
+    disabled: busyAction !== null || !props.onCreateChildWorkItem,
+    onMouseEnter: () => {
+      childTypeMenu.setActiveByIndex(index);
+    },
+    onFocus: () => {
+      childTypeMenu.setActiveByIndex(index);
+    },
+    onKeyDown: (event) => {
+      handleChildTypeOptionKeyDown(event, index, option);
+    },
+    onClick: () => {
+      void performCreateChild(option.name);
+    }
+  }, option.name))) : null) : null, import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react24.default.createElement("button", {
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
+    "aria-haspopup": "menu",
+    "aria-expanded": statusMenuOpen ? "true" : "false",
+    disabled: statusControlsDisabled,
+    onClick: () => {
+      setStatusMenuOpen((current) => !current);
+    }
+  }, "Status \xE4ndern"), statusMenuOpen ? import_react24.default.createElement("div", {
+    className: "timeline-work-item-context-submenu",
+    role: "menu",
+    "aria-label": "Status \xE4ndern"
+  }, statusLoadState.status === "loading" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Status werden geladen...") : null, statusLoadState.status === "error" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Statusoptionen verf\xFCgbar.") : null, ...stateOptions.map((option) => import_react24.default.createElement("button", {
+    key: option.name,
+    type: "button",
+    role: "menuitem",
+    className: option.name.trim().toLowerCase() === currentState.trim().toLowerCase() ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current" : "timeline-work-item-context-menu-action",
+    disabled: busyAction !== null || !props.onUpdateWorkItemState,
+    onClick: () => {
+      void performStateUpdate(option);
+    }
+  }, import_react24.default.createElement("span", {
+    className: "timeline-work-item-context-menu-swatch",
+    style: option.color ? { backgroundColor: normalizeStateColor(option.color) } : void 0,
+    "aria-hidden": "true"
+  }), option.name))) : null), import_react24.default.createElement("button", {
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action",
+    disabled: linkControlsDisabled,
+    onClick: openInAzureDevOps
+  }, "In Azure DevOps \xF6ffnen"), import_react24.default.createElement("button", {
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action",
+    disabled: linkControlsDisabled,
+    onClick: () => {
+      void copyLink();
+    }
+  }, "Link kopieren"), actionError ? import_react24.default.createElement("p", {
+    className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error",
+    role: "status"
+  }, actionError) : null), document.body);
+}
+async function copyTextToClipboard(text2) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text2);
+      return;
+    } catch {
+    }
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text2;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("COPY_UNAVAILABLE");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+function normalizeStateColor(color) {
+  const trimmed = color.trim();
+  return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+}
+
+// dist/src/features/gantt-view/use-work-item-context-menu.js
+var import_react25 = __toESM(require_react(), 1);
+var MENU_WIDTH_PX = 260;
+var MENU_HEIGHT_PX = 320;
+var VIEWPORT_INSET_PX = 8;
+function useWorkItemContextMenu() {
+  const [menuState, setMenuState] = import_react25.default.useState(null);
+  const menuRef = import_react25.default.useRef(null);
+  const closeMenu = import_react25.default.useCallback(() => {
+    setMenuState(null);
+  }, []);
+  const openAt = import_react25.default.useCallback((item, x, y) => {
+    setMenuState({
+      item,
+      position: resolveMenuPosition(x, y)
+    });
+  }, []);
+  const openMenuFromContextMenu = import_react25.default.useCallback((event, item) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openAt(item, event.clientX, event.clientY);
+  }, [openAt]);
+  const openMenuFromKeyboard = import_react25.default.useCallback((event, item) => {
+    if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    openAt(item, rect.left + 8, rect.bottom + 4);
+  }, [openAt]);
+  import_react25.default.useEffect(() => {
+    if (!menuState) {
+      return;
+    }
+    const onPointerDown = (event) => {
+      const target = event.target;
+      if (target instanceof Node && menuRef.current?.contains(target)) {
+        return;
+      }
+      closeMenu();
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("resize", closeMenu);
+    };
+  }, [closeMenu, menuState]);
+  return {
+    menuState,
+    menuRef,
+    closeMenu,
+    openMenuFromContextMenu,
+    openMenuFromKeyboard
+  };
+}
+function resolveMenuPosition(x, y) {
+  if (typeof window === "undefined") {
+    return { x, y };
+  }
+  const maxX = Math.max(VIEWPORT_INSET_PX, window.innerWidth - MENU_WIDTH_PX - VIEWPORT_INSET_PX);
+  const maxY = Math.max(VIEWPORT_INSET_PX, window.innerHeight - MENU_HEIGHT_PX - VIEWPORT_INSET_PX);
+  return {
+    x: Math.min(Math.max(VIEWPORT_INSET_PX, x), maxX),
+    y: Math.min(Math.max(VIEWPORT_INSET_PX, y), maxY)
+  };
+}
+
+// dist/src/features/gantt-view/timeline-filter-url.js
+var TIMELINE_VALUE_FILTERS_QUERY_PARAM = "tf";
+var TIMELINE_DATE_FILTERS_QUERY_PARAM = "tdf";
+var TIMELINE_FILTER_GROUPS_QUERY_PARAM = "tfg";
+var LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
+function hasTimelineFilterUrlSearchParams(search) {
+  try {
+    const params = new URLSearchParams(search);
+    return params.has(TIMELINE_FILTER_GROUPS_QUERY_PARAM) || params.has(TIMELINE_VALUE_FILTERS_QUERY_PARAM) || params.has(TIMELINE_DATE_FILTERS_QUERY_PARAM) || params.has(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+  } catch {
+    return false;
+  }
+}
+function parseTimelineFilterGroupsFromSearch(search, options = {}) {
+  try {
+    const params = new URLSearchParams(search);
+    const groupRaw = params.get(TIMELINE_FILTER_GROUPS_QUERY_PARAM);
+    if (groupRaw !== null) {
+      const parsedGroups = parseVersionedTimelineFilterGroupsParam(groupRaw);
+      if (parsedGroups !== null) {
+        return withGroupAndSlotIds(parsedGroups);
+      }
+    }
+    const parsed = parseCompactAndLegacyTimelineFilters(params, options.dateFilterContext);
+    return parsed.length > 0 ? [createTimelineFilterGroup(0, withSlotIds(parsed))] : [];
+  } catch {
+    return [];
+  }
+}
+function serializeTimelineFilterGroupsForUrl(groups) {
+  const activeGroups = limitActiveTimelineFilterGroups(groups);
+  if (activeGroups.length === 0) {
+    return [];
+  }
+  if (activeGroups.length === 1) {
+    return serializeFlatTimelineFiltersForUrl(activeGroups[0]?.filters ?? []);
+  }
+  return [
+    {
+      name: TIMELINE_FILTER_GROUPS_QUERY_PARAM,
+      value: JSON.stringify({
+        version: 1,
+        groups: activeGroups.map((group) => ({
+          filters: group.filters.map((filter) => toVersionedTimelineFilter(filter))
+        }))
+      })
+    }
+  ];
+}
+function syncTimelineFilterGroupsToUrl(groups) {
+  if (typeof globalThis.window === "undefined") {
+    return;
+  }
+  const params = new URLSearchParams(globalThis.window.location.search);
+  params.delete(TIMELINE_FILTER_GROUPS_QUERY_PARAM);
+  params.delete(TIMELINE_VALUE_FILTERS_QUERY_PARAM);
+  params.delete(TIMELINE_DATE_FILTERS_QUERY_PARAM);
+  params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+  serializeTimelineFilterGroupsForUrl(groups).forEach((entry) => {
+    params.append(entry.name, entry.value);
+  });
+  const nextSearch = params.toString();
+  const normalizedCurrentSearch = globalThis.window.location.search.startsWith("?") ? globalThis.window.location.search.slice(1) : globalThis.window.location.search;
+  if (nextSearch === normalizedCurrentSearch) {
+    return;
+  }
+  const nextUrl = `${globalThis.window.location.pathname}${nextSearch.length > 0 ? `?${nextSearch}` : ""}${globalThis.window.location.hash}`;
+  globalThis.window.history.replaceState(globalThis.window.history.state, "", nextUrl);
+}
+function parseCompactAndLegacyTimelineFilters(params, dateFilterContext) {
+  const parsed = [];
+  for (const [name, value] of params.entries()) {
+    if (parsed.length >= MAX_TIMELINE_FILTER_SLOTS) {
+      break;
+    }
+    const entry = name === TIMELINE_VALUE_FILTERS_QUERY_PARAM ? parseCompactValueTimelineFilterParam(value, dateFilterContext) : name === TIMELINE_DATE_FILTERS_QUERY_PARAM ? parseCompactDateTimelineFilterParam(value) : null;
+    if (entry) {
+      parsed.push(entry);
+    }
+  }
+  if (parsed.length > 0) {
+    return parsed;
+  }
+  const legacyRaw = params.get(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+  if (!legacyRaw) {
+    return [];
+  }
+  try {
+    return parseLegacyTimelineFilters(legacyRaw, dateFilterContext).slice(0, MAX_TIMELINE_FILTER_SLOTS);
+  } catch {
+    return [];
+  }
+}
+function serializeFlatTimelineFiltersForUrl(filters) {
+  return filters.filter((filter) => isActiveTimelineFieldFilter(filter)).slice(0, MAX_TIMELINE_FILTER_SLOTS).map((filter) => {
+    const fieldRef = normalizeTimelineFilterFieldRef(filter.fieldRef);
+    if (!fieldRef) {
+      return null;
+    }
+    if (isTimelineDateRangeFilter(filter)) {
+      return {
+        name: TIMELINE_DATE_FILTERS_QUERY_PARAM,
+        value: toCompactDateTimelineFilterParam(fieldRef, filter.dateRange)
+      };
+    }
+    return {
+      name: TIMELINE_VALUE_FILTERS_QUERY_PARAM,
+      value: toCompactValueTimelineFilterParam(fieldRef, filter.selectedValueKeys)
+    };
+  }).filter((entry) => entry !== null);
+}
+function parseVersionedTimelineFilterGroupsParam(value) {
+  let parsed;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") {
+    return null;
+  }
+  const version2 = "version" in parsed ? parsed.version : null;
+  const groups = "groups" in parsed ? parsed.groups : null;
+  if (version2 !== 1 || !Array.isArray(groups)) {
+    return null;
+  }
+  const parsedGroups = [];
+  let activeFilterCount = 0;
+  for (const group of groups) {
+    if (!group || typeof group !== "object") {
+      return null;
+    }
+    const filters = "filters" in group ? group.filters : null;
+    if (!Array.isArray(filters)) {
+      return null;
+    }
+    const parsedFilters = [];
+    for (const filter of filters) {
+      if (activeFilterCount >= MAX_TIMELINE_FILTER_SLOTS) {
+        break;
+      }
+      const parsedFilter = parseVersionedTimelineFilter(filter);
+      if (parsedFilter === null) {
+        return null;
+      }
+      if (!isActiveParsedTimelineFilter(parsedFilter)) {
+        continue;
+      }
+      parsedFilters.push(parsedFilter);
+      activeFilterCount += 1;
+    }
+    if (parsedFilters.length > 0) {
+      parsedGroups.push(parsedFilters);
+    }
+  }
+  return parsedGroups;
+}
+function parseVersionedTimelineFilter(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  const kind = "kind" in value ? value.kind : null;
+  const fieldRef = normalizeTimelineFilterFieldRef("fieldRef" in value ? value.fieldRef : null);
+  if (!fieldRef) {
+    return null;
+  }
+  if (kind === "value") {
+    const maybeSelectedValueKeys = "selectedValueKeys" in value ? value.selectedValueKeys : null;
+    if (!Array.isArray(maybeSelectedValueKeys)) {
+      return null;
+    }
+    return {
+      kind: "value",
+      fieldRef,
+      selectedValueKeys: [
+        ...new Set(maybeSelectedValueKeys.filter((entry) => typeof entry === "string").map((entry) => entry.trim()).filter((entry) => entry.length > 0))
+      ]
+    };
+  }
+  if (kind === "dateRange") {
+    const maybeDateRange = "dateRange" in value ? value.dateRange : null;
+    if (!maybeDateRange || typeof maybeDateRange !== "object") {
+      return null;
+    }
+    return {
+      kind: "dateRange",
+      fieldRef,
+      dateRange: {
+        startIso: normalizeTimelineDateIso("startIso" in maybeDateRange ? maybeDateRange.startIso : null),
+        endIso: normalizeTimelineDateIso("endIso" in maybeDateRange ? maybeDateRange.endIso : null)
+      }
+    };
+  }
+  return null;
+}
+function isActiveParsedTimelineFilter(filter) {
+  if (filter.kind === "dateRange") {
+    return isActiveTimelineDateRange(filter.dateRange);
+  }
+  return filter.selectedValueKeys.length > 0;
+}
+function limitActiveTimelineFilterGroups(groups) {
+  const activeGroups = [];
+  let activeFilterCount = 0;
+  for (const group of groups) {
+    if (activeFilterCount >= MAX_TIMELINE_FILTER_SLOTS) {
+      break;
+    }
+    const filters = [];
+    for (const filter of group.filters) {
+      if (activeFilterCount >= MAX_TIMELINE_FILTER_SLOTS) {
+        break;
+      }
+      if (!isActiveTimelineFieldFilter(filter)) {
+        continue;
+      }
+      filters.push(filter);
+      activeFilterCount += 1;
+    }
+    if (filters.length > 0) {
+      activeGroups.push(createTimelineFilterGroup(group.groupId, filters));
+    }
+  }
+  return activeGroups;
+}
+function toVersionedTimelineFilter(filter) {
+  const fieldRef = normalizeTimelineFilterFieldRef(filter.fieldRef);
+  if (!fieldRef) {
+    throw new Error("Cannot serialize a timeline filter without a fieldRef.");
+  }
+  if (isTimelineDateRangeFilter(filter)) {
+    return {
+      kind: "dateRange",
+      fieldRef,
+      dateRange: filter.dateRange
+    };
+  }
+  return {
+    kind: "value",
+    fieldRef,
+    selectedValueKeys: [...new Set(filter.selectedValueKeys)]
+  };
+}
+function parseCompactValueTimelineFilterParam(value, dateFilterContext) {
+  const compactParts = value.split("~");
+  const rawFieldRef = compactParts[0] ?? "";
+  const rawValues = compactParts[1] ?? "";
+  if (!rawFieldRef) {
+    return null;
+  }
+  const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
+  if (fieldRef.length === 0) {
+    return null;
+  }
+  const selectedValueKeys = rawValues.split(",").map((entry) => decodeTimelineFilterToken(entry).trim()).filter((entry) => entry.length > 0);
+  const uniqueSelectedValueKeys = [...new Set(selectedValueKeys)];
+  if (uniqueSelectedValueKeys.length === 0) {
+    return null;
+  }
+  if (isTimelineDateFieldRef(fieldRef, dateFilterContext)) {
+    return migrateValueFilterToDateRange(fieldRef, uniqueSelectedValueKeys) ?? {
+      kind: "value",
+      fieldRef,
+      selectedValueKeys: uniqueSelectedValueKeys
+    };
+  }
+  return {
+    kind: "value",
+    fieldRef,
+    selectedValueKeys: uniqueSelectedValueKeys
+  };
+}
+function parseCompactDateTimelineFilterParam(value) {
+  const compactParts = value.split("~");
+  const rawFieldRef = compactParts[0] ?? "";
+  if (!rawFieldRef) {
+    return null;
+  }
+  const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
+  if (fieldRef.length === 0) {
+    return null;
+  }
+  const dateRange = {
+    startIso: normalizeTimelineDateIso(decodeTimelineFilterToken(compactParts[1] ?? "")),
+    endIso: normalizeTimelineDateIso(decodeTimelineFilterToken(compactParts[2] ?? ""))
+  };
+  if (!dateRange.startIso && !dateRange.endIso) {
+    return null;
+  }
+  return {
+    kind: "dateRange",
+    fieldRef,
+    dateRange
+  };
+}
+function parseLegacyTimelineFilters(legacyRaw, dateFilterContext) {
+  const parsed = JSON.parse(legacyRaw);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  return parsed.map((entry) => {
+    if (!entry || typeof entry !== "object") {
+      return null;
+    }
+    const maybeFieldRef = "fieldRef" in entry ? entry.fieldRef : null;
+    const maybeValues = "selectedValueKeys" in entry ? entry.selectedValueKeys : [];
+    const fieldRef = normalizeTimelineFilterFieldRef(typeof maybeFieldRef === "string" ? maybeFieldRef : null);
+    if (!fieldRef) {
+      return null;
+    }
+    const selectedValueKeys = Array.isArray(maybeValues) ? [...new Set(maybeValues.filter((value) => typeof value === "string"))] : [];
+    if (selectedValueKeys.length === 0) {
+      return null;
+    }
+    if (isTimelineDateFieldRef(fieldRef, dateFilterContext)) {
+      return migrateValueFilterToDateRange(fieldRef, selectedValueKeys) ?? {
+        kind: "value",
+        fieldRef,
+        selectedValueKeys
+      };
+    }
+    return {
+      kind: "value",
+      fieldRef,
+      selectedValueKeys
+    };
+  }).filter((entry) => entry !== null);
+}
+function migrateValueFilterToDateRange(fieldRef, selectedValueKeys) {
+  if (selectedValueKeys.length !== 1) {
+    return null;
+  }
+  const normalizedDateValues = [];
+  for (const value of selectedValueKeys) {
+    const normalizedDateValue = normalizeLegacyTimelineDateFilterValueIso(value);
+    if (!normalizedDateValue) {
+      return null;
+    }
+    normalizedDateValues.push(normalizedDateValue);
+  }
+  const uniqueNormalizedDateValues = [...new Set(normalizedDateValues)];
+  if (uniqueNormalizedDateValues.length !== 1) {
+    return null;
+  }
+  const [iso] = uniqueNormalizedDateValues;
+  return {
+    kind: "dateRange",
+    fieldRef,
+    dateRange: {
+      startIso: iso,
+      endIso: iso
+    }
+  };
+}
+function withSlotIds(parsed) {
+  return parsed.slice(0, MAX_TIMELINE_FILTER_SLOTS).map((entry, index) => {
+    if (entry.kind === "dateRange") {
+      return createTimelineDateRangeFieldFilter(index, entry.fieldRef, entry.dateRange);
+    }
+    return createTimelineValueFieldFilter(index, entry.fieldRef, entry.selectedValueKeys);
+  });
+}
+function withGroupAndSlotIds(parsedGroups) {
+  const groups = [];
+  let nextSlotId = 0;
+  parsedGroups.forEach((parsedFilters, groupIndex) => {
+    const filters = [];
+    for (const entry of parsedFilters) {
+      if (nextSlotId >= MAX_TIMELINE_FILTER_SLOTS) {
+        break;
+      }
+      filters.push(entry.kind === "dateRange" ? createTimelineDateRangeFieldFilter(nextSlotId, entry.fieldRef, entry.dateRange) : createTimelineValueFieldFilter(nextSlotId, entry.fieldRef, entry.selectedValueKeys));
+      nextSlotId += 1;
+    }
+    if (filters.length > 0) {
+      groups.push(createTimelineFilterGroup(groupIndex, filters));
+    }
+  });
+  return groups;
+}
+function toCompactValueTimelineFilterParam(fieldRef, selectedValueKeys) {
+  const encodedFieldRef = encodeTimelineFilterToken(fieldRef);
+  const valuePart = selectedValueKeys.length > 0 ? [...new Set(selectedValueKeys)].map((value) => encodeTimelineFilterToken(value)).join(",") : "";
+  return `${encodedFieldRef}~${valuePart}`;
+}
+function toCompactDateTimelineFilterParam(fieldRef, dateRange) {
+  return [
+    encodeTimelineFilterToken(fieldRef),
+    dateRange.startIso ? encodeTimelineFilterToken(dateRange.startIso) : "",
+    dateRange.endIso ? encodeTimelineFilterToken(dateRange.endIso) : ""
+  ].join("~");
+}
+function decodeTimelineFilterToken(token) {
+  try {
+    return decodeURIComponent(token);
+  } catch {
+    return token;
+  }
+}
+function encodeTimelineFilterToken(token) {
+  return encodeURIComponent(token).replace(/~/g, "%7E");
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
 function useTimelineViewport(initialViewportPreference) {
-  const [dayWidthPx, setDayWidthPx] = import_react22.default.useState(() => {
+  const [dayWidthPx, setDayWidthPx] = import_react26.default.useState(() => {
     if (!initialViewportPreference) {
       return DAY_WIDTH_WEEK_PX;
     }
     return clamp4(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
   });
-  const [activePanDrag, setActivePanDrag] = import_react22.default.useState(null);
-  const [spacePanPressed, setSpacePanPressed] = import_react22.default.useState(false);
-  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react22.default.useState(0);
-  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react22.default.useState(0);
-  const chartScrollRef = import_react22.default.useRef(null);
-  const chartSvgRef = import_react22.default.useRef(null);
-  const mainLaneRef = import_react22.default.useRef(null);
-  const zoomAnchorRef = import_react22.default.useRef(null);
-  const wheelZoomFrameRef = import_react22.default.useRef(null);
-  const pendingWheelDayWidthRef = import_react22.default.useRef(null);
-  const liveDayWidthRef = import_react22.default.useRef(dayWidthPx);
-  const committedDayWidthRef = import_react22.default.useRef(dayWidthPx);
-  const zoomCommitTimerRef = import_react22.default.useRef(null);
-  const pendingFitRangeRef = import_react22.default.useRef(null);
-  const pendingViewportRestoreRef = import_react22.default.useRef(initialViewportPreference);
-  const viewportPersistDebounceRef = import_react22.default.useRef(null);
-  const spacePanPressedRef = import_react22.default.useRef(false);
-  const initialViewportAppliedRef = import_react22.default.useRef(false);
-  const lastZoomLevelRef = import_react22.default.useRef(resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX));
-  const zoomLevel = import_react22.default.useMemo(() => {
+  const [activePanDrag, setActivePanDrag] = import_react26.default.useState(null);
+  const [spacePanPressed, setSpacePanPressed] = import_react26.default.useState(false);
+  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react26.default.useState(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react26.default.useState(0);
+  const chartScrollRef = import_react26.default.useRef(null);
+  const chartSvgRef = import_react26.default.useRef(null);
+  const mainLaneRef = import_react26.default.useRef(null);
+  const zoomAnchorRef = import_react26.default.useRef(null);
+  const wheelZoomFrameRef = import_react26.default.useRef(null);
+  const pendingWheelDayWidthRef = import_react26.default.useRef(null);
+  const liveDayWidthRef = import_react26.default.useRef(dayWidthPx);
+  const committedDayWidthRef = import_react26.default.useRef(dayWidthPx);
+  const zoomCommitTimerRef = import_react26.default.useRef(null);
+  const pendingFitRangeRef = import_react26.default.useRef(null);
+  const pendingViewportRestoreRef = import_react26.default.useRef(initialViewportPreference);
+  const viewportPersistDebounceRef = import_react26.default.useRef(null);
+  const spacePanPressedRef = import_react26.default.useRef(false);
+  const initialViewportAppliedRef = import_react26.default.useRef(false);
+  const lastZoomLevelRef = import_react26.default.useRef(resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX));
+  const zoomLevel = import_react26.default.useMemo(() => {
     const prev = lastZoomLevelRef.current;
     const next = resolveZoomLevelWithHysteresis(dayWidthPx, prev);
     lastZoomLevelRef.current = next;
@@ -31310,12 +33346,12 @@ function useTimelineViewport(initialViewportPreference) {
   };
 }
 function useTimelineColorCoding(queryId) {
-  const [colorCoding, setColorCoding] = import_react22.default.useState(() => loadLastTimelineColorCoding(queryId) ?? "none");
-  const [fieldColorCoding, setFieldColorCoding] = import_react22.default.useState(() => loadTimelineFieldColorCodingConfig(queryId));
-  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react22.default.useState(() => loadTimelineFieldColorCodingConfig(queryId).fieldRef);
-  const [colorSettingsOpen, setColorSettingsOpen] = import_react22.default.useState(false);
-  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react22.default.useState(false);
-  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react22.default.useState("");
+  const [colorCoding, setColorCoding] = import_react26.default.useState(() => loadLastTimelineColorCoding(queryId) ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = import_react26.default.useState(() => loadTimelineFieldColorCodingConfig(queryId));
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react26.default.useState(() => loadTimelineFieldColorCodingConfig(queryId).fieldRef);
+  const [colorSettingsOpen, setColorSettingsOpen] = import_react26.default.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react26.default.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react26.default.useState("");
   return {
     colorCoding,
     setColorCoding,
@@ -31332,23 +33368,27 @@ function useTimelineColorCoding(queryId) {
   };
 }
 function TimelinePane(props) {
-  const initialTimelineFilterState = import_react22.default.useMemo(() => resolveInitialTimelineFilterState(), []);
+  const initialTimelineFilterState = import_react26.default.useMemo(() => resolveInitialTimelineFilterState(props.timeline), []);
   const activeQueryId = props.activeQueryId ?? null;
-  const initialViewportPreference = import_react22.default.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
+  const initialViewportPreference = import_react26.default.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
   const dependencyEditing = useDependencyEditing();
+  const workItemContextMenu = useWorkItemContextMenu();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
   const timelineSorting = useTimelineSorting(activeQueryId);
-  const internalSelectionStoreRef = import_react22.default.useRef(null);
+  const pendingTimelineFilterUrlHydrationRef = import_react26.default.useRef(props.timeline === null && hasCurrentTimelineFilterUrlSearchParams());
+  const timelineFiltersUserEditedRef = import_react26.default.useRef(false);
+  const skipNextTimelineFilterUrlSyncRef = import_react26.default.useRef(false);
+  const internalSelectionStoreRef = import_react26.default.useRef(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
   }
   const selectionStore = props.selectionStore ?? internalSelectionStoreRef.current;
   const { adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId, adoptScheduleError, setAdoptScheduleError, activeScheduleDrag, setActiveScheduleDrag, activeUnschedulableDrag, setActiveUnschedulableDrag, unscheduledDropPreview, setUnscheduledDropPreview } = scheduleDragging;
-  const [editMode, setEditMode] = import_react22.default.useState(false);
-  const [editInfoOpen, setEditInfoOpen] = import_react22.default.useState(false);
-  const editInfoRef = import_react22.default.useRef(null);
-  import_react22.default.useEffect(() => {
+  const [editMode, setEditMode] = import_react26.default.useState(false);
+  const [editInfoOpen, setEditInfoOpen] = import_react26.default.useState(false);
+  const editInfoRef = import_react26.default.useRef(null);
+  import_react26.default.useEffect(() => {
     if (!editInfoOpen) {
       return;
     }
@@ -31370,52 +33410,53 @@ function TimelinePane(props) {
     };
   }, [editInfoOpen]);
   const { activeDependencyDrag, setActiveDependencyDrag, dependencyViewMode, setDependencyViewMode, selectedDependency, setSelectedDependency } = dependencyEditing;
-  const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFieldFilters, setTimelineFieldFilters, nextFilterSlotId, setNextFilterSlotId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
+  const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFilterGroups, setTimelineFilterGroups, timelineFieldFilters, nextFilterSlotId, setNextFilterSlotId, nextFilterGroupId, setNextFilterGroupId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
   const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField, togglePrimarySortDirection, toggleSecondarySortDirection } = timelineSorting;
-  const sortedBaseTimeline = import_react22.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
-  const effectiveTimeline = import_react22.default.useMemo(() => {
+  const sortedBaseTimeline = import_react26.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
+  const effectiveTimeline = import_react26.default.useMemo(() => {
     const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
   }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
-  const [selectedWorkItemId, setSelectedWorkItemId] = import_react22.default.useState(() => selectionStore.getSelectedWorkItemId());
-  const [hoveredDependencyKey, setHoveredDependencyKey] = import_react22.default.useState(null);
+  const timelineDateFilterContext = import_react26.default.useMemo(() => buildTimelineDateFilterContext(effectiveTimeline), [effectiveTimeline]);
+  const [selectedWorkItemId, setSelectedWorkItemId] = import_react26.default.useState(() => selectionStore.getSelectedWorkItemId());
+  const [hoveredDependencyKey, setHoveredDependencyKey] = import_react26.default.useState(null);
   const { dayWidthPx, setDayWidthPx, activePanDrag, setActivePanDrag, spacePanPressed, setSpacePanPressed, chartViewportWidthPx, setChartViewportWidthPx, chartViewportHeightPx, setChartViewportHeightPx, chartScrollRef, chartSvgRef, mainLaneRef, zoomAnchorRef, wheelZoomFrameRef, pendingWheelDayWidthRef, liveDayWidthRef, committedDayWidthRef, zoomCommitTimerRef, pendingFitRangeRef, pendingViewportRestoreRef, viewportPersistDebounceRef, spacePanPressedRef, initialViewportAppliedRef, zoomLevel } = useTimelineViewport(initialViewportPreference);
-  const autoScrollCallbackRef = import_react22.default.useRef(() => {
+  const autoScrollCallbackRef = import_react26.default.useRef(() => {
   });
-  const stableAutoScrollCallback = import_react22.default.useCallback(() => autoScrollCallbackRef.current(), []);
+  const stableAutoScrollCallback = import_react26.default.useCallback(() => autoScrollCallbackRef.current(), []);
   const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null, stableAutoScrollCallback);
-  const [detailsWidthPx, setDetailsWidthPx] = import_react22.default.useState(() => {
+  const [detailsWidthPx, setDetailsWidthPx] = import_react26.default.useState(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const [sidebarWidthPx, setSidebarWidthPx] = import_react22.default.useState(() => {
+  const [sidebarWidthPx, setSidebarWidthPx] = import_react26.default.useState(() => {
     const preferredWidth = loadLastTimelineSidebarWidthPx(activeQueryId);
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
   const { colorCoding, setColorCoding, fieldColorCoding, setFieldColorCoding, lastSelectedFieldRef, setLastSelectedFieldRef, colorSettingsOpen, setColorSettingsOpen, colorCodingDropdownOpen, setColorCodingDropdownOpen, colorCodingSearchDraft, setColorCodingSearchDraft } = useTimelineColorCoding(activeQueryId);
-  const [labelSettingsOpen, setLabelSettingsOpen] = import_react22.default.useState(false);
-  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react22.default.useState("");
-  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react22.default.useState("");
-  const [timelineLabelFields, setTimelineLabelFields] = import_react22.default.useState(() => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
-  const [timelineSidebarFields, setTimelineSidebarFields] = import_react22.default.useState(() => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
-  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react22.default.useState(() => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start");
-  const timelineMainGridRef = import_react22.default.useRef(null);
-  const colorCodingControlRef = import_react22.default.useRef(null);
-  const filterToggleControlRef = import_react22.default.useRef(null);
-  const filterPanelRef = import_react22.default.useRef(null);
-  const sortToggleControlRef = import_react22.default.useRef(null);
-  const sortPanelRef = import_react22.default.useRef(null);
-  const labelToggleControlRef = import_react22.default.useRef(null);
-  const labelPanelRef = import_react22.default.useRef(null);
-  const labelMenuSidebarOptionsRef = import_react22.default.useRef(null);
-  const labelMenuBarOptionsRef = import_react22.default.useRef(null);
-  const labelMenuScrollSyncSourceRef = import_react22.default.useRef(null);
-  const barPointerSelectionIntentRef = import_react22.default.useRef(null);
-  const suppressNextBarClickRef = import_react22.default.useRef(false);
-  const lastDragClientXRef = import_react22.default.useRef(0);
-  const dependencyMarkerReactId = import_react22.default.useId();
-  const dependencyMarkerId = import_react22.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
-  const dependencyAlertMarkerId = import_react22.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const [labelSettingsOpen, setLabelSettingsOpen] = import_react26.default.useState(false);
+  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react26.default.useState("");
+  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react26.default.useState("");
+  const [timelineLabelFields, setTimelineLabelFields] = import_react26.default.useState(() => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
+  const [timelineSidebarFields, setTimelineSidebarFields] = import_react26.default.useState(() => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
+  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react26.default.useState(() => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start");
+  const timelineMainGridRef = import_react26.default.useRef(null);
+  const colorCodingControlRef = import_react26.default.useRef(null);
+  const filterToggleControlRef = import_react26.default.useRef(null);
+  const filterPanelRef = import_react26.default.useRef(null);
+  const sortToggleControlRef = import_react26.default.useRef(null);
+  const sortPanelRef = import_react26.default.useRef(null);
+  const labelToggleControlRef = import_react26.default.useRef(null);
+  const labelPanelRef = import_react26.default.useRef(null);
+  const labelMenuSidebarOptionsRef = import_react26.default.useRef(null);
+  const labelMenuBarOptionsRef = import_react26.default.useRef(null);
+  const labelMenuScrollSyncSourceRef = import_react26.default.useRef(null);
+  const barPointerSelectionIntentRef = import_react26.default.useRef(null);
+  const suppressNextBarClickRef = import_react26.default.useRef(false);
+  const lastDragClientXRef = import_react26.default.useRef(0);
+  const dependencyMarkerReactId = import_react26.default.useId();
+  const dependencyMarkerId = import_react26.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const dependencyAlertMarkerId = import_react26.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
   const dependencyMode = dependencyViewMode === "edit";
   const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
@@ -31441,14 +33482,14 @@ function TimelinePane(props) {
     }
   });
   const { isSidebarResizing, isDetailsResizing, detailsContentHidden, sidebarCollapsed, effectiveSidebarWidthPx, detailsResizeMovedRef, sidebarEffectiveWidthLiveRef, beginSidebarResize, beginDetailsResize, toggleDetailsPanelFromSplitter } = timelineResizing;
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
       pendingViewportRestoreRef.current = viewport;
       setDayWidthPx(clamp4(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
       initialViewportAppliedRef.current = false;
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineColorCodingPreference((mode) => {
       setColorCoding(mode);
       const config = loadTimelineFieldColorCodingConfig(activeQueryId);
@@ -31458,22 +33499,27 @@ function TimelinePane(props) {
       }
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineLabelFieldsPreference((fieldRefs) => {
       setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
       setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineSidebarRowJustifyPreference((justify) => {
       setTimelineSidebarRowJustify(justify);
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  const toggleTimelineSidebarRowJustify = import_react26.default.useCallback(() => {
+    const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
+    setTimelineSidebarRowJustify(next);
+    saveTimelineSidebarRowJustify(next, activeQueryId);
+  }, [activeQueryId, timelineSidebarRowJustify]);
+  import_react26.default.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
       setSidebarWidthPx((current) => {
         const next = clamp4(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
@@ -31481,7 +33527,7 @@ function TimelinePane(props) {
       });
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     hydrateTimelineDetailsWidthPreference((widthPx) => {
       setDetailsWidthPx((current) => {
         const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
@@ -31515,7 +33561,7 @@ function TimelinePane(props) {
       setLabelSettingsOpen(false);
     }
   });
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
@@ -31526,37 +33572,57 @@ function TimelinePane(props) {
     setSelectedDependency(null);
     initialViewportAppliedRef.current = false;
   }, [props.timeline]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     if (dependencyViewMode === "none") {
       setSelectedDependency(null);
     }
   }, [dependencyViewMode]);
-  import_react22.default.useEffect(() => {
-    syncTimelineFiltersToUrl(timelineFieldFilters);
-  }, [timelineFieldFilters]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
+    if (!pendingTimelineFilterUrlHydrationRef.current || timelineFiltersUserEditedRef.current || props.timeline === null) {
+      return;
+    }
+    const nextState = resolveInitialTimelineFilterState(props.timeline);
+    pendingTimelineFilterUrlHydrationRef.current = false;
+    skipNextTimelineFilterUrlSyncRef.current = true;
+    setTimelineFilterGroups(nextState.groups);
+    setNextFilterSlotId(nextState.nextSlotId);
+    setNextFilterGroupId(nextState.nextGroupId);
+  }, [props.timeline, setNextFilterGroupId, setNextFilterSlotId, setTimelineFilterGroups]);
+  import_react26.default.useEffect(() => {
+    if (skipNextTimelineFilterUrlSyncRef.current) {
+      skipNextTimelineFilterUrlSyncRef.current = false;
+      return;
+    }
+    if (pendingTimelineFilterUrlHydrationRef.current && props.timeline === null && hasCurrentTimelineFilterUrlSearchParams()) {
+      return;
+    }
+    syncTimelineFilterGroupsToUrl(timelineFilterGroups);
+  }, [props.timeline, timelineFilterGroups]);
+  import_react26.default.useEffect(() => {
     initialViewportAppliedRef.current = false;
     const scrollElement = chartScrollRef.current;
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
-  }, [timelineFieldFilters]);
-  const availableFieldRefs = import_react22.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
-  const availableTimelineLabelFieldOptions = import_react22.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredTimeline = import_react22.default.useMemo(() => applyTimelineFieldFilters(effectiveTimeline, timelineFieldFilters), [effectiveTimeline, timelineFieldFilters]);
-  const activeTimelineFilters = import_react22.default.useMemo(() => timelineFieldFilters.filter((filter) => isActiveTimelineFieldFilter(filter)), [timelineFieldFilters]);
-  const colorCodingOptions = import_react22.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredColorCodingOptions = import_react22.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
+  }, [timelineFilterGroups]);
+  const availableFieldRefs = import_react26.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const availableTimelineLabelFieldOptions = import_react26.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredTimeline = import_react26.default.useMemo(() => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups), [effectiveTimeline, timelineFilterGroups]);
+  const activeTimelineFiltersCount = import_react26.default.useMemo(() => countActiveTimelineFieldFilters(timelineFieldFilters), [timelineFieldFilters]);
+  const colorCodingOptions = import_react26.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredColorCodingOptions = import_react26.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
   const selectedFieldRef = colorCoding === "field" ? fieldColorCoding.fieldRef ?? lastSelectedFieldRef : null;
-  const selectedFieldValueStats = import_react22.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
-  const selectedModeValueStats = import_react22.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
-  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null);
+  const selectedFieldValueStats = import_react26.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
+  const selectedModeValueStats = import_react26.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
+  const filteredTimelineTreeWorkItemIds = import_react26.default.useMemo(() => listTimelineTreeWorkItemIds(filteredTimeline), [filteredTimeline]);
+  const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null, filteredTimelineTreeWorkItemIds);
   const reparentDrag = useReparentDragging(filteredTimeline?.treeLayout ?? null);
   const isTreeQuery = filteredTimeline?.queryType !== "flat" && filteredTimeline?.treeLayout !== null;
-  const visibleTimeline = import_react22.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
+  const treeLevelSummaries = import_react26.default.useMemo(() => isTreeQuery ? summarizeTimelineTreeLevels(filteredTimeline, treeState.collapsedIds) : [], [filteredTimeline, isTreeQuery, treeState.collapsedIds]);
+  const visibleTimeline = import_react26.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
   const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
-  const colorByWorkItemId = import_react22.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
-  const chartModel = import_react22.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds), [
+  const colorByWorkItemId = import_react26.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
+  const chartModel = import_react26.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds), [
     visibleTimeline,
     dayWidthPx,
     zoomLevel,
@@ -31566,9 +33632,9 @@ function TimelinePane(props) {
     includeUnscheduledDropLane,
     treeState.collapsedIds
   ]);
-  const filteredTimelineLabelFieldOptions = import_react22.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
-  const filteredTimelineSidebarFieldOptions = import_react22.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
-  import_react22.default.useEffect(() => {
+  const filteredTimelineLabelFieldOptions = import_react26.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
+  const filteredTimelineSidebarFieldOptions = import_react26.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
+  import_react26.default.useEffect(() => {
     const selectableItems = [
       ...visibleTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
       ...visibleTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
@@ -31576,16 +33642,16 @@ function TimelinePane(props) {
     const reconciled = selectionStore.reconcile(selectableItems);
     setSelectedWorkItemId(reconciled);
   }, [visibleTimeline, selectionStore]);
-  const selectWorkItem = import_react22.default.useCallback((workItemId) => {
+  const selectWorkItem = import_react26.default.useCallback((workItemId) => {
     selectionStore.select(workItemId);
     setSelectedWorkItemId(workItemId);
   }, [selectionStore]);
-  const toggleWorkItemSelection = import_react22.default.useCallback((workItemId) => {
+  const toggleWorkItemSelection = import_react26.default.useCallback((workItemId) => {
     const nextWorkItemId = selectionStore.getSelectedWorkItemId() === workItemId ? null : workItemId;
     selectionStore.select(nextWorkItemId);
     setSelectedWorkItemId(nextWorkItemId);
   }, [selectionStore]);
-  const adoptUnschedulableSchedule = import_react22.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
+  const adoptUnschedulableSchedule = import_react26.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
     const sourceBar = filteredTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
     if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
       return;
@@ -31605,7 +33671,7 @@ function TimelinePane(props) {
       }
     }));
   }, [filteredTimeline, props]);
-  const persistTimelineViewportSoon = import_react22.default.useCallback(() => {
+  const persistTimelineViewportSoon = import_react26.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -31622,7 +33688,7 @@ function TimelinePane(props) {
       }, activeQueryId);
     }, VIEWPORT_PERSIST_DEBOUNCE_MS);
   }, [activeQueryId]);
-  const resolveFitLayoutLeftOffsets = import_react22.default.useCallback((scrollElement) => {
+  const resolveFitLayoutLeftOffsets = import_react26.default.useCallback((scrollElement) => {
     const mainLaneElement = scrollElement.querySelector(".timeline-chart-main-lane");
     const splitterElement = scrollElement.querySelector(".timeline-main-splitter-embedded");
     const measuredSplitterWidthPx = splitterElement?.getBoundingClientRect().width ?? 0;
@@ -31636,7 +33702,7 @@ function TimelinePane(props) {
       obscuredLeftPx: sidebarWidthPx2 + splitterWidthPx
     };
   }, [effectiveSidebarWidthPx]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
       return;
@@ -31676,7 +33742,7 @@ function TimelinePane(props) {
       window.cancelAnimationFrame(frame);
     };
   }, [chartModel.bars.length, chartModel.todayX, chartModel.width, effectiveSidebarWidthPx]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || chartModel.bars.length === 0) {
       setChartViewportWidthPx(0);
@@ -31702,26 +33768,26 @@ function TimelinePane(props) {
       window.removeEventListener("resize", updateViewportSize);
     };
   }, [chartModel.bars.length]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
     committedDayWidthRef.current = dayWidthPx;
     persistTimelineViewportSoon();
   }, [dayWidthPx, persistTimelineViewportSoon]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     return () => {
       if (viewportPersistDebounceRef.current !== null) {
         window.clearTimeout(viewportPersistDebounceRef.current);
       }
     };
   }, []);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     return () => {
       if (wheelZoomFrameRef.current !== null) {
         window.cancelAnimationFrame(wheelZoomFrameRef.current);
       }
     };
   }, []);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
@@ -31733,7 +33799,7 @@ function TimelinePane(props) {
     zoomAnchorRef.current = null;
     persistTimelineViewportSoon();
   }, [chartModel.dayWidthPx, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
-  const applyFitRangeToViewport = import_react22.default.useCallback((fitRange, dayWidth) => {
+  const applyFitRangeToViewport = import_react26.default.useCallback((fitRange, dayWidth) => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -31747,7 +33813,7 @@ function TimelinePane(props) {
     scrollElement.scrollLeft = clamp4(desiredStartX - viewportTargetX, 0, maxScrollLeft);
     persistTimelineViewportSoon();
   }, [chartModel.domainStart, persistTimelineViewportSoon, resolveFitLayoutLeftOffsets]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const fitRange = pendingFitRangeRef.current;
     if (!fitRange) {
       return;
@@ -31755,19 +33821,19 @@ function TimelinePane(props) {
     applyFitRangeToViewport(fitRange, chartModel.dayWidthPx);
     pendingFitRangeRef.current = null;
   }, [applyFitRangeToViewport, chartModel.dayWidthPx]);
-  const selectWeekZoom = import_react22.default.useCallback(() => {
+  const selectWeekZoom = import_react26.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_WEEK_PX);
   }, [setDayWidthPx]);
-  const selectMonthZoom = import_react22.default.useCallback(() => {
+  const selectMonthZoom = import_react26.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_MONTH_PX);
   }, [setDayWidthPx]);
-  const selectQuarterZoom = import_react22.default.useCallback(() => {
+  const selectQuarterZoom = import_react26.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_QUARTER_PX);
   }, [setDayWidthPx]);
-  const selectYearZoom = import_react22.default.useCallback(() => {
+  const selectYearZoom = import_react26.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_YEAR_PX);
   }, [setDayWidthPx]);
-  const applyDependencyViewModeChange = import_react22.default.useCallback((mode) => {
+  const applyDependencyViewModeChange = import_react26.default.useCallback((mode) => {
     setDependencyViewMode(mode);
     setActiveDependencyDrag(null);
     setActiveScheduleDrag(null);
@@ -31782,7 +33848,7 @@ function TimelinePane(props) {
     setSelectedDependency,
     setUnscheduledDropPreview
   ]);
-  const rotateDependencyViewMode = import_react22.default.useCallback(() => {
+  const rotateDependencyViewMode = import_react26.default.useCallback(() => {
     const modes = DEPENDENCY_VIEW_MODE_OPTIONS.map((option) => option.value);
     const currentIndex = modes.indexOf(dependencyViewMode);
     const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % modes.length;
@@ -31792,7 +33858,7 @@ function TimelinePane(props) {
     }
     applyDependencyViewModeChange(nextMode);
   }, [applyDependencyViewModeChange, dependencyViewMode]);
-  const toggleTimelineFilters = import_react22.default.useCallback(() => {
+  const toggleTimelineFilters = import_react26.default.useCallback(() => {
     setTimelineFiltersOpen((current) => {
       if (current) {
         setOpenFilterDropdown(null);
@@ -31800,10 +33866,10 @@ function TimelinePane(props) {
       return !current;
     });
   }, [setOpenFilterDropdown, setTimelineFiltersOpen]);
-  const toggleSortSettings = import_react22.default.useCallback(() => {
+  const toggleSortSettings = import_react26.default.useCallback(() => {
     setSortSettingsOpen((current) => !current);
   }, [setSortSettingsOpen]);
-  const toggleLabelSettings = import_react22.default.useCallback(() => {
+  const toggleLabelSettings = import_react26.default.useCallback(() => {
     setLabelSettingsOpen((current) => !current);
     setLabelFieldSearchDraft("");
     setSidebarFieldSearchDraft("");
@@ -31830,7 +33896,7 @@ function TimelinePane(props) {
     setAdoptScheduleError,
     spacePanPressedRef
   });
-  const handleChartWheel = import_react22.default.useCallback((event) => {
+  const handleChartWheel = import_react26.default.useCallback((event) => {
     if (!event.ctrlKey && !event.metaKey) {
       return;
     }
@@ -31881,7 +33947,7 @@ function TimelinePane(props) {
       setDayWidthPx((current) => current === pendingDayWidth ? current : pendingDayWidth);
     }, ZOOM_COMMIT_DELAY_MS);
   }, [chartModel.dayWidthPx, dayWidthPx]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -31894,7 +33960,7 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("wheel", onWheel);
     };
   }, [handleChartWheel]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -31907,7 +33973,7 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("scroll", onScroll);
     };
   }, [persistTimelineViewportSoon]);
-  const zoomToFitTimeline = import_react22.default.useCallback(() => {
+  const zoomToFitTimeline = import_react26.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     const visibleTimelineRange = resolveTimelineVisibleRange(filteredTimeline);
     if (!scrollElement || !visibleTimelineRange) {
@@ -31928,7 +33994,7 @@ function TimelinePane(props) {
     }
     setDayWidthPx(fittedDayWidthPx);
   }, [applyFitRangeToViewport, chartModel.dayWidthPx, filteredTimeline, resolveFitLayoutLeftOffsets]);
-  const beginPanDrag = import_react22.default.useCallback((event) => {
+  const beginPanDrag = import_react26.default.useCallback((event) => {
     if (!spacePanPressedRef.current || event.button !== 0) {
       return;
     }
@@ -31948,7 +34014,7 @@ function TimelinePane(props) {
       originScrollTop: scrollElement.scrollTop
     });
   }, []);
-  const updatePanDrag = import_react22.default.useCallback((event) => {
+  const updatePanDrag = import_react26.default.useCallback((event) => {
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== event.pointerId) {
         return current;
@@ -31964,7 +34030,7 @@ function TimelinePane(props) {
       return current;
     });
   }, []);
-  const finishPanDrag = import_react22.default.useCallback((event) => {
+  const finishPanDrag = import_react26.default.useCallback((event) => {
     const pointerId = event.pointerId;
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== pointerId) {
@@ -31974,7 +34040,7 @@ function TimelinePane(props) {
       return null;
     });
   }, [persistTimelineViewportSoon]);
-  const geometryByWorkItemId = import_react22.default.useMemo(() => {
+  const geometryByWorkItemId = import_react26.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar, index) => {
       const y = resolveTimelineBarTopY(index);
@@ -31983,14 +34049,14 @@ function TimelinePane(props) {
     });
     return byId;
   }, [chartModel.bars]);
-  const chartBarByWorkItemId = import_react22.default.useMemo(() => {
+  const chartBarByWorkItemId = import_react26.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar) => {
       byId.set(bar.workItemId, bar);
     });
     return byId;
   }, [chartModel.bars]);
-  const visibleDependencies = import_react22.default.useMemo(() => {
+  const visibleDependencies = import_react26.default.useMemo(() => {
     if (!filteredTimeline) {
       return [];
     }
@@ -32003,7 +34069,7 @@ function TimelinePane(props) {
       return isDependencyViolated(predecessorBar, successorBar);
     });
   }, [chartBarByWorkItemId, dependencyViewMode, filteredTimeline]);
-  const dependencyConnectors = import_react22.default.useMemo(() => {
+  const dependencyConnectors = import_react26.default.useMemo(() => {
     if (!dependencyVisible || !filteredTimeline) {
       return [];
     }
@@ -32060,7 +34126,7 @@ function TimelinePane(props) {
     visibleDependencies,
     geometryByWorkItemId
   ]);
-  import_react22.default.useEffect(() => {
+  import_react26.default.useEffect(() => {
     if (!selectedDependency) {
       return;
     }
@@ -32069,7 +34135,7 @@ function TimelinePane(props) {
       setSelectedDependency(null);
     }
   }, [dependencyConnectors, selectedDependency]);
-  const hoveredDependencyWorkItemIds = import_react22.default.useMemo(() => {
+  const hoveredDependencyWorkItemIds = import_react26.default.useMemo(() => {
     if (!hoveredDependencyKey) {
       return null;
     }
@@ -32079,7 +34145,7 @@ function TimelinePane(props) {
     }
     return /* @__PURE__ */ new Set([connector.predecessorWorkItemId, connector.successorWorkItemId]);
   }, [hoveredDependencyKey, dependencyConnectors]);
-  const activeDependencyDragPreview = import_react22.default.useMemo(() => {
+  const activeDependencyDragPreview = import_react26.default.useMemo(() => {
     if (!activeDependencyDrag) {
       return null;
     }
@@ -32096,7 +34162,7 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
     };
   }, [activeDependencyDrag, geometryByWorkItemId]);
-  const updateEditedSchedule = import_react22.default.useCallback((workItemId, startDate, endDate) => {
+  const updateEditedSchedule = import_react26.default.useCallback((workItemId, startDate, endDate) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
       [workItemId]: {
@@ -32105,7 +34171,7 @@ function TimelinePane(props) {
       }
     }));
   }, []);
-  const beginBarDrag = import_react22.default.useCallback((input) => {
+  const beginBarDrag = import_react26.default.useCallback((input) => {
     if (!canEditSchedule) {
       return;
     }
@@ -32130,7 +34196,7 @@ function TimelinePane(props) {
       lastDayDelta: 0
     });
   }, [canEditSchedule, chartScrollRef, selectWorkItem]);
-  const beginDependencyDrag = import_react22.default.useCallback((input) => {
+  const beginDependencyDrag = import_react26.default.useCallback((input) => {
     if (!dependencyMode || input.event.button !== 0) {
       return;
     }
@@ -32154,7 +34220,7 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: null
     });
   }, [dependencyMode, geometryByWorkItemId, selectWorkItem]);
-  const applyDragDelta = import_react22.default.useCallback((active, clientX) => {
+  const applyDragDelta = import_react26.default.useCallback((active, clientX) => {
     const scrollDelta = (chartScrollRef.current?.scrollLeft ?? 0) - active.originScrollLeft;
     const effectiveClientDelta = clientX - active.originClientX + scrollDelta;
     const deltaDays = clientDeltaToDays(effectiveClientDelta, chartSvgRef.current, chartModel.dayWidthPx);
@@ -32165,7 +34231,7 @@ function TimelinePane(props) {
     setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
     updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
   }, [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]);
-  const handleAutoScroll = import_react22.default.useCallback(() => {
+  const handleAutoScroll = import_react26.default.useCallback(() => {
     const active = activeScheduleDrag;
     if (!active) {
       return;
@@ -32173,7 +34239,7 @@ function TimelinePane(props) {
     applyDragDelta(active, lastDragClientXRef.current);
   }, [activeScheduleDrag, applyDragDelta]);
   autoScrollCallbackRef.current = handleAutoScroll;
-  const handleChartPointerMove = import_react22.default.useCallback((event) => {
+  const handleChartPointerMove = import_react26.default.useCallback((event) => {
     const activeDependency = activeDependencyDrag;
     if (activeDependency && event.pointerId === activeDependency.pointerId) {
       const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
@@ -32200,7 +34266,7 @@ function TimelinePane(props) {
     updateDragAutoScroll(event.clientX, event.clientY);
     applyDragDelta(active, event.clientX);
   }, [activeDependencyDrag, activeScheduleDrag, applyDragDelta, geometryByWorkItemId, updateDragAutoScroll]);
-  const persistDraggedSchedule = import_react22.default.useCallback(async (drag) => {
+  const persistDraggedSchedule = import_react26.default.useCallback(async (drag) => {
     const override = editedBarSchedulesByWorkItemId[drag.workItemId];
     if (!override || !props.onUpdateWorkItemSchedule) {
       return;
@@ -32232,7 +34298,7 @@ function TimelinePane(props) {
       });
     }
   }, [editedBarSchedulesByWorkItemId, props, props.timeline]);
-  const finishActiveDrag = import_react22.default.useCallback((event) => {
+  const finishActiveDrag = import_react26.default.useCallback((event) => {
     const dependencyDrag = activeDependencyDrag;
     if (dependencyDrag && event.pointerId === dependencyDrag.pointerId) {
       setActiveDependencyDrag(null);
@@ -32255,7 +34321,7 @@ function TimelinePane(props) {
     setActiveScheduleDrag(null);
     void persistDraggedSchedule(active);
   }, [activeDependencyDrag, activeScheduleDrag, persistDraggedSchedule, props]);
-  const persistWorkItemSchedule = import_react22.default.useCallback(async (input) => {
+  const persistWorkItemSchedule = import_react26.default.useCallback(async (input) => {
     if (props.onUpdateWorkItemSchedule) {
       await props.onUpdateWorkItemSchedule(input);
       return;
@@ -32264,7 +34330,7 @@ function TimelinePane(props) {
       await props.onAdoptUnschedulableSchedule(input);
     }
   }, [props]);
-  const scheduleUnscheduledFromDrop = import_react22.default.useCallback(async (input) => {
+  const scheduleUnscheduledFromDrop = import_react26.default.useCallback(async (input) => {
     const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
     const startDate = toIsoDateUtc(range.startDate);
     const endDate = toIsoDateUtc(range.endDate);
@@ -32279,7 +34345,7 @@ function TimelinePane(props) {
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react22.default.useCallback((event, workItemId, fixedEndDate) => {
+  const startUnscheduledDrag = import_react26.default.useCallback((event, workItemId, fixedEndDate) => {
     if (dependencyMode) {
       return;
     }
@@ -32287,11 +34353,11 @@ function TimelinePane(props) {
     event.dataTransfer.effectAllowed = "move";
     setActiveUnschedulableDrag({ workItemId, fixedEndDate });
   }, [dependencyMode]);
-  const clearUnscheduledDrag = import_react22.default.useCallback(() => {
+  const clearUnscheduledDrag = import_react26.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, []);
-  const handleChartDragOver = import_react22.default.useCallback((event) => {
+  const handleChartDragOver = import_react26.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -32300,7 +34366,7 @@ function TimelinePane(props) {
     const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
     setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
-  const handleChartDrop = import_react22.default.useCallback((event) => {
+  const handleChartDrop = import_react26.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -32319,11 +34385,11 @@ function TimelinePane(props) {
       setAdoptScheduleError(message);
     });
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]);
-  const updateFieldColorCoding = import_react22.default.useCallback((next) => {
+  const updateFieldColorCoding = import_react26.default.useCallback((next) => {
     setFieldColorCoding(next);
     saveTimelineFieldColorCodingConfig(next, activeQueryId);
   }, []);
-  const selectFieldForColorCoding = import_react22.default.useCallback((fieldRef) => {
+  const selectFieldForColorCoding = import_react26.default.useCallback((fieldRef) => {
     const normalizedFieldRef = fieldRef && fieldRef.trim().length > 0 ? fieldRef.trim() : null;
     if (normalizedFieldRef) {
       setLastSelectedFieldRef(normalizedFieldRef);
@@ -32334,7 +34400,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
   }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const updateFieldValueColor = import_react22.default.useCallback((valueKey, color) => {
+  const updateFieldValueColor = import_react26.default.useCallback((valueKey, color) => {
     const nextValueColors = { ...fieldColorCoding.valueColors };
     const scopedKey = toScopedFieldValueColorKey(fieldColorCoding.fieldRef, valueKey);
     if (scopedKey) {
@@ -32355,7 +34421,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
   }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const toggleOverdueExcludedState = import_react22.default.useCallback((stateCode, excluded) => {
+  const toggleOverdueExcludedState = import_react26.default.useCallback((stateCode, excluded) => {
     const normalizedStateCode = normalizeStateCodeForComparison(stateCode);
     if (normalizedStateCode.length === 0) {
       return;
@@ -32372,7 +34438,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: [...next].sort((left, right) => left.localeCompare(right))
     });
   }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const selectColorCodingOption = import_react22.default.useCallback((option) => {
+  const selectColorCodingOption = import_react26.default.useCallback((option) => {
     setColorCoding(option.mode);
     saveLastTimelineColorCoding(option.mode, activeQueryId);
     if (option.mode === "field") {
@@ -32387,7 +34453,7 @@ function TimelinePane(props) {
     setColorCodingDropdownOpen(false);
     setColorCodingSearchDraft("");
   }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]);
-  const applyFirstFilteredColorCodingOption = import_react22.default.useCallback(() => {
+  const applyFirstFilteredColorCodingOption = import_react26.default.useCallback(() => {
     const preferredOption = pickPreferredColorCodingOption(filteredColorCodingOptions, colorCodingSearchDraft);
     if (!preferredOption) {
       return false;
@@ -32395,81 +34461,82 @@ function TimelinePane(props) {
     selectColorCodingOption(preferredOption);
     return true;
   }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
-  const applyFieldFilterSelection = import_react22.default.useCallback((slotId, fieldRef) => {
-    const normalizedFieldRef = fieldRef?.trim() ? fieldRef.trim() : null;
-    setTimelineFieldFilters((current) => current.map((filter) => filter.slotId === slotId ? {
-      ...filter,
-      fieldRef: normalizedFieldRef,
-      selectedValueKeys: normalizedFieldRef && filter.fieldRef === normalizedFieldRef ? filter.selectedValueKeys : []
-    } : filter));
+  const markTimelineFiltersUserEdited = import_react26.default.useCallback(() => {
+    timelineFiltersUserEditedRef.current = true;
+    pendingTimelineFilterUrlHydrationRef.current = false;
   }, []);
-  const toggleTimelineFieldValueSelection = import_react22.default.useCallback((slotId, valueKey) => {
-    setTimelineFieldFilters((current) => current.map((filter) => {
-      if (filter.slotId !== slotId) {
-        return filter;
-      }
-      const exists = filter.selectedValueKeys.includes(valueKey);
-      if (exists) {
-        return {
-          ...filter,
-          selectedValueKeys: filter.selectedValueKeys.filter((entry) => entry !== valueKey)
-        };
-      }
-      return {
-        ...filter,
-        selectedValueKeys: [...filter.selectedValueKeys, valueKey]
-      };
-    }));
-  }, []);
-  const toggleVisibleTimelineFieldValueSelections = import_react22.default.useCallback((slotId, valueKeys) => {
+  const applyFieldFilterSelection = import_react26.default.useCallback((slotId, fieldRef) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => updateTimelineFilterFieldSelection(current, slotId, fieldRef, timelineDateFilterContext));
+  }, [markTimelineFiltersUserEdited, setTimelineFilterGroups, timelineDateFilterContext]);
+  const toggleTimelineFieldValueSelection = import_react26.default.useCallback((slotId, valueKey) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => toggleTimelineFilterValueSelection(current, slotId, valueKey));
+  }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
+  const toggleVisibleTimelineFieldValueSelections = import_react26.default.useCallback((slotId, valueKeys) => {
     if (valueKeys.length === 0) {
       return;
     }
-    setTimelineFieldFilters((current) => current.map((filter) => {
-      if (filter.slotId !== slotId) {
-        return filter;
-      }
-      const visibleValueKeySet = new Set(valueKeys);
-      const allVisibleValuesSelected = valueKeys.every((valueKey) => filter.selectedValueKeys.includes(valueKey));
-      if (allVisibleValuesSelected) {
-        return {
-          ...filter,
-          selectedValueKeys: filter.selectedValueKeys.filter((valueKey) => !visibleValueKeySet.has(valueKey))
-        };
-      }
-      const nextSelectedValueKeys = [...filter.selectedValueKeys];
-      for (const valueKey of valueKeys) {
-        if (!nextSelectedValueKeys.includes(valueKey)) {
-          nextSelectedValueKeys.push(valueKey);
-        }
-      }
-      return {
-        ...filter,
-        selectedValueKeys: nextSelectedValueKeys
-      };
-    }));
-  }, []);
-  const addTimelineFilterSlot = import_react22.default.useCallback(() => {
-    setTimelineFieldFilters((current) => {
-      if (current.length >= MAX_TIMELINE_FILTER_SLOTS) {
-        return current;
-      }
-      return [...current, createTimelineFieldFilter(nextFilterSlotId)];
-    });
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => toggleVisibleTimelineFilterValueSelections(current, slotId, valueKeys));
+  }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
+  const addTimelineFilterCondition = import_react26.default.useCallback((groupId) => {
+    if (countTimelineFilterSlots(timelineFilterGroups) >= MAX_TIMELINE_FILTER_SLOTS) {
+      return;
+    }
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => addTimelineFilterConditionToGroup(current, groupId, nextFilterSlotId));
     setNextFilterSlotId((current) => current + 1);
-  }, [nextFilterSlotId]);
-  const removeTimelineFilterSlot = import_react22.default.useCallback((slotId) => {
-    setTimelineFieldFilters((current) => {
-      if (current.length <= 1) {
-        return current.map((filter) => filter.slotId === slotId ? { ...filter, fieldRef: null, selectedValueKeys: [] } : filter);
-      }
-      return current.filter((filter) => filter.slotId !== slotId);
-    });
+  }, [
+    markTimelineFiltersUserEdited,
+    nextFilterSlotId,
+    setNextFilterSlotId,
+    setTimelineFilterGroups,
+    timelineFilterGroups
+  ]);
+  const addTimelineFilterOrGroup = import_react26.default.useCallback(() => {
+    if (countTimelineFilterSlots(timelineFilterGroups) >= MAX_TIMELINE_FILTER_SLOTS) {
+      return;
+    }
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => addTimelineFilterGroup(current, nextFilterGroupId, nextFilterSlotId));
+    setNextFilterGroupId((current) => current + 1);
+    setNextFilterSlotId((current) => current + 1);
+  }, [
+    markTimelineFiltersUserEdited,
+    nextFilterGroupId,
+    nextFilterSlotId,
+    setNextFilterGroupId,
+    setNextFilterSlotId,
+    setTimelineFilterGroups,
+    timelineFilterGroups
+  ]);
+  const removeTimelineFilterSlot = import_react26.default.useCallback((slotId) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => removeTimelineFilterCondition(current, slotId));
     if (openFilterDropdown?.slotId === slotId) {
       setOpenFilterDropdown(null);
     }
-  }, [openFilterDropdown?.slotId]);
-  const toggleTimelineLabelField = import_react22.default.useCallback((fieldRef) => {
+  }, [markTimelineFiltersUserEdited, openFilterDropdown?.slotId, setOpenFilterDropdown, setTimelineFilterGroups]);
+  const removeTimelineFilterGroupById = import_react26.default.useCallback((groupId) => {
+    markTimelineFiltersUserEdited();
+    const openSlotGroupId = openFilterDropdown === null ? null : findTimelineFilterGroupIdBySlotId(timelineFilterGroups, openFilterDropdown.slotId);
+    setTimelineFilterGroups((current) => removeTimelineFilterGroup(current, groupId));
+    if (openSlotGroupId === groupId) {
+      setOpenFilterDropdown(null);
+    }
+  }, [
+    markTimelineFiltersUserEdited,
+    openFilterDropdown,
+    setOpenFilterDropdown,
+    setTimelineFilterGroups,
+    timelineFilterGroups
+  ]);
+  const updateTimelineDateRangeFilter = import_react26.default.useCallback((slotId, dateRange) => {
+    markTimelineFiltersUserEdited();
+    setTimelineFilterGroups((current) => updateTimelineFilterDateRange(current, slotId, dateRange));
+  }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
+  const toggleTimelineLabelField = import_react26.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -32482,13 +34549,13 @@ function TimelinePane(props) {
       return sanitized;
     });
   }, []);
-  const clearTimelineLabelFields = import_react22.default.useCallback(() => {
+  const clearTimelineLabelFields = import_react26.default.useCallback(() => {
     setTimelineLabelFields(() => {
       saveTimelineLabelFields([], activeQueryId);
       return [];
     });
   }, []);
-  const toggleTimelineSidebarField = import_react22.default.useCallback((fieldRef) => {
+  const toggleTimelineSidebarField = import_react26.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -32501,18 +34568,18 @@ function TimelinePane(props) {
       return sanitized;
     });
   }, []);
-  const clearTimelineSidebarFields = import_react22.default.useCallback(() => {
+  const clearTimelineSidebarFields = import_react26.default.useCallback(() => {
     setTimelineSidebarFields(() => {
       saveTimelineSidebarFields([], activeQueryId);
       return [];
     });
   }, []);
-  const openTimelineLabelSettingsFromSidebar = import_react22.default.useCallback(() => {
+  const openTimelineLabelSettingsFromSidebar = import_react26.default.useCallback(() => {
     setLabelSettingsOpen(true);
     setLabelFieldSearchDraft("");
     setSidebarFieldSearchDraft("");
   }, []);
-  const syncLabelMenuScrollFromSidebar = import_react22.default.useCallback(() => {
+  const syncLabelMenuScrollFromSidebar = import_react26.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -32528,7 +34595,7 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "sidebar";
     bar.scrollTop = sidebar.scrollTop;
   }, []);
-  const syncLabelMenuScrollFromBar = import_react22.default.useCallback(() => {
+  const syncLabelMenuScrollFromBar = import_react26.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -32544,20 +34611,23 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "bar";
     sidebar.scrollTop = bar.scrollTop;
   }, []);
-  const openFilterSlot = import_react22.default.useMemo(() => openFilterDropdown === null ? null : timelineFieldFilters.find((filter) => filter.slotId === openFilterDropdown.slotId) ?? null, [openFilterDropdown, timelineFieldFilters]);
-  const openFilterFieldOptions = import_react22.default.useMemo(() => {
+  const openFilterSlot = import_react26.default.useMemo(() => openFilterDropdown === null ? null : findTimelineFilterBySlotId(timelineFilterGroups, openFilterDropdown.slotId), [openFilterDropdown, timelineFilterGroups]);
+  const openFilterFieldOptions = import_react26.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "field") {
       return [];
     }
     return filterFieldRefsBySearch(availableFieldRefs, filterFieldSearchDraft);
   }, [availableFieldRefs, filterFieldSearchDraft, openFilterDropdown]);
-  const openFilterValueOptions = import_react22.default.useMemo(() => {
+  const openFilterValueOptions = import_react26.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
       return [];
     }
+    if (isTimelineDateRangeFilter(openFilterSlot)) {
+      return [];
+    }
     return filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef), filterValueSearchDraft);
-  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot?.fieldRef]);
-  const handleAdoptSelectedSchedule = import_react22.default.useCallback(async (input) => {
+  }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot]);
+  const handleAdoptSelectedSchedule = import_react26.default.useCallback(async (input) => {
     if (props.onAdoptUnschedulableSchedule) {
       await props.onAdoptUnschedulableSchedule(input);
     }
@@ -32594,10 +34664,10 @@ function TimelinePane(props) {
   const isFieldColorCodingMode = colorCoding === "field";
   const isReadOnlyStatusColorCodingMode = colorCoding === "status";
   const isOverdueColorCodingMode = colorCoding === "overdue";
-  return import_react22.default.createElement("section", {
+  return import_react26.default.createElement("section", {
     "aria-label": "timeline-pane",
     className: "timeline-pane"
-  }, import_react22.default.createElement(TimelinePaneActionsToolbar, {
+  }, import_react26.default.createElement(TimelinePaneActionsToolbar, {
     isRefreshing: props.isRefreshing === true,
     onRetryRefresh: () => {
       props.onRetryRefresh?.();
@@ -32634,9 +34704,9 @@ function TimelinePane(props) {
     },
     filterToggleControlRef,
     timelineFiltersOpen,
-    activeTimelineFiltersCount: activeTimelineFilters.length,
+    activeTimelineFiltersCount,
     onToggleTimelineFilters: toggleTimelineFilters,
-    sortControl: import_react22.default.createElement(TimelineSortControl, {
+    sortControl: import_react26.default.createElement(TimelineSortControl, {
       availableFieldRefs,
       controlRef: sortToggleControlRef,
       panelRef: sortPanelRef,
@@ -32678,15 +34748,14 @@ function TimelinePane(props) {
     onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => void 0),
     onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => void 0),
     onClearPendingWorkItemChanges: props.onClearPendingWorkItemChanges ?? (() => void 0)
-  }), import_react22.default.createElement(TimelineFilterPanel, {
+  }), import_react26.default.createElement(TimelineFilterPanel, {
     open: timelineFiltersOpen,
     panelRef: filterPanelRef,
     availableFieldRefs,
-    timelineFieldFilters,
+    timelineFilterGroups,
     openFilterDropdown,
     openFilterFieldOptions,
     openFilterValueOptions,
-    effectiveTimelineValueOptionsForFilter: (fieldRef) => filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, fieldRef), ""),
     maxFilterSlots: MAX_TIMELINE_FILTER_SLOTS,
     getFieldDisplayName: getFieldDisplayName2,
     onSetOpenFilterDropdown: setOpenFilterDropdown,
@@ -32697,12 +34766,15 @@ function TimelinePane(props) {
     onApplyFieldFilterSelection: applyFieldFilterSelection,
     onToggleTimelineFieldValueSelection: toggleTimelineFieldValueSelection,
     onToggleVisibleTimelineFieldValueSelections: toggleVisibleTimelineFieldValueSelections,
+    onUpdateTimelineDateRangeFilter: updateTimelineDateRangeFilter,
     onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
-    onAddTimelineFilterSlot: addTimelineFilterSlot
-  }), adoptScheduleError ? import_react22.default.createElement("div", {
+    onRemoveTimelineFilterGroup: removeTimelineFilterGroupById,
+    onAddTimelineFilterCondition: addTimelineFilterCondition,
+    onAddTimelineFilterGroup: addTimelineFilterOrGroup
+  }), adoptScheduleError ? import_react26.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
-  }, `Save failed: ${adoptScheduleError}`) : null, import_react22.default.createElement(TimelineColorCodingPanel, {
+  }, `Save failed: ${adoptScheduleError}`) : null, import_react26.default.createElement(TimelineColorCodingPanel, {
     open: colorSettingsOpen,
     colorCoding,
     selectedFieldRef,
@@ -32720,33 +34792,46 @@ function TimelinePane(props) {
     onToggleOverdueExcludedState: toggleOverdueExcludedState,
     resolveSelectedColorCodingLabel,
     toScopedFieldValueColorKey
-  }), import_react22.default.createElement(TimelinePrintHeader, {
+  }), import_react26.default.createElement(TimelineWorkItemContextMenu, {
+    menuState: workItemContextMenu.menuState,
+    menuRef: workItemContextMenu.menuRef,
+    timeline: filteredTimeline,
+    organization: props.organization,
+    project: props.project,
+    onClose: workItemContextMenu.closeMenu,
+    onDuplicateWorkItem: props.onDuplicateWorkItem,
+    canCreateChildWorkItem: props.canCreateChildWorkItem,
+    onCreateChildWorkItem: props.onCreateChildWorkItem,
+    onFetchWorkItemTypes: props.onFetchWorkItemTypes,
+    onUpdateWorkItemState: props.onUpdateWorkItemState,
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+  }), import_react26.default.createElement(TimelinePrintHeader, {
     queryName: props.activeQueryName ?? null,
     queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
     workItemCount: chartModel.bars.length,
     printedAt: /* @__PURE__ */ new Date(),
     isPrintMode: printCurrentView.isPrintMode
-  }), import_react22.default.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }), import_react22.default.createElement("div", {
+  }), import_react26.default.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }), import_react26.default.createElement("div", {
     className: "timeline-main-grid",
     ref: timelineMainGridRef,
     style: timelineMainGridStyle
-  }, import_react22.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react22.default.createElement("div", { className: "timeline-empty-state" }, import_react22.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react22.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react22.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react22.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react22.default.createElement("button", {
+  }, import_react26.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react26.default.createElement("div", { className: "timeline-empty-state" }, import_react26.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react26.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react26.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react26.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react26.default.createElement("button", {
     type: "button",
     className: "timeline-chart-fit-button",
     "aria-label": "Zoom to fit timeline",
     onClick: zoomToFitTimeline
-  }, import_react22.default.createElement("svg", {
+  }, import_react26.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-chart-fit-icon",
     "aria-hidden": "true"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 2,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })))), import_react22.default.createElement("div", {
+  })))), import_react26.default.createElement("div", {
     className: [
       "timeline-chart-scroll",
       unscheduledCount === 0 ? "timeline-chart-scroll-unscheduled-empty" : "",
@@ -32759,54 +34844,34 @@ function TimelinePane(props) {
     onPointerMove: updatePanDrag,
     onPointerUp: finishPanDrag,
     onPointerCancel: finishPanDrag
-  }, import_react22.default.createElement("div", {
+  }, import_react26.default.createElement("div", {
     className: sidebarCollapsed ? "timeline-left-sidebar timeline-left-sidebar-collapsed timeline-left-sidebar-embedded" : "timeline-left-sidebar timeline-left-sidebar-embedded",
     "aria-label": "Timeline left sidebar",
     style: { width: `${Math.round(effectiveSidebarWidthPx)}px`, height: `${chartModel.height}px` }
-  }, sidebarCollapsed ? import_react22.default.createElement("div", {
+  }, sidebarCollapsed ? import_react26.default.createElement("div", {
     className: "timeline-left-sidebar-collapsed-body",
     style: { height: `${chartModel.height}px` }
-  }, import_react22.default.createElement("button", {
+  }, import_react26.default.createElement("button", {
     type: "button",
     className: "timeline-left-sidebar-settings-button",
     "aria-label": "Configure timeline sidebar fields",
     onClick: openTimelineLabelSettingsFromSidebar
-  }, import_react22.default.createElement("svg", {
+  }, import_react26.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-left-sidebar-settings-icon",
     "aria-hidden": "true"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
   })))) : [
-    import_react22.default.createElement("div", {
-      className: "timeline-left-sidebar-header",
-      style: { height: `${CHART_TOP_PADDING}px` },
-      key: "header"
-    }, import_react22.default.createElement("button", {
-      type: "button",
-      className: "timeline-left-sidebar-align-toggle",
-      "aria-label": "Toggle timeline sidebar row alignment",
-      title: timelineSidebarRowJustify === "flex-end" ? "Align sidebar rows left" : "Align sidebar rows right",
-      "aria-pressed": timelineSidebarRowJustify === "flex-end",
-      onClick: () => {
-        const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
-        setTimelineSidebarRowJustify(next);
-        saveTimelineSidebarRowJustify(next, activeQueryId);
-      }
-    }, import_react22.default.createElement("svg", {
-      viewBox: "0 0 24 24",
-      className: "timeline-left-sidebar-align-icon",
-      "aria-hidden": "true"
-    }, timelineSidebarRowJustify === "flex-end" ? [
-      import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-      import_react22.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
-      import_react22.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
-    ] : [
-      import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-      import_react22.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
-      import_react22.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
-    ]))),
-    import_react22.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react22.default.createElement("button", {
+    import_react26.default.createElement(TimelineLeftSidebarHeader, {
+      key: "header",
+      heightPx: CHART_TOP_PADDING,
+      rowJustify: timelineSidebarRowJustify,
+      treeLevels: treeLevelSummaries,
+      onToggleTreeLevel: treeState.toggleLevel,
+      onToggleRowJustify: toggleTimelineSidebarRowJustify
+    }),
+    import_react26.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react26.default.createElement("button", {
       key: `timeline-sidebar-row-${bar.workItemId}`,
       type: "button",
       className: [
@@ -32827,6 +34892,12 @@ function TimelinePane(props) {
       },
       onClick: () => {
         toggleWorkItemSelection(bar.workItemId);
+      },
+      onContextMenu: (event) => {
+        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
+      },
+      onKeyDown: (event) => {
+        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
       },
       onDragStart: isTreeQuery && props.onReparentWorkItem ? (event) => {
         event.dataTransfer.effectAllowed = "move";
@@ -32854,7 +34925,7 @@ function TimelinePane(props) {
       onDragEnd: isTreeQuery ? () => {
         reparentDrag.clearDrag();
       } : void 0
-    }, bar.treeDepth !== null && bar.treeDepth > 0 ? buildTreeIndentGuides(bar) : null, bar.treeHasChildren ? import_react22.default.createElement("span", {
+    }, bar.treeDepth !== null && bar.treeDepth > 0 ? buildTreeIndentGuides(bar) : null, bar.treeHasChildren ? import_react26.default.createElement("span", {
       className: "timeline-tree-toggle",
       role: "button",
       "aria-label": bar.treeIsCollapsed ? "Expand" : "Collapse",
@@ -32862,12 +34933,12 @@ function TimelinePane(props) {
         event.stopPropagation();
         treeState.toggle(bar.workItemId);
       }
-    }, bar.treeIsCollapsed ? "\u25B6" : "\u25BC") : bar.treeDepth !== null ? import_react22.default.createElement("span", { className: "timeline-tree-toggle-placeholder" }) : null, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react22.default.createElement("div", {
+    }, bar.treeIsCollapsed ? "\u25B6" : "\u25BC") : bar.treeDepth !== null ? import_react26.default.createElement("span", { className: "timeline-tree-toggle-placeholder" }) : null, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react26.default.createElement("div", {
       className: "timeline-left-sidebar-tail-spacer",
       "aria-hidden": "true",
       style: { height: `${chartModel.tailHeightPx}px` }
     }))
-  ]), !sidebarCollapsed ? import_react22.default.createElement(TimelineMainSplitter, {
+  ]), !sidebarCollapsed ? import_react26.default.createElement(TimelineMainSplitter, {
     active: isSidebarResizing,
     embedded: true,
     ariaLabel: "Resize timeline sidebar",
@@ -32876,44 +34947,44 @@ function TimelinePane(props) {
     ariaValueNow: sidebarWidthPx,
     onPointerDown: beginSidebarResize,
     style: { height: `${chartModel.height}px`, left: `${Math.round(effectiveSidebarWidthPx)}px` }
-  }) : null, import_react22.default.createElement("svg", {
+  }) : null, import_react26.default.createElement("svg", {
     className: "timeline-shared-row-guides",
     viewBox: `0 0 ${effectiveSidebarWidthPx + chartModel.width} ${chartModel.height}`,
     style: { width: `${effectiveSidebarWidthPx + chartModel.width}px`, height: `${chartModel.height}px` },
     "aria-hidden": "true"
-  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index) => import_react22.default.createElement("line", {
+  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index) => import_react26.default.createElement("line", {
     key: `shared-row-guide-${index}`,
     x1: 0,
     y1: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
     x2: effectiveSidebarWidthPx + chartModel.width,
     y2: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
     className: "timeline-row-guide-line"
-  }))), import_react22.default.createElement("div", {
+  }))), import_react26.default.createElement("div", {
     className: "timeline-chart-main-lane",
     ref: mainLaneRef,
     style: { width: `${chartModel.width}px` }
-  }, import_react22.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
+  }, import_react26.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react26.default.createElement("svg", {
     className: "timeline-chart-axis",
     width: chartModel.width,
     height: CHART_TOP_PADDING,
     viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
     preserveAspectRatio: "none",
     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
-  }, (zoomLevel === "year" ? chartModel.yearMarkers : zoomLevel === "quarter" ? chartModel.yearMarkers : chartModel.monthMarkers).map((marker) => import_react22.default.createElement("text", {
+  }, (zoomLevel === "year" ? chartModel.yearMarkers : zoomLevel === "quarter" ? chartModel.yearMarkers : chartModel.monthMarkers).map((marker) => import_react26.default.createElement("text", {
     key: `sticky-top-label-${marker.x}-${marker.label}`,
     x: CHART_LEFT_GUTTER + marker.x,
     y: CHART_AXIS_MONTH_LABEL_Y,
     className: "timeline-axis-month-label"
-  }, marker.label)), (zoomLevel === "week" ? chartModel.weekMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : zoomLevel === "year" ? chartModel.quarterMarkers : []).map((tick) => import_react22.default.createElement("text", {
+  }, marker.label)), (zoomLevel === "week" ? chartModel.weekMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : zoomLevel === "year" ? chartModel.quarterMarkers : []).map((tick) => import_react26.default.createElement("text", {
     key: `sticky-tick-label-${tick.x}-${tick.label}`,
     x: CHART_LEFT_GUTTER + tick.x + CHART_AXIS_TICK_LABEL_X_OFFSET,
     y: CHART_AXIS_TICK_LABEL_Y,
     className: "timeline-axis-label"
-  }, tick.label)), chartModel.todayX !== null ? import_react22.default.createElement("text", {
+  }, tick.label)), chartModel.todayX !== null ? import_react26.default.createElement("text", {
     x: CHART_LEFT_GUTTER + chartModel.todayX,
     y: CHART_AXIS_TODAY_LABEL_Y,
     className: "timeline-today-label"
-  }, "Today") : null)), import_react22.default.createElement("svg", {
+  }, "Today") : null)), import_react26.default.createElement("svg", {
     className: activeUnschedulableDrag && !activeScheduleDrag ? "timeline-chart timeline-chart-unscheduled-drop-active" : "timeline-chart",
     width: chartModel.width,
     height: chartModel.height,
@@ -32928,7 +34999,7 @@ function TimelinePane(props) {
     onPointerCancel: finishActiveDrag,
     onDragOver: handleChartDragOver,
     onDrop: handleChartDrop
-  }, import_react22.default.createElement("defs", null, import_react22.default.createElement("marker", {
+  }, import_react26.default.createElement("defs", null, import_react26.default.createElement("marker", {
     id: dependencyMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -32937,10 +35008,10 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead"
-  })), import_react22.default.createElement("marker", {
+  })), import_react26.default.createElement("marker", {
     id: dependencyAlertMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -32949,16 +35020,16 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead-alert"
-  }))), buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width), chartModel.currentPeriod ? import_react22.default.createElement("rect", {
+  }))), buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width), chartModel.currentPeriod ? import_react26.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
     y: CHART_GRID_START_Y,
     width: chartModel.currentPeriod.width,
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-current-period-highlight"
-  }) : null, (zoomLevel === "week" || zoomLevel === "month" ? chartModel.weekendBands : []).map((band) => import_react22.default.createElement("rect", {
+  }) : null, (zoomLevel === "week" || zoomLevel === "month" ? chartModel.weekendBands : []).map((band) => import_react26.default.createElement("rect", {
     key: `timeline-weekend-band-${band.date}`,
     x: CHART_LEFT_GUTTER + band.x,
     y: CHART_GRID_START_Y,
@@ -32966,41 +35037,41 @@ function TimelinePane(props) {
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-weekend-band",
     "data-date": band.date
-  })), chartModel.dailyGridLines.map((dayX) => import_react22.default.createElement("line", {
+  })), chartModel.dailyGridLines.map((dayX) => import_react26.default.createElement("line", {
     key: `day-grid-${dayX}`,
     x1: CHART_LEFT_GUTTER + dayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + dayX,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-day"
-  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react22.default.createElement("line", {
+  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react26.default.createElement("line", {
     key: `month-week-grid-${week.x}`,
     x1: CHART_LEFT_GUTTER + week.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + week.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-weekly"
-  })), (zoomLevel === "quarter" || zoomLevel === "year" ? chartModel.monthMarkers : []).map((month) => import_react22.default.createElement("line", {
+  })), (zoomLevel === "quarter" || zoomLevel === "year" ? chartModel.monthMarkers : []).map((month) => import_react26.default.createElement("line", {
     key: `quarter-month-grid-${month.x}`,
     x1: CHART_LEFT_GUTTER + month.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + month.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-weekly"
-  })), (zoomLevel === "year" ? chartModel.quarterMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : chartModel.monthMarkers).map((marker) => import_react22.default.createElement("line", {
+  })), (zoomLevel === "year" ? chartModel.quarterMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : chartModel.monthMarkers).map((marker) => import_react26.default.createElement("line", {
     key: `boundary-${marker.x}-${marker.label}`,
     x1: CHART_LEFT_GUTTER + marker.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + marker.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-month-boundary-line"
-  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react22.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react22.default.createElement("line", {
+  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react26.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react26.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + tick.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + tick.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line"
-  }))), chartModel.todayX !== null ? import_react22.default.createElement("g", null, import_react22.default.createElement("line", {
+  }))), chartModel.todayX !== null ? import_react26.default.createElement("g", null, import_react26.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + chartModel.todayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + chartModel.todayX,
@@ -33010,7 +35081,7 @@ function TimelinePane(props) {
     if (selectedWorkItemId !== bar.workItemId) {
       return null;
     }
-    return import_react22.default.createElement("rect", {
+    return import_react26.default.createElement("rect", {
       key: `timeline-row-highlight-${bar.workItemId}`,
       x: 0,
       y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
@@ -33024,7 +35095,7 @@ function TimelinePane(props) {
     const isSelected = selectedWorkItemId === bar.workItemId;
     const isDependencyHovered = hoveredDependencyWorkItemIds !== null && hoveredDependencyWorkItemIds.has(bar.workItemId);
     const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : "", isDependencyHovered ? "timeline-bar-dependency-hover" : ""].filter(Boolean).join(" ");
-    return import_react22.default.createElement("g", { key: bar.workItemId }, import_react22.default.createElement("rect", {
+    return import_react26.default.createElement("g", { key: bar.workItemId }, import_react26.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x,
       y,
       width: bar.width,
@@ -33036,6 +35107,9 @@ function TimelinePane(props) {
       tabIndex: 0,
       "aria-label": `timeline-bar-${bar.workItemId}`,
       "aria-current": isSelected ? "true" : void 0,
+      onContextMenu: (event) => {
+        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
+      },
       onClick: () => {
         if (suppressNextBarClickRef.current) {
           suppressNextBarClickRef.current = false;
@@ -33051,12 +35125,19 @@ function TimelinePane(props) {
         toggleWorkItemSelection(bar.workItemId);
       },
       onKeyDown: (event) => {
+        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromVisualBar(bar, props.timeline?.scheduleFieldRefs));
+        if (event.defaultPrevented) {
+          return;
+        }
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           toggleWorkItemSelection(bar.workItemId);
         }
       },
       onPointerDown: (event) => {
+        if (event.button !== 0) {
+          return;
+        }
         if (spacePanPressedRef.current) {
           return;
         }
@@ -33071,7 +35152,7 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "move", bar });
       }
-    }), canEditSchedule ? import_react22.default.createElement("rect", {
+    }), canEditSchedule ? import_react26.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -33080,12 +35161,15 @@ function TimelinePane(props) {
       className: "timeline-bar-handle timeline-bar-handle-start",
       "aria-label": `timeline-bar-start-handle-${bar.workItemId}`,
       onPointerDown: (event) => {
+        if (event.button !== 0) {
+          return;
+        }
         if (spacePanPressedRef.current) {
           return;
         }
         void beginBarDrag({ event, mode: "resize-start", bar });
       }
-    }) : null, canEditSchedule ? import_react22.default.createElement("rect", {
+    }) : null, canEditSchedule ? import_react26.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x + bar.width - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -33094,32 +35178,35 @@ function TimelinePane(props) {
       className: "timeline-bar-handle timeline-bar-handle-end",
       "aria-label": `timeline-bar-end-handle-${bar.workItemId}`,
       onPointerDown: (event) => {
+        if (event.button !== 0) {
+          return;
+        }
         if (spacePanPressedRef.current) {
           return;
         }
         void beginBarDrag({ event, mode: "resize-end", bar });
       }
-    }) : null, bar.displayLabel.trim().length > 0 ? import_react22.default.createElement("text", {
+    }) : null, bar.displayLabel.trim().length > 0 ? import_react26.default.createElement("text", {
       x: CHART_LEFT_GUTTER + bar.x + 18,
       y: y + 16,
       className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
-    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react22.default.createElement("circle", {
+    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react26.default.createElement("circle", {
       cx: CHART_LEFT_GUTTER + bar.x + 10,
       cy: y + BAR_HEIGHT / 2,
       r: 4.5,
       className: "timeline-bar-state-dot",
       style: { fill: bar.stateColor }
     }));
-  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react22.default.createElement("g", {
+  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react26.default.createElement("g", {
     className: "timeline-unscheduled-drop-preview"
-  }, import_react22.default.createElement("rect", {
+  }, import_react26.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 8,
     width: dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate) * chartModel.dayWidthPx,
     height: BAR_HEIGHT,
     rx: 6,
     className: "timeline-unscheduled-drop-preview-bar"
-  }), import_react22.default.createElement("text", {
+  }), import_react26.default.createElement("text", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx + 8,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 24,
     className: "timeline-unscheduled-drop-preview-label"
@@ -33136,7 +35223,7 @@ function TimelinePane(props) {
       onPointerEnter: () => setHoveredDependencyKey(connector.key),
       onPointerLeave: () => setHoveredDependencyKey((prev) => prev === connector.key ? null : prev)
     };
-    return import_react22.default.createElement("g", {
+    return import_react26.default.createElement("g", {
       key: connector.key,
       "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
       onClick: () => {
@@ -33146,66 +35233,66 @@ function TimelinePane(props) {
           dependencyType: connector.dependencyType
         });
       }
-    }, import_react22.default.createElement("path", {
+    }, import_react26.default.createElement("path", {
       d: connector.path,
       className: "timeline-dependency-line-hitarea",
       ...hoverHandlers
-    }), import_react22.default.createElement("path", {
+    }), import_react26.default.createElement("path", {
       d: connector.path,
       className,
       markerEnd: connector.markerEnd,
       pointerEvents: "none"
     }));
-  }), activeDependencyDragPreview ? import_react22.default.createElement("path", {
+  }), activeDependencyDragPreview ? import_react26.default.createElement("path", {
     d: activeDependencyDragPreview.path,
     className: "timeline-dependency-line timeline-dependency-line-draft",
     markerEnd: `url(#${dependencyMarkerId})`,
     "aria-label": "dependency-draft"
-  }) : null)))), import_react22.default.createElement("div", {
+  }) : null)))), import_react26.default.createElement("div", {
     className: [
       "timeline-unschedulable-list",
       visibleTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
     ].filter(Boolean).join(" ")
-  }, import_react22.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react22.default.createElement("h4", null, "Unscheduled tasks"), import_react22.default.createElement("button", {
+  }, import_react26.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react26.default.createElement("h4", null, "Unscheduled tasks"), import_react26.default.createElement("button", {
     type: "button",
     className: editMode ? "timeline-unschedulable-edit-toggle timeline-unschedulable-edit-toggle-active" : "timeline-unschedulable-edit-toggle",
     "aria-pressed": editMode,
     onClick: () => setEditMode((current) => !current)
-  }, "Edit mode"), import_react22.default.createElement("div", {
+  }, "Edit mode"), import_react26.default.createElement("div", {
     ref: editInfoRef,
     className: "timeline-unschedulable-edit-info-wrap"
-  }, import_react22.default.createElement("button", {
+  }, import_react26.default.createElement("button", {
     type: "button",
     className: editInfoOpen ? "timeline-unschedulable-edit-info timeline-unschedulable-edit-info-open" : "timeline-unschedulable-edit-info",
     "aria-label": "Show edit help",
     "aria-expanded": editInfoOpen,
     onClick: () => setEditInfoOpen((current) => !current)
-  }, "i"), editInfoOpen ? import_react22.default.createElement("div", {
+  }, "i"), editInfoOpen ? import_react26.default.createElement("div", {
     className: "timeline-unschedulable-edit-info-popover",
     role: "tooltip"
-  }, import_react22.default.createElement("p", { className: "timeline-unschedulable-edit-info-popover-title" }, "How to schedule unscheduled tasks"), import_react22.default.createElement("ol", { className: "timeline-unschedulable-edit-info-popover-steps" }, import_react22.default.createElement("li", null, "Turn on ", import_react22.default.createElement("strong", null, "Edit mode"), " to enable changes."), import_react22.default.createElement("li", null, import_react22.default.createElement("strong", null, "Drag"), " any item from the Unscheduled list into the chart to place it."), import_react22.default.createElement("li", null, "Or ", import_react22.default.createElement("strong", null, "select a scheduled task"), " above, then click the purple \u2191 next to an unscheduled item to copy that task's dates."))) : null), editMode && adoptSourceSchedule ? import_react22.default.createElement("span", { className: "timeline-unschedulable-edit-hint" }, "click ", import_react22.default.createElement("svg", {
+  }, import_react26.default.createElement("p", { className: "timeline-unschedulable-edit-info-popover-title" }, "How to schedule unscheduled tasks"), import_react26.default.createElement("ol", { className: "timeline-unschedulable-edit-info-popover-steps" }, import_react26.default.createElement("li", null, "Turn on ", import_react26.default.createElement("strong", null, "Edit mode"), " to enable changes."), import_react26.default.createElement("li", null, import_react26.default.createElement("strong", null, "Drag"), " any item from the Unscheduled list into the chart to place it."), import_react26.default.createElement("li", null, "Or ", import_react26.default.createElement("strong", null, "select a scheduled task"), " above, then click the purple \u2191 next to an unscheduled item to copy that task's dates."))) : null), editMode && adoptSourceSchedule ? import_react26.default.createElement("span", { className: "timeline-unschedulable-edit-hint" }, "click ", import_react26.default.createElement("svg", {
     className: "timeline-unschedulable-edit-hint-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M8 13V3M8 3l-4 4M8 3l4 4",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)})`) : null), visibleTimeline?.unschedulable.length ? import_react22.default.createElement("ul", null, ...visibleTimeline.unschedulable.map((item) => {
+  })), ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)})`) : null), visibleTimeline?.unschedulable.length ? import_react26.default.createElement("ul", null, ...visibleTimeline.unschedulable.map((item) => {
     const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
     const label = `#${item.details.mappedId} ${item.title}`;
     const minWidthPx = Math.round(dayWidthPx * 14);
     const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
     const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
     const showAdoptArrow = editMode && adoptSourceSchedule !== null;
-    return import_react22.default.createElement("li", {
+    return import_react26.default.createElement("li", {
       key: item.workItemId,
       className: "timeline-unschedulable-row",
       style: treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : void 0
-    }, import_react22.default.createElement("button", {
+    }, import_react26.default.createElement("button", {
       type: "button",
       className: "timeline-unschedulable-button",
       style: {
@@ -33225,8 +35312,14 @@ function TimelinePane(props) {
       onClick: () => {
         setAdoptScheduleError(null);
         toggleWorkItemSelection(item.workItemId);
+      },
+      onContextMenu: (event) => {
+        workItemContextMenu.openMenuFromContextMenu(event, buildContextMenuItemFromUnschedulable(item, props.timeline?.scheduleFieldRefs));
+      },
+      onKeyDown: (event) => {
+        workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromUnschedulable(item, props.timeline?.scheduleFieldRefs));
       }
-    }, import_react22.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react22.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label))), showAdoptArrow ? import_react22.default.createElement("button", {
+    }, import_react26.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react26.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label))), showAdoptArrow ? import_react26.default.createElement("button", {
       type: "button",
       className: "timeline-unschedulable-adopt-arrow",
       "aria-label": `Adopt selected schedule onto ${label}`,
@@ -33242,11 +35335,11 @@ function TimelinePane(props) {
           endDate: adoptSourceSchedule.endDate
         });
       }
-    }, import_react22.default.createElement("svg", {
+    }, import_react26.default.createElement("svg", {
       className: "timeline-unschedulable-adopt-arrow-icon",
       viewBox: "0 0 16 16",
       "aria-hidden": "true"
-    }, import_react22.default.createElement("path", {
+    }, import_react26.default.createElement("path", {
       d: "M8 12V4M8 4l-4 4M8 4l4 4",
       fill: "none",
       stroke: "currentColor",
@@ -33254,7 +35347,7 @@ function TimelinePane(props) {
       strokeLinecap: "round",
       strokeLinejoin: "round"
     }))) : null);
-  })) : import_react22.default.createElement("p", { className: "timeline-unschedulable-empty" }, "None"))), import_react22.default.createElement(TimelineMainSplitter, {
+  })) : import_react26.default.createElement("p", { className: "timeline-unschedulable-empty" }, "None"))), import_react26.default.createElement(TimelineMainSplitter, {
     active: isDetailsResizing,
     ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
     ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
@@ -33263,29 +35356,29 @@ function TimelinePane(props) {
     onPointerDown: beginDetailsResize,
     onClick: toggleDetailsPanelFromSplitter,
     style: timelineMainSplitterStyle
-  }, detailsContentHidden ? import_react22.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
+  }, detailsContentHidden ? import_react26.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react26.default.createElement("svg", {
     className: "timeline-main-splitter-expand-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M10.5 3.5 6 8l4.5 4.5",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2.2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }))) : import_react22.default.createElement("span", { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" }, import_react22.default.createElement("svg", {
+  }))) : import_react26.default.createElement("span", { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" }, import_react26.default.createElement("svg", {
     className: "timeline-main-splitter-expand-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react22.default.createElement("path", {
+  }, import_react26.default.createElement("path", {
     d: "M5.5 3.5 10 8l-4.5 4.5",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2.2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })))), import_react22.default.createElement(TimelineDetailsPanel, detailProps)));
+  })))), import_react26.default.createElement(TimelineDetailsPanel, detailProps)));
 }
 var BAR_HEIGHT = 24;
 var BAR_ROW_GAP = 2;
@@ -33339,9 +35432,6 @@ var OVERDUE_OK_TIMELINE_COLOR = "#475569";
 var DEPENDENCY_ENDPOINT_GAP_PX = 6;
 var DEPENDENCY_POINTER_SEGMENT_MIN_PX = 14;
 var DEPENDENCY_LANE_ENTRY_MIN_PX = 12;
-var MAX_TIMELINE_FILTER_SLOTS = 5;
-var TIMELINE_FILTERS_QUERY_PARAM = "tf";
-var LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
 var TIMELINE_LABEL_SPECIAL_FIELD_REFS = {
   title: "title",
   mappedId: "mappedId",
@@ -33361,6 +35451,24 @@ var TIMELINE_CATEGORY_COLORS = [
   "#334155",
   "#0f766e"
 ];
+function buildContextMenuItemFromVisualBar(bar, scheduleFieldRefs) {
+  return {
+    workItemId: bar.workItemId,
+    title: bar.title,
+    state: bar.stateCode,
+    workItemType: bar.workItemType,
+    ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+  };
+}
+function buildContextMenuItemFromUnschedulable(item, scheduleFieldRefs) {
+  return {
+    workItemId: item.workItemId,
+    title: item.title,
+    state: item.state.code,
+    workItemType: item.details.workItemType ?? null,
+    ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+  };
+}
 function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, collapsedIds) {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc2 = /* @__PURE__ */ new Date();
@@ -33453,6 +35561,7 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       title: bar.source.title,
       displayLabel: buildTimelineBarLabel(bar.source, timelineLabelFields),
       stateCode: bar.source.state.code,
+      workItemType: bar.source.details.workItemType ?? null,
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
@@ -33602,174 +35711,34 @@ function resolveTimelineVisibleRange(timeline) {
     end: new Date(Math.max(...normalizedRanges.map((range) => range.end.getTime())))
   };
 }
-function createInitialTimelineFieldFilters() {
-  return [createTimelineFieldFilter(0)];
-}
-function createTimelineFieldFilter(slotId) {
-  return {
-    slotId,
-    fieldRef: null,
-    selectedValueKeys: []
-  };
-}
-function resolveInitialTimelineFilterState() {
+function resolveInitialTimelineFilterState(timeline) {
   if (typeof globalThis.location === "undefined") {
+    const groups = createInitialTimelineFilterGroups();
     return {
-      filters: createInitialTimelineFieldFilters(),
-      nextSlotId: 1
+      groups,
+      nextSlotId: resolveNextTimelineFilterSlotId(groups),
+      nextGroupId: resolveNextTimelineFilterGroupId(groups)
     };
   }
-  const parsed = parseTimelineFiltersFromSearch(globalThis.location.search);
-  if (parsed.length === 0) {
-    return {
-      filters: createInitialTimelineFieldFilters(),
-      nextSlotId: 1
-    };
-  }
-  const filters = parsed.map((entry, index) => ({
-    slotId: index,
-    fieldRef: entry.fieldRef,
-    selectedValueKeys: entry.selectedValueKeys
-  }));
-  return {
-    filters,
-    nextSlotId: filters.length
-  };
-}
-function parseTimelineFiltersFromSearch(search) {
-  try {
-    const params = new URLSearchParams(search);
-    const compactEntries = params.getAll(TIMELINE_FILTERS_QUERY_PARAM);
-    if (compactEntries.length > 0) {
-      return compactEntries.map((entry) => parseCompactTimelineFilterParam(entry)).filter((entry) => entry !== null).slice(0, MAX_TIMELINE_FILTER_SLOTS);
-    }
-    const legacyRaw = params.get(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
-    if (!legacyRaw) {
-      return [];
-    }
-    const parsed = JSON.parse(legacyRaw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed.map((entry) => {
-      if (!entry || typeof entry !== "object") {
-        return null;
-      }
-      const maybeFieldRef = "fieldRef" in entry ? entry.fieldRef : null;
-      const maybeValues = "selectedValueKeys" in entry ? entry.selectedValueKeys : [];
-      const fieldRef = typeof maybeFieldRef === "string" && maybeFieldRef.trim().length > 0 ? maybeFieldRef.trim() : null;
-      const selectedValueKeys = Array.isArray(maybeValues) ? [...new Set(maybeValues.filter((value) => typeof value === "string"))] : [];
-      if (!fieldRef) {
-        return null;
-      }
-      return {
-        fieldRef,
-        selectedValueKeys
-      };
-    }).filter((entry) => entry !== null).slice(0, MAX_TIMELINE_FILTER_SLOTS);
-  } catch {
-    return [];
-  }
-}
-function serializeTimelineFiltersForUrl(filters) {
-  return filters.map((filter) => ({
-    fieldRef: filter.fieldRef?.trim() ? filter.fieldRef.trim() : null,
-    selectedValueKeys: [...new Set(filter.selectedValueKeys)]
-  })).filter((entry) => entry.fieldRef !== null);
-}
-function toCompactTimelineFilterParam(entry) {
-  const fieldRef = entry.fieldRef?.trim();
-  if (!fieldRef) {
-    return null;
-  }
-  const encodedFieldRef = encodeTimelineFilterToken(fieldRef);
-  const valuePart = entry.selectedValueKeys.length > 0 ? entry.selectedValueKeys.map((value) => encodeTimelineFilterToken(value)).join(",") : "";
-  return `${encodedFieldRef}~${valuePart}`;
-}
-function parseCompactTimelineFilterParam(value) {
-  try {
-    const [rawFieldRef, rawValues = ""] = value.split("~", 2);
-    if (!rawFieldRef) {
-      return null;
-    }
-    const fieldRef = decodeTimelineFilterToken(rawFieldRef).trim();
-    if (fieldRef.length === 0) {
-      return null;
-    }
-    const selectedValueKeys = rawValues.split(",").map((entry) => decodeTimelineFilterToken(entry).trim()).filter((entry) => entry.length > 0);
-    return {
-      fieldRef,
-      selectedValueKeys: [...new Set(selectedValueKeys)]
-    };
-  } catch {
-    return null;
-  }
-}
-function decodeTimelineFilterToken(token) {
-  try {
-    return decodeURIComponent(token);
-  } catch {
-    return token;
-  }
-}
-function encodeTimelineFilterToken(token) {
-  return encodeURIComponent(token).replace(/~/g, "%7E");
-}
-function syncTimelineFiltersToUrl(filters) {
-  if (typeof globalThis.window === "undefined") {
-    return;
-  }
-  const params = new URLSearchParams(globalThis.window.location.search);
-  params.delete(TIMELINE_FILTERS_QUERY_PARAM);
-  params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
-  serializeTimelineFiltersForUrl(filters).map((entry) => toCompactTimelineFilterParam(entry)).filter((entry) => entry !== null).forEach((entry) => {
-    params.append(TIMELINE_FILTERS_QUERY_PARAM, entry);
+  const parsedGroups = parseTimelineFilterGroupsFromSearch(globalThis.location.search, {
+    dateFilterContext: buildTimelineDateFilterContext(timeline)
   });
-  const nextSearch = params.toString();
-  const normalizedCurrentSearch = globalThis.window.location.search.startsWith("?") ? globalThis.window.location.search.slice(1) : globalThis.window.location.search;
-  if (nextSearch === normalizedCurrentSearch) {
-    return;
+  if (parsedGroups.length === 0) {
+    const groups = createInitialTimelineFilterGroups();
+    return {
+      groups,
+      nextSlotId: resolveNextTimelineFilterSlotId(groups),
+      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+    };
   }
-  const nextUrl = `${globalThis.window.location.pathname}${nextSearch.length > 0 ? `?${nextSearch}` : ""}${globalThis.window.location.hash}`;
-  globalThis.window.history.replaceState(globalThis.window.history.state, "", nextUrl);
-}
-function isActiveTimelineFieldFilter(filter) {
-  return Boolean(filter.fieldRef && filter.selectedValueKeys.length > 0);
-}
-function applyTimelineFieldFilters(timeline, filters) {
-  if (!timeline) {
-    return null;
-  }
-  const activeFilters = filters.filter((filter) => isActiveTimelineFieldFilter(filter));
-  if (activeFilters.length === 0) {
-    return timeline;
-  }
-  const matchesAll = (fieldValues) => {
-    return activeFilters.every((filter) => {
-      const normalizedFieldRef = filter.fieldRef?.trim();
-      if (!normalizedFieldRef || filter.selectedValueKeys.length === 0) {
-        return true;
-      }
-      const selectedValueKeys = new Set(filter.selectedValueKeys);
-      const matchKeys = extractFilterMatchKeys(normalizedFieldRef, fieldValues?.[normalizedFieldRef]);
-      return matchKeys.some((key) => selectedValueKeys.has(key));
-    });
-  };
-  const bars = timeline.bars.filter((bar) => matchesAll(bar.details.fieldValues));
-  const unschedulable = timeline.unschedulable.filter((item) => matchesAll(item.details.fieldValues));
-  const visibleWorkItemIds = /* @__PURE__ */ new Set([
-    ...bars.map((bar) => bar.workItemId),
-    ...unschedulable.map((item) => item.workItemId)
-  ]);
-  const dependencies = timeline.dependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
-  const suppressedDependencies = timeline.suppressedDependencies.filter((dependency) => visibleWorkItemIds.has(dependency.predecessorWorkItemId) && visibleWorkItemIds.has(dependency.successorWorkItemId));
   return {
-    ...timeline,
-    bars,
-    unschedulable,
-    dependencies,
-    suppressedDependencies
+    groups: parsedGroups,
+    nextSlotId: resolveNextTimelineFilterSlotId(parsedGroups),
+    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups)
   };
+}
+function hasCurrentTimelineFilterUrlSearchParams() {
+  return typeof globalThis.location !== "undefined" && hasTimelineFilterUrlSearchParams(globalThis.location.search);
 }
 function filterFieldRefsBySearch(fieldRefs, search) {
   const normalizedSearch = search.trim().toLowerCase();
@@ -33933,7 +35902,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
     if (!isTree) {
       continue;
     }
-    elements.push(import_react22.default.createElement("rect", {
+    elements.push(import_react26.default.createElement("rect", {
       key: `tree-depth-band-${bar.workItemId}`,
       x: 0,
       y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT,
@@ -33942,7 +35911,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
       className: `timeline-tree-depth-band timeline-tree-depth-${Math.min(bar.treeDepth ?? 0, 4)}`
     }));
     if (bar.treeBlockStart) {
-      elements.push(import_react22.default.createElement("rect", {
+      elements.push(import_react26.default.createElement("rect", {
         key: `tree-block-top-${bar.workItemId}`,
         x: 0,
         y: CHART_TOP_PADDING + index * CHART_ROW_HEIGHT - 1,
@@ -33952,7 +35921,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
       }));
     }
     if (bar.treeBlockEnd) {
-      elements.push(import_react22.default.createElement("rect", {
+      elements.push(import_react26.default.createElement("rect", {
         key: `tree-block-bottom-${bar.workItemId}`,
         x: 0,
         y: CHART_TOP_PADDING + (index + 1) * CHART_ROW_HEIGHT - 1,
@@ -33972,16 +35941,16 @@ function buildTreeIndentGuides(bar) {
   const guides = [];
   for (let level = 0; level < depth - 1; level++) {
     const ancestorIsLast = bar.treeAncestorIsLastSibling[level + 1] ?? false;
-    guides.push(import_react22.default.createElement("span", {
+    guides.push(import_react26.default.createElement("span", {
       key: `guide-${level}`,
       className: ancestorIsLast ? "timeline-tree-guide timeline-tree-guide-blank" : "timeline-tree-guide timeline-tree-guide-pipe"
     }));
   }
-  guides.push(import_react22.default.createElement("span", {
+  guides.push(import_react26.default.createElement("span", {
     key: `guide-branch`,
     className: bar.treeIsLastSibling ? "timeline-tree-guide timeline-tree-guide-elbow" : "timeline-tree-guide timeline-tree-guide-tee"
   }));
-  return import_react22.default.createElement("span", { className: "timeline-tree-guides", "aria-hidden": "true" }, ...guides);
+  return import_react26.default.createElement("span", { className: "timeline-tree-guides", "aria-hidden": "true" }, ...guides);
 }
 function buildTimelineSidebarLabel(bar, fieldRefs) {
   const parts = sanitizeTimelineFieldRefList(fieldRefs).map((fieldRef) => timelineSidebarLabelValueForFieldRef(bar, fieldRef)).filter((value) => value !== null && value.length > 0);
@@ -34768,7 +36737,7 @@ function hydrateTimelineLiveSyncEnabledPreference(onHydrated) {
 }
 
 // dist/src/features/diagnostics/warning-banner.js
-var import_react23 = __toESM(require_react(), 1);
+var import_react27 = __toESM(require_react(), 1);
 function WarningBanner(props) {
   const lines = buildWarningBannerLines(props);
   if (lines.length === 0) {
@@ -34777,10 +36746,10 @@ function WarningBanner(props) {
   const title = lines[0] ?? "[WARN]";
   const detail = (lines[1] ?? "").replace(/^- /, "");
   const actionLine = (lines[2] ?? "").replace(/^- /, "");
-  return import_react23.default.createElement("section", {
+  return import_react27.default.createElement("section", {
     "aria-label": "timeline-warning-banner",
     className: "warning-banner-card"
-  }, import_react23.default.createElement("div", { className: "warning-banner-copy" }, import_react23.default.createElement("p", { className: "warning-banner-title" }, title), import_react23.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react23.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react23.default.createElement("button", {
+  }, import_react27.default.createElement("div", { className: "warning-banner-copy" }, import_react27.default.createElement("p", { className: "warning-banner-title" }, title), import_react27.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react27.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react27.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -34807,7 +36776,7 @@ function buildWarningBannerLines(model) {
 }
 
 // dist/src/features/diagnostics/trust-badge.js
-var import_react24 = __toESM(require_react(), 1);
+var import_react28 = __toESM(require_react(), 1);
 function TrustBadge(props) {
   const label = props.trustState === "ready" ? "Ready" : props.trustState === "partial_failure" ? "Partial failure" : "Needs attention";
   const isHealthy = props.trustState === "ready";
@@ -34827,18 +36796,18 @@ function TrustBadge(props) {
       props.onControlsOpenChange?.(event.currentTarget.open);
     };
   }
-  return import_react24.default.createElement("details", detailsProps, import_react24.default.createElement("summary", { className: "trust-badge-trigger" }, import_react24.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react24.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react24.default.createElement("div", { className: "trust-badge-panel" }, import_react24.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react24.default.createElement("dl", { className: "trust-badge-meta" }, import_react24.default.createElement("dt", null, "last-updated"), import_react24.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react24.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null));
+  return import_react28.default.createElement("details", detailsProps, import_react28.default.createElement("summary", { className: "trust-badge-trigger" }, import_react28.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react28.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react28.default.createElement("div", { className: "trust-badge-panel" }, import_react28.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react28.default.createElement("dl", { className: "trust-badge-meta" }, import_react28.default.createElement("dt", null, "last-updated"), import_react28.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react28.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null));
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js
-var import_react25 = __toESM(require_react(), 1);
+var import_react29 = __toESM(require_react(), 1);
 function DiagnosticsTab(props) {
   const lines = buildDiagnosticsTabLines(props).slice(1);
-  const rows = lines.map((line, index) => import_react25.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
-  return import_react25.default.createElement("section", {
+  const rows = lines.map((line, index) => import_react29.default.createElement("li", { key: `${index}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
+  return import_react29.default.createElement("section", {
     "aria-label": "diagnostics-tab",
     className: "diagnostics-card"
-  }, import_react25.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react25.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react25.default.createElement("button", {
+  }, import_react29.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react29.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react29.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -34861,7 +36830,7 @@ function buildDiagnosticsTabLines(model) {
 }
 
 // dist/src/shared/ui-state/timeline-runtime-state-colors.js
-function normalizeWorkItemType(value) {
+function normalizeWorkItemType2(value) {
   if (!value) {
     return null;
   }
@@ -34885,7 +36854,7 @@ function collectStatePaletteSourceWorkItemsByType(timeline) {
     return result;
   }
   const register = (workItemId, workItemType) => {
-    const typeKey = normalizeWorkItemType(workItemType);
+    const typeKey = normalizeWorkItemType2(workItemType);
     if (!typeKey || result.has(typeKey)) {
       return;
     }
@@ -34926,7 +36895,7 @@ function applyRuntimeStateColorsByType(timeline, stateColorsByType, fallbackStat
     if (stateKey.length === 0) {
       return null;
     }
-    const typeKey = normalizeWorkItemType(input.workItemType);
+    const typeKey = normalizeWorkItemType2(input.workItemType);
     const typeScoped = typeKey ? stateColorsByType.get(typeKey)?.get(stateKey) : null;
     return typeScoped ?? fallbackStateColors.get(stateKey) ?? null;
   };
@@ -34990,6 +36959,9 @@ function shouldOpenMappingFixTab(response) {
   return response.preflightStatus === "READY" && response.statusCode === "OK" && response.mappingValidation.status === "invalid";
 }
 function deriveActiveTabForQueryResponse(response) {
+  if (response.preflightStatus !== "READY") {
+    return "query";
+  }
   return shouldOpenMappingFixTab(response) ? "mapping" : "timeline";
 }
 
@@ -35114,6 +37086,23 @@ function applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descript
     } : item)
   };
 }
+function applyWorkItemStateUpdate(timeline, targetWorkItemId, stateCode, stateColor) {
+  if (!timeline) {
+    return timeline;
+  }
+  const nextState = toTimelineStateBadge(stateCode, stateColor);
+  return {
+    ...timeline,
+    bars: timeline.bars.map((bar) => bar.workItemId === targetWorkItemId ? {
+      ...bar,
+      state: nextState
+    } : bar),
+    unschedulable: timeline.unschedulable.map((item) => item.workItemId === targetWorkItemId ? {
+      ...item,
+      state: nextState
+    } : item)
+  };
+}
 function applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, action) {
   if (!timeline) {
     return timeline;
@@ -35142,25 +37131,299 @@ function applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWor
     suppressedDependencies: timeline.suppressedDependencies.filter((dependency) => !(dependency.predecessorWorkItemId === predecessorWorkItemId && dependency.successorWorkItemId === successorWorkItemId && dependency.dependencyType === "FS"))
   };
 }
+function applyDuplicateWorkItemToResponse(response, sourceWorkItemId, createdWorkItem) {
+  if (!response) {
+    return response;
+  }
+  const timeline = applyDuplicateWorkItemUpdate(response.timeline, sourceWorkItemId, createdWorkItem);
+  if (timeline === response.timeline) {
+    return response;
+  }
+  return {
+    ...response,
+    workItemIds: response.workItemIds.includes(createdWorkItem.id) ? response.workItemIds : [...response.workItemIds, createdWorkItem.id],
+    timeline
+  };
+}
+function applyDuplicateWorkItemUpdate(timeline, sourceWorkItemId, createdWorkItem) {
+  if (!timeline || !Number.isFinite(createdWorkItem.id) || createdWorkItem.id <= 0) {
+    return timeline;
+  }
+  const alreadyVisible = timeline.bars.some((bar) => bar.workItemId === createdWorkItem.id) || timeline.unschedulable.some((item) => item.workItemId === createdWorkItem.id);
+  if (alreadyVisible) {
+    return timeline;
+  }
+  const sourceBarIndex = timeline.bars.findIndex((bar) => bar.workItemId === sourceWorkItemId);
+  if (sourceBarIndex !== -1) {
+    const sourceBar = timeline.bars[sourceBarIndex];
+    if (!sourceBar) {
+      return timeline;
+    }
+    const nextTimeline2 = {
+      ...timeline,
+      bars: insertAfter(timeline.bars, sourceBarIndex, buildDuplicateBar(sourceBar, createdWorkItem))
+    };
+    return rebuildTreeLayoutWhenNeeded(nextTimeline2);
+  }
+  const sourceUnschedulableIndex = timeline.unschedulable.findIndex((item) => item.workItemId === sourceWorkItemId);
+  if (sourceUnschedulableIndex === -1) {
+    return timeline;
+  }
+  const sourceUnschedulable = timeline.unschedulable[sourceUnschedulableIndex];
+  if (!sourceUnschedulable) {
+    return timeline;
+  }
+  const nextTimeline = {
+    ...timeline,
+    unschedulable: insertAfter(timeline.unschedulable, sourceUnschedulableIndex, buildDuplicateUnschedulableItem(sourceUnschedulable, createdWorkItem))
+  };
+  return rebuildTreeLayoutWhenNeeded(nextTimeline);
+}
+function applyCreatedChildWorkItemToResponse(response, parentWorkItemId, createdWorkItem) {
+  if (!response) {
+    return response;
+  }
+  const timeline = applyCreatedChildWorkItemUpdate(response.timeline, parentWorkItemId, createdWorkItem);
+  if (timeline === response.timeline) {
+    return response;
+  }
+  return {
+    ...response,
+    workItemIds: response.workItemIds.includes(createdWorkItem.id) ? response.workItemIds : [...response.workItemIds, createdWorkItem.id],
+    timeline
+  };
+}
+function applyCreatedChildWorkItemUpdate(timeline, parentWorkItemId, createdWorkItem) {
+  if (!timeline || !Number.isFinite(createdWorkItem.id) || createdWorkItem.id <= 0) {
+    return timeline;
+  }
+  const alreadyVisible = timeline.bars.some((bar) => bar.workItemId === createdWorkItem.id) || timeline.unschedulable.some((item) => item.workItemId === createdWorkItem.id);
+  if (alreadyVisible || !isWorkItemVisible(timeline, parentWorkItemId)) {
+    return timeline;
+  }
+  const parentByWorkItemId = buildParentLookup(timeline);
+  const title = resolveCreatedChildTitle(createdWorkItem);
+  const state2 = toTimelineStateBadge(resolveCreatedString(createdWorkItem.state, "New"), null);
+  const details = buildCreatedChildDetails(createdWorkItem, title, parentWorkItemId);
+  const schedule = buildCreatedChildSchedule(createdWorkItem);
+  if (schedule) {
+    const childBar = buildCreatedChildBar(createdWorkItem, title, state2, details, schedule);
+    const insertionIndex2 = resolveChildInsertionIndex(timeline.bars, parentWorkItemId, parentByWorkItemId);
+    const nextTimeline2 = {
+      ...timeline,
+      bars: insertAfter(timeline.bars, insertionIndex2, childBar)
+    };
+    return rebuildTreeLayoutWhenNeeded(nextTimeline2);
+  }
+  const childUnschedulable = buildCreatedChildUnschedulableItem(createdWorkItem, title, state2, details);
+  const insertionIndex = resolveChildInsertionIndex(timeline.unschedulable, parentWorkItemId, parentByWorkItemId);
+  const nextTimeline = {
+    ...timeline,
+    unschedulable: insertAfter(timeline.unschedulable, insertionIndex, childUnschedulable)
+  };
+  return rebuildTreeLayoutWhenNeeded(nextTimeline);
+}
 function applyReparentUpdate(timeline, targetWorkItemId, newParentId) {
   if (!timeline) {
     return timeline;
   }
   const updatedBars = timeline.bars.map((bar) => bar.workItemId === targetWorkItemId ? { ...bar, details: { ...bar.details, parentWorkItemId: newParentId } } : bar);
   const updatedUnschedulable = timeline.unschedulable.map((item) => item.workItemId === targetWorkItemId ? { ...item, details: { ...item.details, parentWorkItemId: newParentId } } : item);
+  return rebuildTreeLayout({
+    ...timeline,
+    bars: updatedBars,
+    unschedulable: updatedUnschedulable
+  });
+}
+function buildCreatedChildBar(createdWorkItem, title, state2, details, schedule) {
+  return {
+    workItemId: createdWorkItem.id,
+    title,
+    state: state2,
+    schedule,
+    details
+  };
+}
+function buildCreatedChildSchedule(createdWorkItem) {
+  const startDate = resolveCreatedNullableString(createdWorkItem.schedule?.startDate, null);
+  const endDate = resolveCreatedNullableString(createdWorkItem.schedule?.endDate, null);
+  if (startDate === null && endDate === null) {
+    return null;
+  }
+  return {
+    startDate,
+    endDate,
+    missingBoundary: resolveMissingBoundary(startDate, endDate, null)
+  };
+}
+function buildCreatedChildUnschedulableItem(createdWorkItem, title, state2, details) {
+  return {
+    workItemId: createdWorkItem.id,
+    title,
+    state: state2,
+    details,
+    reason: "missing-both-dates"
+  };
+}
+function buildCreatedChildDetails(createdWorkItem, title, parentWorkItemId) {
+  return {
+    mappedId: String(createdWorkItem.id),
+    descriptionHtml: resolveCreatedNullableString(createdWorkItem.descriptionHtml, null),
+    workItemType: resolveCreatedNullableString(createdWorkItem.workItemType, null),
+    fieldValues: resolveCreatedChildFieldValues(createdWorkItem.fieldValues, title),
+    assignedTo: resolveCreatedNullableString(createdWorkItem.assignedTo, null),
+    parentWorkItemId
+  };
+}
+function resolveCreatedChildFieldValues(createdFieldValues, title) {
+  if (!createdFieldValues) {
+    return void 0;
+  }
+  return Object.prototype.hasOwnProperty.call(createdFieldValues, "System.Title") ? { ...createdFieldValues, "System.Title": title } : createdFieldValues;
+}
+function resolveCreatedChildTitle(createdWorkItem) {
+  const typeFallback = resolveCreatedNullableString(createdWorkItem.workItemType, null);
+  return resolveCreatedString(createdWorkItem.title, typeFallback ? `New ${typeFallback}` : `#${createdWorkItem.id}`);
+}
+function isWorkItemVisible(timeline, workItemId) {
+  return timeline.bars.some((bar) => bar.workItemId === workItemId) || timeline.unschedulable.some((item) => item.workItemId === workItemId);
+}
+function buildParentLookup(timeline) {
+  return new Map([
+    ...timeline.bars.map((bar) => [bar.workItemId, bar.details.parentWorkItemId ?? null]),
+    ...timeline.unschedulable.map((item) => [item.workItemId, item.details.parentWorkItemId ?? null])
+  ]);
+}
+function resolveChildInsertionIndex(items, parentWorkItemId, parentByWorkItemId) {
+  let insertionIndex = items.findIndex((item) => item.workItemId === parentWorkItemId);
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    if (item && isDescendantOfWorkItem(item.workItemId, parentWorkItemId, parentByWorkItemId)) {
+      insertionIndex = Math.max(insertionIndex, index);
+    }
+  }
+  return insertionIndex === -1 ? items.length - 1 : insertionIndex;
+}
+function isDescendantOfWorkItem(candidateWorkItemId, ancestorWorkItemId, parentByWorkItemId) {
+  let currentParentId = parentByWorkItemId.get(candidateWorkItemId) ?? null;
+  const visited = /* @__PURE__ */ new Set();
+  while (currentParentId !== null) {
+    if (currentParentId === ancestorWorkItemId) {
+      return true;
+    }
+    if (visited.has(currentParentId)) {
+      return false;
+    }
+    visited.add(currentParentId);
+    currentParentId = parentByWorkItemId.get(currentParentId) ?? null;
+  }
+  return false;
+}
+function buildDuplicateBar(source, createdWorkItem) {
+  const startDate = resolveCreatedScheduleDate(createdWorkItem.schedule, "startDate", source.schedule.startDate);
+  const endDate = resolveCreatedScheduleDate(createdWorkItem.schedule, "endDate", source.schedule.endDate);
+  const title = resolveDuplicateTitle(createdWorkItem.title, source.title);
+  return {
+    ...source,
+    workItemId: createdWorkItem.id,
+    title,
+    state: resolveCreatedState(createdWorkItem, source.state),
+    schedule: {
+      ...source.schedule,
+      startDate,
+      endDate,
+      missingBoundary: resolveMissingBoundary(startDate, endDate, source.schedule.missingBoundary)
+    },
+    details: buildDuplicateDetails(source.details, createdWorkItem, title)
+  };
+}
+function buildDuplicateUnschedulableItem(source, createdWorkItem) {
+  const title = resolveDuplicateTitle(createdWorkItem.title, source.title);
+  return {
+    ...source,
+    workItemId: createdWorkItem.id,
+    title,
+    state: resolveCreatedState(createdWorkItem, source.state),
+    details: buildDuplicateDetails(source.details, createdWorkItem, title),
+    ...source.schedule ? {
+      schedule: {
+        ...source.schedule,
+        startDate: resolveCreatedScheduleDate(createdWorkItem.schedule, "startDate", source.schedule.startDate),
+        endDate: resolveCreatedScheduleDate(createdWorkItem.schedule, "endDate", source.schedule.endDate)
+      }
+    } : {}
+  };
+}
+function buildDuplicateDetails(source, createdWorkItem, title) {
+  return {
+    ...source,
+    mappedId: String(createdWorkItem.id),
+    descriptionHtml: resolveCreatedNullableString(createdWorkItem.descriptionHtml, source.descriptionHtml ?? null),
+    workItemType: resolveCreatedNullableString(createdWorkItem.workItemType, source.workItemType ?? null),
+    fieldValues: resolveDuplicateFieldValues(source.fieldValues, createdWorkItem.fieldValues, title),
+    assignedTo: resolveCreatedNullableString(createdWorkItem.assignedTo, source.assignedTo ?? null),
+    parentWorkItemId: createdWorkItem.parentWorkItemId !== void 0 ? createdWorkItem.parentWorkItemId : source.parentWorkItemId ?? null
+  };
+}
+function resolveDuplicateTitle(createdTitle, sourceTitle) {
+  return resolveCreatedString(createdTitle, `${sourceTitle} (copy)`);
+}
+function resolveDuplicateFieldValues(sourceFieldValues, createdFieldValues, title) {
+  const fieldValues = createdFieldValues ?? sourceFieldValues;
+  if (!fieldValues) {
+    return fieldValues;
+  }
+  return Object.prototype.hasOwnProperty.call(fieldValues, "System.Title") ? { ...fieldValues, "System.Title": title } : fieldValues;
+}
+function resolveCreatedState(createdWorkItem, sourceState) {
+  const stateCode = resolveCreatedString(createdWorkItem.state, sourceState.code);
+  const preferredColor = stateCode === sourceState.code ? sourceState.color : null;
+  return toTimelineStateBadge(stateCode, preferredColor);
+}
+function resolveCreatedString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+function resolveCreatedNullableString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+function resolveCreatedScheduleDate(schedule, field, fallback) {
+  if (schedule && Object.prototype.hasOwnProperty.call(schedule, field)) {
+    return schedule[field] ?? null;
+  }
+  return fallback;
+}
+function resolveMissingBoundary(startDate, endDate, fallback) {
+  if (startDate && endDate) {
+    return null;
+  }
+  if (startDate) {
+    return "end";
+  }
+  if (endDate) {
+    return "start";
+  }
+  return fallback;
+}
+function insertAfter(items, index, item) {
+  return [...items.slice(0, index + 1), item, ...items.slice(index + 1)];
+}
+function rebuildTreeLayoutWhenNeeded(timeline) {
+  return timeline.treeLayout === null ? timeline : rebuildTreeLayout(timeline);
+}
+function rebuildTreeLayout(timeline) {
   const allItems = [
-    ...updatedBars.map((b) => ({ id: b.workItemId, parentId: b.details.parentWorkItemId ?? null })),
-    ...updatedUnschedulable.map((u) => ({ id: u.workItemId, parentId: u.details.parentWorkItemId ?? null }))
+    ...timeline.bars.map((bar) => ({ id: bar.workItemId, parentId: bar.details.parentWorkItemId ?? null })),
+    ...timeline.unschedulable.map((item) => ({ id: item.workItemId, parentId: item.details.parentWorkItemId ?? null }))
   ];
   const layout = buildTreeLayoutFromParentMap(allItems);
   const barPosition = /* @__PURE__ */ new Map();
   layout.orderedIds.forEach((id, index) => barPosition.set(id, index));
-  const reorderedBars = [...updatedBars].sort((a, b) => {
+  const reorderedBars = [...timeline.bars].sort((a, b) => {
     const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
     const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
     return posA - posB;
   });
-  const reorderedUnschedulable = [...updatedUnschedulable].sort((a, b) => {
+  const reorderedUnschedulable = [...timeline.unschedulable].sort((a, b) => {
     const posA = barPosition.get(a.workItemId) ?? Number.MAX_SAFE_INTEGER;
     const posB = barPosition.get(b.workItemId) ?? Number.MAX_SAFE_INTEGER;
     return posA - posB;
@@ -35353,14 +37616,14 @@ function nextThemeMode(mode) {
 }
 
 // dist/src/app/bootstrap/use-ado-comm-log-polling.js
-var import_react26 = __toESM(require_react(), 1);
+var import_react30 = __toESM(require_react(), 1);
 function useAdoCommLogPolling(input) {
-  const [logs, setLogs] = import_react26.default.useState([]);
-  const [cursor, setCursor] = import_react26.default.useState(0);
-  const [error, setError] = import_react26.default.useState(null);
-  const [loading, setLoading] = import_react26.default.useState(true);
-  const inFlightRef = import_react26.default.useRef(false);
-  import_react26.default.useEffect(() => {
+  const [logs, setLogs] = import_react30.default.useState([]);
+  const [cursor, setCursor] = import_react30.default.useState(0);
+  const [error, setError] = import_react30.default.useState(null);
+  const [loading, setLoading] = import_react30.default.useState(true);
+  const inFlightRef = import_react30.default.useRef(false);
+  import_react30.default.useEffect(() => {
     let active = true;
     const poll = async () => {
       if (!active || inFlightRef.current) {
@@ -35435,6 +37698,13 @@ function isTargetInsideElement(target, element) {
 }
 
 // dist/src/app/bootstrap/ui-client-refresh-flow.js
+function buildSessionExpiredRefreshBlocker() {
+  return {
+    tab: "query",
+    reason: AZURE_SESSION_EXPIRED_REASON,
+    nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
+  };
+}
 async function runRetryRefreshFlow(params) {
   if (params.lastRunRequest) {
     const refreshedRaw = await params.submit(params.lastRunRequest);
@@ -35518,7 +37788,16 @@ function runWithInFlightGuard(inFlightRef, operation) {
 
 // dist/src/app/bootstrap/ui-client-writeback-flow.js
 function toWritebackError(reasonCode) {
-  return new Error(reasonCode === "WRITE_DISABLED" ? "Writeback is disabled." : "Write failed.");
+  if (reasonCode === "WRITE_DISABLED") {
+    return new Error("Writeback is disabled.");
+  }
+  if (reasonCode === "WRITE_UNSUPPORTED") {
+    return new Error("Writeback operation is not supported by this Azure DevOps connection.");
+  }
+  if (reasonCode === "WORK_ITEM_CHILD_TYPE_UNAVAILABLE") {
+    return new Error("Selected child work item type is not available in this Azure DevOps project.");
+  }
+  return new Error("Write failed.");
 }
 function applyTimelineMutationToUiState(setUiModel, setResponse, mutation) {
   setUiModel((current) => ({
@@ -35846,27 +38125,27 @@ function deleteSavedHeaderQueryFlow(params) {
 }
 
 // dist/src/app/bootstrap/use-header-query-flow.js
-var import_react27 = __toESM(require_react(), 1);
+var import_react31 = __toESM(require_react(), 1);
 function useHeaderQueryFlow(params) {
-  const initialState = import_react27.default.useMemo(() => createInitialHeaderQueryFlowState({
+  const initialState = import_react31.default.useMemo(() => createInitialHeaderQueryFlowState({
     savedQueries: params.initialSavedHeaderQueries,
     selectedHeaderQueryId: params.initialSelectedHeaderQueryId
   }), [params.initialSavedHeaderQueries, params.initialSelectedHeaderQueryId]);
-  const [savedHeaderQueries, setSavedHeaderQueries] = import_react27.default.useState(initialState.savedHeaderQueries);
-  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react27.default.useState(initialState.selectedHeaderQueryId);
-  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react27.default.useState(initialState.newHeaderQueryMode);
-  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react27.default.useState(initialState.newHeaderQueryInput);
-  const [headerQuerySearch, setHeaderQuerySearch] = import_react27.default.useState(initialState.headerQuerySearch);
-  const [headerQueryLoading, setHeaderQueryLoading] = import_react27.default.useState(initialState.headerQueryLoading);
-  const [headerQueryMessage, setHeaderQueryMessage] = import_react27.default.useState(initialState.headerQueryMessage);
-  const filteredHeaderQueries = import_react27.default.useMemo(() => {
+  const [savedHeaderQueries, setSavedHeaderQueries] = import_react31.default.useState(initialState.savedHeaderQueries);
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react31.default.useState(initialState.selectedHeaderQueryId);
+  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react31.default.useState(initialState.newHeaderQueryMode);
+  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react31.default.useState(initialState.newHeaderQueryInput);
+  const [headerQuerySearch, setHeaderQuerySearch] = import_react31.default.useState(initialState.headerQuerySearch);
+  const [headerQueryLoading, setHeaderQueryLoading] = import_react31.default.useState(initialState.headerQueryLoading);
+  const [headerQueryMessage, setHeaderQueryMessage] = import_react31.default.useState(initialState.headerQueryMessage);
+  const filteredHeaderQueries = import_react31.default.useMemo(() => {
     return resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch);
   }, [headerQuerySearch, savedHeaderQueries]);
-  const toggleNewHeaderQueryMode = import_react27.default.useCallback(() => {
+  const toggleNewHeaderQueryMode = import_react31.default.useCallback(() => {
     setNewHeaderQueryMode((current) => !current);
     setHeaderQueryMessage(null);
   }, []);
-  const loadSavedHeaderQuery = import_react27.default.useCallback(async (queryId) => {
+  const loadSavedHeaderQuery = import_react31.default.useCallback(async (queryId) => {
     if (headerQueryLoading) {
       return;
     }
@@ -35888,7 +38167,7 @@ function useHeaderQueryFlow(params) {
     }
     setHeaderQueryLoading(false);
   }, [headerQueryLoading, params.runQuery, savedHeaderQueries]);
-  const saveCurrentHeaderQuery = import_react27.default.useCallback(async (rawInput) => {
+  const saveCurrentHeaderQuery = import_react31.default.useCallback(async (rawInput) => {
     if (headerQueryLoading) {
       return;
     }
@@ -35916,7 +38195,7 @@ function useHeaderQueryFlow(params) {
     }
     setHeaderQueryLoading(false);
   }, [headerQueryLoading, params, savedHeaderQueries]);
-  const deleteSavedHeaderQuery = import_react27.default.useCallback((queryId) => {
+  const deleteSavedHeaderQuery = import_react31.default.useCallback((queryId) => {
     const result = deleteSavedHeaderQueryFlow({
       queryId,
       state: {
@@ -35928,7 +38207,7 @@ function useHeaderQueryFlow(params) {
     setSelectedHeaderQueryId(result.selectedHeaderQueryId);
     setHeaderQueryMessage(null);
   }, [savedHeaderQueries, selectedHeaderQueryId]);
-  const hydrateSavedHeaderQueries = import_react27.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
+  const hydrateSavedHeaderQueries = import_react31.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
     setSavedHeaderQueries(nextSavedHeaderQueries);
     setSelectedHeaderQueryId(nextSelectedId);
   }, []);
@@ -35960,12 +38239,12 @@ var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
 function renderAdoCommLogPanel(params) {
-  return import_react28.default.createElement("details", {
+  return import_react32.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
     open: true,
     "data-auto-dismiss": "off"
-  }, import_react28.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react28.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react28.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react28.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react28.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react28.default.createElement("pre", {
+  }, import_react32.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react32.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react32.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react32.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react32.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react32.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -35973,51 +38252,51 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root = (0, import_client.createRoot)(options.container);
-  root.render(import_react28.default.createElement(import_react28.default.StrictMode, null, import_react28.default.createElement(QueryClientProvider, {
+  root.render(import_react32.default.createElement(import_react32.default.StrictMode, null, import_react32.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react28.default.createElement(BrowserRouter, null, import_react28.default.createElement(UiShellApp, {
+  }, import_react32.default.createElement(BrowserRouter, null, import_react32.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react28.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react32.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const persistedQueryInput = resolvePersistedRefreshQueryInput();
   const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react28.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react28.default.useState(!hasInitialQuery);
-  const [response, setResponse] = import_react28.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react28.default.useState(restoredState?.lastRunRequest ?? null);
-  const [uiModel, setUiModel] = import_react28.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react28.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react28.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react28.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const [liveSyncEnabled, setLiveSyncEnabled] = import_react28.default.useState(() => loadTimelineLiveSyncEnabledPreference());
-  const responseRef = import_react28.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react28.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
-  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react28.default.useState(0);
-  const [isRefreshing, setIsRefreshing] = import_react28.default.useState(false);
-  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react28.default.useState(false);
-  const [detailsPanelDirty, setDetailsPanelDirty] = import_react28.default.useState(false);
-  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react28.default.useState(0);
-  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react28.default.useState(false);
-  const isRefreshingRef = import_react28.default.useRef(isRefreshing);
-  const workItemSyncInFlightRef = import_react28.default.useRef(0);
-  const pendingWorkItemMutationsRef = import_react28.default.useRef([]);
-  const preOptimisticResponseSnapshotRef = import_react28.default.useRef(null);
-  const flushPendingWorkItemMutationsPromiseRef = import_react28.default.useRef(null);
-  const retryRefreshInFlightPromiseRef = import_react28.default.useRef(null);
-  const refreshGuardStateRef = import_react28.default.useRef({
+  const [activeTab, setActiveTab] = import_react32.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react32.default.useState(!hasInitialQuery);
+  const [response, setResponse] = import_react32.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react32.default.useState(restoredState?.lastRunRequest ?? null);
+  const [uiModel, setUiModel] = import_react32.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react32.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react32.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react32.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react32.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react32.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react32.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react32.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react32.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react32.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react32.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react32.default.useState(0);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react32.default.useState(false);
+  const isRefreshingRef = import_react32.default.useRef(isRefreshing);
+  const workItemSyncInFlightRef = import_react32.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react32.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react32.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react32.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react32.default.useRef(null);
+  const refreshGuardStateRef = import_react32.default.useRef({
     detailsPanelDirty: false,
     hasOptimisticChanges: false,
     liveSyncEnabled,
     workItemSyncState
   });
-  const liveSyncEnabledRef = import_react28.default.useRef(liveSyncEnabled);
-  const timelineSelectionStoreRef = import_react28.default.useRef(createTimelineSelectionStore());
-  const workItemStateOptionsCacheRef = import_react28.default.useRef(/* @__PURE__ */ new Map());
+  const liveSyncEnabledRef = import_react32.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react32.default.useRef(createTimelineSelectionStore());
+  const workItemStateOptionsCacheRef = import_react32.default.useRef(/* @__PURE__ */ new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
     detailsPanelDirty,
@@ -36033,28 +38312,28 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const updateRefreshGuardState = import_react28.default.useCallback((patch) => {
+  const updateRefreshGuardState = import_react32.default.useCallback((patch) => {
     refreshGuardStateRef.current = {
       ...refreshGuardStateRef.current,
       ...patch
     };
   }, []);
-  const setGuardedHasOptimisticChanges = import_react28.default.useCallback((next) => {
+  const setGuardedHasOptimisticChanges = import_react32.default.useCallback((next) => {
     updateRefreshGuardState({ hasOptimisticChanges: next });
     setHasOptimisticChanges(next);
   }, [updateRefreshGuardState]);
-  const setGuardedWorkItemSyncState = import_react28.default.useCallback((next) => {
+  const setGuardedWorkItemSyncState = import_react32.default.useCallback((next) => {
     const current = refreshGuardStateRef.current.workItemSyncState;
     const resolved = typeof next === "function" ? next(current) : next;
     updateRefreshGuardState({ workItemSyncState: resolved });
     setWorkItemSyncState(resolved);
   }, [updateRefreshGuardState]);
-  const setGuardedLiveSyncEnabled = import_react28.default.useCallback((enabled) => {
+  const setGuardedLiveSyncEnabled = import_react32.default.useCallback((enabled) => {
     liveSyncEnabledRef.current = enabled;
     updateRefreshGuardState({ liveSyncEnabled: enabled });
     setLiveSyncEnabled(enabled);
   }, [updateRefreshGuardState]);
-  const fetchWorkItemStateOptionsCached = import_react28.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react32.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -36063,10 +38342,10 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react28.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react32.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react28.default.useCallback(async (request) => {
+  const runQuery = import_react32.default.useCallback(async (request) => {
     try {
       const result = await props.composition.runQuerySelectionFlow({
         queryId: request.queryId,
@@ -36106,11 +38385,11 @@ function UiShellApp(props) {
       throw error;
     }
   }, [enrichRuntimeStateColors, props.composition]);
-  const handleNeedsFix = import_react28.default.useCallback((needsFixResponse) => {
+  const handleNeedsFix = import_react32.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react28.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react32.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -36130,20 +38409,20 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const readRefreshGuardInput = import_react28.default.useCallback((options) => createRefreshDiscardWarningInput({
+  const readRefreshGuardInput = import_react32.default.useCallback((options) => createRefreshDiscardWarningInput({
     state: refreshGuardStateRef.current,
     pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
     afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
   }), []);
-  const handleDetailsDirtyChange = import_react28.default.useCallback((dirty) => {
+  const handleDetailsDirtyChange = import_react32.default.useCallback((dirty) => {
     updateRefreshGuardState({ detailsPanelDirty: dirty });
     setDetailsPanelDirty(dirty);
   }, [updateRefreshGuardState]);
-  const handleSetLiveSyncEnabled = import_react28.default.useCallback((enabled) => {
+  const handleSetLiveSyncEnabled = import_react32.default.useCallback((enabled) => {
     setGuardedLiveSyncEnabled(enabled);
     saveTimelineLiveSyncEnabledPreference(enabled);
   }, [setGuardedLiveSyncEnabled]);
-  const executeRefresh = import_react28.default.useCallback(async (discardPendingChanges) => {
+  const executeRefresh = import_react32.default.useCallback(async (discardPendingChanges) => {
     isRefreshingRef.current = true;
     setIsRefreshing(true);
     if (discardPendingChanges) {
@@ -36165,20 +38444,21 @@ function UiShellApp(props) {
         return;
       }
       if (result.kind === "refreshed") {
-        if (discardPendingChanges) {
-          setResponse(result.response);
-          setUiModel(mapQueryIntakeResponseToUiModel(result.response));
-        } else {
-          const refreshedResponse = applyPendingWorkItemMutationsToResponse(result.response, pendingWorkItemMutationsRef.current);
-          setResponse(refreshedResponse);
-          setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
-        }
+        const refreshedResponse = discardPendingChanges ? result.response : applyPendingWorkItemMutationsToResponse(result.response, pendingWorkItemMutationsRef.current);
+        setResponse(refreshedResponse);
+        setUiModel(mapQueryIntakeResponseToUiModel(refreshedResponse));
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
           setControlsOpen(true);
+          setBlockerMessage(null);
         } else {
-          setActiveTab("timeline");
+          setMappingFixResponse(null);
+          setActiveTab(result.activeTab);
+          if (result.activeTab === "query") {
+            setControlsOpen(true);
+          }
+          setBlockerMessage(result.response.preflightStatus === "SESSION_EXPIRED" ? buildSessionExpiredRefreshBlocker() : null);
         }
       }
       if (discardPendingChanges) {
@@ -36198,14 +38478,14 @@ function UiShellApp(props) {
     getResponse: () => responseRef.current,
     headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
   });
-  const runTrackedWorkItemUpdate = import_react28.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react32.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
       setWorkItemSyncState: setGuardedWorkItemSyncState
     });
   }, [setGuardedWorkItemSyncState]);
-  const flushQueuedWorkItemMutations = import_react28.default.useCallback(async () => {
+  const flushQueuedWorkItemMutations = import_react32.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
     }
@@ -36231,7 +38511,7 @@ function UiShellApp(props) {
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
   }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
-  const runRetryRefresh = import_react28.default.useCallback(async () => {
+  const runRetryRefresh = import_react32.default.useCallback(async () => {
     if (isRefreshingRef.current) {
       return;
     }
@@ -36252,8 +38532,8 @@ function UiShellApp(props) {
     }
     await executeRefresh(false);
   }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
-  const retryRefresh = import_react28.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
-  const enqueuePendingWorkItemMutation = import_react28.default.useCallback((mutation) => {
+  const retryRefresh = import_react32.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
+  const enqueuePendingWorkItemMutation = import_react32.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
@@ -36261,7 +38541,7 @@ function UiShellApp(props) {
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
     setGuardedHasOptimisticChanges(true);
   }, [setGuardedHasOptimisticChanges]);
-  const scheduleWorkItemMutation = import_react28.default.useCallback(async (params) => {
+  const scheduleWorkItemMutation = import_react32.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "work_item",
@@ -36277,7 +38557,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleDependencyMutation = import_react28.default.useCallback(async (params) => {
+  const scheduleDependencyMutation = import_react32.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "dependency",
@@ -36294,7 +38574,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleReparentMutation = import_react28.default.useCallback(async (params) => {
+  const scheduleReparentMutation = import_react32.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "reparent",
@@ -36311,20 +38591,20 @@ function UiShellApp(props) {
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     liveSyncEnabledRef.current = liveSyncEnabled;
   }, [liveSyncEnabled]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     void hydrateUserPreferences().then((preferences) => {
       if (preferences.themeMode) {
         setThemeMode(preferences.themeMode);
@@ -36337,7 +38617,7 @@ function UiShellApp(props) {
       setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
   }, [headerQueryFlow.hydrateSavedHeaderQueries, setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
       return;
@@ -36347,7 +38627,7 @@ function UiShellApp(props) {
     }
     setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
@@ -36357,7 +38637,7 @@ function UiShellApp(props) {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -36381,7 +38661,7 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
-  import_react28.default.useEffect(() => {
+  import_react32.default.useEffect(() => {
     const onPointerDown = (event) => {
       const target = event.target;
       const trustBadgeElement = document.querySelector("details.trust-badge-details");
@@ -36425,7 +38705,7 @@ function UiShellApp(props) {
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
-  const controlsContent = import_react28.default.createElement(import_react28.default.Fragment, null, import_react28.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react28.default.createElement(TopTabs, {
+  const controlsContent = import_react32.default.createElement(import_react32.default.Fragment, null, import_react32.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react32.default.createElement(TopTabs, {
     activeTab,
     model: uiModel,
     onTabChange: (tab) => {
@@ -36435,11 +38715,11 @@ function UiShellApp(props) {
       setBlockerMessage(payload);
       setControlsOpen(true);
     }
-  }), blockerMessage ? import_react28.default.createElement("section", {
+  }), blockerMessage ? import_react32.default.createElement("section", {
     "aria-label": "tab-blocker-guidance",
     className: "tab-blocker-guidance"
-  }, import_react28.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react28.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react28.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel);
-  return import_react28.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react28.default.createElement("section", { className: "ui-shell-header" }, import_react28.default.createElement("div", { className: "ui-shell-brand" }, import_react28.default.createElement("h1", null, "AzureGanttOps")), import_react28.default.createElement("div", { className: "ui-shell-header-actions" }, import_react28.default.createElement("div", { className: "header-query-picker" }, import_react28.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react28.default.createElement("details", { className: "header-query-dropdown" }, import_react28.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react28.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react28.default.createElement("input", {
+  }, import_react32.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react32.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react32.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, mainPanel);
+  return import_react32.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react32.default.createElement("section", { className: "ui-shell-header" }, import_react32.default.createElement("div", { className: "ui-shell-brand" }, import_react32.default.createElement("h1", null, "AzureGanttOps")), import_react32.default.createElement("div", { className: "ui-shell-header-actions" }, import_react32.default.createElement("div", { className: "header-query-picker" }, import_react32.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react32.default.createElement("details", { className: "header-query-dropdown" }, import_react32.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react32.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react32.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -36447,7 +38727,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react28.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react28.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react28.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react28.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react28.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react32.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react32.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react32.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react32.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react32.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -36457,7 +38737,7 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react28.default.createElement("button", {
+  }, "\xD7"), import_react32.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-open",
     "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
@@ -36472,7 +38752,7 @@ function UiShellApp(props) {
         window.open(queryUrl, "_blank", "noopener,noreferrer");
       }
     }
-  }, import_react28.default.createElement("svg", {
+  }, import_react32.default.createElement("svg", {
     width: "14",
     height: "14",
     viewBox: "0 0 24 24",
@@ -36481,21 +38761,21 @@ function UiShellApp(props) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }, import_react28.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react28.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react28.default.createElement("button", {
+  }, import_react32.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react32.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react32.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react28.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react32.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react28.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react32.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -36511,23 +38791,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react28.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react32.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react28.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react32.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react28.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react28.default.createElement("span", {
+  }, import_react32.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react32.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react28.default.createElement("div", { className: "theme-menu" }, import_react28.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react32.default.createElement("div", { className: "theme-menu" }, import_react32.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -36535,7 +38815,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react28.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react28.default.createElement(TrustBadge, {
+  }, import_react32.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react32.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
@@ -36543,7 +38823,7 @@ function UiShellApp(props) {
     controlsOpen,
     onControlsOpenChange: setControlsOpen,
     controlsContent
-  }))), import_react28.default.createElement("section", { className: "ui-shell-content" }, import_react28.default.createElement("section", { className: "gantt-primary-card" }, import_react28.default.createElement(WarningBanner, {
+  }))), import_react32.default.createElement("section", { className: "ui-shell-content" }, import_react32.default.createElement("section", { className: "gantt-primary-card" }, import_react32.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -36551,7 +38831,7 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react28.default.createElement(TimelinePane, {
+  }), import_react32.default.createElement(TimelinePane, {
     key: response?.activeQueryId ?? "timeline-no-query",
     activeQueryId: response?.activeQueryId ?? null,
     activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
@@ -36565,6 +38845,7 @@ function UiShellApp(props) {
     project,
     detailsDraftResetKey,
     selectionStore: timelineSelectionStoreRef.current,
+    canCreateChildWorkItem: props.composition.capabilities.writeEnabled,
     onSetLiveSyncEnabled: handleSetLiveSyncEnabled,
     onPushPendingWorkItemChanges: () => {
       void flushQueuedWorkItemMutations();
@@ -36670,6 +38951,82 @@ function UiShellApp(props) {
         }
       });
     },
+    onUpdateWorkItemState: async ({ targetWorkItemId, state: state2, stateColor }) => {
+      await scheduleWorkItemMutation({
+        workItemId: targetWorkItemId,
+        applyToTimeline: (timeline) => applyWorkItemStateUpdate(timeline, targetWorkItemId, state2, stateColor),
+        executeDetails: async () => {
+          const writeResult = await props.composition.controller.updateWorkItemState({
+            targetWorkItemId,
+            state: state2
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
+        }
+      });
+    },
+    onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
+      const writeResult = await runTrackedWorkItemUpdate(async () => {
+        const writeResult2 = await props.composition.controller.duplicateWorkItem({
+          sourceWorkItemId,
+          ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+        });
+        if (!writeResult2.accepted) {
+          throw toWritebackError(writeResult2.reasonCode);
+        }
+        return writeResult2;
+      });
+      const createdWorkItem = writeResult.createdWorkItem ?? (writeResult.createdWorkItemId ? { id: writeResult.createdWorkItemId } : null);
+      if (!createdWorkItem) {
+        await retryRefresh();
+        return;
+      }
+      const nextResponse = applyDuplicateWorkItemToResponse(responseRef.current, sourceWorkItemId, createdWorkItem);
+      if (!nextResponse) {
+        await retryRefresh();
+        return;
+      }
+      if (nextResponse === responseRef.current) {
+        return;
+      }
+      timelineSelectionStoreRef.current.select(createdWorkItem.id);
+      responseRef.current = nextResponse;
+      setResponse(nextResponse);
+      setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
+    },
+    onCreateChildWorkItem: async ({ parentWorkItemId, childWorkItemType, title, scheduleFieldRefs }) => {
+      const writeResult = await runTrackedWorkItemUpdate(async () => {
+        const writeResult2 = await props.composition.controller.createChildWorkItem({
+          parentWorkItemId,
+          childWorkItemType,
+          ...title ? { title } : {},
+          ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
+        });
+        if (!writeResult2.accepted) {
+          throw toWritebackError(writeResult2.reasonCode);
+        }
+        return writeResult2;
+      });
+      const createdWorkItem = writeResult.createdWorkItem ?? (writeResult.createdWorkItemId ? { id: writeResult.createdWorkItemId } : null);
+      if (!createdWorkItem) {
+        await retryRefresh();
+        return;
+      }
+      const nextResponse = applyCreatedChildWorkItemToResponse(responseRef.current, parentWorkItemId, createdWorkItem);
+      if (!nextResponse || nextResponse === responseRef.current) {
+        await retryRefresh();
+        return;
+      }
+      timelineSelectionStoreRef.current.select(createdWorkItem.id);
+      responseRef.current = nextResponse;
+      setResponse(nextResponse);
+      setUiModel(mapQueryIntakeResponseToUiModel(nextResponse));
+    },
+    onFetchWorkItemTypes: async () => {
+      const response2 = await props.composition.controller.fetchWorkItemTypes();
+      return response2.workItemTypes;
+    },
     onReparentWorkItem: async ({ targetWorkItemId, newParentId }) => {
       await scheduleReparentMutation({
         targetWorkItemId,
@@ -36690,20 +39047,20 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }))), import_react28.default.createElement("footer", { className: "ui-shell-footer" }, import_react28.default.createElement("span", null, "An "), import_react28.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react28.default.createElement("span", null, " by Christian Betz @ "), import_react28.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), showRefreshDiscardWarning ? import_react28.default.createElement("div", {
+  }))), import_react32.default.createElement("footer", { className: "ui-shell-footer" }, import_react32.default.createElement("span", null, "An "), import_react32.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react32.default.createElement("span", null, " by Christian Betz @ "), import_react32.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), showRefreshDiscardWarning ? import_react32.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, import_react28.default.createElement("div", {
+  }, import_react32.default.createElement("div", {
     className: "refresh-discard-warning-dialog",
     role: "alertdialog",
     "aria-labelledby": "refresh-discard-warning-title",
     "aria-describedby": "refresh-discard-warning-desc",
     onClick: (e) => e.stopPropagation()
-  }, import_react28.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react28.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react28.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react28.default.createElement("button", {
+  }, import_react32.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react32.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react32.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react32.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-cancel",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, "Abbrechen"), import_react28.default.createElement("button", {
+  }, "Abbrechen"), import_react32.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-confirm",
     onClick: () => {
@@ -36715,7 +39072,7 @@ function UiShellApp(props) {
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react28.default.createElement(QuerySelector, {
+    return import_react32.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react32.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
@@ -36725,19 +39082,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react28.default.createElement(MappingFixPanel, {
+    return import_react32.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react32.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react28.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react32.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react28.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react32.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react32.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react28.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react28.default.createElement(DiagnosticsTab, {
+  return import_react32.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react32.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
@@ -37072,5 +39429,5 @@ react-router/dist/development/index.mjs:
    *)
 
 dompurify/dist/purify.es.mjs:
-  (*! @license DOMPurify 3.3.3 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.3/LICENSE *)
+  (*! @license DOMPurify 3.4.2 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.2/LICENSE *)
 */

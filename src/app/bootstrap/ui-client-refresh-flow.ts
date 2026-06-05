@@ -1,6 +1,10 @@
 import { ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
+import {
+  AZURE_SESSION_EXPIRED_NEXT_ACTION,
+  AZURE_SESSION_EXPIRED_REASON
+} from "../../shared/azure-devops/azure-session-recovery.js";
 
 export type RunRequest = {
   queryInput: string;
@@ -35,6 +39,18 @@ export type RetryRefreshResult =
   | {
       kind: "query_triggered";
     };
+
+export function buildSessionExpiredRefreshBlocker(): {
+  tab: "query";
+  reason: string;
+  nextAction: string;
+} {
+  return {
+    tab: "query",
+    reason: AZURE_SESSION_EXPIRED_REASON,
+    nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
+  };
+}
 
 export async function runRetryRefreshFlow(params: {
   lastRunRequest: RunRequest | null;

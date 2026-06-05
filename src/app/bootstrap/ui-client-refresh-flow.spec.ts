@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 
-import { resolvePersistedRefreshQueryInput, runRetryRefreshFlow, type RunRequest } from "./ui-client-refresh-flow.js";
+import {
+  buildSessionExpiredRefreshBlocker,
+  resolvePersistedRefreshQueryInput,
+  runRetryRefreshFlow,
+  type RunRequest
+} from "./ui-client-refresh-flow.js";
+import {
+  AZURE_SESSION_EXPIRED_NEXT_ACTION,
+  AZURE_SESSION_EXPIRED_REASON
+} from "../../shared/azure-devops/azure-session-recovery.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
 function makeResponse(overrides?: Partial<QueryIntakeResponse>): QueryIntakeResponse {
@@ -37,6 +46,41 @@ describe("ui-client-refresh-flow", () => {
 
     expect(submit).toHaveBeenCalledWith(request);
     expect(result.kind).toBe("refreshed");
+  });
+
+  it("routes refreshed session-expired payload back to query recovery", async () => {
+    const request: RunRequest = { queryInput: "abc" };
+    const response = makeResponse({
+      statusCode: "SESSION_EXPIRED",
+      preflightStatus: "SESSION_EXPIRED",
+      uiState: "auth_failure",
+      success: false,
+      capabilities: {
+        canRefresh: false,
+        canSwitchQuery: false,
+        canChangeDensity: true,
+        canOpenDetails: true,
+        readOnlyTimeline: true
+      }
+    });
+
+    const result = await runRetryRefreshFlow({
+      lastRunRequest: request,
+      submit: vi.fn(async () => response),
+      enrichRuntimeStateColors: vi.fn(async (value: QueryIntakeResponse) => value),
+      runQuery: vi.fn()
+    });
+
+    expect(result).toMatchObject({
+      kind: "refreshed",
+      openMappingFix: false,
+      activeTab: "query"
+    });
+    expect(buildSessionExpiredRefreshBlocker()).toEqual({
+      tab: "query",
+      reason: AZURE_SESSION_EXPIRED_REASON,
+      nextAction: AZURE_SESSION_EXPIRED_NEXT_ACTION
+    });
   });
 
   it("returns blocker when no persisted query is available", async () => {

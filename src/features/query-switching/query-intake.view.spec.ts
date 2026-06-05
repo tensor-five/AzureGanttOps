@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { renderQueryIntakeView } from "./query-intake.view.js";
+import { AZURE_SESSION_EXPIRED_GUIDANCE } from "../../shared/azure-devops/azure-session-recovery.js";
 
 describe("query-intake view", () => {
   it("renders locked title+state timeline, details IDs, and dependency toggle semantics", () => {
@@ -296,7 +297,7 @@ describe("query-intake view", () => {
   it("shows no-session notice and disabled controls while keeping read-only details", () => {
     const view = renderQueryIntakeView({
       success: false,
-      guidance: "Session expired. Sign in to Azure and retry.",
+      guidance: AZURE_SESSION_EXPIRED_GUIDANCE,
       statusCode: "SESSION_EXPIRED",
       errorCode: "SESSION_EXPIRED",
       flatQuerySupportNote: "Phase 2 note: only flat queries are supported.",
@@ -349,7 +350,7 @@ describe("query-intake view", () => {
     expect(view).toContain("- error code: SESSION_EXPIRED");
     expect(view).toContain("- source health: AUTH_EXPIRED_REAUTH_TRIGGERED");
     expect(view).toContain("- handoff code: SESSION_EXPIRED");
-    expect(view).toContain("- guidance: Session expired. Sign in to Azure and retry.");
+    expect(view).toContain(`- guidance: ${AZURE_SESSION_EXPIRED_GUIDANCE}`);
     expect(view).toContain("- active query source: x");
     expect(view).toContain("- reload source: preflight_blocked");
     expect(view).toContain("[NOTICE] No active session: timeline remains read-only");
