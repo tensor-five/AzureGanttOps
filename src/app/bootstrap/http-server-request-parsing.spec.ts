@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   parseChildWorkItemCreatePayload,
+  parseDependencyLinkPayload,
   parseDuplicateWorkItemPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload
@@ -36,6 +37,67 @@ describe("parseUpdateStatePayload", () => {
   it("rejects invalid state updates", () => {
     expect(parseUpdateStatePayload({ targetWorkItemId: 0, state: "Active" })).toBeNull();
     expect(parseUpdateStatePayload({ targetWorkItemId: 11, state: " " })).toBeNull();
+  });
+});
+
+describe("parseDependencyLinkPayload", () => {
+  it("accepts valid dependency link payloads", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "add"
+      })
+    ).toEqual({
+      predecessorWorkItemId: 10,
+      successorWorkItemId: 11,
+      action: "add"
+    });
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "remove"
+      })
+    ).toEqual({
+      predecessorWorkItemId: 10,
+      successorWorkItemId: 11,
+      action: "remove"
+    });
+  });
+
+  it("rejects self-links", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 10,
+        action: "add"
+      })
+    ).toBeNull();
+  });
+
+  it("rejects invalid ids and actions", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 0,
+        successorWorkItemId: 11,
+        action: "add"
+      })
+    ).toBeNull();
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: "11",
+        action: "add"
+      })
+    ).toBeNull();
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "replace"
+      })
+    ).toBeNull();
   });
 });
 
