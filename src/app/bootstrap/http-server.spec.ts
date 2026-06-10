@@ -722,6 +722,143 @@ describe("createHttpServer", () => {
     }
   });
 
+  it("creates dependency links via /phase2/dependency-link", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: []
+      },
+      headers: {}
+    }));
+    const patch = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/dependency-link`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          predecessorWorkItemId: 1001,
+          successorWorkItemId: 1002,
+          action: "add"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toMatchObject({
+        commandKind: "DEPENDENCY_LINK",
+        mode: "EXECUTED",
+        operationCount: 1
+      });
+      expect(get).toHaveBeenCalledWith(
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/1001?$expand=relations&api-version=7.1"
+      );
+      expect(patch).toHaveBeenCalledWith(
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/1001?api-version=7.1",
+        [
+          {
+            op: "add",
+            path: "/relations/-",
+            value: {
+              rel: "System.LinkTypes.Dependency-Forward",
+              url: "https://dev.azure.com/contoso/_apis/wit/workItems/1002"
+            }
+          }
+        ],
+        {
+          "content-type": "application/json-patch+json",
+          accept: "application/json"
+        }
+      );
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("forwards Azure dependency link validation details", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: []
+      },
+      headers: {}
+    }));
+    const patch = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "VS403630: The relation URL is invalid."
+      },
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/dependency-link`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          predecessorWorkItemId: 1001,
+          successorWorkItemId: 1002,
+          action: "add"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body).toEqual({
+        code: "WRITE_FAILED",
+        message: "DEPENDENCY_LINK_FAILED: VS403630: The relation URL is invalid."
+      });
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
   it("duplicates work items via /phase2/work-item-duplicate", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;

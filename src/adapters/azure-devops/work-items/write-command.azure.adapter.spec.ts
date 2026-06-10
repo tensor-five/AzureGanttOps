@@ -40,7 +40,7 @@ describe("WriteCommandAzureAdapter", () => {
     );
   });
 
-  it("submits dependency-link add commands as relation patches on source work item", async () => {
+  it("submits dependency-link add commands with org-scoped relation URLs when lookup is unavailable", async () => {
     const patch = vi.fn(async () => ({ status: 200, json: {} }));
     const adapter = new WriteCommandAzureAdapter(
       { patch },
@@ -70,7 +70,7 @@ describe("WriteCommandAzureAdapter", () => {
           path: "/relations/-",
           value: {
             rel: "System.LinkTypes.Dependency-Forward",
-            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/1002"
+            url: "https://dev.azure.com/contoso/_apis/wit/workItems/1002"
           }
         }
       ],
@@ -79,6 +79,46 @@ describe("WriteCommandAzureAdapter", () => {
         accept: "application/json"
       }
     );
+  });
+
+  it("returns no-op for dependency-link add commands when the relation already exists", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: [
+          {
+            rel: "System.LinkTypes.Dependency-Forward",
+            url: "https://dev.azure.com/contoso/_apis/wit/workItems/1002"
+          }
+        ]
+      }
+    }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "DEPENDENCY_LINK",
+      sourceId: 1001,
+      targetId: 1002,
+      relation: "System.LinkTypes.Dependency-Forward",
+      action: "add"
+    });
+
+    expect(result).toEqual({
+      accepted: true,
+      mode: "NO_OP",
+      commandKind: "DEPENDENCY_LINK",
+      operationCount: 0,
+      reasonCode: "WRITE_ENABLED"
+    });
+    expect(get).toHaveBeenCalledWith(
+      "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/1001?$expand=relations&api-version=7.1",
+      { accept: "application/json" }
+    );
+    expect(patch).not.toHaveBeenCalled();
   });
 
   it("removes dependency-link by relation index lookup when action is remove", async () => {
@@ -130,6 +170,88 @@ describe("WriteCommandAzureAdapter", () => {
         accept: "application/json"
       }
     );
+  });
+
+  it("returns no-op for dependency-link remove commands when the relation is missing", async () => {
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: [
+          {
+            rel: "System.LinkTypes.Hierarchy-Forward",
+            url: "https://dev.azure.com/contoso/delivery/_apis/wit/workItems/2001"
+          }
+        ]
+      }
+    }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    const result = await adapter.submit({
+      kind: "DEPENDENCY_LINK",
+      sourceId: 1001,
+      targetId: 1002,
+      relation: "System.LinkTypes.Dependency-Forward",
+      action: "remove"
+    });
+
+    expect(result).toEqual({
+      accepted: true,
+      mode: "NO_OP",
+      commandKind: "DEPENDENCY_LINK",
+      operationCount: 0,
+      reasonCode: "WRITE_ENABLED"
+    });
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("includes Azure dependency lookup and patch error details", async () => {
+    const get = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "VS403654: The requested relation data could not be loaded."
+      }
+    }));
+    const patch = vi.fn(async () => ({ status: 200, json: {} }));
+    const adapter = new WriteCommandAzureAdapter(
+      { get, patch },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await expect(
+      adapter.submit({
+        kind: "DEPENDENCY_LINK",
+        sourceId: 1001,
+        targetId: 1002,
+        relation: "System.LinkTypes.Dependency-Forward",
+        action: "add"
+      })
+    ).rejects.toThrow("DEPENDENCY_LOOKUP_FAILED: VS403654: The requested relation data could not be loaded.");
+    expect(patch).not.toHaveBeenCalled();
+
+    const patchOnly = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "VS403630: The relation URL is invalid."
+      }
+    }));
+    const patchOnlyAdapter = new WriteCommandAzureAdapter(
+      { patch: patchOnly },
+      createContextStore({ organization: "contoso", project: "delivery" }) as never
+    );
+
+    await expect(
+      patchOnlyAdapter.submit({
+        kind: "DEPENDENCY_LINK",
+        sourceId: 1001,
+        targetId: 1002,
+        relation: "System.LinkTypes.Dependency-Forward",
+        action: "add"
+      })
+    ).rejects.toThrow("DEPENDENCY_LINK_FAILED: VS403630: The relation URL is invalid.");
   });
 
   it("duplicates work items with title, description, tags, assignment, paths, schedule dates, and parent relation", async () => {

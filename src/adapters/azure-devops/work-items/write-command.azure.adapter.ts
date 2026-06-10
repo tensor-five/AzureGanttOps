@@ -95,9 +95,27 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
 
     let operations: unknown[];
     if (command.action === "add") {
-      const targetWorkItemReferenceUrl = buildWorkItemReferenceUrl({
+      if (this.httpClient.get) {
+        const lookupUrl = buildWorkItemRelationLookupUrl({
+          organization: context.organization,
+          project: context.project,
+          workItemId: command.sourceId
+        });
+        const lookupResponse = await this.httpClient.get(lookupUrl, {
+          accept: "application/json"
+        });
+        if (lookupResponse.status < 200 || lookupResponse.status >= 300) {
+          throw new Error(buildAzureResponseErrorMessage("DEPENDENCY_LOOKUP_FAILED", lookupResponse.json));
+        }
+
+        const relationIndex = resolveDependencyRelationIndex(lookupResponse.json, command.targetId, command.relation);
+        if (relationIndex !== null) {
+          return buildDependencyLinkNoOpResult();
+        }
+      }
+
+      const targetWorkItemReferenceUrl = buildWorkItemRelationReferenceUrl({
         organization: context.organization,
-        project: context.project,
         workItemId: command.targetId
       });
       operations = [
@@ -124,12 +142,12 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
         accept: "application/json"
       });
       if (lookupResponse.status < 200 || lookupResponse.status >= 300) {
-        throw new Error("DEPENDENCY_LOOKUP_FAILED");
+        throw new Error(buildAzureResponseErrorMessage("DEPENDENCY_LOOKUP_FAILED", lookupResponse.json));
       }
 
       const relationIndex = resolveDependencyRelationIndex(lookupResponse.json, command.targetId, command.relation);
       if (relationIndex === null) {
-        throw new Error("DEPENDENCY_NOT_FOUND");
+        return buildDependencyLinkNoOpResult();
       }
 
       operations = [
@@ -148,7 +166,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
     });
 
     if (response.status < 200 || response.status >= 300) {
-      throw new Error("DEPENDENCY_LINK_FAILED");
+      throw new Error(buildAzureResponseErrorMessage("DEPENDENCY_LINK_FAILED", response.json));
     }
 
     return {
@@ -395,6 +413,10 @@ function buildWorkItemReferenceUrl(input: { organization: string; project: strin
     `https://dev.azure.com/${encodeURIComponent(input.organization)}/${encodeURIComponent(input.project)}` +
     `/_apis/wit/workItems/${input.workItemId}`
   );
+}
+
+function buildWorkItemRelationReferenceUrl(input: { organization: string; workItemId: number }): string {
+  return `https://dev.azure.com/${encodeURIComponent(input.organization)}/_apis/wit/workItems/${input.workItemId}`;
 }
 
 function buildWorkItemRelationLookupUrl(input: { organization: string; project: string; workItemId: number }): string {
@@ -884,4 +906,14 @@ function parseRelationTargetWorkItemId(url: string | null): number | null {
 
   const parsed = Number.parseInt(match[1], 10);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildDependencyLinkNoOpResult(): WriteCommandResult {
+  return {
+    accepted: true,
+    mode: "NO_OP",
+    commandKind: "DEPENDENCY_LINK",
+    operationCount: 0,
+    reasonCode: "WRITE_ENABLED"
+  };
 }
