@@ -6,8 +6,15 @@ import { userEvent } from "@testing-library/user-event";
 
 import { TimelinePane, applyAdoptedSchedules } from "./timeline-pane.js";
 import { createDataTransferMock, makeTimeline, registerTimelinePaneSpecCleanup } from "./timeline-pane.test-helpers.js";
+import { parseTimelineStartDate, parseTimelineTargetDate } from "./timeline-schedule-dates.js";
 
 registerTimelinePaneSpecCleanup();
+
+type ScheduleUpdateCall = {
+  targetWorkItemId: number;
+  startDate: string;
+  endDate: string;
+};
 
 describe("timeline-pane dragging", () => {
   it("moves adopted unschedulable items into bars with copied schedule", () => {
@@ -178,12 +185,12 @@ describe("timeline-pane dragging", () => {
     fireEvent.pointerUp(chart, { pointerId: 1, clientX: 122 });
 
     await waitFor(() => {
-      expect(onUpdateWorkItemSchedule).toHaveBeenCalledWith({
-        targetWorkItemId: 11,
-        startDate: "2026-03-02T00:00:00.000Z",
-        endDate: "2026-03-04T00:00:00.000Z"
-      });
+      expect(onUpdateWorkItemSchedule).toHaveBeenCalledTimes(1);
     });
+    const call = (onUpdateWorkItemSchedule.mock.calls as unknown as Array<[ScheduleUpdateCall]>)[0][0];
+    expect(call.targetWorkItemId).toBe(11);
+    expect(call.startDate).toBe("2026-03-02T00:00:00.000Z");
+    expectLocalTargetWriteIso(call.endDate, { year: 2026, monthIndex: 2, day: 4 });
   });
 
   it("zooms chart to fit visible timeline range via fit button", async () => {
@@ -362,12 +369,95 @@ describe("timeline-pane dragging", () => {
     fireEvent.pointerUp(chart, { pointerId: 2, clientX: 144 });
 
     await waitFor(() => {
-      expect(onUpdateWorkItemSchedule).toHaveBeenCalledWith({
-        targetWorkItemId: 11,
-        startDate: "2026-03-01T00:00:00.000Z",
-        endDate: "2026-03-05T00:00:00.000Z"
-      });
+      expect(onUpdateWorkItemSchedule).toHaveBeenCalledTimes(1);
     });
+    const call = (onUpdateWorkItemSchedule.mock.calls as unknown as Array<[ScheduleUpdateCall]>)[0][0];
+    expect(call.targetWorkItemId).toBe(11);
+    expect(call.startDate).toBe("2026-03-01T00:00:00.000Z");
+    expectLocalTargetWriteIso(call.endDate, { year: 2026, monthIndex: 2, day: 5 });
+  });
+
+  it("keeps target writes from shifting the optimistic timeline day", async () => {
+    const onUpdateWorkItemSchedule = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          ...timeline.bars[0].schedule,
+          startDate: "2026-03-09T00:00:00.000Z",
+          endDate: "2026-03-09T00:00:00.000Z"
+        }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        onUpdateWorkItemSchedule
+      })
+    );
+
+    const chart = screen.getByLabelText("gantt-chart");
+    const endHandle = screen.getByLabelText("timeline-bar-end-handle-11");
+    expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(22);
+
+    fireEvent.pointerDown(endHandle, { pointerId: 4, button: 0, clientX: 100 });
+    fireEvent.pointerMove(chart, { pointerId: 4, clientX: 122 });
+    fireEvent.pointerUp(chart, { pointerId: 4, clientX: 122 });
+
+    await waitFor(() => {
+      expect(onUpdateWorkItemSchedule).toHaveBeenCalledTimes(1);
+    });
+    const call = (onUpdateWorkItemSchedule.mock.calls as unknown as Array<[ScheduleUpdateCall]>)[0][0];
+    const expectedEndWrite = localTargetWriteIso(2026, 2, 10);
+    expect(call.targetWorkItemId).toBe(11);
+    expect(call.startDate).toBe("2026-03-09T00:00:00.000Z");
+    expect(call.endDate).toBe(expectedEndWrite);
+    expectLocalTargetWriteIso(call.endDate, { year: 2026, monthIndex: 2, day: 10 });
+
+    await waitFor(() => {
+      expect(Number(screen.getByLabelText("timeline-bar-11").getAttribute("width"))).toBe(44);
+    });
+    expect(screen.getByLabelText("timeline-details-panel").textContent).toContain("- end: 2026-03-10");
+  });
+
+  it("updates start date when dragging start handle and keeps the original end date exact", async () => {
+    const onUpdateWorkItemSchedule = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    timeline.bars = [
+      {
+        ...timeline.bars[0],
+        schedule: {
+          ...timeline.bars[0].schedule,
+          endDate: "2026-03-03T16:30:00.000Z"
+        }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        onUpdateWorkItemSchedule
+      })
+    );
+
+    const chart = screen.getByLabelText("gantt-chart");
+    const startHandle = screen.getByLabelText("timeline-bar-start-handle-11");
+
+    fireEvent.pointerDown(startHandle, { pointerId: 3, button: 0, clientX: 100 });
+    fireEvent.pointerMove(chart, { pointerId: 3, clientX: 122 });
+    fireEvent.pointerUp(chart, { pointerId: 3, clientX: 122 });
+
+    await waitFor(() => {
+      expect(onUpdateWorkItemSchedule).toHaveBeenCalledTimes(1);
+    });
+    const call = (onUpdateWorkItemSchedule.mock.calls as unknown as Array<[ScheduleUpdateCall]>)[0][0];
+    expect(call.targetWorkItemId).toBe(11);
+    expect(call.startDate).toBe("2026-03-02T00:00:00.000Z");
+    expect(call.endDate).toBe("2026-03-03T16:30:00.000Z");
   });
 
   it("drops unscheduled items into chart with default 14-day duration", async () => {
@@ -399,10 +489,15 @@ describe("timeline-pane dragging", () => {
       endDate: string;
     };
     expect(call.targetWorkItemId).toBe(22);
-    const start = new Date(call.startDate);
-    const end = new Date(call.endDate);
-    const dayDelta = Math.floor((end.getTime() - start.getTime()) / 86_400_000);
-    expect(dayDelta).toBe(13);
+    const startTimelineDate = parseTimelineStartDate(call.startDate);
+    expect(startTimelineDate).not.toBeNull();
+    const expectedEndTimelineDate = addUtcDays(startTimelineDate!, 13);
+    expectLocalTargetWriteDayDelta(call.startDate, call.endDate, 13);
+    expectLocalTargetWriteIso(call.endDate, {
+      year: expectedEndTimelineDate.getUTCFullYear(),
+      monthIndex: expectedEndTimelineDate.getUTCMonth(),
+      day: expectedEndTimelineDate.getUTCDate()
+    });
   });
 
   it("keeps existing end date when dropping unscheduled item into chart", async () => {
@@ -414,7 +509,7 @@ describe("timeline-pane dragging", () => {
         ...timeline.unschedulable[0],
         schedule: {
           startDate: null,
-          endDate: "2026-03-10T00:00:00.000Z",
+          endDate: "2026-03-10T16:30:00.000Z",
           missingBoundary: "start"
         }
       }
@@ -445,8 +540,8 @@ describe("timeline-pane dragging", () => {
       endDate: string;
     };
     expect(call.targetWorkItemId).toBe(22);
-    expect(call.endDate).toBe("2026-03-10T00:00:00.000Z");
-    expect(new Date(call.startDate).getTime()).toBeLessThanOrEqual(new Date(call.endDate).getTime());
+    expect(call.endDate).toBe("2026-03-10T16:30:00.000Z");
+    expectTimelineStartNotAfterTarget(call.startDate, call.endDate);
   });
 
   it("shows loading state in refresh button while refresh is in progress", () => {
@@ -515,3 +610,38 @@ describe("timeline-pane dragging", () => {
     expect(onPushPendingWorkItemChanges).toHaveBeenCalledTimes(1);
   });
 });
+
+function expectLocalTargetWriteIso(value: string, expected: { year: number; monthIndex: number; day: number }): void {
+  const parsed = new Date(value);
+  expect(parsed.getFullYear()).toBe(expected.year);
+  expect(parsed.getMonth()).toBe(expected.monthIndex);
+  expect(parsed.getDate()).toBe(expected.day);
+  expect(parsed.getHours()).toBe(17);
+  expect(parsed.getMinutes()).toBe(0);
+  expect(parsed.getSeconds()).toBe(0);
+  expect(parsed.getMilliseconds()).toBe(0);
+}
+
+function expectLocalTargetWriteDayDelta(startDateIso: string, endDateIso: string, expectedDeltaDays: number): void {
+  const startDate = parseTimelineStartDate(startDateIso);
+  expect(startDate).not.toBeNull();
+  const endLocalDate = new Date(endDateIso);
+  const endTimelineDate = new Date(Date.UTC(endLocalDate.getFullYear(), endLocalDate.getMonth(), endLocalDate.getDate()));
+  expect(Math.round((endTimelineDate.getTime() - startDate!.getTime()) / 86_400_000)).toBe(expectedDeltaDays);
+}
+
+function expectTimelineStartNotAfterTarget(startDateIso: string, endDateIso: string): void {
+  const startDate = parseTimelineStartDate(startDateIso);
+  const endDate = parseTimelineTargetDate(endDateIso);
+  expect(startDate).not.toBeNull();
+  expect(endDate).not.toBeNull();
+  expect(startDate!.getTime()).toBeLessThanOrEqual(endDate!.getTime());
+}
+
+function addUtcDays(value: Date, days: number): Date {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate() + days));
+}
+
+function localTargetWriteIso(year: number, monthIndex: number, day: number): string {
+  return new Date(year, monthIndex, day, 17, 0, 0, 0).toISOString();
+}

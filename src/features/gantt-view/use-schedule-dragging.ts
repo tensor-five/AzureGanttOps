@@ -1,5 +1,7 @@
 import React from "react";
 
+import type { ScheduleOverride } from "./timeline-schedule-overrides.js";
+
 export type DragMode = "move" | "resize-start" | "resize-end";
 
 export type ActiveScheduleDrag = {
@@ -10,12 +12,15 @@ export type ActiveScheduleDrag = {
   originScrollLeft: number;
   startDate: Date;
   endDate: Date;
+  sourceStartDateIso?: string | null;
+  sourceEndDateIso?: string | null;
   lastDayDelta: number;
 };
 
 export type ActiveUnschedulableDrag = {
   workItemId: number;
-  fixedEndDate: Date | null;
+  fixedEndDateIso: string | null;
+  fixedEndTimelineDate: Date | null;
 };
 
 export type UnscheduledDropPreview = {
@@ -28,9 +33,9 @@ export function useScheduleDragging(): {
   setAdoptedSchedulesByWorkItemId: React.Dispatch<
     React.SetStateAction<Record<number, { startDate: string | null; endDate: string | null }>>
   >;
-  editedBarSchedulesByWorkItemId: Record<number, { startDate: string; endDate: string }>;
+  editedBarSchedulesByWorkItemId: Record<number, ScheduleOverride>;
   setEditedBarSchedulesByWorkItemId: React.Dispatch<
-    React.SetStateAction<Record<number, { startDate: string; endDate: string }>>
+    React.SetStateAction<Record<number, ScheduleOverride>>
   >;
   adoptScheduleError: string | null;
   setAdoptScheduleError: React.Dispatch<React.SetStateAction<string | null>>;
@@ -44,9 +49,7 @@ export function useScheduleDragging(): {
   const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = React.useState<
     Record<number, { startDate: string | null; endDate: string | null }>
   >({});
-  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = React.useState<
-    Record<number, { startDate: string; endDate: string }>
-  >({});
+  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = React.useState<Record<number, ScheduleOverride>>({});
   const [adoptScheduleError, setAdoptScheduleError] = React.useState<string | null>(null);
   const [activeScheduleDrag, setActiveScheduleDrag] = React.useState<ActiveScheduleDrag | null>(null);
   const [activeUnschedulableDrag, setActiveUnschedulableDrag] = React.useState<ActiveUnschedulableDrag | null>(null);
