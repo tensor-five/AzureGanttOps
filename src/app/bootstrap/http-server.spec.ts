@@ -5,6 +5,14 @@ import os from "node:os";
 import path from "node:path";
 
 import { createHttpServer } from "./http-server.js";
+import {
+  PWA_ICON_192_PATH,
+  PWA_ICON_512_PATH,
+  PWA_MANIFEST_PATH,
+  PWA_SERVICE_WORKER_PATH,
+  PWA_THEME_COLOR
+} from "./pwa-constants.js";
+import { PWA_SERVICE_WORKER_SOURCE } from "./pwa-assets.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 type StartedServer = {
@@ -15,7 +23,8 @@ type StartedServer = {
 describe("createHttpServer", () => {
   const expectedLocalOnlyCsp =
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-    "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
+    "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; " +
+    "connect-src 'self'; manifest-src 'self'";
   const tempDirs: string[] = [];
   const readyAuthPreflightRunner: CliCommandRunner = {
     run: async (command) => {
@@ -81,13 +90,22 @@ describe("createHttpServer", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("text/html");
+      expect(response.headers.get("cache-control")).toBe("no-store");
       expect(response.headers.get("content-security-policy")).toContain("default-src 'self'");
       expect(response.headers.get("x-frame-options")).toBe("DENY");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
       expect(text).toContain('<div id="app"></div>');
       expect(text).toMatch(/<meta name="ado-write-enabled" content="[01]" \/>/);
+      expect(text).toContain(`<meta name="theme-color" content="${PWA_THEME_COLOR}" />`);
+      expect(text).toContain('<meta name="mobile-web-app-capable" content="yes" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="default" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-title" content="AzureGanttOps" />');
+      expect(text).toContain(`<link rel="manifest" href="${PWA_MANIFEST_PATH}" />`);
       expect(text).toContain('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />');
       expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
+      expect(text).toContain(`<link rel="icon" type="image/png" sizes="192x192" href="${PWA_ICON_192_PATH}" />`);
+      expect(text).toContain(`<link rel="apple-touch-icon" href="${PWA_ICON_192_PATH}" />`);
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.css');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.js');
     } finally {
@@ -147,6 +165,94 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("image/x-icon");
       expect(body.byteLength).toBeGreaterThan(0);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves PWA manifest for GET /manifest.webmanifest", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${PWA_MANIFEST_PATH}`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("application/manifest+json; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+      expect(response.headers.get("content-security-policy")).toBe(expectedLocalOnlyCsp);
+      expect(body).toMatchObject({
+        name: "AzureGanttOps",
+        short_name: "GanttOps",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        theme_color: PWA_THEME_COLOR,
+        background_color: "#ffffff"
+      });
+      expect(body.icons).toEqual([
+        {
+          src: PWA_ICON_192_PATH,
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable"
+        },
+        {
+          src: PWA_ICON_512_PATH,
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable"
+        }
+      ]);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves PWA icons as cacheable PNGs", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      for (const icon of [
+        { path: PWA_ICON_192_PATH, size: 192 },
+        { path: PWA_ICON_512_PATH, size: 512 }
+      ]) {
+        const response = await fetch(`${server.baseUrl}${icon.path}`);
+        const body = Buffer.from(await response.arrayBuffer());
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("image/png");
+        expect(response.headers.get("cache-control")).toBe("public, max-age=604800, immutable");
+        expect(readPngDimensions(body)).toEqual({ width: icon.size, height: icon.size });
+      }
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves service worker without HTTP caching", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${PWA_SERVICE_WORKER_PATH}`);
+      const text = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(text).toBe(PWA_SERVICE_WORKER_SOURCE);
     } finally {
       await server.close();
     }
@@ -1741,6 +1847,16 @@ async function fetchCsrfToken(baseUrl: string): Promise<string> {
   }
 
   return match[1];
+}
+
+function readPngDimensions(buffer: Buffer): { width: number; height: number } {
+  expect(buffer.subarray(0, 8)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  expect(buffer.subarray(12, 16).toString("ascii")).toBe("IHDR");
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  };
 }
 
 async function createFixtureDir(tempDirs: string[]): Promise<{
