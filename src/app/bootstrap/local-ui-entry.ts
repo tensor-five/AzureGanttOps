@@ -1,5 +1,6 @@
 import "./local-ui.css";
 import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.js";
+import { registerServiceWorker } from "./register-service-worker.js";
 import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 
@@ -493,4 +494,10 @@ const composition = createDefaultUiShellComposition({
 bootstrapUiClient({
   container,
   composition
+});
+
+void registerServiceWorker({
+  onError: (error) => {
+    console.warn("[pwa] Service worker registration failed.", error);
+  }
 });

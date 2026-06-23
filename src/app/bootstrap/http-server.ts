@@ -39,6 +39,19 @@ import {
   fetchQueryDetails,
   type WorkItemTypeOption
 } from "./http-server-query-resolvers.js";
+import {
+  PWA_ICON_192_PATH,
+  PWA_ICON_512_PATH,
+  PWA_MANIFEST_PATH,
+  PWA_SERVICE_WORKER_PATH,
+  PWA_THEME_COLOR
+} from "./pwa-constants.js";
+import {
+  PWA_ICON_192_PNG_BUFFER,
+  PWA_ICON_512_PNG_BUFFER,
+  PWA_MANIFEST_JSON,
+  PWA_SERVICE_WORKER_SOURCE
+} from "./pwa-assets.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -67,9 +80,17 @@ const ROOT_HTML = `<!doctype html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="ado-csrf-token" content="__ADO_CSRF_TOKEN__" />
     <meta name="ado-write-enabled" content="__ADO_WRITE_ENABLED__" />
+    <meta name="theme-color" content="${PWA_THEME_COLOR}" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AzureGanttOps" />
     <title>Azure DevOps Query-Driven Gantt</title>
+    <link rel="manifest" href="${PWA_MANIFEST_PATH}" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="192x192" href="${PWA_ICON_192_PATH}" />
+    <link rel="apple-touch-icon" href="${PWA_ICON_192_PATH}" />
     <script>
       (() => {
         const key = "${THEME_MODE_STORAGE_KEY}";
@@ -174,7 +195,11 @@ const ADO_COMM_NEXT_SEQ_FROM_ENTRY = (entry: AdoCommLogEntry) => entry.seq;
 const ADO_COMM_DEFAULT_JSON_PREVIEW = (value: unknown) => JSON.stringify(value ?? ADO_COMM_PREVIEW_FALLBACK);
 const CONTENT_SECURITY_POLICY =
   "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
+  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; " +
+  "connect-src 'self'; manifest-src 'self'";
+const CACHE_CONTROL_NO_STORE = "no-store";
+const CACHE_CONTROL_PWA_MANIFEST = "public, max-age=3600";
+const CACHE_CONTROL_PWA_ICON = "public, max-age=604800, immutable";
 const ADO_COMM_ROUTE_QUERY_AFTER_SEQ = "afterSeq";
 const ADO_COMM_ROUTE_QUERY_LIMIT = "limit";
 const ADO_COMM_LOG_VERBOSE_PREFIX = "[ado-runtime]";
@@ -366,6 +391,22 @@ function isFaviconRoute(method: string, pathname: string): boolean {
 
 function isFaviconSvgRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === "/favicon.svg";
+}
+
+function isPwaManifestRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_MANIFEST_PATH;
+}
+
+function isServiceWorkerRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_SERVICE_WORKER_PATH;
+}
+
+function isPwaIcon192Route(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_ICON_192_PATH;
+}
+
+function isPwaIcon512Route(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_ICON_512_PATH;
 }
 
 function isQueryIntakeRoute(method: string, pathname: string): boolean {
@@ -1416,6 +1457,26 @@ async function handleDiagnosticsAndAssetsRoute(
     return true;
   }
 
+  if (isPwaManifestRoute(method, url.pathname)) {
+    writePwaManifest(res);
+    return true;
+  }
+
+  if (isServiceWorkerRoute(method, url.pathname)) {
+    writeServiceWorker(res);
+    return true;
+  }
+
+  if (isPwaIcon192Route(method, url.pathname)) {
+    writePwaIcon(res, PWA_ICON_192_PNG_BUFFER);
+    return true;
+  }
+
+  if (isPwaIcon512Route(method, url.pathname)) {
+    writePwaIcon(res, PWA_ICON_512_PNG_BUFFER);
+    return true;
+  }
+
   if (isFaviconRoute(method, url.pathname)) {
     writeFavicon(res);
     return true;
@@ -1612,6 +1673,7 @@ function writeHtml(res: ServerResponse, statusCode: number, payload: string): vo
   res.statusCode = statusCode;
   applySecurityHeaders(res);
   res.setHeader("content-type", "text/html; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
   res.end(payload);
 }
 
@@ -1634,6 +1696,30 @@ function writeFaviconSvg(res: ServerResponse): void {
   applySecurityHeaders(res);
   res.setHeader("content-type", "image/svg+xml; charset=utf-8");
   res.end(FAVICON_SVG_BUFFER);
+}
+
+function writePwaManifest(res: ServerResponse): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "application/manifest+json; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_PWA_MANIFEST);
+  res.end(PWA_MANIFEST_JSON);
+}
+
+function writeServiceWorker(res: ServerResponse): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "text/javascript; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+  res.end(PWA_SERVICE_WORKER_SOURCE);
+}
+
+function writePwaIcon(res: ServerResponse, icon: Buffer): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "image/png");
+  res.setHeader("cache-control", CACHE_CONTROL_PWA_ICON);
+  res.end(icon);
 }
 
 function applySecurityHeaders(res: ServerResponse): void {
