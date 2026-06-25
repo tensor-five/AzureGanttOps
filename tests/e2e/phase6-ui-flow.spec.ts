@@ -5,6 +5,7 @@ const HARNESS_HTML_URL = "/tests/e2e/runtime-harness.html";
 declare global {
   interface Window {
     __phase6Configure: (responses: QueryIntakeResponse[]) => void;
+    __phase6DelayNextSubmit: (delayMs: number) => void;
     __phase6Mount: () => void;
     __phase6Read: () => {
       callLog: Array<{ queryInput: string }>;
@@ -257,12 +258,20 @@ async function getRuntimeInfo(page: Page): Promise<{
   return page.evaluate(() => window.__phase6Read());
 }
 
-async function clickControlsTab(page: Page, tabName: string | RegExp): Promise<void> {
-  const trustBadge = page.locator("details[aria-label='global-trust-badge']");
-  const isOpen = await trustBadge.evaluate((element) => (element as HTMLDetailsElement).open);
+function statusBadge(page: Page) {
+  return page.locator("details[aria-label='Status']");
+}
+
+async function openStatusPanel(page: Page): Promise<void> {
+  const badge = statusBadge(page);
+  const isOpen = await badge.evaluate((element) => (element as HTMLDetailsElement).open);
   if (!isOpen) {
-    await trustBadge.locator("summary").click();
+    await badge.locator("summary").click();
   }
+}
+
+async function clickControlsTab(page: Page, tabName: string | RegExp): Promise<void> {
+  await openStatusPanel(page);
 
   await page.getByRole("tab", { name: tabName }).click();
 }
@@ -331,7 +340,8 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await mountRuntimeUi(page, responses);
 
   await expect(page.getByRole("heading", { name: "AzureGanttOps" })).toBeVisible();
-  await expect(page.getByLabel("global-trust-badge")).toContainText("Needs attention");
+  await expect(statusBadge(page)).toHaveText("Status");
+  await expect(statusBadge(page)).not.toContainText("Needs attention");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
 
   await clickControlsTab(page, "Mapping [blocked]");
@@ -341,19 +351,21 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-1");
   await page.getByRole("button", { name: "Run query by ID" }).click();
-  await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
+  await expect(statusBadge(page)).toContainText("[OK] Ready");
 
   await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-2");
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
-  await expect(page.getByLabel("global-trust-badge")).toContainText("[QUERY_FAILED] Partial failure");
+  await expect(statusBadge(page)).toContainText("[QUERY_FAILED] Partial failure");
   await clickControlsTab(page, "Timeline [ok]");
   await expect(page.getByLabel("timeline-warning-banner")).toContainText("Action: Retry refresh");
   await page.keyboard.press("Escape");
 
   await page.getByLabel("timeline-warning-banner").getByRole("button", { name: "Retry refresh" }).click();
-  await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
+  await expect(statusBadge(page)).toHaveText("Status");
+  await openStatusPanel(page);
+  await expect(statusBadge(page)).toContainText("[OK] Ready");
 
   await clickControlsTab(page, "Query [ok]");
   await page.getByLabel("Query ID").fill("q-1");
@@ -413,12 +425,16 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
 
   await expect(page.getByLabel("mapping-fix-panel")).toBeVisible();
   await expect(page.getByLabel("mapping-fix-panel")).toContainText("Set up field mapping");
-  await page.getByRole("button", { name: "Apply standard Azure mapping" }).click();
+  await page.evaluate(() => window.__phase6DelayNextSubmit(150));
+  await page.getByRole("button", { name: "Apply standard Azure mapping" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
+  await page.keyboard.press("Escape");
+  await expect(statusBadge(page)).toHaveText("Status");
 
-  await expect(page.getByLabel("global-trust-badge")).toContainText("[OK] Ready");
+  await expect(statusBadge(page)).toHaveText("Status");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
 
-  await page.keyboard.press("Escape");
   await page.getByLabel("timeline-sidebar-row-801").click();
   await expect(page.getByLabel("timeline-details-panel")).toContainText("- selected work item: #801");
 

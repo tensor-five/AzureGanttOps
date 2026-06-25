@@ -15,6 +15,7 @@ type AdoLogEntry = {
 type HarnessState = {
   queue: unknown[];
   latest: unknown;
+  submitDelayMs: number;
   callLog: Array<{ queryInput: string }>;
   adoEntries: AdoLogEntry[];
   adoSeq: number;
@@ -24,6 +25,7 @@ type UserPreferences = Record<string, unknown>;
 
 type HarnessApi = {
   __phase6Configure: (responses: unknown[]) => void;
+  __phase6DelayNextSubmit: (delayMs: number) => void;
   __phase6Mount: () => void;
   __phase6Read: () => {
     callLog: Array<{ queryInput: string }>;
@@ -40,6 +42,7 @@ declare global {
 const state: HarnessState = {
   queue: [],
   latest: null,
+  submitDelayMs: 0,
   callLog: [],
   adoEntries: [],
   adoSeq: 0
@@ -179,6 +182,16 @@ window.__phase6Configure = (responses) => {
   state.adoSeq = 0;
 };
 
+window.__phase6DelayNextSubmit = (delayMs) => {
+  state.submitDelayMs = Math.max(0, delayMs);
+};
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 function appendAdoRequestLog(queryInput: string): void {
   state.adoSeq += 1;
   state.adoEntries.push({
@@ -225,6 +238,12 @@ window.__phase6Mount = () => {
       submit: async (request) => {
         state.callLog.push({ queryInput: request.queryInput });
         appendAdoRequestLog(request.queryInput);
+
+        const delayMs = state.submitDelayMs;
+        state.submitDelayMs = 0;
+        if (delayMs > 0) {
+          await wait(delayMs);
+        }
 
         const next = state.queue.shift() ?? state.latest;
         state.latest = next;

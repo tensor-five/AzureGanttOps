@@ -54,7 +54,6 @@ import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
 import {
   buildSessionExpiredRefreshBlocker,
-  resolvePersistedRefreshQueryInput,
   runRetryRefreshFlow,
   type RunRequest
 } from "./ui-client-refresh-flow.js";
@@ -171,12 +170,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
       : (restoredState?.activeTab ?? "query");
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
-  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences = getCachedUserPreferences();
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = React.useState(!hasInitialQuery);
+  const [controlsOpen, setControlsOpen] = React.useState(false);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
   const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(restoredState?.lastRunRequest ?? null);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
@@ -427,7 +424,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       if (result.kind === "blocked_no_query") {
         setActiveTab("query");
-        setControlsOpen(true);
         setBlockerMessage(result.blocker);
         return;
       }
@@ -445,14 +441,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
-          setControlsOpen(true);
           setBlockerMessage(null);
         } else {
           setMappingFixResponse(null);
           setActiveTab(result.activeTab);
-          if (result.activeTab === "query") {
-            setControlsOpen(true);
-          }
           setBlockerMessage(
             result.response.preflightStatus === "SESSION_EXPIRED"
               ? buildSessionExpiredRefreshBlocker()

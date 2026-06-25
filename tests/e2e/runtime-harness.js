@@ -32438,10 +32438,39 @@ function useChildWorkItemTypeMenu(input) {
   };
 }
 
+// dist/src/features/gantt-view/viewport-constrained-menu.js
+var CONTEXT_MENU_VIEWPORT_INSET_PX = 8;
+var DEFAULT_CONTEXT_MENU_WIDTH_PX = 260;
+var DEFAULT_CONTEXT_MENU_HEIGHT_PX = 320;
+function resolveViewportConstrainedMenuPlacement(input) {
+  const viewportInsetPx = input.viewportInsetPx ?? CONTEXT_MENU_VIEWPORT_INSET_PX;
+  const availableWidthPx = Math.max(0, input.viewportWidthPx - viewportInsetPx * 2);
+  const availableHeightPx = getViewportAvailableMenuHeightPx(input.viewportHeightPx, viewportInsetPx);
+  const menuWidthPx = Math.min(Math.max(0, input.menuWidthPx), availableWidthPx);
+  const menuHeightPx = Math.min(Math.max(0, input.menuHeightPx), availableHeightPx);
+  const maxLeftPx = Math.max(viewportInsetPx, input.viewportWidthPx - menuWidthPx - viewportInsetPx);
+  const maxTopPx = Math.max(viewportInsetPx, input.viewportHeightPx - menuHeightPx - viewportInsetPx);
+  return {
+    leftPx: clamp4(input.requestedLeftPx, viewportInsetPx, maxLeftPx),
+    topPx: clamp4(input.requestedTopPx, viewportInsetPx, maxTopPx),
+    maxHeightPx: availableHeightPx
+  };
+}
+function getViewportAvailableMenuHeightPx(viewportHeightPx, viewportInsetPx = CONTEXT_MENU_VIEWPORT_INSET_PX) {
+  return Math.max(viewportInsetPx, viewportHeightPx - viewportInsetPx * 2);
+}
+function clamp4(value, min, max) {
+  return Math.min(Math.max(min, value), max);
+}
+
 // dist/src/features/gantt-view/timeline-work-item-context-menu.js
 function TimelineWorkItemContextMenu(props) {
   const firstActionRef = import_react24.default.useRef(null);
+  const rootMenuItemRefs = import_react24.default.useRef([]);
+  const childMenuButtonRef = import_react24.default.useRef(null);
   const childTypeOptionRefs = import_react24.default.useRef([]);
+  const statusMenuButtonRef = import_react24.default.useRef(null);
+  const statusOptionRefs = import_react24.default.useRef([]);
   const [statusMenuOpen, setStatusMenuOpen] = import_react24.default.useState(false);
   const [statusLoadState, setStatusLoadState] = import_react24.default.useState({
     status: "idle",
@@ -32450,8 +32479,10 @@ function TimelineWorkItemContextMenu(props) {
   });
   const [actionError, setActionError] = import_react24.default.useState(null);
   const [busyAction, setBusyAction] = import_react24.default.useState(null);
+  const [constrainedMenuStyle, setConstrainedMenuStyle] = import_react24.default.useState(null);
   const menuState = props.menuState;
   const workItemId = menuState?.item.workItemId ?? null;
+  const menuPositionKey = menuState ? `${menuState.item.workItemId}:${menuState.position.x}:${menuState.position.y}` : null;
   const currentState = menuState?.item.state ?? "";
   const azureUrl = menuState ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId) : null;
   const childTypeMenu = useChildWorkItemTypeMenu({
@@ -32459,6 +32490,7 @@ function TimelineWorkItemContextMenu(props) {
     parentWorkItemType: menuState?.item.workItemType,
     onFetchWorkItemTypes: props.onFetchWorkItemTypes
   });
+  const stateOptions = props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded" ? normalizeWorkItemStateOptions(statusLoadState.options) : [];
   import_react24.default.useEffect(() => {
     setStatusMenuOpen(false);
     setStatusLoadState({
@@ -32469,6 +32501,42 @@ function TimelineWorkItemContextMenu(props) {
     setActionError(null);
     setBusyAction(null);
   }, [workItemId]);
+  import_react24.default.useLayoutEffect(() => {
+    if (!menuState || !menuPositionKey) {
+      setConstrainedMenuStyle(null);
+      return;
+    }
+    const menuElement = props.menuRef.current;
+    if (!menuElement || typeof window === "undefined") {
+      return;
+    }
+    const bounds = menuElement.getBoundingClientRect();
+    const nextPlacement = resolveViewportConstrainedMenuPlacement({
+      requestedLeftPx: menuState.position.x,
+      requestedTopPx: menuState.position.y,
+      menuWidthPx: bounds.width,
+      menuHeightPx: bounds.height,
+      viewportWidthPx: window.innerWidth,
+      viewportHeightPx: window.innerHeight
+    });
+    const nextStyle = {
+      key: menuPositionKey,
+      ...nextPlacement
+    };
+    setConstrainedMenuStyle((current) => current?.key === nextStyle.key && current.leftPx === nextStyle.leftPx && current.topPx === nextStyle.topPx && current.maxHeightPx === nextStyle.maxHeightPx ? current : nextStyle);
+  }, [
+    actionError,
+    busyAction,
+    childTypeMenu.isOpen,
+    childTypeMenu.loadState.status,
+    childTypeMenu.options.length,
+    menuPositionKey,
+    menuState,
+    props.menuRef,
+    statusLoadState.options.length,
+    statusLoadState.status,
+    statusMenuOpen
+  ]);
   import_react24.default.useEffect(() => {
     if (!menuState) {
       return;
@@ -32536,10 +32604,23 @@ function TimelineWorkItemContextMenu(props) {
       window.setTimeout(focusActiveChildType, 0);
     }
   }, [childTypeMenu.activeIndex, childTypeMenu.isOpen, childTypeMenu.loadState.status]);
+  import_react24.default.useEffect(() => {
+    if (!statusMenuOpen || statusLoadState.status !== "loaded" || stateOptions.length === 0) {
+      return;
+    }
+    const currentIndex = stateOptions.findIndex((option) => option.name.trim().toLowerCase() === currentState.trim().toLowerCase());
+    const focusStatusOption2 = () => {
+      statusOptionRefs.current[currentIndex >= 0 ? currentIndex : 0]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusStatusOption2);
+    } else {
+      window.setTimeout(focusStatusOption2, 0);
+    }
+  }, [currentState, stateOptions.length, statusLoadState.status, statusMenuOpen]);
   if (!menuState) {
     return null;
   }
-  const stateOptions = props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded" ? normalizeWorkItemStateOptions(statusLoadState.options) : [];
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
   const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
@@ -32628,11 +32709,113 @@ function TimelineWorkItemContextMenu(props) {
       setBusyAction(null);
     }
   };
+  const setRootMenuItemRef = (index, element) => {
+    rootMenuItemRefs.current[index] = element;
+  };
+  const focusRootMenuItem = (index) => {
+    const item = rootMenuItemRefs.current[index];
+    if (item && !item.disabled) {
+      item.focus();
+    }
+  };
+  const focusRootMenuItemByDelta = (currentIndex, delta) => {
+    const focusableIndexes = rootMenuItemRefs.current.map((element, index) => ({ element, index })).filter((entry) => Boolean(entry.element && !entry.element.disabled)).map((entry) => entry.index);
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusRootMenuItem(focusableIndexes[nextPosition] ?? focusableIndexes[0]);
+  };
+  const focusFirstRootMenuItem = () => {
+    const firstFocusableIndex = rootMenuItemRefs.current.findIndex((element) => element && !element.disabled);
+    if (firstFocusableIndex >= 0) {
+      focusRootMenuItem(firstFocusableIndex);
+    }
+  };
+  const focusLastRootMenuItem = () => {
+    for (let index = rootMenuItemRefs.current.length - 1; index >= 0; index -= 1) {
+      const item = rootMenuItemRefs.current[index];
+      if (item && !item.disabled) {
+        item.focus();
+        return;
+      }
+    }
+  };
+  const handleRootMenuItemKeyDown = (event, index, input) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusRootMenuItemByDelta(index, 1);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusRootMenuItemByDelta(index, -1);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusFirstRootMenuItem();
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      focusLastRootMenuItem();
+      return;
+    }
+    if (event.key === "ArrowRight" && input?.onArrowRight) {
+      event.preventDefault();
+      input.onArrowRight();
+      return;
+    }
+    if (event.key === "ArrowLeft" && input?.onArrowLeft) {
+      event.preventDefault();
+      input.onArrowLeft();
+    }
+  };
+  const closeChildTypeMenuAndFocusButton = () => {
+    childTypeMenu.closeMenu();
+    childMenuButtonRef.current?.focus();
+  };
+  const closeStatusMenuAndFocusButton = () => {
+    setStatusMenuOpen(false);
+    statusMenuButtonRef.current?.focus();
+  };
+  const focusStatusOption = (index) => {
+    const option = statusOptionRefs.current[index];
+    if (option && !option.disabled) {
+      option.focus();
+    }
+  };
+  const focusStatusOptionByDelta = (currentIndex, delta) => {
+    const focusableIndexes = statusOptionRefs.current.map((element, index) => ({ element, index })).filter((entry) => Boolean(entry.element && !entry.element.disabled)).map((entry) => entry.index);
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusStatusOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]);
+  };
   const handleChildMenuButtonKeyDown = (event) => {
-    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       childTypeMenu.openMenu();
+      return;
     }
+    handleRootMenuItemKeyDown(event, 1, {
+      onArrowRight: childTypeMenu.openMenu,
+      onArrowLeft: closeChildTypeMenuAndFocusButton
+    });
+  };
+  const handleStatusMenuButtonKeyDown = (event) => {
+    handleRootMenuItemKeyDown(event, 2, {
+      onArrowRight: () => {
+        setStatusMenuOpen(true);
+      },
+      onArrowLeft: closeStatusMenuAndFocusButton
+    });
   };
   const handleChildTypeOptionKeyDown = (event, index, option) => {
     if (event.key === "ArrowDown") {
@@ -32662,13 +32845,49 @@ function TimelineWorkItemContextMenu(props) {
     }
     if (event.key === "Escape") {
       event.preventDefault();
-      childTypeMenu.closeMenu();
+      closeChildTypeMenuAndFocusButton();
       return;
     }
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      childTypeMenu.closeMenu();
+      closeChildTypeMenuAndFocusButton();
     }
+  };
+  const handleStatusOptionKeyDown = (event, index, option) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusStatusOptionByDelta(index, 1);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusStatusOptionByDelta(index, -1);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusStatusOption(0);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      focusStatusOption(stateOptions.length - 1);
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performStateUpdate(option);
+      return;
+    }
+    if (event.key === "Escape" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeStatusMenuAndFocusButton();
+    }
+  };
+  const renderedMenuStyle = menuState && constrainedMenuStyle?.key === menuPositionKey ? constrainedMenuStyle : {
+    leftPx: menuState.position.x,
+    topPx: menuState.position.y,
+    maxHeightPx: getViewportMaxMenuHeightPx()
   };
   return (0, import_react_dom3.createPortal)(import_react24.default.createElement("div", {
     ref: props.menuRef,
@@ -32677,22 +32896,33 @@ function TimelineWorkItemContextMenu(props) {
     "aria-label": `Work item #${menuState.item.workItemId} context menu`,
     style: {
       position: "fixed",
-      left: `${menuState.position.x}px`,
-      top: `${menuState.position.y}px`
+      left: `${renderedMenuStyle.leftPx}px`,
+      top: `${renderedMenuStyle.topPx}px`,
+      maxHeight: `${renderedMenuStyle.maxHeightPx}px`
     },
     onContextMenu: (event) => {
       event.preventDefault();
     }
   }, import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-title" }, import_react24.default.createElement("span", null, `#${menuState.item.workItemId}`), import_react24.default.createElement("strong", null, menuState.item.title)), import_react24.default.createElement("button", {
-    ref: firstActionRef,
+    ref: (element) => {
+      firstActionRef.current = element;
+      setRootMenuItemRef(0, element);
+    },
     type: "button",
     role: "menuitem",
     className: "timeline-work-item-context-menu-action",
     disabled: duplicateDisabled,
+    onKeyDown: (event) => {
+      handleRootMenuItemKeyDown(event, 0);
+    },
     onClick: () => {
       void performDuplicate();
     }
   }, "Duplizieren"), canCreateChild ? import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react24.default.createElement("button", {
+    ref: (element) => {
+      childMenuButtonRef.current = element;
+      setRootMenuItemRef(1, element);
+    },
     type: "button",
     role: "menuitem",
     className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
@@ -32729,6 +32959,10 @@ function TimelineWorkItemContextMenu(props) {
       void performCreateChild(option.name);
     }
   }, option.name))) : null) : null, import_react24.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react24.default.createElement("button", {
+    ref: (element) => {
+      statusMenuButtonRef.current = element;
+      setRootMenuItemRef(2, element);
+    },
     type: "button",
     role: "menuitem",
     className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
@@ -32737,17 +32971,24 @@ function TimelineWorkItemContextMenu(props) {
     disabled: statusControlsDisabled,
     onClick: () => {
       setStatusMenuOpen((current) => !current);
-    }
+    },
+    onKeyDown: handleStatusMenuButtonKeyDown
   }, "Status \xE4ndern"), statusMenuOpen ? import_react24.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
     "aria-label": "Status \xE4ndern"
-  }, statusLoadState.status === "loading" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Status werden geladen...") : null, statusLoadState.status === "error" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Statusoptionen verf\xFCgbar.") : null, ...stateOptions.map((option) => import_react24.default.createElement("button", {
+  }, statusLoadState.status === "loading" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Status werden geladen...") : null, statusLoadState.status === "error" ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Statusoptionen verf\xFCgbar.") : null, ...stateOptions.map((option, index) => import_react24.default.createElement("button", {
     key: option.name,
+    ref: (element) => {
+      statusOptionRefs.current[index] = element;
+    },
     type: "button",
     role: "menuitem",
     className: option.name.trim().toLowerCase() === currentState.trim().toLowerCase() ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current" : "timeline-work-item-context-menu-action",
     disabled: busyAction !== null || !props.onUpdateWorkItemState,
+    onKeyDown: (event) => {
+      handleStatusOptionKeyDown(event, index, option);
+    },
     onClick: () => {
       void performStateUpdate(option);
     }
@@ -32756,16 +32997,28 @@ function TimelineWorkItemContextMenu(props) {
     style: option.color ? { backgroundColor: normalizeStateColor(option.color) } : void 0,
     "aria-hidden": "true"
   }), option.name))) : null), import_react24.default.createElement("button", {
+    ref: (element) => {
+      setRootMenuItemRef(3, element);
+    },
     type: "button",
     role: "menuitem",
     className: "timeline-work-item-context-menu-action",
     disabled: linkControlsDisabled,
+    onKeyDown: (event) => {
+      handleRootMenuItemKeyDown(event, 3);
+    },
     onClick: openInAzureDevOps
   }, "In Azure DevOps \xF6ffnen"), import_react24.default.createElement("button", {
+    ref: (element) => {
+      setRootMenuItemRef(4, element);
+    },
     type: "button",
     role: "menuitem",
     className: "timeline-work-item-context-menu-action",
     disabled: linkControlsDisabled,
+    onKeyDown: (event) => {
+      handleRootMenuItemKeyDown(event, 4);
+    },
     onClick: () => {
       void copyLink();
     }
@@ -32802,12 +33055,15 @@ function normalizeStateColor(color) {
   const trimmed = color.trim();
   return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
 }
+function getViewportMaxMenuHeightPx() {
+  if (typeof window === "undefined") {
+    return 320;
+  }
+  return getViewportAvailableMenuHeightPx(window.innerHeight);
+}
 
 // dist/src/features/gantt-view/use-work-item-context-menu.js
 var import_react25 = __toESM(require_react(), 1);
-var MENU_WIDTH_PX = 260;
-var MENU_HEIGHT_PX = 320;
-var VIEWPORT_INSET_PX = 8;
 function useWorkItemContextMenu() {
   const [menuState, setMenuState] = import_react25.default.useState(null);
   const menuRef = import_react25.default.useRef(null);
@@ -32873,12 +33129,168 @@ function resolveMenuPosition(x, y) {
   if (typeof window === "undefined") {
     return { x, y };
   }
-  const maxX = Math.max(VIEWPORT_INSET_PX, window.innerWidth - MENU_WIDTH_PX - VIEWPORT_INSET_PX);
-  const maxY = Math.max(VIEWPORT_INSET_PX, window.innerHeight - MENU_HEIGHT_PX - VIEWPORT_INSET_PX);
+  const placement = resolveViewportConstrainedMenuPlacement({
+    requestedLeftPx: x,
+    requestedTopPx: y,
+    menuWidthPx: DEFAULT_CONTEXT_MENU_WIDTH_PX,
+    menuHeightPx: DEFAULT_CONTEXT_MENU_HEIGHT_PX,
+    viewportWidthPx: window.innerWidth,
+    viewportHeightPx: window.innerHeight
+  });
   return {
-    x: Math.min(Math.max(VIEWPORT_INSET_PX, x), maxX),
-    y: Math.min(Math.max(VIEWPORT_INSET_PX, y), maxY)
+    x: placement.leftPx,
+    y: placement.topPx
   };
+}
+
+// dist/src/features/gantt-view/timeline-schedule-dates.js
+var DATE_ONLY_PATTERN2 = /^\d{4}-\d{2}-\d{2}$/;
+var TARGET_DATE_LOCAL_WRITE_HOUR = 17;
+function toTimelineStartDateWriteIso(day) {
+  return toUtcTimelineDay(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate()).toISOString();
+}
+function toTimelineTargetDateWriteIso(day) {
+  return new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), TARGET_DATE_LOCAL_WRITE_HOUR, 0, 0, 0).toISOString();
+}
+function toTimelineTargetDateDisplayValue(day) {
+  return toDateOnly(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate());
+}
+function parseTimelineStartDate(value) {
+  const parsed = parseScheduleDate(value);
+  if (!parsed) {
+    return null;
+  }
+  return toUtcTimelineDay(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+}
+function parseTimelineTargetDate(value) {
+  const text2 = normalizeScheduleDateText(value);
+  if (!text2) {
+    return null;
+  }
+  const parsed = parseScheduleDate(text2);
+  if (!parsed) {
+    return null;
+  }
+  if (DATE_ONLY_PATTERN2.test(text2)) {
+    return toUtcTimelineDay(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+  }
+  if (isUtcMidnight(parsed)) {
+    return toUtcTimelineDay(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+  }
+  return toUtcTimelineDay(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+}
+function parseScheduleDate(value) {
+  const text2 = normalizeScheduleDateText(value);
+  if (!text2) {
+    return null;
+  }
+  const parsed = new Date(text2);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+function normalizeScheduleDateText(value) {
+  if (!value) {
+    return null;
+  }
+  const text2 = value.trim();
+  return text2.length > 0 ? text2 : null;
+}
+function toUtcTimelineDay(year, month, day) {
+  return new Date(Date.UTC(year, month, day));
+}
+function isUtcMidnight(value) {
+  return value.getUTCHours() === 0 && value.getUTCMinutes() === 0 && value.getUTCSeconds() === 0 && value.getUTCMilliseconds() === 0;
+}
+function toDateOnly(year, month, day) {
+  return `${year}-${padDatePart2(month + 1)}-${padDatePart2(day)}`;
+}
+function padDatePart2(value) {
+  return String(value).padStart(2, "0");
+}
+
+// dist/src/features/gantt-view/timeline-schedule-overrides.js
+var DEFAULT_UNSCHEDULED_DURATION_DAYS2 = 14;
+function resolveDraggedScheduleOverride(drag, next) {
+  return {
+    display: resolveDraggedScheduleDisplay(drag, next),
+    write: resolveDraggedScheduleWrite(drag, next)
+  };
+}
+function createExactScheduleOverride(schedule) {
+  return {
+    display: schedule,
+    write: schedule
+  };
+}
+function resolveUnscheduledDropRange(startDate, fixedEndDate) {
+  let normalizedStart = normalizeUtcDate(startDate);
+  const normalizedEnd = fixedEndDate ? normalizeUtcDate(fixedEndDate) : addUtcDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS2 - 1);
+  if (normalizedStart.getTime() > normalizedEnd.getTime()) {
+    normalizedStart = normalizedEnd;
+  }
+  return {
+    startDate: normalizedStart,
+    endDate: normalizedEnd
+  };
+}
+function resolveUnscheduledDropSchedule(input) {
+  const hasFixedEndDate = input.fixedEndDateIso !== null && input.fixedEndTimelineDate !== null;
+  const range = resolveUnscheduledDropRange(input.startDate, hasFixedEndDate ? input.fixedEndTimelineDate : null);
+  const startDate = toTimelineStartDateWriteIso(range.startDate);
+  const endDate = hasFixedEndDate ? input.fixedEndDateIso : toTimelineTargetDateWriteIso(range.endDate);
+  const displayEndDate = hasFixedEndDate ? input.fixedEndDateIso : toTimelineTargetDateDisplayValue(range.endDate);
+  return {
+    range,
+    display: {
+      startDate,
+      endDate: displayEndDate
+    },
+    write: {
+      startDate,
+      endDate
+    }
+  };
+}
+function resolveDraggedScheduleDisplay(drag, next) {
+  if (drag.mode === "move") {
+    return {
+      startDate: toTimelineStartDateWriteIso(next.startDate),
+      endDate: toTimelineTargetDateDisplayValue(next.endDate)
+    };
+  }
+  if (drag.mode === "resize-end") {
+    return {
+      startDate: drag.sourceStartDateIso ?? toTimelineStartDateWriteIso(next.startDate),
+      endDate: toTimelineTargetDateDisplayValue(next.endDate)
+    };
+  }
+  return {
+    startDate: toTimelineStartDateWriteIso(next.startDate),
+    endDate: drag.sourceEndDateIso ?? toTimelineTargetDateDisplayValue(next.endDate)
+  };
+}
+function resolveDraggedScheduleWrite(drag, next) {
+  if (drag.mode === "move") {
+    return {
+      startDate: toTimelineStartDateWriteIso(next.startDate),
+      endDate: toTimelineTargetDateWriteIso(next.endDate)
+    };
+  }
+  if (drag.mode === "resize-end") {
+    return {
+      startDate: drag.sourceStartDateIso ?? toTimelineStartDateWriteIso(next.startDate),
+      endDate: toTimelineTargetDateWriteIso(next.endDate)
+    };
+  }
+  return {
+    startDate: toTimelineStartDateWriteIso(next.startDate),
+    endDate: drag.sourceEndDateIso ?? toTimelineTargetDateWriteIso(next.endDate)
+  };
+}
+function normalizeUtcDate(value) {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+}
+function addUtcDays(value, days) {
+  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate() + days));
 }
 
 // dist/src/features/gantt-view/timeline-filter-url.js
@@ -33290,7 +33702,7 @@ function useTimelineViewport(initialViewportPreference) {
     if (!initialViewportPreference) {
       return DAY_WIDTH_WEEK_PX;
     }
-    return clamp4(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+    return clamp5(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
   });
   const [activePanDrag, setActivePanDrag] = import_react26.default.useState(null);
   const [spacePanPressed, setSpacePanPressed] = import_react26.default.useState(false);
@@ -33471,7 +33883,7 @@ function TimelinePane(props) {
     detailsPanelContentMinWidthPx: DETAILS_PANEL_CONTENT_MIN_WIDTH_PX,
     timelineSidebarMinWidthPx: TIMELINE_SIDEBAR_MIN_WIDTH_PX,
     timelineSidebarCollapsedWidthPx: TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX,
-    clamp: clamp4,
+    clamp: clamp5,
     resolveTimelineDetailsMaxWidthPx,
     resolveTimelineSidebarMaxWidthPx,
     persistDetailsWidthPx: (widthPx) => {
@@ -33485,7 +33897,7 @@ function TimelinePane(props) {
   import_react26.default.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
       pendingViewportRestoreRef.current = viewport;
-      setDayWidthPx(clamp4(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
+      setDayWidthPx(clamp5(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
       initialViewportAppliedRef.current = false;
     }, activeQueryId);
   }, [activeQueryId]);
@@ -33522,7 +33934,7 @@ function TimelinePane(props) {
   import_react26.default.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
       setSidebarWidthPx((current) => {
-        const next = clamp4(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+        const next = clamp5(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
         return Math.abs(current - next) < 1 ? current : next;
       });
     }, activeQueryId);
@@ -33531,7 +33943,7 @@ function TimelinePane(props) {
     hydrateTimelineDetailsWidthPreference((widthPx) => {
       setDetailsWidthPx((current) => {
         const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
-        const next = clamp4(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
+        const next = clamp5(widthPx, DETAILS_PANEL_MIN_WIDTH_PX, maxWidth);
         return Math.abs(current - next) < 1 ? current : next;
       });
     }, activeQueryId);
@@ -33622,7 +34034,7 @@ function TimelinePane(props) {
   const visibleTimeline = import_react26.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
   const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
   const colorByWorkItemId = import_react26.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
-  const chartModel = import_react26.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds), [
+  const chartModel = import_react26.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds, editedBarSchedulesByWorkItemId), [
     visibleTimeline,
     dayWidthPx,
     zoomLevel,
@@ -33630,7 +34042,8 @@ function TimelinePane(props) {
     chartViewportWidthPx,
     timelineLabelFields,
     includeUnscheduledDropLane,
-    treeState.collapsedIds
+    treeState.collapsedIds,
+    editedBarSchedulesByWorkItemId
   ]);
   const filteredTimelineLabelFieldOptions = import_react26.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
   const filteredTimelineSidebarFieldOptions = import_react26.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
@@ -33717,8 +34130,8 @@ function TimelinePane(props) {
       const maxScrollTop = Math.max(0, scrollElement.scrollHeight - clientHeight);
       const restoredViewport = pendingViewportRestoreRef.current;
       if (restoredViewport) {
-        const nextScrollLeft2 = clamp4(restoredViewport.scrollLeftPx, 0, maxScrollLeft);
-        const nextScrollTop2 = clamp4(restoredViewport.scrollTopPx, 0, maxScrollTop);
+        const nextScrollLeft2 = clamp5(restoredViewport.scrollLeftPx, 0, maxScrollLeft);
+        const nextScrollTop2 = clamp5(restoredViewport.scrollTopPx, 0, maxScrollTop);
         scrollElement.scrollLeft = nextScrollLeft2;
         scrollElement.scrollTop = nextScrollTop2;
         pendingViewportRestoreRef.current = null;
@@ -33727,8 +34140,8 @@ function TimelinePane(props) {
       }
       const todayTargetX = clientWidth * TODAY_INITIAL_VIEWPORT_RATIO;
       const absoluteTodayX = chartModel.todayX === null ? 0 : effectiveSidebarWidthPx + CHART_LEFT_GUTTER + chartModel.todayX;
-      const nextScrollLeft = clamp4(absoluteTodayX - todayTargetX, 0, maxScrollLeft);
-      const nextScrollTop = clamp4(CHART_TOP_PADDING, 0, maxScrollTop);
+      const nextScrollLeft = clamp5(absoluteTodayX - todayTargetX, 0, maxScrollLeft);
+      const nextScrollTop = clamp5(CHART_TOP_PADDING, 0, maxScrollTop);
       if (typeof scrollElement.scrollTo === "function") {
         scrollElement.scrollTo({ left: nextScrollLeft, top: nextScrollTop, behavior: "auto" });
       } else {
@@ -33810,7 +34223,7 @@ function TimelinePane(props) {
     const rangeStartOffset = dayDiff(chartModel.domainStart, rangeStartWithPadding);
     const desiredStartX = layoutOffsets.chartStartX + rangeStartOffset * dayWidth;
     const viewportTargetX = layoutOffsets.obscuredLeftPx + FIT_TO_VIEW_INSET_PX;
-    scrollElement.scrollLeft = clamp4(desiredStartX - viewportTargetX, 0, maxScrollLeft);
+    scrollElement.scrollLeft = clamp5(desiredStartX - viewportTargetX, 0, maxScrollLeft);
     persistTimelineViewportSoon();
   }, [chartModel.domainStart, persistTimelineViewportSoon, resolveFitLayoutLeftOffsets]);
   import_react26.default.useEffect(() => {
@@ -33918,7 +34331,7 @@ function TimelinePane(props) {
     const deltaPixels = normalizeWheelDelta(event);
     const zoomMultiplier = Math.exp(-deltaPixels * ZOOM_WHEEL_SENSITIVITY);
     const currentDayWidth = pendingWheelDayWidthRef.current ?? liveDayWidthRef.current;
-    const nextDayWidth = quantizeDayWidth(clamp4(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
+    const nextDayWidth = quantizeDayWidth(clamp5(currentDayWidth * zoomMultiplier, DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
     zoomAnchorRef.current = { dayOffset, pointerOffsetX };
     pendingWheelDayWidthRef.current = nextDayWidth;
     if (mainLane) {
@@ -33985,7 +34398,7 @@ function TimelinePane(props) {
       return;
     }
     const spanDays = Math.max(1, dayDiffInclusive(visibleTimelineRange.start, visibleTimelineRange.end));
-    const fittedDayWidthPx = clamp4(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
+    const fittedDayWidthPx = clamp5(quantizeDayWidth(availableWidth / spanDays), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
     pendingFitRangeRef.current = visibleTimelineRange;
     if (Math.abs(fittedDayWidthPx - chartModel.dayWidthPx) < 0.01) {
       applyFitRangeToViewport(visibleTimelineRange, fittedDayWidthPx);
@@ -34162,13 +34575,10 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
     };
   }, [activeDependencyDrag, geometryByWorkItemId]);
-  const updateEditedSchedule = import_react26.default.useCallback((workItemId, startDate, endDate) => {
+  const updateEditedScheduleOverride = import_react26.default.useCallback((workItemId, schedule) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
-      [workItemId]: {
-        startDate: toIsoDateUtc(startDate),
-        endDate: toIsoDateUtc(endDate)
-      }
+      [workItemId]: schedule
     }));
   }, []);
   const beginBarDrag = import_react26.default.useCallback((input) => {
@@ -34193,6 +34603,8 @@ function TimelinePane(props) {
       originScrollLeft: chartScrollRef.current?.scrollLeft ?? 0,
       startDate: input.bar.start,
       endDate: input.bar.end,
+      sourceStartDateIso: input.bar.sourceStartDateIso,
+      sourceEndDateIso: input.bar.sourceEndDateIso,
       lastDayDelta: 0
     });
   }, [canEditSchedule, chartScrollRef, selectWorkItem]);
@@ -34229,8 +34641,8 @@ function TimelinePane(props) {
     }
     const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
     setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
-    updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
-  }, [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]);
+    updateEditedScheduleOverride(active.workItemId, resolveDraggedScheduleOverride(active, next));
+  }, [chartModel.dayWidthPx, chartScrollRef, updateEditedScheduleOverride]);
   const handleAutoScroll = import_react26.default.useCallback(() => {
     const active = activeScheduleDrag;
     if (!active) {
@@ -34274,15 +34686,15 @@ function TimelinePane(props) {
     const previousBar = props.timeline?.bars.find((entry) => entry.workItemId === drag.workItemId);
     const previousStart = previousBar?.schedule.startDate;
     const previousEnd = previousBar?.schedule.endDate;
-    const changed = previousStart !== override.startDate || previousEnd !== override.endDate;
+    const changed = previousStart !== override.write.startDate || previousEnd !== override.write.endDate;
     if (!changed) {
       return;
     }
     try {
       await props.onUpdateWorkItemSchedule({
         targetWorkItemId: drag.workItemId,
-        startDate: override.startDate,
-        endDate: override.endDate
+        startDate: override.write.startDate,
+        endDate: override.write.endDate
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -34290,7 +34702,10 @@ function TimelinePane(props) {
       setEditedBarSchedulesByWorkItemId((current) => {
         const next = { ...current };
         if (previousStart && previousEnd) {
-          next[drag.workItemId] = { startDate: previousStart, endDate: previousEnd };
+          next[drag.workItemId] = createExactScheduleOverride({
+            startDate: previousStart,
+            endDate: previousEnd
+          });
         } else {
           delete next[drag.workItemId];
         }
@@ -34331,27 +34746,25 @@ function TimelinePane(props) {
     }
   }, [props]);
   const scheduleUnscheduledFromDrop = import_react26.default.useCallback(async (input) => {
-    const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
-    const startDate = toIsoDateUtc(range.startDate);
-    const endDate = toIsoDateUtc(range.endDate);
+    const schedule = resolveUnscheduledDropSchedule(input);
     await persistWorkItemSchedule({
       targetWorkItemId: input.workItemId,
-      startDate,
-      endDate
+      startDate: schedule.write.startDate,
+      endDate: schedule.write.endDate
     });
     setAdoptedSchedulesByWorkItemId((current) => ({
       ...current,
-      [input.workItemId]: { startDate, endDate }
+      [input.workItemId]: schedule.display
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react26.default.useCallback((event, workItemId, fixedEndDate) => {
+  const startUnscheduledDrag = import_react26.default.useCallback((event, workItemId, fixedEndDateIso, fixedEndTimelineDate) => {
     if (dependencyMode) {
       return;
     }
     event.dataTransfer.setData("text/plain", String(workItemId));
     event.dataTransfer.effectAllowed = "move";
-    setActiveUnschedulableDrag({ workItemId, fixedEndDate });
+    setActiveUnschedulableDrag({ workItemId, fixedEndDateIso, fixedEndTimelineDate });
   }, [dependencyMode]);
   const clearUnscheduledDrag = import_react26.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
@@ -34364,7 +34777,7 @@ function TimelinePane(props) {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
-    setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
+    setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndTimelineDate));
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
   const handleChartDrop = import_react26.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
@@ -34379,7 +34792,8 @@ function TimelinePane(props) {
     void scheduleUnscheduledFromDrop({
       workItemId,
       startDate: droppedDate,
-      fixedEndDate: activeUnschedulableDrag.fixedEndDate
+      fixedEndDateIso: activeUnschedulableDrag.fixedEndDateIso,
+      fixedEndTimelineDate: activeUnschedulableDrag.fixedEndTimelineDate
     }).catch((error) => {
       const message = error instanceof Error ? error.message : "Unknown error";
       setAdoptScheduleError(message);
@@ -35304,7 +35718,8 @@ function TimelinePane(props) {
       "aria-pressed": selectedWorkItemId === item.workItemId,
       draggable: !dependencyMode && editMode,
       onDragStart: (event) => {
-        startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
+        const fixedEndSchedule = resolveUnschedulableFixedEndSchedule(item);
+        startUnscheduledDrag(event, item.workItemId, fixedEndSchedule.fixedEndDateIso, fixedEndSchedule.fixedEndTimelineDate);
       },
       onDragEnd: () => {
         clearUnscheduledDrag();
@@ -35423,7 +35838,6 @@ var TIMELINE_SIDEBAR_MAX_WIDTH_PX = 640;
 var TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX = 56;
 var MIN_BAR_WIDTH_PX = 10;
 var HANDLE_WIDTH = 8;
-var DEFAULT_UNSCHEDULED_DURATION_DAYS2 = 14;
 var BAR_LABEL_HORIZONTAL_PADDING = 8;
 var APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
 var DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
@@ -35469,7 +35883,7 @@ function buildContextMenuItemFromUnschedulable(item, scheduleFieldRefs) {
     ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
   };
 }
-function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, collapsedIds) {
+function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemId, viewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, collapsedIds, editedBarSchedulesByWorkItemId = {}) {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc2 = /* @__PURE__ */ new Date();
     const normalizedTodayUtc2 = new Date(Date.UTC(todayUtc2.getUTCFullYear(), todayUtc2.getUTCMonth(), todayUtc2.getUTCDate()));
@@ -35492,8 +35906,8 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
     };
   }
   const normalizedBars = timeline.bars.map((bar) => {
-    const start = parseIso(bar.schedule.startDate);
-    const end = parseIso(bar.schedule.endDate);
+    const start = parseTimelineStartDate(bar.schedule.startDate);
+    const end = parseTimelineTargetDate(bar.schedule.endDate);
     if (!start && !end) {
       return null;
     }
@@ -35555,6 +35969,7 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
     const startOffset = dayDiff(domainStart, bar.start);
     const spanDays = Math.max(1, dayDiffInclusive(bar.start, bar.end));
     const treeMeta = timeline.treeLayout?.[bar.source.workItemId] ?? null;
+    const writeOverride = editedBarSchedulesByWorkItemId[bar.source.workItemId]?.write;
     return {
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
@@ -35566,6 +35981,8 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
       fieldValues: bar.source.details.fieldValues ?? {},
+      sourceStartDateIso: writeOverride?.startDate ?? bar.source.schedule.startDate,
+      sourceEndDateIso: writeOverride?.endDate ?? bar.source.schedule.endDate,
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
@@ -35694,8 +36111,8 @@ function resolveTimelineVisibleRange(timeline) {
     return null;
   }
   const normalizedRanges = timeline.bars.map((bar) => {
-    const start = parseIso(bar.schedule.startDate);
-    const end = parseIso(bar.schedule.endDate);
+    const start = parseTimelineStartDate(bar.schedule.startDate);
+    const end = parseTimelineTargetDate(bar.schedule.endDate);
     if (!start && !end) {
       return null;
     }
@@ -36107,7 +36524,7 @@ function isOverdueTimelineItem(endDateIso, stateCode, overdueExcludedStateCodes)
   if (!endDateIso) {
     return false;
   }
-  const endDate = parseIso(endDateIso);
+  const endDate = parseTimelineTargetDate(endDateIso);
   if (!endDate) {
     return false;
   }
@@ -36131,18 +36548,12 @@ function resolveOverdueExcludedStateCodes(stateCodes, defaults) {
 function normalizeStateCodeForComparison(stateCode) {
   return stateCode.trim().toLowerCase();
 }
-function parseIso(value) {
-  if (!value) {
-    return null;
-  }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-function normalizeUtcDate(value) {
-  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
-}
-function resolveUnschedulableFixedEndDate(item) {
-  return parseIso(item.schedule?.endDate ?? null);
+function resolveUnschedulableFixedEndSchedule(item) {
+  const fixedEndDateIso = item.schedule?.endDate ?? null;
+  return {
+    fixedEndDateIso,
+    fixedEndTimelineDate: parseTimelineTargetDate(fixedEndDateIso)
+  };
 }
 function resolveAdoptSourceSchedule(timeline, selectedWorkItemId) {
   if (!timeline || selectedWorkItemId === null) {
@@ -36167,17 +36578,6 @@ function formatAdoptDate(value) {
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
   const year = String(parsed.getFullYear()).slice(2);
   return `${day}.${month}.${year}`;
-}
-function resolveUnscheduledDropRange(startDate, fixedEndDate) {
-  let normalizedStart = normalizeUtcDate(startDate);
-  const normalizedEnd = fixedEndDate ? normalizeUtcDate(fixedEndDate) : addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS2 - 1);
-  if (normalizedStart.getTime() > normalizedEnd.getTime()) {
-    normalizedStart = normalizedEnd;
-  }
-  return {
-    startDate: normalizedStart,
-    endDate: normalizedEnd
-  };
 }
 function addDays(value, days) {
   const next = new Date(value.getTime());
@@ -36251,7 +36651,7 @@ function buildMonthAxisMarkers(domainStart, totalDays, dayWidthPx) {
   while (cursor.getTime() < domainEndExclusive.getTime()) {
     const monthStartOffset = dayDiff(domainStart, cursor);
     if (monthStartOffset <= totalDays) {
-      const markerOffsetDays = clamp4(monthStartOffset, 0, totalDays);
+      const markerOffsetDays = clamp5(monthStartOffset, 0, totalDays);
       const x = markerOffsetDays * dayWidthPx;
       if (!seenX.has(x)) {
         seenX.add(x);
@@ -36275,7 +36675,7 @@ function buildQuarterAxisMarkers(domainStart, totalDays, dayWidthPx) {
   while (cursor.getTime() < domainEndExclusive.getTime()) {
     const offset = dayDiff(domainStart, cursor);
     if (offset <= totalDays) {
-      const markerOffsetDays = clamp4(offset, 0, totalDays);
+      const markerOffsetDays = clamp5(offset, 0, totalDays);
       const x = markerOffsetDays * dayWidthPx;
       if (!seenX.has(x)) {
         seenX.add(x);
@@ -36298,7 +36698,7 @@ function buildYearAxisMarkers(domainStart, totalDays, dayWidthPx) {
   while (cursor.getTime() < domainEndExclusive.getTime()) {
     const offset = dayDiff(domainStart, cursor);
     if (offset <= totalDays) {
-      const markerOffsetDays = clamp4(offset, 0, totalDays);
+      const markerOffsetDays = clamp5(offset, 0, totalDays);
       const x = markerOffsetDays * dayWidthPx;
       if (!seenX.has(x)) {
         seenX.add(x);
@@ -36382,24 +36782,21 @@ function clientPointToSvg(clientX, clientY, svg2) {
     y: (clientY - rect.top) * verticalScale
   };
 }
-function toIsoDateUtc(value) {
-  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
-}
 function resolveTimelineDetailsMaxWidthPx(container, sidebarWidthPx) {
   if (!container || container.clientWidth <= 0) {
     return DETAILS_PANEL_MAX_WIDTH_PX;
   }
-  const normalizedSidebarWidth = clamp4(Math.round(sidebarWidthPx), TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+  const normalizedSidebarWidth = clamp5(Math.round(sidebarWidthPx), TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
   const available = Math.floor(container.clientWidth - normalizedSidebarWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX - DETAILS_PANEL_MIN_CHART_WIDTH_PX);
-  return clamp4(available, DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+  return clamp5(available, DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
 }
 function resolveTimelineSidebarMaxWidthPx(container, detailsWidthPx) {
   if (!container || container.clientWidth <= 0) {
     return TIMELINE_SIDEBAR_MAX_WIDTH_PX;
   }
-  const normalizedDetailsWidth = clamp4(Math.round(detailsWidthPx), DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
+  const normalizedDetailsWidth = clamp5(Math.round(detailsWidthPx), DETAILS_PANEL_MIN_WIDTH_PX, DETAILS_PANEL_MAX_WIDTH_PX);
   const available = Math.floor(container.clientWidth - normalizedDetailsWidth - DETAILS_PANEL_SPLITTER_WIDTH_PX - DETAILS_PANEL_MIN_CHART_WIDTH_PX);
-  return clamp4(available, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
+  return clamp5(available, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
 }
 function resolveTimelineVerticalLayoutMetrics(barCount, includeUnscheduledDropLane) {
   const normalizedBarCount = Math.max(0, Math.trunc(barCount));
@@ -36411,7 +36808,7 @@ function resolveTimelineVerticalLayoutMetrics(barCount, includeUnscheduledDropLa
 function resolveTimelineBarTopY(rowIndex) {
   return CHART_TOP_PADDING + rowIndex * CHART_ROW_HEIGHT + BAR_ROW_TOP_INSET_PX;
 }
-function clamp4(value, min, max) {
+function clamp5(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 function quantizeDayWidth(value) {
@@ -36705,8 +37102,8 @@ function applyEditedBarSchedules(timeline, editedBarSchedulesByWorkItemId) {
     return {
       ...bar,
       schedule: {
-        startDate: override.startDate,
-        endDate: override.endDate,
+        startDate: override.display.startDate,
+        endDate: override.display.endDate,
         missingBoundary: null
       }
     };
@@ -36777,26 +37174,29 @@ function buildWarningBannerLines(model) {
 
 // dist/src/features/diagnostics/trust-badge.js
 var import_react28 = __toESM(require_react(), 1);
+var CLOSED_TRIGGER_LABEL = "Status";
 function TrustBadge(props) {
-  const label = props.trustState === "ready" ? "Ready" : props.trustState === "partial_failure" ? "Partial failure" : "Needs attention";
-  const isHealthy = props.trustState === "ready";
-  const pillLabel = isHealthy ? "OK" : "Trust Attention";
-  const pillIcon = isHealthy ? "\u2713" : "!";
+  const label = labelForTrustState(props.trustState);
   const statusLine = `[${props.statusCode}] ${label}`;
+  const isControlled = typeof props.controlsOpen === "boolean";
+  const [internalControlsOpen, setInternalControlsOpen] = import_react28.default.useState(false);
+  const controlsOpen = props.controlsOpen ?? internalControlsOpen;
   const detailsProps = {
-    "aria-label": "global-trust-badge",
+    "aria-label": CLOSED_TRIGGER_LABEL,
     className: "trust-badge-details",
-    "data-trust-state": isHealthy ? "healthy" : "unhealthy"
+    open: controlsOpen,
+    onToggle: (event) => {
+      const nextControlsOpen = event.currentTarget.open;
+      if (!isControlled) {
+        setInternalControlsOpen(nextControlsOpen);
+      }
+      props.onControlsOpenChange?.(nextControlsOpen);
+    }
   };
-  if (typeof props.controlsOpen === "boolean") {
-    detailsProps.open = props.controlsOpen;
-  }
-  if (props.onControlsOpenChange) {
-    detailsProps.onToggle = (event) => {
-      props.onControlsOpenChange?.(event.currentTarget.open);
-    };
-  }
-  return import_react28.default.createElement("details", detailsProps, import_react28.default.createElement("summary", { className: "trust-badge-trigger" }, import_react28.default.createElement("span", { className: "trust-badge-icon", "aria-hidden": "true" }, pillIcon), import_react28.default.createElement("span", { className: "trust-badge-pill-label" }, pillLabel)), import_react28.default.createElement("div", { className: "trust-badge-panel" }, import_react28.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react28.default.createElement("dl", { className: "trust-badge-meta" }, import_react28.default.createElement("dt", null, "last-updated"), import_react28.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react28.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null));
+  return import_react28.default.createElement("details", detailsProps, import_react28.default.createElement("summary", { className: "trust-badge-trigger" }, import_react28.default.createElement("span", { className: "trust-badge-pill-label" }, CLOSED_TRIGGER_LABEL)), controlsOpen ? import_react28.default.createElement("div", { className: "trust-badge-panel" }, import_react28.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react28.default.createElement("dl", { className: "trust-badge-meta" }, import_react28.default.createElement("dt", null, "last-updated"), import_react28.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react28.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null) : null);
+}
+function labelForTrustState(trustState) {
+  return trustState === "ready" ? "Ready" : trustState === "partial_failure" ? "Partial failure" : "Needs attention";
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js
@@ -38262,11 +38662,9 @@ function UiShellApp(props) {
   const restoredState = import_react32.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
-  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences2 = getCachedUserPreferences();
   const [activeTab, setActiveTab] = import_react32.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react32.default.useState(!hasInitialQuery);
+  const [controlsOpen, setControlsOpen] = import_react32.default.useState(false);
   const [response, setResponse] = import_react32.default.useState(initialResponse);
   const [lastRunRequest, setLastRunRequest] = import_react32.default.useState(restoredState?.lastRunRequest ?? null);
   const [uiModel, setUiModel] = import_react32.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
@@ -38439,7 +38837,6 @@ function UiShellApp(props) {
       });
       if (result.kind === "blocked_no_query") {
         setActiveTab("query");
-        setControlsOpen(true);
         setBlockerMessage(result.blocker);
         return;
       }
@@ -38450,14 +38847,10 @@ function UiShellApp(props) {
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
-          setControlsOpen(true);
           setBlockerMessage(null);
         } else {
           setMappingFixResponse(null);
           setActiveTab(result.activeTab);
-          if (result.activeTab === "query") {
-            setControlsOpen(true);
-          }
           setBlockerMessage(result.response.preflightStatus === "SESSION_EXPIRED" ? buildSessionExpiredRefreshBlocker() : null);
         }
       }
@@ -39163,6 +39556,7 @@ function buildDiagnosticsModel(uiModel) {
 var state = {
   queue: [],
   latest: null,
+  submitDelayMs: 0,
   callLog: [],
   adoEntries: [],
   adoSeq: 0
@@ -39268,6 +39662,14 @@ window.__phase6Configure = (responses) => {
   state.adoEntries = [];
   state.adoSeq = 0;
 };
+window.__phase6DelayNextSubmit = (delayMs) => {
+  state.submitDelayMs = Math.max(0, delayMs);
+};
+function wait(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
 function appendAdoRequestLog(queryInput) {
   state.adoSeq += 1;
   state.adoEntries.push({
@@ -39310,6 +39712,11 @@ window.__phase6Mount = () => {
       submit: async (request) => {
         state.callLog.push({ queryInput: request.queryInput });
         appendAdoRequestLog(request.queryInput);
+        const delayMs = state.submitDelayMs;
+        state.submitDelayMs = 0;
+        if (delayMs > 0) {
+          await wait(delayMs);
+        }
         const next = state.queue.shift() ?? state.latest;
         state.latest = next;
         appendAdoResponseLog(request.queryInput);
