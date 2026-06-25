@@ -369,10 +369,11 @@ section[role="tabpanel"]:hover {
 }
 
 .trust-badge-panel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 50;
+  position: fixed;
+  box-sizing: border-box;
+  right: 12px;
+  top: 64px;
+  z-index: 120;
   width: min(430px, calc(100vw - 24px));
   display: grid;
   gap: var(--space-1);
@@ -381,7 +382,7 @@ section[role="tabpanel"]:hover {
   border-radius: var(--radius-lg);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-md);
-  max-height: calc(100vh - 110px);
+  max-height: calc(100vh - 76px);
   overflow: auto;
 }
 
@@ -427,6 +428,162 @@ section[role="tabpanel"]:hover {
   margin-top: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-border-subtle);
+}
+
+.local-config-reset-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.local-config-reset-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}
+
+.local-config-reset-copy {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.local-config-reset-guard,
+.local-config-reset-report {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  padding: 8px 10px;
+  font-size: var(--text-xs);
+}
+
+.local-config-reset-guard ul,
+.local-config-reset-report ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.local-config-reset-open,
+.local-config-reset-cancel,
+.local-config-reset-confirm {
+  font: inherit;
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.local-config-reset-open {
+  justify-self: start;
+  border: 1px solid var(--color-danger, #dc2626);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, var(--color-surface-elevated));
+  color: var(--color-danger, #dc2626);
+  font-weight: var(--font-bold);
+}
+
+.local-config-reset-open:disabled,
+.local-config-reset-cancel:disabled,
+.local-config-reset-confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.local-config-reset-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(28, 25, 23, 0.42);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.local-config-reset-dialog {
+  width: min(480px, 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.local-config-reset-dialog-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-danger, #dc2626);
+}
+
+.local-config-reset-dialog-desc,
+.local-config-reset-confirm-label {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.local-config-reset-confirm-label {
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}
+
+.local-config-reset-confirm-input {
+  min-height: 36px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  padding: 0 10px;
+  font-size: var(--text-sm);
+}
+
+.local-config-reset-error {
+  margin: 0;
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  padding: 8px 10px;
+  font-size: var(--text-xs);
+}
+
+.local-config-reset-report {
+  border-color: var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+
+.local-config-reset-report li[data-status="failed"] {
+  color: var(--color-danger, #dc2626);
+  font-weight: var(--font-bold);
+}
+
+.local-config-reset-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.local-config-reset-cancel {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.local-config-reset-confirm {
+  border: 1px solid transparent;
+  background: var(--color-danger, #dc2626);
+  color: #ffffff;
+  font-weight: var(--font-bold);
 }
 
 .gantt-primary-card {
@@ -3677,6 +3834,13 @@ input {
     width: min(420px, calc(100vw - 24px));
     max-height: calc(100vh - 86px);
   }
+
+  .trust-badge-panel {
+    right: 0;
+    top: 78px;
+    width: min(430px, 100%);
+    max-height: calc(100vh - 90px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -3715,6 +3879,13 @@ input {
     right: 10px;
     width: calc(100vw - 20px);
     max-height: calc(100vh - 74px);
+  }
+
+  .trust-badge-panel {
+    right: 0;
+    top: 86px;
+    width: 100%;
+    max-height: calc(100vh - 98px);
   }
 
   .timeline-pane-actions {
@@ -3771,6 +3942,13 @@ input {
   .trust-badge-card {
     min-width: 0;
     width: 100%;
+  }
+
+  .trust-badge-panel {
+    right: 0;
+    top: 88px;
+    width: 100%;
+    max-height: calc(100vh - 100px);
   }
 
   .ui-shell-workspace {
@@ -3848,6 +4026,11 @@ input {
   .ui-shell-workspace {
     right: 6px;
     width: calc(100vw - 12px);
+  }
+
+  .trust-badge-panel {
+    right: 0;
+    width: 100%;
   }
 
   .top-tab-button {

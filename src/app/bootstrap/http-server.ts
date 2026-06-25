@@ -9,6 +9,7 @@ import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js
 import {
   LowdbUserPreferencesAdapter
 } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
+import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
@@ -19,10 +20,16 @@ import { QueryIntakeController } from "../../features/query-switching/query-inta
 import type { WriteCommandResult } from "../../application/dto/write-boundary/write-command.dto.js";
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
 import {
+  ClearLocalUserConfigsUseCase,
+  LocalConfigResetConfirmationError
+} from "../../application/use-cases/clear-local-user-configs.use-case.js";
+import type { LocalConfigResetPort } from "../../application/ports/local-config-reset.port.js";
+import {
   parseAdoptSchedulePayload,
   parseAzCliPathPayload,
   parseChildWorkItemCreatePayload,
   parseDependencyLinkPayload,
+  parseLocalConfigResetPayload,
   parseReparentPayload,
   parseMappingProfileUpsert,
   parsePayload,
@@ -139,6 +146,7 @@ type AdoCommLogEntry = {
 type AdoCommLogStore = {
   append: (entry: Omit<AdoCommLogEntry, "seq">) => void;
   read: (afterSeq: number, limit: number) => { entries: AdoCommLogEntry[]; nextSeq: number };
+  clear: () => boolean;
 };
 type WorkItemStateOption = {
   name: string;
@@ -174,6 +182,7 @@ const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
+const LOCAL_CONFIG_RESET_ROUTE_PATH = "/phase2/local-config-reset";
 const ADO_CSRF_HEADER = "x-ado-csrf-token";
 const ADO_CSRF_MISSING_OR_INVALID = {
   code: "CSRF_INVALID",
@@ -239,6 +248,12 @@ function createAdoCommLogStore(maxEntries: number): AdoCommLogStore {
             ? ADO_COMM_NEXT_SEQ_FROM_ENTRY(nextEntries[nextEntries.length - 1])
             : ADO_COMM_EMPTY_RESULT_SEQ(afterSeq)
       };
+    },
+    clear: () => {
+      const hadEntries = entries.length > 0;
+      entries.length = 0;
+      seq = 0;
+      return hadEntries;
     }
   };
 }
@@ -469,11 +484,16 @@ function isUserPreferencesPostRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === USER_PREFERENCES_ROUTE_PATH;
 }
 
+function isLocalConfigResetRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === LOCAL_CONFIG_RESET_ROUTE_PATH;
+}
+
 function isCsrfProtectedRoute(method: string, pathname: string): boolean {
   return (
     isAzLoginRoute(method, pathname) ||
     isAzCliPathRoute(method, pathname) ||
     isUserPreferencesPostRoute(method, pathname) ||
+    isLocalConfigResetRoute(method, pathname) ||
     isAdoptScheduleRoute(method, pathname) ||
     isDependencyLinkRoute(method, pathname) ||
     isReparentRoute(method, pathname) ||
@@ -505,6 +525,7 @@ export function createHttpServer(params: {
   };
   port?: number;
   contextFilePath?: string;
+  mappingFilePath?: string;
   userPreferencesFilePath?: string;
   distRootPath?: string;
   azLoginRunner?: AzLoginRunner;
@@ -590,6 +611,8 @@ export function createHttpServer(params: {
 
   const contextFilePath =
     params.contextFilePath ?? path.join(os.homedir(), ".azure-ganttops", "ado-context.json");
+  const mappingFilePath =
+    params.mappingFilePath ?? path.join(path.dirname(contextFilePath), "mapping-settings.json");
   const userPreferencesFilePath =
     params.userPreferencesFilePath ?? path.join(path.dirname(contextFilePath), "user-preferences.json");
   const userId = resolveLocalUserId();
@@ -597,6 +620,7 @@ export function createHttpServer(params: {
   const queryFlow = createPhase1QueryFlow({
     httpClient: instrumentedHttpClient,
     contextFilePath,
+    mappingFilePath,
     authPreflightRunner: params.authPreflightRunner,
     capabilities: {
       writeEnabled: process.env.ADO_WRITE_ENABLED === "1"
@@ -604,12 +628,24 @@ export function createHttpServer(params: {
   });
 
   const settingsAdapter = new FileContextSettingsAdapter(contextFilePath);
+  const mappingSettingsAdapter = new FileMappingSettingsAdapter(mappingFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
   const controller = new QueryIntakeController(contextStore, queryFlow.runQueryIntake);
   const userPreferences = new LowdbUserPreferencesAdapter(userPreferencesFilePath, userId);
   const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
   const workItemTypeCacheById = new Map<string, Promise<string | null>>();
   const workItemTypesCacheByProject = new Map<string, Promise<WorkItemTypeOption[]>>();
+  const localConfigReset = new ClearLocalUserConfigsUseCase(
+    createLocalConfigResetPort({
+      userPreferences,
+      contextSettings: settingsAdapter,
+      mappingSettings: mappingSettingsAdapter,
+      adoCommLogStore,
+      stateOptionsCacheByType,
+      workItemTypeCacheById,
+      workItemTypesCacheByProject
+    })
+  );
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
@@ -631,6 +667,7 @@ export function createHttpServer(params: {
       workItemTypeCacheById,
       workItemTypesCacheByProject,
       userPreferences,
+      localConfigReset,
       azLoginRunner,
       azCliPathResolver,
       csrfToken
@@ -662,6 +699,61 @@ export function createHttpServer(params: {
   };
 }
 
+function createLocalConfigResetPort(params: {
+  userPreferences: LowdbUserPreferencesAdapter;
+  contextSettings: FileContextSettingsAdapter;
+  mappingSettings: FileMappingSettingsAdapter;
+  adoCommLogStore: AdoCommLogStore;
+  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
+  workItemTypeCacheById: Map<string, Promise<string | null>>;
+  workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+}): LocalConfigResetPort {
+  return {
+    listTargets: () => [
+      {
+        target: "lowdb-current-user-preferences",
+        label: "Current user lowdb preferences",
+        reset: async () => ((await params.userPreferences.deleteCurrentUserPreferences()) ? "deleted" : "skipped")
+      },
+      {
+        target: "ado-context-settings",
+        label: "Azure DevOps context settings",
+        reset: async () => ((await params.contextSettings.deleteContextSettings()) ? "deleted" : "skipped")
+      },
+      {
+        target: "mapping-settings",
+        label: "Field mapping settings",
+        reset: async () => ((await params.mappingSettings.deleteMappingSettings()) ? "deleted" : "skipped")
+      },
+      {
+        target: "ado-communication-log",
+        label: "Azure DevOps communication log",
+        reset: async () => (params.adoCommLogStore.clear() ? "deleted" : "skipped")
+      },
+      {
+        target: "work-item-type-state-runtime-maps",
+        label: "Work item type and state runtime maps",
+        reset: async () =>
+          clearRuntimeMaps(
+            params.stateOptionsCacheByType,
+            params.workItemTypeCacheById,
+            params.workItemTypesCacheByProject
+          )
+            ? "deleted"
+            : "skipped"
+      }
+    ]
+  };
+}
+
+function clearRuntimeMaps(...maps: Array<{ size: number; clear: () => void }>): boolean {
+  const hadEntries = maps.some((map) => map.size > 0);
+  maps.forEach((map) => {
+    map.clear();
+  });
+  return hadEntries;
+}
+
 async function route(
   req: IncomingMessage,
   res: ServerResponse,
@@ -677,6 +769,7 @@ async function route(
   workItemTypeCacheById: Map<string, Promise<string | null>>,
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>,
   userPreferences: LowdbUserPreferencesAdapter,
+  localConfigReset: ClearLocalUserConfigsUseCase,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver,
   csrfToken: string
@@ -720,6 +813,7 @@ async function route(
   if (
     await handlePreferencesRoute(req, res, method, url.pathname, {
       userPreferences,
+      localConfigReset,
       azLoginRunner,
       azCliPathResolver
     })
@@ -1317,6 +1411,7 @@ async function handleTimelineWritesRoute(
 
 type PreferencesDeps = {
   userPreferences: LowdbUserPreferencesAdapter;
+  localConfigReset: ClearLocalUserConfigsUseCase;
   azLoginRunner: AzLoginRunner;
   azCliPathResolver: AzCliPathResolver;
 };
@@ -1420,6 +1515,40 @@ async function handlePreferencesRoute(
       writeJson(res, 500, {
         code: "PREFERENCES_WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to persist user preferences."
+      });
+      return true;
+    }
+  }
+
+  if (isLocalConfigResetRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const resetPayload = parseLocalConfigResetPayload(payload);
+
+    if (!resetPayload) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide confirmation as the only request field."
+      });
+      return true;
+    }
+
+    try {
+      const report = await deps.localConfigReset.execute(resetPayload);
+      writeJson(res, report.status === "partial_failure" ? 207 : 200, report);
+      return true;
+    } catch (error) {
+      if (error instanceof LocalConfigResetConfirmationError) {
+        writeJson(res, 400, {
+          code: "INVALID_CONFIRMATION",
+          message: "Confirmation must be DELETE ALL CONFIGS."
+        });
+        return true;
+      }
+
+      writeJson(res, 500, {
+        code: "LOCAL_CONFIG_RESET_FAILED",
+        message: "Unable to clear local app configuration."
       });
       return true;
     }

@@ -38,6 +38,21 @@ describe("FileContextSettingsAdapter", () => {
     await expect(adapter.getContext()).resolves.toBeNull();
   });
 
+  it("deletes context settings idempotently", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "ado-context-delete-"));
+    const filePath = path.join(root, "settings", "ado-context.json");
+    const adapter = new FileContextSettingsAdapter(filePath);
+
+    await adapter.saveContext({
+      organization: "contoso",
+      project: "delivery"
+    });
+
+    await expect(adapter.deleteContextSettings()).resolves.toBe(true);
+    await expect(adapter.getContext()).resolves.toBeNull();
+    await expect(adapter.deleteContextSettings()).resolves.toBe(false);
+  });
+
   it("validates required values in use case", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "ado-context-invalid-"));
     const filePath = path.join(root, "settings", "ado-context.json");

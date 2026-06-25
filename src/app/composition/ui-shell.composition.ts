@@ -8,6 +8,7 @@ import type {
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
 
 export type AdoCommLogEntry = {
   seq: number;
@@ -124,6 +125,7 @@ export type QueryIntakeTransport = {
     status: "OK";
     path: string;
   }>;
+  resetLocalConfigs: (request: { confirmation: string }) => Promise<LocalConfigResetReport>;
 };
 
 export type UiShellCapabilities = {
@@ -271,6 +273,10 @@ export function createLocalUiShellController(params: {
     setAzureCliPath: async () => ({
       status: "OK",
       path: "az"
+    }),
+    resetLocalConfigs: async () => ({
+      status: "completed",
+      targets: []
     })
   };
 }

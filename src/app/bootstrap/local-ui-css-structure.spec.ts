@@ -29,6 +29,62 @@ describe("local UI CSS structure", () => {
     expect(shellCss).toContain(".timeline-details-input");
   });
 
+  it("uses warning tokens for the local config reset error state", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+
+    expect(shellCss).toMatch(
+      /\.local-config-reset-error\s*\{[\s\S]*border:\s*1px solid var\(--color-warning-border\)/
+    );
+    expect(shellCss).toMatch(/\.local-config-reset-error\s*\{[\s\S]*background:\s*var\(--color-warning-bg\)/);
+    expect(shellCss).toMatch(/\.local-config-reset-error\s*\{[\s\S]*color:\s*var\(--color-warning-text\)/);
+  });
+
+  it("keeps the trust badge panel viewport anchored", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+    const panelRule = readCssRule(shellCss, ".trust-badge-panel");
+
+    expect(panelRule).toContain("position: fixed;");
+    expect(panelRule).toContain("box-sizing: border-box;");
+    expect(panelRule).toContain("right: 12px;");
+    expect(panelRule).toContain("top: 64px;");
+    expect(panelRule).toContain("width: min(430px, calc(100vw - 24px));");
+    expect(panelRule).toContain("max-height: calc(100vh - 76px);");
+    expect(panelRule).not.toContain("position: absolute;");
+    expect(panelRule).not.toContain("top: calc(100% + 8px);");
+  });
+
+  it("keeps responsive trust badge panel sizing inside the header containing block", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+
+    const responsiveRules = [
+      {
+        media: "@media (max-width: 1024px)",
+        width: "width: min(430px, 100%);"
+      },
+      {
+        media: "@media (max-width: 768px)",
+        width: "width: 100%;"
+      },
+      {
+        media: "@media (max-width: 640px)",
+        width: "width: 100%;"
+      },
+      {
+        media: "@media (max-width: 480px)",
+        width: "width: 100%;"
+      }
+    ];
+
+    for (const { media, width } of responsiveRules) {
+      const panelRule = readCssRuleAfter(shellCss, media, ".trust-badge-panel");
+
+      expect(panelRule).toContain("right: 0;");
+      expect(panelRule).toContain(width);
+      expect(panelRule).not.toContain("100vw");
+      expect(panelRule).not.toMatch(/right:\s*(?:6|8|10|12)px;/);
+    }
+  });
+
   it("uses local brand title typography in the shell header", () => {
     const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
 
@@ -60,3 +116,24 @@ describe("local UI CSS structure", () => {
     expect(tokenCss).toMatch(/--font-body:\s*system-ui,/);
   });
 });
+
+function readCssRule(css: string, selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`${escapedSelector}\\s*\\{(?<body>[\\s\\S]*?)\\}`).exec(css);
+
+  if (!match?.groups?.body) {
+    throw new Error(`Missing CSS rule for ${selector}`);
+  }
+
+  return match.groups.body;
+}
+
+function readCssRuleAfter(css: string, marker: string, selector: string): string {
+  const markerIndex = css.indexOf(marker);
+
+  if (markerIndex === -1) {
+    throw new Error(`Missing CSS marker ${marker}`);
+  }
+
+  return readCssRule(css.slice(markerIndex), selector);
+}

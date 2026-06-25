@@ -22,6 +22,8 @@ import {
 } from "../../features/gantt-view/timeline-live-sync-preference.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
+import { LocalConfigResetPanel } from "../../features/diagnostics/local-config-reset-panel.js";
+import { evaluateLocalConfigResetGuard } from "../../features/diagnostics/local-config-reset-guard.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
@@ -83,6 +85,7 @@ import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js
 import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
+import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -787,6 +790,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
+  const localConfigResetGuard = evaluateLocalConfigResetGuard({
+    pendingWorkItemSyncCount,
+    detailsPanelDirty,
+    hasOptimisticChanges,
+    isRefreshing,
+    headerQueryLoading: headerQueryFlow.headerQueryLoading,
+    workItemSyncState
+  });
   const controlsContent = React.createElement(
     React.Fragment,
     null,
@@ -818,6 +829,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
         )
       : null,
+    React.createElement(LocalConfigResetPanel, {
+      guard: localConfigResetGuard,
+      onServerReset: props.composition.controller.resetLocalConfigs,
+      onBrowserCleanup: () =>
+        clearBrowserLocalConfigs({
+          queryClient: props.composition.queryClient
+        }),
+      onReload: () => {
+        window.location.reload();
+      }
+    }),
     mainPanel
   );
 
