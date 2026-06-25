@@ -22,6 +22,8 @@ import {
 } from "../../features/gantt-view/timeline-live-sync-preference.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
+import { LocalConfigResetPanel } from "../../features/diagnostics/local-config-reset-panel.js";
+import { evaluateLocalConfigResetGuard } from "../../features/diagnostics/local-config-reset-guard.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
@@ -54,7 +56,6 @@ import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
 import {
   buildSessionExpiredRefreshBlocker,
-  resolvePersistedRefreshQueryInput,
   runRetryRefreshFlow,
   type RunRequest
 } from "./ui-client-refresh-flow.js";
@@ -84,6 +85,7 @@ import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js
 import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
+import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -171,12 +173,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
       : (restoredState?.activeTab ?? "query");
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
-  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences = getCachedUserPreferences();
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = React.useState(!hasInitialQuery);
+  const [controlsOpen, setControlsOpen] = React.useState(false);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
   const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(restoredState?.lastRunRequest ?? null);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
@@ -427,7 +427,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       if (result.kind === "blocked_no_query") {
         setActiveTab("query");
-        setControlsOpen(true);
         setBlockerMessage(result.blocker);
         return;
       }
@@ -445,14 +444,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
-          setControlsOpen(true);
           setBlockerMessage(null);
         } else {
           setMappingFixResponse(null);
           setActiveTab(result.activeTab);
-          if (result.activeTab === "query") {
-            setControlsOpen(true);
-          }
           setBlockerMessage(
             result.response.preflightStatus === "SESSION_EXPIRED"
               ? buildSessionExpiredRefreshBlocker()
@@ -795,6 +790,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
+  const localConfigResetGuard = evaluateLocalConfigResetGuard({
+    pendingWorkItemSyncCount,
+    detailsPanelDirty,
+    hasOptimisticChanges,
+    isRefreshing,
+    headerQueryLoading: headerQueryFlow.headerQueryLoading,
+    workItemSyncState
+  });
   const controlsContent = React.createElement(
     React.Fragment,
     null,
@@ -826,6 +829,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
         )
       : null,
+    React.createElement(LocalConfigResetPanel, {
+      guard: localConfigResetGuard,
+      onServerReset: props.composition.controller.resetLocalConfigs,
+      onBrowserCleanup: () =>
+        clearBrowserLocalConfigs({
+          queryClient: props.composition.queryClient
+        }),
+      onReload: () => {
+        window.location.reload();
+      }
+    }),
     mainPanel
   );
 

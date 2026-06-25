@@ -46,6 +46,18 @@ describe("FileMappingSettingsAdapter", () => {
     await expect(adapter.getLastActiveProfileId()).resolves.toBeNull();
   });
 
+  it("deletes mapping settings idempotently", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mapping-settings-delete-"));
+    const filePath = path.join(root, "settings", "mapping-settings.json");
+    const adapter = new FileMappingSettingsAdapter(filePath);
+
+    await adapter.saveProfiles([createProfile("profile-a", "Default")]);
+
+    await expect(adapter.deleteMappingSettings()).resolves.toBe(true);
+    await expect(adapter.loadProfiles()).resolves.toEqual([]);
+    await expect(adapter.deleteMappingSettings()).resolves.toBe(false);
+  });
+
   // MAP-03: last-active profile resolution falls back cleanly when profile no longer exists.
   it("clears last active profile when saved profiles no longer contain it", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mapping-settings-fallback-"));

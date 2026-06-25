@@ -372,3 +372,13 @@ export function parseAzCliPathPayload(input: Record<string, unknown> | null): st
 
   return input.path.trim();
 }
+
+export function parseLocalConfigResetPayload(input: Record<string, unknown> | null): { confirmation: string } | null {
+  if (!input || Object.keys(input).length !== 1 || typeof input.confirmation !== "string") {
+    return null;
+  }
+
+  return {
+    confirmation: input.confirmation
+  };
+}

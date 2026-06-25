@@ -3,6 +3,7 @@ import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.
 import { registerServiceWorker } from "./register-service-worker.js";
 import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
 
 const container = document.getElementById("app");
 const csrfToken = readCsrfToken();
@@ -487,6 +488,30 @@ const composition = createDefaultUiShellComposition({
         status: "OK" as const,
         path: typeof payload.path === "string" ? payload.path : "az"
       };
+    },
+    resetLocalConfigs: async ({ confirmation }) => {
+      const response = await fetch("/phase2/local-config-reset", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          confirmation
+        })
+      });
+
+      const payload = (await response.json()) as LocalConfigResetReport | { message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Local config reset failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as LocalConfigResetReport;
     }
   }
 });

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { chmod, mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -14,6 +14,7 @@ import {
 } from "./pwa-constants.js";
 import { PWA_SERVICE_WORKER_SOURCE } from "./pwa-assets.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
+import { LOCAL_CONFIG_RESET_CONFIRMATION } from "../../application/ports/local-config-reset.port.js";
 
 type StartedServer = {
   baseUrl: string;
@@ -696,6 +697,12 @@ describe("createHttpServer", () => {
           path: "/phase2/work-item-child-create",
           body: {
             parentWorkItemId: 11
+          }
+        },
+        {
+          path: "/phase2/local-config-reset",
+          body: {
+            confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
           }
         }
       ];
@@ -1548,6 +1555,7 @@ describe("createHttpServer", () => {
     const server = startServer({
       distRootPath: fixture.distRootPath,
       contextFilePath: fixture.contextFilePath,
+      mappingFilePath: fixture.mappingFilePath,
       userPreferencesFilePath: fixture.userPreferencesFilePath
     });
 
@@ -1630,6 +1638,162 @@ describe("createHttpServer", () => {
       expect(loadBody.preferences.filters).toEqual({
         assignee: "me"
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("rejects local config reset when confirmation is wrong or body is not strict", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      userPreferencesFilePath: fixture.userPreferencesFilePath
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const wrongConfirmationResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: "delete all configs"
+        })
+      });
+      const wrongConfirmationBody = await wrongConfirmationResponse.json();
+
+      expect(wrongConfirmationResponse.status).toBe(400);
+      expect(wrongConfirmationBody).toEqual({
+        code: "INVALID_CONFIRMATION",
+        message: "Confirmation must be DELETE ALL CONFIGS."
+      });
+
+      const extraFieldResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION,
+          extra: true
+        })
+      });
+      const extraFieldBody = await extraFieldResponse.json();
+
+      expect(extraFieldResponse.status).toBe(400);
+      expect(extraFieldBody).toEqual({
+        code: "INVALID_INPUT",
+        message: "Provide confirmation as the only request field."
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("clears local config files and only the current lowdb user via /phase2/local-config-reset", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const currentUserId = resolveTestLocalUserId();
+    await writeFile(
+      fixture.mappingFilePath,
+      JSON.stringify({
+        profiles: [
+          {
+            id: "profile-a",
+            name: "Default",
+            fields: {
+              id: "System.Id",
+              title: "System.Title",
+              start: "Microsoft.VSTS.Scheduling.StartDate",
+              endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+            }
+          }
+        ],
+        lastActiveProfileId: "profile-a"
+      }),
+      "utf8"
+    );
+    await writeFile(
+      fixture.userPreferencesFilePath,
+      JSON.stringify({
+        version: 1,
+        users: {
+          [currentUserId]: {
+            themeMode: "dark"
+          },
+          "other-user": {
+            themeMode: "light"
+          }
+        }
+      }),
+      "utf8"
+    );
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      userPreferencesFilePath: fixture.userPreferencesFilePath
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.status).toBe("completed");
+      expect(body.targets.map((target: { target: string; status: string }) => [target.target, target.status])).toEqual([
+        ["lowdb-current-user-preferences", "deleted"],
+        ["ado-context-settings", "deleted"],
+        ["mapping-settings", "deleted"],
+        ["ado-communication-log", "skipped"],
+        ["work-item-type-state-runtime-maps", "skipped"]
+      ]);
+      await expect(readFile(fixture.contextFilePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+      await expect(readFile(fixture.mappingFilePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+      const persistedPreferences = JSON.parse(await readFile(fixture.userPreferencesFilePath, "utf8")) as {
+        users: Record<string, unknown>;
+      };
+      expect(persistedPreferences.users[currentUserId]).toBeUndefined();
+      expect(persistedPreferences.users["other-user"]).toEqual({
+        themeMode: "light"
+      });
+
+      const secondResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
+        })
+      });
+      const secondBody = await secondResponse.json();
+
+      expect(secondResponse.status).toBe(200);
+      expect(secondBody.targets.map((target: { target: string; status: string }) => [target.target, target.status])).toEqual([
+        ["lowdb-current-user-preferences", "skipped"],
+        ["ado-context-settings", "skipped"],
+        ["mapping-settings", "skipped"],
+        ["ado-communication-log", "skipped"],
+        ["work-item-type-state-runtime-maps", "skipped"]
+      ]);
     } finally {
       await server.close();
     }
@@ -1783,6 +1947,7 @@ describe("createHttpServer", () => {
 function startServer(params: {
   distRootPath: string;
   contextFilePath: string;
+  mappingFilePath?: string;
   userPreferencesFilePath?: string;
   httpClient?: {
     get: (url: string) => Promise<{
@@ -1810,6 +1975,7 @@ function startServer(params: {
     port,
     distRootPath: params.distRootPath,
     contextFilePath: params.contextFilePath,
+    mappingFilePath: params.mappingFilePath,
     userPreferencesFilePath: params.userPreferencesFilePath,
     httpClient:
       params.httpClient ??
@@ -1859,10 +2025,24 @@ function readPngDimensions(buffer: Buffer): { width: number; height: number } {
   };
 }
 
+function resolveTestLocalUserId(): string {
+  const fromEnv = process.env.USER ?? process.env.USERNAME;
+  if (fromEnv && fromEnv.trim().length > 0) {
+    return fromEnv.trim();
+  }
+
+  try {
+    return os.userInfo().username;
+  } catch {
+    return "local-user";
+  }
+}
+
 async function createFixtureDir(tempDirs: string[]): Promise<{
   root: string;
   distRootPath: string;
   contextFilePath: string;
+  mappingFilePath: string;
   userPreferencesFilePath: string;
   azCliShimPath: string;
 }> {
@@ -1874,6 +2054,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
   await writeFile(path.join(distRootPath, "src", "app", "bootstrap", "local-ui-entry.browser.js"), "export {}\n", "utf8");
 
   const contextFilePath = path.join(root, "ado-context.json");
+  const mappingFilePath = path.join(root, "mapping-settings.json");
   const userPreferencesFilePath = path.join(root, "user-preferences.json");
   await writeFile(
     contextFilePath,
@@ -1916,6 +2097,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
     root,
     distRootPath,
     contextFilePath,
+    mappingFilePath,
     userPreferencesFilePath,
     azCliShimPath
   };
