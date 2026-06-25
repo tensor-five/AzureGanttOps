@@ -1,15 +1,19 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createInitialHeaderQueryFlowState,
   deleteSavedHeaderQueryFlow,
   loadSavedHeaderQueryFlow,
   resolveHydratedHeaderQuerySelection,
-  saveCurrentHeaderQueryFlow
+  saveCurrentHeaderQueryFlow,
+  saveLoadedHeaderQueryFlow
 } from "./ui-client-header-query-flow.js";
 import type { SavedQueryPreference } from "../../shared/user-preferences/user-preferences.client.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+
+const QUERY_ID = "37f6f880-0b7b-4350-9f97-7263b40d4e95";
+const QUERY_URL = `https://dev.azure.com/org/project/_queries/query/${QUERY_ID}`;
 
 function createSavedQuery(id: string, queryInput = id): SavedQueryPreference {
   return {
@@ -18,6 +22,32 @@ function createSavedQuery(id: string, queryInput = id): SavedQueryPreference {
     queryInput
   };
 }
+
+function createResponse(overrides?: Partial<QueryIntakeResponse>): QueryIntakeResponse {
+  return {
+    success: true,
+    guidance: null,
+    statusCode: "OK",
+    errorCode: null,
+    preflightStatus: "READY",
+    selectedQueryId: QUERY_ID,
+    activeQueryId: QUERY_ID,
+    savedQueries: [],
+    mappingValidation: {
+      status: "valid",
+      issues: []
+    },
+    ...overrides
+  } as QueryIntakeResponse;
+}
+
+beforeEach(() => {
+  installMemoryStorage();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("ui-client-header-query-flow", () => {
   it("creates initial state from preferences", () => {
@@ -42,21 +72,102 @@ describe("ui-client-header-query-flow", () => {
 
   it("loads a saved header query and persists selected id", async () => {
     const persistPatch = vi.fn();
-    const runQuery = vi.fn(async () => ({ success: true } as QueryIntakeResponse));
+    const runQuery = vi.fn(async () => createResponse());
+    const order: string[] = [];
+    const storage = {
+      setItem: vi.fn((key: string) => {
+        order.push(`storage:${key}`);
+      })
+    };
 
     const result = await loadSavedHeaderQueryFlow({
-      queryId: "q-1",
+      queryId: QUERY_ID,
       state: {
-        savedHeaderQueries: [createSavedQuery("q-1", "https://dev.azure.com/org/project/_queries/query?qid=q-1")],
+        savedHeaderQueries: [
+          {
+            ...createSavedQuery(QUERY_ID, QUERY_URL),
+            organization: "org",
+            project: "project"
+          }
+        ],
         headerQueryLoading: false
       },
       runQuery,
-      persistPatch
+      persistPatch: vi.fn((patch) => {
+        order.push(`preferences:${patch.selectedHeaderQueryId ?? ""}`);
+        persistPatch(patch);
+      }),
+      storage
     });
 
-    expect(result).toEqual({ kind: "loaded", selectedHeaderQueryId: "q-1" });
-    expect(runQuery).toHaveBeenCalledWith({ queryId: "https://dev.azure.com/org/project/_queries/query?qid=q-1" });
-    expect(persistPatch).toHaveBeenCalledWith({ selectedHeaderQueryId: "q-1" });
+    expect(result).toEqual({ kind: "loaded", selectedHeaderQueryId: QUERY_ID });
+    expect(runQuery).toHaveBeenCalledWith({ queryId: QUERY_URL });
+    expect(persistPatch).toHaveBeenCalledWith({ selectedHeaderQueryId: QUERY_ID });
+    expect(order).toEqual([
+      `preferences:${QUERY_ID}`,
+      "storage:azure-ganttops.query-input",
+      "storage:azure-ganttops.organization",
+      "storage:azure-ganttops.project"
+    ]);
+  });
+
+  it("does not write the localStorage compatibility copy when loading a saved query fails", async () => {
+    const storage = {
+      setItem: vi.fn()
+    };
+
+    const result = await loadSavedHeaderQueryFlow({
+      queryId: QUERY_ID,
+      state: {
+        savedHeaderQueries: [
+          {
+            ...createSavedQuery(QUERY_ID, QUERY_URL),
+            organization: "org",
+            project: "project"
+          }
+        ],
+        headerQueryLoading: false
+      },
+      runQuery: vi.fn(async () => {
+        throw new Error("Azure CLI ist nicht angemeldet.");
+      }),
+      persistPatch: vi.fn(),
+      storage
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      message: "Azure CLI ist nicht angemeldet."
+    });
+    expect(storage.setItem).not.toHaveBeenCalled();
+  });
+
+  it("keeps loading a saved query successful when compatibility storage throws", async () => {
+    const persistPatch = vi.fn();
+
+    const result = await loadSavedHeaderQueryFlow({
+      queryId: QUERY_ID,
+      state: {
+        savedHeaderQueries: [
+          {
+            ...createSavedQuery(QUERY_ID, QUERY_URL),
+            organization: "org",
+            project: "project"
+          }
+        ],
+        headerQueryLoading: false
+      },
+      runQuery: vi.fn(async () => createResponse()),
+      persistPatch,
+      storage: {
+        setItem: vi.fn(() => {
+          throw new Error("Quota exceeded");
+        })
+      }
+    });
+
+    expect(result).toEqual({ kind: "loaded", selectedHeaderQueryId: QUERY_ID });
+    expect(persistPatch).toHaveBeenCalledWith({ selectedHeaderQueryId: QUERY_ID });
   });
 
   it("returns error when saving invalid query input", async () => {
@@ -83,10 +194,10 @@ describe("ui-client-header-query-flow", () => {
     localStorage.setItem("azure-ganttops.project", "project");
 
     const persistPatch = vi.fn();
-    const runQuery = vi.fn(async () => ({ success: true } as QueryIntakeResponse));
+    const runQuery = vi.fn(async () => createResponse());
 
     const result = await saveCurrentHeaderQueryFlow({
-      rawInput: "123",
+      rawInput: QUERY_ID,
       state: {
         savedHeaderQueries: [],
         headerQueryLoading: false
@@ -99,8 +210,160 @@ describe("ui-client-header-query-flow", () => {
     });
 
     expect(result.kind).toBe("saved");
-    expect(runQuery).toHaveBeenCalledWith({ queryId: "https://dev.azure.com/org/project/_queries/query?qid=123" });
+    expect(runQuery).toHaveBeenCalledTimes(1);
+    expect(runQuery).toHaveBeenCalledWith({ queryId: QUERY_URL });
     expect(persistPatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("saves an already loaded mapping-invalid query without checking response.success", async () => {
+    const persistPatch = vi.fn();
+    const loadedResponse = createResponse({
+      success: false,
+      mappingValidation: {
+        status: "invalid",
+        issues: []
+      },
+      savedQueries: [
+        {
+          id: QUERY_ID,
+          name: "Important Query",
+          path: "Shared Queries/Important Query"
+        }
+      ]
+    });
+
+    const result = await saveLoadedHeaderQueryFlow({
+      rawInput: QUERY_ID,
+      transportQueryInput: QUERY_URL,
+      resolvedContext: {
+        organization: "org",
+        project: "project",
+        queryId: QUERY_ID
+      },
+      state: {
+        savedHeaderQueries: [],
+        headerQueryLoading: false
+      },
+      loadedResponse,
+      fetchQueryDetails: vi.fn(async () => ({ name: "Important Query" })),
+      headerSavedQueryLimit: 25,
+      persistPatch
+    });
+
+    expect(result).toMatchObject({
+      kind: "saved",
+      selectedHeaderQueryId: QUERY_ID
+    });
+    expect(persistPatch).toHaveBeenCalledWith({
+      savedQueries: [
+        {
+          id: QUERY_ID,
+          name: "Important Query",
+          queryInput: QUERY_URL,
+          organization: "org",
+          project: "project"
+        }
+      ],
+      selectedHeaderQueryId: QUERY_ID
+    });
+  });
+
+  it("patches preferences before writing the localStorage compatibility copy", async () => {
+    const order: string[] = [];
+    const persistPatch = vi.fn(() => {
+      order.push("preferences");
+    });
+    const storage = {
+      setItem: vi.fn((key: string) => {
+        order.push(`storage:${key}`);
+      })
+    };
+
+    await saveLoadedHeaderQueryFlow({
+      rawInput: QUERY_ID,
+      transportQueryInput: QUERY_URL,
+      resolvedContext: {
+        organization: "org",
+        project: "project",
+        queryId: QUERY_ID
+      },
+      state: {
+        savedHeaderQueries: [],
+        headerQueryLoading: false
+      },
+      loadedResponse: createResponse(),
+      fetchQueryDetails: vi.fn(async () => ({ name: "Important Query" })),
+      headerSavedQueryLimit: 25,
+      persistPatch,
+      storage
+    });
+
+    expect(order[0]).toBe("preferences");
+    expect(order.slice(1)).toEqual([
+      "storage:azure-ganttops.query-input",
+      "storage:azure-ganttops.organization",
+      "storage:azure-ganttops.project"
+    ]);
+  });
+
+  it("keeps saving successful when compatibility storage throws", async () => {
+    const persistPatch = vi.fn();
+
+    const result = await saveLoadedHeaderQueryFlow({
+      rawInput: QUERY_ID,
+      transportQueryInput: QUERY_URL,
+      resolvedContext: {
+        organization: "org",
+        project: "project",
+        queryId: QUERY_ID
+      },
+      state: {
+        savedHeaderQueries: [],
+        headerQueryLoading: false
+      },
+      loadedResponse: createResponse(),
+      fetchQueryDetails: vi.fn(async () => ({ name: "Important Query" })),
+      headerSavedQueryLimit: 25,
+      persistPatch,
+      storage: {
+        setItem: vi.fn(() => {
+          throw new Error("Quota exceeded");
+        })
+      }
+    });
+
+    expect(result.kind).toBe("saved");
+    expect(persistPatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not save a loaded response without READY OK and active query id", async () => {
+    const persistPatch = vi.fn();
+
+    const result = await saveLoadedHeaderQueryFlow({
+      rawInput: QUERY_ID,
+      transportQueryInput: QUERY_URL,
+      resolvedContext: {
+        organization: "org",
+        project: "project",
+        queryId: QUERY_ID
+      },
+      state: {
+        savedHeaderQueries: [],
+        headerQueryLoading: false
+      },
+      loadedResponse: createResponse({
+        activeQueryId: null
+      }),
+      fetchQueryDetails: vi.fn(),
+      headerSavedQueryLimit: 25,
+      persistPatch
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      message: "Query could not be saved because loading did not complete."
+    });
+    expect(persistPatch).not.toHaveBeenCalled();
   });
 
   it("deletes saved header query and persists query collection", () => {
@@ -122,4 +385,40 @@ describe("ui-client-header-query-flow", () => {
       selectedHeaderQueryId: "q-2"
     });
   });
+
+  it("persists an explicit empty selected query when deleting the last saved query", () => {
+    const persistPatch = vi.fn();
+
+    const result = deleteSavedHeaderQueryFlow({
+      queryId: "q-1",
+      state: {
+        savedHeaderQueries: [createSavedQuery("q-1")],
+        selectedHeaderQueryId: "q-1"
+      },
+      persistPatch
+    });
+
+    expect(result.savedHeaderQueries).toEqual([]);
+    expect(result.selectedHeaderQueryId).toBe("");
+    expect(persistPatch).toHaveBeenCalledWith({
+      savedQueries: [],
+      selectedHeaderQueryId: ""
+    });
+  });
 });
+
+function installMemoryStorage(): void {
+  const values = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      values.delete(key);
+    }),
+    clear: vi.fn(() => {
+      values.clear();
+    })
+  });
+}

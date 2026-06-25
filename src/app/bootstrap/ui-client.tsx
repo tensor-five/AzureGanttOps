@@ -10,7 +10,12 @@ import {
 } from "../composition/ui-shell.composition.js";
 import { TopTabs } from "../../features/navigation/top-tabs.js";
 import type { TabId } from "../../shared/ui-state/tab-id.js";
-import { QuerySelector, ORG_KEY, PROJECT_KEY } from "../../features/query-switching/query-selector.js";
+import { QuerySelector } from "../../features/query-switching/query-selector.js";
+import { InitialQueryOnboardingDialog } from "../../features/query-switching/initial-query-onboarding-dialog.js";
+import {
+  ORG_KEY,
+  PROJECT_KEY
+} from "../../features/query-switching/runtime-query-input.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
 import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
@@ -28,7 +33,7 @@ import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
-import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
+import { getCachedUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyCreatedChildWorkItemToResponse,
   applyDependencyLinkUpdate,
@@ -84,6 +89,7 @@ import { resolveActiveQueryName } from "./ui-client-header-query-service.js";
 import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js";
 import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
+import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
 
@@ -169,6 +175,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     []
   );
   const initialResponse = restoredState?.response ?? null;
+  const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab: TabId =
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
@@ -178,7 +185,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
   const [controlsOpen, setControlsOpen] = React.useState(false);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(restoredState?.lastRunRequest ?? null);
+  const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(initialLastRunRequest);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
     initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel()
   );
@@ -226,8 +233,8 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     liveSyncEnabled,
     workItemSyncState
   };
-  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
-  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+  const organization = readLocalStorageValue(ORG_KEY);
+  const project = readLocalStorageValue(PROJECT_KEY);
   const adoCommLogPolling = useAdoCommLogPolling({
     controller: props.composition.controller,
     pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
@@ -473,6 +480,13 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     getResponse: () => responseRef.current,
     headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
   });
+  const initialQueryOnboardingFlow = useInitialQueryOnboardingFlow({
+    restoredResponse: initialResponse,
+    initialOrganization: readLocalStorageValue(ORG_KEY),
+    initialProject: readLocalStorageValue(PROJECT_KEY),
+    runQuery: async ({ queryId }) => runQuery({ queryId }),
+    saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
+  });
 
   const runTrackedWorkItemUpdate = React.useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
@@ -666,21 +680,27 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [activeTab, lastRunRequest, response]);
 
   React.useEffect(() => {
-    void hydrateUserPreferences().then((preferences) => {
-      if (preferences.themeMode) {
-        setThemeMode(preferences.themeMode);
-      }
-      const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
-      headerQueryFlow.hydrateSavedHeaderQueries(
-        hydratedHeaderQuerySelection.savedHeaderQueries,
-        hydratedHeaderQuerySelection.selectedHeaderQueryId
-      );
-    });
+    const preferences = initialQueryOnboardingFlow.hydratedPreferences;
+    if (!preferences) {
+      return;
+    }
+
+    if (preferences.themeMode) {
+      setThemeMode(preferences.themeMode);
+    }
+    const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
+    headerQueryFlow.hydrateSavedHeaderQueries(
+      hydratedHeaderQuerySelection.savedHeaderQueries,
+      hydratedHeaderQuerySelection.selectedHeaderQueryId
+    );
+  }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
+
+  React.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => (current === "syncing" ? current : enabled ? "up_to_date" : "paused"));
     });
-  }, [headerQueryFlow.hydrateSavedHeaderQueries, setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
+  }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
 
   React.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
@@ -1336,6 +1356,20 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         "TensorFive GmbH"
       )
     ),
+    initialQueryOnboardingFlow.status === "required"
+      ? React.createElement(InitialQueryOnboardingDialog, {
+          queryInput: initialQueryOnboardingFlow.queryInput,
+          organization: initialQueryOnboardingFlow.organization,
+          project: initialQueryOnboardingFlow.project,
+          loading: initialQueryOnboardingFlow.loading,
+          statusMessage: initialQueryOnboardingFlow.statusMessage,
+          errorMessage: initialQueryOnboardingFlow.errorMessage,
+          onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
+          onOrganizationChange: initialQueryOnboardingFlow.setOrganization,
+          onProjectChange: initialQueryOnboardingFlow.setProject,
+          onSubmit: initialQueryOnboardingFlow.submit
+        })
+      : null,
     showRefreshDiscardWarning
       ? React.createElement(
           "div",
@@ -1492,6 +1526,14 @@ function renderActivePanel(params: {
       error: params.adoCommLogsError
     })
   );
+}
+
+function readLocalStorageValue(key: string): string {
+  if (typeof localStorage === "undefined" || typeof localStorage.getItem !== "function") {
+    return "";
+  }
+
+  return localStorage.getItem(key) ?? "";
 }
 
 function createInitialUiModel(): QueryIntakeUiModel {

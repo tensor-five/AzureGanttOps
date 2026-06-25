@@ -204,12 +204,16 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
       deduped.set(normalized.id, normalized);
     });
 
-    next.savedQueries = deduped.size > 0 ? [...deduped.values()] : undefined;
+    if (deduped.size > 0) {
+      next.savedQueries = [...deduped.values()];
+    } else if (candidate.savedQueries.length === 0) {
+      next.savedQueries = [];
+    }
   }
 
   if (typeof candidate.selectedHeaderQueryId === "string") {
     const selectedHeaderQueryId = candidate.selectedHeaderQueryId.trim();
-    next.selectedHeaderQueryId = selectedHeaderQueryId.length > 0 ? selectedHeaderQueryId : undefined;
+    next.selectedHeaderQueryId = selectedHeaderQueryId;
   }
 
   if (isPlainRecord(candidate.filters)) {

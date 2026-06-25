@@ -1,6 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const HARNESS_HTML_URL = "/tests/e2e/runtime-harness.html";
+const USER_PREFERENCES_SESSION_KEY = "azure-ganttops.e2e.user-preferences";
+const QUERY_IDS = {
+  primary: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+  secondary: "8fd61d1a-3aa4-4f90-9bf2-393ca2160be5",
+  mapping: "42d1b6a8-f7d2-4d9f-8ad8-b678fa4e2669",
+  preferences: "6ef16c10-6e89-4236-98ea-709f63b8fb5f",
+  preferencesNext: "5a2ee2b4-03b5-4c85-bf3b-7efe7c6d0f1e"
+} as const;
 
 declare global {
   interface Window {
@@ -243,10 +251,23 @@ function buildResponse(patch: ResponsePatch = {}): QueryIntakeResponse {
 async function mountRuntimeUi(page: Page, responses: QueryIntakeResponse[]): Promise<void> {
   await page.goto(HARNESS_HTML_URL);
   await page.waitForFunction(() => typeof window.__phase6Configure === "function");
-  await page.evaluate((nextResponses) => {
+  await page.evaluate(({ nextResponses, preferences, preferencesKey }) => {
+    const currentRaw = window.sessionStorage.getItem(preferencesKey);
+    const current =
+      currentRaw && typeof currentRaw === "string"
+        ? JSON.parse(currentRaw) as Record<string, unknown>
+        : {};
+    window.sessionStorage.setItem(preferencesKey, JSON.stringify({
+      ...current,
+      ...preferences
+    }));
     window.__phase6Configure(nextResponses);
     window.__phase6Mount();
-  }, responses);
+  }, {
+    nextResponses: responses,
+    preferences: buildHarnessPreferences(),
+    preferencesKey: USER_PREFERENCES_SESSION_KEY
+  });
 }
 
 async function getRuntimeInfo(page: Page): Promise<{
@@ -276,19 +297,41 @@ async function clickControlsTab(page: Page, tabName: string | RegExp): Promise<v
   await page.getByRole("tab", { name: tabName }).click();
 }
 
+function buildHarnessPreferences(): {
+  savedQueries: Array<{ id: string; name: string; queryInput: string; organization: string; project: string }>;
+  selectedHeaderQueryId: string;
+} {
+  const savedQueries = Object.entries(QUERY_IDS).map(([name, id]) => ({
+    id,
+    name: `Harness ${name}`,
+    queryInput: buildHarnessQueryUrl(id),
+    organization: "contoso",
+    project: "delivery"
+  }));
+
+  return {
+    savedQueries,
+    selectedHeaderQueryId: QUERY_IDS.primary
+  };
+}
+
+function buildHarnessQueryUrl(queryId: string): string {
+  return `https://dev.azure.com/contoso/delivery/_queries/query/${queryId}`;
+}
+
 test("query mapping timeline diagnostics retry refresh source-health journey", async ({ page }) => {
   const responses = [
     buildResponse({
-      selectedQueryId: "q-1",
-      activeQueryId: "q-1",
+      selectedQueryId: QUERY_IDS.primary,
+      activeQueryId: QUERY_IDS.primary,
       savedQueries: [
-        { id: "q-1", name: "Primary query", path: "Shared Queries/Primary" },
-        { id: "q-2", name: "Secondary query", path: "Shared Queries/Secondary" }
+        { id: QUERY_IDS.primary, name: "Primary query", path: "Shared Queries/Primary" },
+        { id: QUERY_IDS.secondary, name: "Secondary query", path: "Shared Queries/Secondary" }
       ]
     }),
     buildResponse({
-      selectedQueryId: "q-2",
-      activeQueryId: "q-2",
+      selectedQueryId: QUERY_IDS.secondary,
+      activeQueryId: QUERY_IDS.secondary,
       uiState: "ready_with_lkg_warning",
       trustState: "partial_failure",
       guidance: "Refresh failed; last-known-good timeline retained.",
@@ -305,8 +348,8 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
       statusCode: "QUERY_FAILED"
     }),
     buildResponse({
-      selectedQueryId: "q-2",
-      activeQueryId: "q-2",
+      selectedQueryId: QUERY_IDS.secondary,
+      activeQueryId: QUERY_IDS.secondary,
       uiState: "ready",
       trustState: "ready",
       statusCode: "OK",
@@ -322,15 +365,15 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
       }
     }),
     buildResponse({
-      selectedQueryId: "q-1",
-      activeQueryId: "q-1",
+      selectedQueryId: QUERY_IDS.primary,
+      activeQueryId: QUERY_IDS.primary,
       uiState: "ready",
       trustState: "ready",
       statusCode: "OK"
     }),
     buildResponse({
-      selectedQueryId: "q-1",
-      activeQueryId: "q-1",
+      selectedQueryId: QUERY_IDS.primary,
+      activeQueryId: QUERY_IDS.primary,
       uiState: "ready",
       trustState: "ready",
       statusCode: "OK"
@@ -349,12 +392,12 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await expect(page.getByRole("tab", { name: "Diagnostics [blocked]" })).toBeVisible();
 
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-1");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.primary));
   await page.getByRole("button", { name: "Run query by ID" }).click();
   await expect(statusBadge(page)).toContainText("[OK] Ready");
 
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-2");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.secondary));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await expect(statusBadge(page)).toContainText("[QUERY_FAILED] Partial failure");
@@ -368,7 +411,7 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await expect(statusBadge(page)).toContainText("[OK] Ready");
 
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-1");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.primary));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await clickControlsTab(page, "Timeline [ok]");
@@ -383,7 +426,13 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await page.getByLabel("diagnostics-tab").getByRole("button", { name: "Retry refresh" }).click();
 
   const runtimeInfo = await getRuntimeInfo(page);
-  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual(["q-1", "q-2", "q-2", "q-1", "q-1"]);
+  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual([
+    buildHarnessQueryUrl(QUERY_IDS.primary),
+    buildHarnessQueryUrl(QUERY_IDS.secondary),
+    buildHarnessQueryUrl(QUERY_IDS.secondary),
+    buildHarnessQueryUrl(QUERY_IDS.primary),
+    buildHarnessQueryUrl(QUERY_IDS.primary)
+  ]);
   expect(runtimeInfo.adoEntries.length).toBeGreaterThanOrEqual(10);
   expect(runtimeInfo.adoEntries[0]?.direction).toBe("request");
   expect(runtimeInfo.adoEntries[1]?.direction).toBe("response");
@@ -393,8 +442,8 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
 test("mapping remediation journey: invalid mapping to apply defaults to timeline and diagnostics", async ({ page }) => {
   const responses = [
     buildResponse({
-      selectedQueryId: "q-map",
-      activeQueryId: "q-map",
+      selectedQueryId: QUERY_IDS.mapping,
+      activeQueryId: QUERY_IDS.mapping,
       statusCode: "OK",
       trustState: "needs_attention",
       mappingValidation: {
@@ -405,8 +454,8 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
       activeMappingProfileId: null
     }),
     buildResponse({
-      selectedQueryId: "q-map",
-      activeQueryId: "q-map",
+      selectedQueryId: QUERY_IDS.mapping,
+      activeQueryId: QUERY_IDS.mapping,
       statusCode: "OK",
       trustState: "ready",
       mappingValidation: {
@@ -420,7 +469,7 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
   await mountRuntimeUi(page, responses);
 
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-map");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.mapping));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await expect(page.getByLabel("mapping-fix-panel")).toBeVisible();
@@ -439,25 +488,28 @@ test("mapping remediation journey: invalid mapping to apply defaults to timeline
   await expect(page.getByLabel("timeline-details-panel")).toContainText("- selected work item: #801");
 
   await clickControlsTab(page, "Diagnostics [ok]");
-  await expect(page.getByLabel("diagnostics-tab")).toContainText("active query source: q-map");
+  await expect(page.getByLabel("diagnostics-tab")).toContainText(`active query source: ${QUERY_IDS.mapping}`);
 
   const runtimeInfo = await getRuntimeInfo(page);
-  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual(["q-map", "q-map"]);
+  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual([
+    buildHarnessQueryUrl(QUERY_IDS.mapping),
+    QUERY_IDS.mapping
+  ]);
 });
 
 test("timeline live-sync preference persists across query switch and remount", async ({ page }) => {
   const responses = [
     buildResponse({
-      selectedQueryId: "q-preferences",
-      activeQueryId: "q-preferences",
+      selectedQueryId: QUERY_IDS.preferences,
+      activeQueryId: QUERY_IDS.preferences,
       savedQueries: [
-        { id: "q-preferences", name: "Preferences query", path: "Shared Queries/Preferences" },
-        { id: "q-preferences-2", name: "Preferences query 2", path: "Shared Queries/Preferences2" }
+        { id: QUERY_IDS.preferences, name: "Preferences query", path: "Shared Queries/Preferences" },
+        { id: QUERY_IDS.preferencesNext, name: "Preferences query 2", path: "Shared Queries/Preferences2" }
       ]
     }),
     buildResponse({
-      selectedQueryId: "q-preferences-2",
-      activeQueryId: "q-preferences-2"
+      selectedQueryId: QUERY_IDS.preferencesNext,
+      activeQueryId: QUERY_IDS.preferencesNext
     })
   ];
 
@@ -465,7 +517,7 @@ test("timeline live-sync preference persists across query switch and remount", a
 
   await clickControlsTab(page, "Query [ok]");
 
-  await page.getByLabel("Query ID").fill("q-preferences");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.preferences));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await clickControlsTab(page, "Timeline [ok]");
@@ -478,16 +530,21 @@ test("timeline live-sync preference persists across query switch and remount", a
   expect(runtimeInfo.liveSyncEnabled).toBe("false");
 
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-preferences-2");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.preferencesNext));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await clickControlsTab(page, "Timeline [ok]");
   await page.keyboard.press("Escape");
   await expect(page.getByLabel("Live sync")).not.toBeChecked();
 
-  await mountRuntimeUi(page, [buildResponse({ selectedQueryId: "q-preferences-2", activeQueryId: "q-preferences-2" })]);
+  await mountRuntimeUi(page, [
+    buildResponse({
+      selectedQueryId: QUERY_IDS.preferencesNext,
+      activeQueryId: QUERY_IDS.preferencesNext
+    })
+  ]);
   await clickControlsTab(page, "Query [ok]");
-  await page.getByLabel("Query ID").fill("q-preferences-2");
+  await page.getByLabel("Query ID").fill(buildHarnessQueryUrl(QUERY_IDS.preferencesNext));
   await page.getByRole("button", { name: "Run query by ID" }).click();
 
   await clickControlsTab(page, "Timeline [ok]");

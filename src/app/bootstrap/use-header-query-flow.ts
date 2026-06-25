@@ -8,8 +8,11 @@ import {
   loadSavedHeaderQueryFlow,
   resolveFilteredHeaderQueries,
   saveCurrentHeaderQueryFlow,
+  saveLoadedHeaderQueryFlow,
+  type HeaderQuerySaveResult,
   type HeaderQueryFlowState
 } from "./ui-client-header-query-flow.js";
+import type { RuntimeQueryInputResolution } from "../../features/query-switching/runtime-query-input.js";
 
 type UseHeaderQueryFlowParams = {
   initialSavedHeaderQueries: SavedQueryPreference[];
@@ -28,6 +31,9 @@ export type HeaderQueryFlowApi = HeaderQueryFlowState & {
   toggleNewHeaderQueryMode: () => void;
   loadSavedHeaderQuery: (queryId: string) => Promise<void>;
   saveCurrentHeaderQuery: (rawInput: string) => Promise<void>;
+  saveLoadedHeaderQuery: (input: RuntimeQueryInputResolution & {
+    loadedResponse: QueryIntakeResponse;
+  }) => Promise<HeaderQuerySaveResult>;
   deleteSavedHeaderQuery: (queryId: string) => void;
   hydrateSavedHeaderQueries: (savedHeaderQueries: SavedQueryPreference[], selectedHeaderQueryId: string) => void;
 };
@@ -65,25 +71,29 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
         return;
       }
       setHeaderQueryLoading(true);
-      const result = await loadSavedHeaderQueryFlow({
-        queryId,
-        state: {
-          savedHeaderQueries,
-          headerQueryLoading
-        },
-        runQuery: params.runQuery
-      });
+      try {
+        const result = await loadSavedHeaderQueryFlow({
+          queryId,
+          state: {
+            savedHeaderQueries,
+            headerQueryLoading
+          },
+          runQuery: params.runQuery
+        });
 
-      if (result.kind === "loaded") {
-        setSelectedHeaderQueryId(result.selectedHeaderQueryId);
-        setHeaderQueryMessage(null);
+        if (result.kind === "loaded") {
+          setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+          setHeaderQueryMessage(null);
+        }
+
+        if (result.kind === "error") {
+          setHeaderQueryMessage(result.message);
+        }
+      } catch (error) {
+        setHeaderQueryMessage(resolveUnexpectedHeaderQueryErrorMessage(error));
+      } finally {
+        setHeaderQueryLoading(false);
       }
-
-      if (result.kind === "error") {
-        setHeaderQueryMessage(result.message);
-      }
-
-      setHeaderQueryLoading(false);
     },
     [headerQueryLoading, params.runQuery, savedHeaderQueries]
   );
@@ -95,33 +105,88 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
       }
       setHeaderQueryLoading(true);
 
-      const result = await saveCurrentHeaderQueryFlow({
-        rawInput,
-        state: {
-          savedHeaderQueries,
-          headerQueryLoading
-        },
-        response: params.getResponse(),
-        runQuery: params.runQuery,
-        fetchQueryDetails: params.fetchQueryDetails,
-        headerSavedQueryLimit: params.headerSavedQueryLimit
-      });
+      try {
+        const result = await saveCurrentHeaderQueryFlow({
+          rawInput,
+          state: {
+            savedHeaderQueries,
+            headerQueryLoading
+          },
+          response: params.getResponse(),
+          runQuery: params.runQuery,
+          fetchQueryDetails: params.fetchQueryDetails,
+          headerSavedQueryLimit: params.headerSavedQueryLimit
+        });
 
-      if (result.kind === "saved") {
-        setSavedHeaderQueries(result.savedHeaderQueries);
-        setSelectedHeaderQueryId(result.selectedHeaderQueryId);
-        setNewHeaderQueryMode(false);
-        setNewHeaderQueryInput("");
-        setHeaderQueryMessage(null);
+        if (result.kind === "saved") {
+          applySavedHeaderQueryResult(result, {
+            setSavedHeaderQueries,
+            setSelectedHeaderQueryId
+          });
+          setNewHeaderQueryMode(false);
+          setNewHeaderQueryInput("");
+          setHeaderQueryMessage(null);
+        }
+
+        if (result.kind === "error") {
+          setHeaderQueryMessage(result.message);
+        }
+      } catch (error) {
+        setHeaderQueryMessage(resolveUnexpectedHeaderQueryErrorMessage(error));
+      } finally {
+        setHeaderQueryLoading(false);
       }
-
-      if (result.kind === "error") {
-        setHeaderQueryMessage(result.message);
-      }
-
-      setHeaderQueryLoading(false);
     },
     [headerQueryLoading, params, savedHeaderQueries]
+  );
+
+  const saveLoadedHeaderQuery = React.useCallback(
+    async (input: RuntimeQueryInputResolution & { loadedResponse: QueryIntakeResponse }): Promise<HeaderQuerySaveResult> => {
+      if (headerQueryLoading) {
+        return {
+          kind: "ignored_loading"
+        };
+      }
+      setHeaderQueryLoading(true);
+
+      try {
+        const result = await saveLoadedHeaderQueryFlow({
+          ...input,
+          state: {
+            savedHeaderQueries,
+            headerQueryLoading
+          },
+          fetchQueryDetails: params.fetchQueryDetails,
+          headerSavedQueryLimit: params.headerSavedQueryLimit
+        });
+
+        if (result.kind === "saved") {
+          applySavedHeaderQueryResult(result, {
+            setSavedHeaderQueries,
+            setSelectedHeaderQueryId
+          });
+          setNewHeaderQueryMode(false);
+          setNewHeaderQueryInput("");
+          setHeaderQueryMessage(null);
+        }
+
+        if (result.kind === "error") {
+          setHeaderQueryMessage(result.message);
+        }
+
+        return result;
+      } catch (error) {
+        const result: HeaderQuerySaveResult = {
+          kind: "error",
+          message: resolveUnexpectedHeaderQueryErrorMessage(error)
+        };
+        setHeaderQueryMessage(result.message);
+        return result;
+      } finally {
+        setHeaderQueryLoading(false);
+      }
+    },
+    [headerQueryLoading, params.fetchQueryDetails, params.headerSavedQueryLimit, savedHeaderQueries]
   );
 
   const deleteSavedHeaderQuery = React.useCallback(
@@ -160,7 +225,23 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
     toggleNewHeaderQueryMode,
     loadSavedHeaderQuery,
     saveCurrentHeaderQuery,
+    saveLoadedHeaderQuery,
     deleteSavedHeaderQuery,
     hydrateSavedHeaderQueries
   };
+}
+
+function applySavedHeaderQueryResult(
+  result: Extract<HeaderQuerySaveResult, { kind: "saved" }>,
+  setters: {
+    setSavedHeaderQueries: React.Dispatch<React.SetStateAction<SavedQueryPreference[]>>;
+    setSelectedHeaderQueryId: React.Dispatch<React.SetStateAction<string>>;
+  }
+): void {
+  setters.setSavedHeaderQueries(result.savedHeaderQueries);
+  setters.setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+}
+
+function resolveUnexpectedHeaderQueryErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Query could not be loaded.";
 }

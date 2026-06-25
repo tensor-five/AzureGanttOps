@@ -4,7 +4,13 @@ import {
   type UserPreferences
 } from "../../shared/user-preferences/user-preferences.client.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
-import { ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
+import {
+  ORG_KEY,
+  PROJECT_KEY,
+  QUERY_INPUT_KEY,
+  resolveRuntimeQueryInput,
+  type RuntimeQueryInputResolution
+} from "../../features/query-switching/runtime-query-input.js";
 import {
   buildSavedHeaderQueryCandidate,
   filterHeaderQueries,
@@ -13,13 +19,13 @@ import {
 } from "./ui-client-header-query-service.js";
 import {
   buildSavedQueryLabel,
-  inferSavedQueryId,
   readPersistedQueryContext,
   upsertSavedQueries
 } from "./ui-client-storage.js";
 
 const INVALID_QUERY_MESSAGE = "Invalid query. Provide a URL or a query ID with context.";
 const QUERY_LOAD_FAILED_MESSAGE = "Query could not be loaded.";
+const QUERY_SAVE_FAILED_MESSAGE = "Query could not be saved because loading did not complete.";
 
 export type HeaderQueryFlowState = {
   savedHeaderQueries: SavedQueryPreference[];
@@ -117,23 +123,29 @@ export async function loadSavedHeaderQueryFlow(params: {
     };
   }
 
-  const storage = params.storage ?? (typeof localStorage !== "undefined" ? localStorage : undefined);
-  if (storage) {
-    storage.setItem(QUERY_INPUT_KEY, selected.queryInput);
-    if (selected.organization) {
-      storage.setItem(ORG_KEY, selected.organization);
-    }
-    if (selected.project) {
-      storage.setItem(PROJECT_KEY, selected.project);
-    }
+  let resolvedInput: RuntimeQueryInputResolution;
+  try {
+    resolvedInput = resolveRuntimeQueryInput(selected.queryInput, {
+      organization: selected.organization ?? "",
+      project: selected.project ?? ""
+    });
+  } catch {
+    return {
+      kind: "error",
+      message: QUERY_LOAD_FAILED_MESSAGE
+    };
   }
 
   try {
     await params.runQuery({
-      queryId: selected.queryInput
+      queryId: resolvedInput.transportQueryInput
     });
     (params.persistPatch ?? persistUserPreferencesPatch)({
       selectedHeaderQueryId: selected.id
+    });
+    persistCompatibilityQueryContext({
+      ...resolvedInput,
+      storage: params.storage
     });
 
     return {
@@ -176,18 +188,21 @@ export async function saveCurrentHeaderQueryFlow(params: {
     orgKey: ORG_KEY,
     projectKey: PROJECT_KEY
   });
-  const transportQueryInput = resolveQueryRunInput(normalizedInput, persisted.organization, persisted.project);
-  if (!transportQueryInput) {
+
+  let resolvedInput: RuntimeQueryInputResolution;
+  try {
+    resolvedInput = resolveRuntimeQueryInput(normalizedInput, persisted);
+  } catch {
     return {
       kind: "error",
       message: INVALID_QUERY_MESSAGE
     };
   }
 
-  const queryId = inferSavedQueryId(transportQueryInput);
+  let loadedResponse: QueryIntakeResponse;
   try {
-    await params.runQuery({
-      queryId: transportQueryInput
+    loadedResponse = await params.runQuery({
+      queryId: resolvedInput.transportQueryInput
     });
   } catch (error) {
     return {
@@ -196,7 +211,44 @@ export async function saveCurrentHeaderQueryFlow(params: {
     };
   }
 
-  let azureQueryName = findAzureSavedQueryName(params.response, queryId);
+  return saveLoadedHeaderQueryFlow({
+    ...resolvedInput,
+    state: params.state,
+    loadedResponse,
+    fallbackResponse: params.response,
+    fetchQueryDetails: params.fetchQueryDetails,
+    headerSavedQueryLimit: params.headerSavedQueryLimit,
+    persistPatch: params.persistPatch
+  });
+}
+
+export async function saveLoadedHeaderQueryFlow(params: RuntimeQueryInputResolution & {
+  state: Pick<HeaderQueryFlowState, "savedHeaderQueries" | "headerQueryLoading">;
+  loadedResponse: QueryIntakeResponse;
+  fallbackResponse?: QueryIntakeResponse | null;
+  fetchQueryDetails: (input: { queryId: string }) => Promise<{ name: string }>;
+  headerSavedQueryLimit: number;
+  persistPatch?: typeof persistUserPreferencesPatch;
+  storage?: Pick<Storage, "setItem">;
+}): Promise<HeaderQuerySaveResult> {
+  if (params.state.headerQueryLoading) {
+    return {
+      kind: "ignored_loading"
+    };
+  }
+
+  if (!isSaveableLoadedQueryResponse(params.loadedResponse)) {
+    return {
+      kind: "error",
+      message: resolveLoadedQuerySaveError(params.loadedResponse)
+    };
+  }
+
+  const queryId = params.loadedResponse.activeQueryId;
+  let azureQueryName =
+    findAzureSavedQueryName(params.loadedResponse, queryId) ??
+    findAzureSavedQueryName(params.fallbackResponse ?? null, queryId);
+
   try {
     const queryDetails = await params.fetchQueryDetails({ queryId });
     const normalizedName = queryDetails.name.trim();
@@ -209,9 +261,9 @@ export async function saveCurrentHeaderQueryFlow(params: {
 
   const candidate: SavedQueryPreference = buildSavedHeaderQueryCandidate({
     queryId,
-    transportQueryInput,
-    organization: persisted.organization,
-    project: persisted.project,
+    transportQueryInput: params.transportQueryInput,
+    organization: params.resolvedContext.organization,
+    project: params.resolvedContext.project,
     azureQueryName,
     fallbackLabel: buildSavedQueryLabel()
   });
@@ -221,12 +273,64 @@ export async function saveCurrentHeaderQueryFlow(params: {
     savedQueries: nextSavedQueries,
     selectedHeaderQueryId: candidate.id
   });
+  persistCompatibilityQueryContext(params);
 
   return {
     kind: "saved",
     savedHeaderQueries: nextSavedQueries,
     selectedHeaderQueryId: candidate.id
   };
+}
+
+function isSaveableLoadedQueryResponse(
+  response: QueryIntakeResponse
+): response is QueryIntakeResponse & { activeQueryId: string } {
+  return response.preflightStatus === "READY" && response.statusCode === "OK" && Boolean(response.activeQueryId);
+}
+
+function resolveLoadedQuerySaveError(response: QueryIntakeResponse): string {
+  if (response.guidance) {
+    return response.guidance;
+  }
+
+  if (response.preflightStatus !== "READY") {
+    return QUERY_LOAD_FAILED_MESSAGE;
+  }
+
+  return QUERY_SAVE_FAILED_MESSAGE;
+}
+
+function persistCompatibilityQueryContext(params: RuntimeQueryInputResolution & {
+  storage?: Pick<Storage, "setItem">;
+}): void {
+  const storage = resolveWritableStorage(params.storage);
+  if (!storage) {
+    return;
+  }
+
+  persistStorageValue(storage, QUERY_INPUT_KEY, params.rawInput);
+  persistStorageValue(storage, ORG_KEY, params.resolvedContext.organization);
+  persistStorageValue(storage, PROJECT_KEY, params.resolvedContext.project);
+}
+
+function resolveWritableStorage(storage?: Pick<Storage, "setItem">): Pick<Storage, "setItem"> | undefined {
+  if (storage && typeof storage.setItem === "function") {
+    return storage;
+  }
+
+  if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
+    return localStorage;
+  }
+
+  return undefined;
+}
+
+function persistStorageValue(storage: Pick<Storage, "setItem">, key: string, value: string): void {
+  try {
+    storage.setItem(key, value);
+  } catch {
+    // localStorage compatibility writes must never block the lowdb-backed flow.
+  }
 }
 
 export function deleteSavedHeaderQueryFlow(params: {
@@ -242,7 +346,7 @@ export function deleteSavedHeaderQueryFlow(params: {
 
   (params.persistPatch ?? persistUserPreferencesPatch)({
     savedQueries: next.queries,
-    selectedHeaderQueryId: next.selectedHeaderQueryId || undefined
+    selectedHeaderQueryId: next.selectedHeaderQueryId
   });
 
   return {

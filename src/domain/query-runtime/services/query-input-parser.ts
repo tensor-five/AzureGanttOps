@@ -56,9 +56,14 @@ function fromAzureQueryUrl(value: string): QueryContext {
     throw new Error("Paste a valid Azure DevOps query URL.");
   }
 
-  const segments = url.pathname.split("/").filter(Boolean);
+  const segments = url.pathname.split("/").filter(Boolean).map(decodePathSegment);
   const organization = segments[0] ?? "";
   const project = segments[1] ?? "";
+  const queryRoute = segments[2]?.toLowerCase() === "_queries" && segments[3]?.toLowerCase() === "query";
+
+  if (!queryRoute) {
+    throw new Error("Paste a valid Azure DevOps query URL.");
+  }
 
   const queryIdCandidate =
     url.searchParams.get("qid") ?? url.searchParams.get("id") ?? extractGuidFromPath(url.pathname);
@@ -77,6 +82,14 @@ function fromAzureQueryUrl(value: string): QueryContext {
 function extractGuidFromPath(pathname: string): string | null {
   const match = pathname.match(QUERY_GUID_EXTRACT_PATTERN);
   return match ? match[0] : null;
+}
+
+function decodePathSegment(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    throw new Error("Paste a valid Azure DevOps query URL.");
+  }
 }
 
 function isQueryIdLike(value: string): boolean {

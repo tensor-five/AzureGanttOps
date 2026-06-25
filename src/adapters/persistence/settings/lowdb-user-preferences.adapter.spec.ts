@@ -59,4 +59,37 @@ describe("LowdbUserPreferencesAdapter", () => {
 
     await expect(adapter.deleteCurrentUserPreferences()).resolves.toBe(false);
   });
+
+  it("persists an explicit empty saved queries list when the last query is deleted", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "user-preferences-"));
+    const filePath = path.join(root, "settings", "user-preferences.json");
+    const adapter = new LowdbUserPreferencesAdapter(filePath, "local-user");
+
+    await adapter.mergePreferences({
+      savedQueries: [
+        {
+          id: "37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          name: "Delivery",
+          queryInput: "https://dev.azure.com/contoso/delivery/_queries/query/37f6f880-0b7b-4350-9f97-7263b40d4e95",
+          organization: "contoso",
+          project: "delivery"
+        }
+      ],
+      selectedHeaderQueryId: "37f6f880-0b7b-4350-9f97-7263b40d4e95"
+    });
+
+    const cleared = await adapter.mergePreferences({
+      savedQueries: [],
+      selectedHeaderQueryId: ""
+    });
+
+    expect(cleared.savedQueries).toEqual([]);
+    expect(cleared.selectedHeaderQueryId).toBe("");
+
+    const reloadedAdapter = new LowdbUserPreferencesAdapter(filePath, "local-user");
+    await expect(reloadedAdapter.getPreferences()).resolves.toMatchObject({
+      savedQueries: [],
+      selectedHeaderQueryId: ""
+    });
+  });
 });

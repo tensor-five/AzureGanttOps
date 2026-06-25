@@ -6,6 +6,15 @@ import {
   readPersistedQueryMappingSelection
 } from "../field-mapping/query-profile-storage.js";
 import { AZURE_SESSION_EXPIRED_QUERY_HINT } from "../../shared/azure-devops/azure-session-recovery.js";
+import {
+  ORG_KEY,
+  PROJECT_KEY,
+  QUERY_INPUT_KEY,
+  resolveRuntimeQueryInput,
+  tryResolveRuntimeQueryInput
+} from "./runtime-query-input.js";
+
+export { ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "./runtime-query-input.js";
 
 export type QuerySelectorProps = {
   savedQueries: Array<{
@@ -28,18 +37,7 @@ export type QuerySelectorProps = {
   }>;
 };
 
-type ParsedSelection = {
-  queryId: string;
-  organization: string;
-  project: string;
-  source: "url" | "id";
-};
-
-export const ORG_KEY = "azure-ganttops.organization";
-export const PROJECT_KEY = "azure-ganttops.project";
-export const QUERY_INPUT_KEY = "azure-ganttops.query-input";
 export const AZ_CLI_PATH_KEY = "azure-ganttops.az-cli-path";
-const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
   const [queryInput, setQueryInput] = React.useState(() => readLocalStorage(QUERY_INPUT_KEY));
@@ -52,63 +50,54 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
   const [pathInFlight, setPathInFlight] = React.useState(false);
   const [pathMessage, setPathMessage] = React.useState<string | null>(null);
 
-  const parsedSelection = React.useMemo(
-    () => parseRuntimeQuerySelection(queryInput, organization, project),
+  const resolvedQueryInput = React.useMemo(
+    () => tryResolveRuntimeQueryInput(queryInput, { organization, project }),
     [queryInput, organization, project]
   );
 
   const hasContext =
-    parsedSelection !== null &&
-    parsedSelection.queryId.length > 0 &&
-    parsedSelection.organization.length > 0 &&
-    parsedSelection.project.length > 0;
+    resolvedQueryInput !== null &&
+    resolvedQueryInput.resolvedContext.queryId.length > 0 &&
+    resolvedQueryInput.resolvedContext.organization.length > 0 &&
+    resolvedQueryInput.resolvedContext.project.length > 0;
 
   const runQuery = React.useCallback(
     async (rawInput: string) => {
-      const normalizedInput = rawInput.trim();
-      if (/^[0-9]+$/.test(normalizedInput)) {
-        setQueryInputError("Numeric-only input is not a valid query ID. Use a GUID query ID or full Azure DevOps query URL.");
-        return;
-      }
-
-      const parsed = parseRuntimeQuerySelection(rawInput, organization, project);
-      if (!parsed) {
+      let resolved;
+      try {
+        resolved = resolveRuntimeQueryInput(rawInput, { organization, project });
+      } catch (error) {
+        setQueryInputError(error instanceof Error ? error.message : "Invalid query input.");
         return;
       }
 
       setQueryInputError(null);
 
-      const persisted = readPersistedQueryMappingSelection(parsed.queryId);
-
-      const normalizedRawInput = rawInput.trim();
-      const transportQueryInput = resolveQueryRunInput(rawInput, organization, project);
-      if (!transportQueryInput) {
-        return;
-      }
+      const persisted = readPersistedQueryMappingSelection(resolved.resolvedContext.queryId);
 
       const response = await props.onRun({
-        queryId: transportQueryInput,
+        queryId: resolved.transportQueryInput,
         mappingProfileId: persisted
       });
 
-      persistLocalStorage(QUERY_INPUT_KEY, normalizedRawInput);
-      if (parsed.organization) {
-        persistLocalStorage(ORG_KEY, parsed.organization);
+      persistLocalStorage(QUERY_INPUT_KEY, resolved.rawInput);
+      if (resolved.resolvedContext.organization) {
+        persistLocalStorage(ORG_KEY, resolved.resolvedContext.organization);
       }
-      if (parsed.project) {
-        persistLocalStorage(PROJECT_KEY, parsed.project);
+      if (resolved.resolvedContext.project) {
+        persistLocalStorage(PROJECT_KEY, resolved.resolvedContext.project);
       }
 
-      setQueryInput(parsed.queryId);
-      setOrganization(parsed.organization);
-      setProject(parsed.project);
+      setQueryInput(resolved.resolvedContext.queryId);
+      setOrganization(resolved.resolvedContext.organization);
+      setProject(resolved.resolvedContext.project);
 
       if (response.preflightStatus !== "READY") {
         return;
       }
 
       if (response.activeMappingProfileId) {
-        persistQueryMappingSelection(parsed.queryId, response.activeMappingProfileId);
+        persistQueryMappingSelection(resolved.resolvedContext.queryId, response.activeMappingProfileId);
       }
 
       if (
@@ -119,7 +108,7 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
         props.onNeedsFix(response);
       }
     },
-    [organization, project, props, queryInputError]
+    [organization, project, props]
   );
 
   const buttons = props.savedQueries.map((query) =>
@@ -171,8 +160,8 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
         },
         hasContext ? "Ready" : "Incomplete"
       ),
-      hasContext && parsedSelection
-        ? `Ready: org ${parsedSelection.organization} | project ${parsedSelection.project} | query ${parsedSelection.queryId}`
+      hasContext && resolvedQueryInput
+        ? `Ready: org ${resolvedQueryInput.resolvedContext.organization} | project ${resolvedQueryInput.resolvedContext.project} | query ${resolvedQueryInput.resolvedContext.queryId}`
         : "Context incomplete: provide full URL, or fill Organization + Project + Query ID."
     ),
     React.createElement(
@@ -384,87 +373,8 @@ export function QuerySelector(props: QuerySelectorProps): React.ReactElement {
   );
 }
 
-export function resolveQueryRunInput(queryInput: string, organization: string, project: string): string | null {
-  const parsed = parseRuntimeQuerySelection(queryInput, organization, project);
-  if (!parsed) {
-    return null;
-  }
-
-  const normalizedRawInput = queryInput.trim();
-  return parsed.source === "url"
-    ? normalizedRawInput
-    : buildQueryInput(parsed.queryId, parsed.organization, parsed.project);
-}
-
-function parseRuntimeQuerySelection(input: string, organization: string, project: string): ParsedSelection | null {
-  const normalizedInput = input.trim();
-  if (!normalizedInput) {
-    return null;
-  }
-
-  const parsedFromUrl = parseAzureQueryUrl(normalizedInput);
-  if (parsedFromUrl) {
-    return {
-      ...parsedFromUrl,
-      source: "url"
-    };
-  }
-
-  return {
-    queryId: normalizedInput,
-    organization: organization.trim(),
-    project: project.trim(),
-    source: "id"
-  };
-}
-
-function parseAzureQueryUrl(input: string): Omit<ParsedSelection, "source"> | null {
-  let url: URL;
-  try {
-    url = new URL(input);
-  } catch {
-    return null;
-  }
-
-  if (url.hostname.toLowerCase() !== "dev.azure.com") {
-    return null;
-  }
-
-  const segments = url.pathname.split("/").filter(Boolean);
-  const organization = (segments[0] ?? "").trim();
-  const project = (segments[1] ?? "").trim();
-  const queryIdCandidate =
-    url.searchParams.get("qid") ?? url.searchParams.get("id") ?? extractGuidFromPath(url.pathname);
-
-  if (!organization || !project || !queryIdCandidate || !GUID_PATTERN.test(queryIdCandidate)) {
-    return null;
-  }
-
-  return {
-    queryId: queryIdCandidate,
-    organization,
-    project
-  };
-}
-
-function extractGuidFromPath(pathname: string): string | null {
-  const match = pathname.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
-  return match ? match[0] : null;
-}
-
-function buildQueryInput(queryId: string, organization: string, project: string): string {
-  const org = organization.trim();
-  const proj = project.trim();
-
-  if (!org || !proj) {
-    return queryId;
-  }
-
-  return `https://dev.azure.com/${encodeURIComponent(org)}/${encodeURIComponent(proj)}/_queries/query?qid=${encodeURIComponent(queryId)}`;
-}
-
 function readLocalStorage(key: string): string {
-  if (typeof localStorage === "undefined") {
+  if (typeof localStorage === "undefined" || typeof localStorage.getItem !== "function") {
     return "";
   }
 
@@ -472,9 +382,13 @@ function readLocalStorage(key: string): string {
 }
 
 function persistLocalStorage(key: string, value: string): void {
-  if (typeof localStorage === "undefined") {
+  if (typeof localStorage === "undefined" || typeof localStorage.setItem !== "function") {
     return;
   }
 
-  localStorage.setItem(key, value.trim());
+  try {
+    localStorage.setItem(key, value.trim());
+  } catch {
+    // Compatibility writes are best-effort; the active run already succeeded.
+  }
 }

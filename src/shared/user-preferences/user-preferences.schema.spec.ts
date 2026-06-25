@@ -121,7 +121,15 @@ describe("user-preferences.schema", () => {
     ]);
   });
 
-  it("normalizes selected header query id and drops empty values", () => {
+  it("preserves an explicit empty saved queries list", () => {
+    expect(
+      sanitizeUserPreferences({
+        savedQueries: []
+      }).savedQueries
+    ).toEqual([]);
+  });
+
+  it("normalizes selected header query id and preserves explicit empty values for clearing", () => {
     expect(
       sanitizeUserPreferences({
         selectedHeaderQueryId: " 42 "
@@ -131,7 +139,7 @@ describe("user-preferences.schema", () => {
       sanitizeUserPreferences({
         selectedHeaderQueryId: "  "
       }).selectedHeaderQueryId
-    ).toBeUndefined();
+    ).toBe("");
   });
 
   it("sanitizes saved query preference", () => {
