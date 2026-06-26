@@ -26895,35 +26895,17 @@ function InitialQueryOnboardingDialog(props) {
       event.preventDefault();
       props.onSubmit();
     }
-  }, import_react3.default.createElement("header", { className: "initial-query-onboarding-header" }, import_react3.default.createElement("h2", { id: "initial-query-onboarding-title" }, "Erste Query verbinden"), import_react3.default.createElement("p", { id: "initial-query-onboarding-desc", className: "query-selector-hint" }, "F\xFCge eine Azure DevOps Query-URL ein oder nutze eine Query-ID mit Organisation und Projekt.")), import_react3.default.createElement("div", { className: "query-selector-form" }, import_react3.default.createElement("label", { className: "query-selector-field" }, "Query URL oder Query ID", import_react3.default.createElement("input", {
+  }, import_react3.default.createElement("header", { className: "initial-query-onboarding-header" }, import_react3.default.createElement("h2", { id: "initial-query-onboarding-title" }, "Erste Query verbinden"), import_react3.default.createElement("p", { id: "initial-query-onboarding-desc", className: "query-selector-hint" }, "F\xFCge eine Azure DevOps Query-URL ein.")), import_react3.default.createElement("div", { className: "query-selector-form" }, import_react3.default.createElement("label", { className: "query-selector-field" }, "Query URL", import_react3.default.createElement("input", {
     ref: queryInputRef,
     className: "query-selector-input",
-    "aria-label": "Erststart Query URL oder Query ID",
+    "aria-label": "Erststart Query URL",
     autoComplete: "off",
     disabled: props.loading,
     value: props.queryInput,
     onChange: (event) => {
       props.onQueryInputChange(event.target.value);
     }
-  })), import_react3.default.createElement("div", { className: "query-selector-grid" }, import_react3.default.createElement("label", { className: "query-selector-field" }, "Organisation", import_react3.default.createElement("input", {
-    className: "query-selector-input",
-    "aria-label": "Erststart Organisation",
-    autoComplete: "off",
-    disabled: props.loading,
-    value: props.organization,
-    onChange: (event) => {
-      props.onOrganizationChange(event.target.value);
-    }
-  })), import_react3.default.createElement("label", { className: "query-selector-field" }, "Projekt", import_react3.default.createElement("input", {
-    className: "query-selector-input",
-    "aria-label": "Erststart Projekt",
-    autoComplete: "off",
-    disabled: props.loading,
-    value: props.project,
-    onChange: (event) => {
-      props.onProjectChange(event.target.value);
-    }
-  })))), props.errorMessage ? import_react3.default.createElement("div", {
+  }))), props.errorMessage ? import_react3.default.createElement("div", {
     role: "alert",
     className: "query-selector-error initial-query-onboarding-error"
   }, props.errorMessage) : null, props.loading || props.statusMessage ? import_react3.default.createElement("div", {
@@ -26933,8 +26915,13 @@ function InitialQueryOnboardingDialog(props) {
   }, props.loading ? "Query wird geladen..." : props.statusMessage) : null, import_react3.default.createElement("div", { className: "initial-query-onboarding-actions" }, import_react3.default.createElement("button", {
     type: "submit",
     className: "query-selector-primary initial-query-onboarding-submit",
-    disabled: props.loading
-  }, props.loading ? "Laden..." : "Query laden"))));
+    disabled: props.loading,
+    "aria-busy": props.loading
+  }, import_react3.default.createElement("span", { className: "initial-query-onboarding-submit-content" }, props.loading ? import_react3.default.createElement("span", {
+    className: "initial-query-onboarding-submit-spinner",
+    "aria-hidden": true,
+    "data-testid": "initial-query-onboarding-submit-spinner"
+  }) : null, import_react3.default.createElement("span", null, "Query laden"))))));
 }
 function trapDialogFocus(event, dialogElement) {
   if (event.key !== "Tab" || !dialogElement) {
@@ -39093,13 +39080,19 @@ function isCompletedRestoredQueryResponse(response) {
 }
 
 // dist/src/app/bootstrap/use-initial-query-onboarding-flow.js
+var MISSING_QUERY_CONTEXT_ERROR_MESSAGE = "Add organization and project in settings.";
+var INITIAL_QUERY_URL_ERROR_MESSAGE = "F\xFCge eine vollst\xE4ndige Azure DevOps Query-URL ein.";
+function getInitialQueryOnboardingErrorMessage(error) {
+  if (error instanceof Error && error.message === MISSING_QUERY_CONTEXT_ERROR_MESSAGE) {
+    return INITIAL_QUERY_URL_ERROR_MESSAGE;
+  }
+  return error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+}
 function useInitialQueryOnboardingFlow(params) {
   const hydratePreferences = params.hydratePreferences ?? hydrateUserPreferences;
   const [status, setStatus] = import_react34.default.useState("pending_hydration");
   const [hydratedPreferences, setHydratedPreferences] = import_react34.default.useState(null);
   const [queryInput, setQueryInputState] = import_react34.default.useState("");
-  const [organization, setOrganizationState] = import_react34.default.useState(params.initialOrganization);
-  const [project, setProjectState] = import_react34.default.useState(params.initialProject);
   const [loading, setLoading] = import_react34.default.useState(false);
   const [statusMessage, setStatusMessage] = import_react34.default.useState(null);
   const [errorMessage, setErrorMessage] = import_react34.default.useState(null);
@@ -39146,14 +39139,6 @@ function useInitialQueryOnboardingFlow(params) {
     setQueryInputState(value);
     setErrorMessage(null);
   }, []);
-  const setOrganization = import_react34.default.useCallback((value) => {
-    setOrganizationState(value);
-    setErrorMessage(null);
-  }, []);
-  const setProject = import_react34.default.useCallback((value) => {
-    setProjectState(value);
-    setErrorMessage(null);
-  }, []);
   const submit = import_react34.default.useCallback(async () => {
     if (loading) {
       return;
@@ -39162,10 +39147,7 @@ function useInitialQueryOnboardingFlow(params) {
     setErrorMessage(null);
     setStatusMessage("Query wird gepr\xFCft...");
     try {
-      const resolvedInput = resolveRuntimeQueryInput(queryInput, {
-        organization,
-        project
-      });
+      const resolvedInput = resolveRuntimeQueryInput(queryInput);
       setStatusMessage("Query wird geladen...");
       const loadedResponse = await params.runQuery({
         queryId: resolvedInput.transportQueryInput
@@ -39184,7 +39166,7 @@ function useInitialQueryOnboardingFlow(params) {
       setErrorMessage(saveResult.kind === "error" ? saveResult.message : "Eine Query wird bereits geladen. Bitte warte kurz und versuche es erneut.");
       setStatusMessage(null);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Query konnte nicht geladen werden.");
+      setErrorMessage(getInitialQueryOnboardingErrorMessage(error));
       setStatusMessage(null);
     } finally {
       setLoading(false);
@@ -39192,23 +39174,17 @@ function useInitialQueryOnboardingFlow(params) {
   }, [
     completeInitialQueryOnboarding,
     loading,
-    organization,
     params,
-    project,
     queryInput
   ]);
   return {
     status,
     hydratedPreferences,
     queryInput,
-    organization,
-    project,
     loading,
     statusMessage,
     errorMessage,
     setQueryInput,
-    setOrganization,
-    setProject,
     submit,
     completeInitialQueryOnboarding
   };
@@ -39577,8 +39553,6 @@ function UiShellApp(props) {
   });
   const initialQueryOnboardingFlow = useInitialQueryOnboardingFlow({
     restoredResponse: initialResponse,
-    initialOrganization: readLocalStorageValue(ORG_KEY),
-    initialProject: readLocalStorageValue(PROJECT_KEY),
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
@@ -40174,14 +40148,10 @@ function UiShellApp(props) {
     }
   }))), import_react35.default.createElement("footer", { className: "ui-shell-footer" }, import_react35.default.createElement("span", null, "An "), import_react35.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react35.default.createElement("span", null, " by Christian Betz @ "), import_react35.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), initialQueryOnboardingFlow.status === "required" ? import_react35.default.createElement(InitialQueryOnboardingDialog, {
     queryInput: initialQueryOnboardingFlow.queryInput,
-    organization: initialQueryOnboardingFlow.organization,
-    project: initialQueryOnboardingFlow.project,
     loading: initialQueryOnboardingFlow.loading,
     statusMessage: initialQueryOnboardingFlow.statusMessage,
     errorMessage: initialQueryOnboardingFlow.errorMessage,
     onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
-    onOrganizationChange: initialQueryOnboardingFlow.setOrganization,
-    onProjectChange: initialQueryOnboardingFlow.setProject,
     onSubmit: initialQueryOnboardingFlow.submit
   }) : null, showRefreshDiscardWarning ? import_react35.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",

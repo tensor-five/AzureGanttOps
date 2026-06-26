@@ -3789,7 +3789,8 @@ input {
     transform: none;
   }
 
-  .timeline-action-button-spinner {
+  .timeline-action-button-spinner,
+  .initial-query-onboarding-submit-spinner {
     animation: none;
   }
 
@@ -4195,6 +4196,24 @@ input {
   min-width: 140px;
   min-height: 38px;
   white-space: nowrap;
+}
+
+.initial-query-onboarding-submit-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.initial-query-onboarding-submit-spinner {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  animation: timeline-action-button-spin 0.7s linear infinite;
 }
 
 @media (max-width: 640px) {

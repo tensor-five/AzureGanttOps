@@ -2,14 +2,10 @@ import React from "react";
 
 export type InitialQueryOnboardingDialogProps = {
   queryInput: string;
-  organization: string;
-  project: string;
   loading: boolean;
   statusMessage: string | null;
   errorMessage: string | null;
   onQueryInputChange: (value: string) => void;
-  onOrganizationChange: (value: string) => void;
-  onProjectChange: (value: string) => void;
   onSubmit: () => void;
 };
 
@@ -65,7 +61,7 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
         React.createElement(
           "p",
           { id: "initial-query-onboarding-desc", className: "query-selector-hint" },
-          "Füge eine Azure DevOps Query-URL ein oder nutze eine Query-ID mit Organisation und Projekt."
+          "Füge eine Azure DevOps Query-URL ein."
         )
       ),
       React.createElement(
@@ -74,11 +70,11 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
         React.createElement(
           "label",
           { className: "query-selector-field" },
-          "Query URL oder Query ID",
+          "Query URL",
           React.createElement("input", {
             ref: queryInputRef,
             className: "query-selector-input",
-            "aria-label": "Erststart Query URL oder Query ID",
+            "aria-label": "Erststart Query URL",
             autoComplete: "off",
             disabled: props.loading,
             value: props.queryInput,
@@ -86,40 +82,6 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
               props.onQueryInputChange((event.target as HTMLInputElement).value);
             }
           })
-        ),
-        React.createElement(
-          "div",
-          { className: "query-selector-grid" },
-          React.createElement(
-            "label",
-            { className: "query-selector-field" },
-            "Organisation",
-            React.createElement("input", {
-              className: "query-selector-input",
-              "aria-label": "Erststart Organisation",
-              autoComplete: "off",
-              disabled: props.loading,
-              value: props.organization,
-              onChange: (event) => {
-                props.onOrganizationChange((event.target as HTMLInputElement).value);
-              }
-            })
-          ),
-          React.createElement(
-            "label",
-            { className: "query-selector-field" },
-            "Projekt",
-            React.createElement("input", {
-              className: "query-selector-input",
-              "aria-label": "Erststart Projekt",
-              autoComplete: "off",
-              disabled: props.loading,
-              value: props.project,
-              onChange: (event) => {
-                props.onProjectChange((event.target as HTMLInputElement).value);
-              }
-            })
-          )
         )
       ),
       props.errorMessage
@@ -151,9 +113,21 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
           {
             type: "submit",
             className: "query-selector-primary initial-query-onboarding-submit",
-            disabled: props.loading
+            disabled: props.loading,
+            "aria-busy": props.loading
           },
-          props.loading ? "Laden..." : "Query laden"
+          React.createElement(
+            "span",
+            { className: "initial-query-onboarding-submit-content" },
+            props.loading
+              ? React.createElement("span", {
+                  className: "initial-query-onboarding-submit-spinner",
+                  "aria-hidden": true,
+                  "data-testid": "initial-query-onboarding-submit-spinner"
+                })
+              : null,
+            React.createElement("span", null, "Query laden")
+          )
         )
       )
     )

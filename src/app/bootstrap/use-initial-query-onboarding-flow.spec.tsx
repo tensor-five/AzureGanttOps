@@ -40,8 +40,6 @@ describe("use-initial-query-onboarding-flow", () => {
     const { result } = renderHook(() =>
       useInitialQueryOnboardingFlow({
         restoredResponse: null,
-        initialOrganization: "org",
-        initialProject: "project",
         runQuery,
         saveLoadedHeaderQuery,
         hydratePreferences
@@ -53,7 +51,7 @@ describe("use-initial-query-onboarding-flow", () => {
     });
 
     act(() => {
-      result.current.setQueryInput(QUERY_ID);
+      result.current.setQueryInput(QUERY_URL);
     });
     await act(async () => {
       await result.current.submit();
@@ -61,7 +59,7 @@ describe("use-initial-query-onboarding-flow", () => {
 
     expect(runQuery).toHaveBeenCalledWith({ queryId: QUERY_URL });
     expect(saveLoadedHeaderQuery).toHaveBeenCalledWith({
-      rawInput: QUERY_ID,
+      rawInput: QUERY_URL,
       transportQueryInput: QUERY_URL,
       resolvedContext: {
         organization: "org",
@@ -85,8 +83,37 @@ describe("use-initial-query-onboarding-flow", () => {
     const { result } = renderHook(() =>
       useInitialQueryOnboardingFlow({
         restoredResponse: null,
-        initialOrganization: "org",
-        initialProject: "project",
+        runQuery,
+        saveLoadedHeaderQuery,
+        hydratePreferences
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("required");
+    });
+
+    act(() => {
+      result.current.setQueryInput(QUERY_URL);
+    });
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(saveLoadedHeaderQuery).not.toHaveBeenCalled();
+    expect(result.current.status).toBe("required");
+    expect(result.current.loading).toBe(false);
+    expect(result.current.errorMessage).toBe("Azure CLI ist nicht angemeldet.");
+  });
+
+  it("rejects raw query IDs during initial onboarding", async () => {
+    const runQuery = vi.fn(async () => createResponse());
+    const saveLoadedHeaderQuery = vi.fn();
+    const hydratePreferences = vi.fn(async () => ({}));
+
+    const { result } = renderHook(() =>
+      useInitialQueryOnboardingFlow({
+        restoredResponse: null,
         runQuery,
         saveLoadedHeaderQuery,
         hydratePreferences
@@ -104,9 +131,10 @@ describe("use-initial-query-onboarding-flow", () => {
       await result.current.submit();
     });
 
+    expect(runQuery).not.toHaveBeenCalled();
     expect(saveLoadedHeaderQuery).not.toHaveBeenCalled();
     expect(result.current.status).toBe("required");
     expect(result.current.loading).toBe(false);
-    expect(result.current.errorMessage).toBe("Azure CLI ist nicht angemeldet.");
+    expect(result.current.errorMessage).toBe("Füge eine vollständige Azure DevOps Query-URL ein.");
   });
 });

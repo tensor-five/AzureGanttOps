@@ -248,7 +248,11 @@ function buildResponse(patch: ResponsePatch = {}): QueryIntakeResponse {
   };
 }
 
-async function mountRuntimeUi(page: Page, responses: QueryIntakeResponse[]): Promise<void> {
+async function mountRuntimeUi(
+  page: Page,
+  responses: QueryIntakeResponse[],
+  preferences: Record<string, unknown> = buildHarnessPreferences()
+): Promise<void> {
   await page.goto(HARNESS_HTML_URL);
   await page.waitForFunction(() => typeof window.__phase6Configure === "function");
   await page.evaluate(({ nextResponses, preferences, preferencesKey }) => {
@@ -265,7 +269,7 @@ async function mountRuntimeUi(page: Page, responses: QueryIntakeResponse[]): Pro
     window.__phase6Mount();
   }, {
     nextResponses: responses,
-    preferences: buildHarnessPreferences(),
+    preferences,
     preferencesKey: USER_PREFERENCES_SESSION_KEY
   });
 }
@@ -318,6 +322,43 @@ function buildHarnessPreferences(): {
 function buildHarnessQueryUrl(queryId: string): string {
   return `https://dev.azure.com/contoso/delivery/_queries/query/${queryId}`;
 }
+
+test("initial onboarding asks only for a query URL and loads into the timeline", async ({ page }) => {
+  const queryUrl = buildHarnessQueryUrl(QUERY_IDS.primary);
+
+  await mountRuntimeUi(page, [
+    buildResponse({
+      selectedQueryId: QUERY_IDS.primary,
+      activeQueryId: QUERY_IDS.primary
+    })
+  ], {});
+
+  const dialog = page.getByRole("dialog", { name: "Erste Query verbinden" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("textbox")).toHaveCount(1);
+  await expect(page.getByLabel("Erststart Query URL")).toBeVisible();
+  await expect(dialog.getByText("Organisation")).toHaveCount(0);
+  await expect(dialog.getByText("Projekt")).toHaveCount(0);
+  await expect(dialog.getByText("Query ID")).toHaveCount(0);
+
+  await page.evaluate(() => window.__phase6DelayNextSubmit(300));
+  await page.getByLabel("Erststart Query URL").fill(queryUrl);
+  await page.getByRole("button", { name: "Query laden" }).click();
+
+  const submitButton = page.getByRole("button", { name: "Query laden" });
+  await expect(submitButton).toBeDisabled();
+  await expect(submitButton).toHaveAttribute("aria-busy", "true");
+  const submitSpinner = page.getByTestId("initial-query-onboarding-submit-spinner");
+  await expect(submitSpinner).toHaveCount(1);
+  await expect(submitSpinner).toHaveAttribute("aria-hidden", "true");
+  await expect(submitSpinner).toHaveClass(/initial-query-onboarding-submit-spinner/);
+
+  await expect(dialog).toBeHidden();
+  await expect(page.getByLabel("timeline-pane")).toBeVisible();
+
+  const runtimeInfo = await getRuntimeInfo(page);
+  expect(runtimeInfo.callLog.map((entry) => entry.queryInput)).toEqual([queryUrl]);
+});
 
 test("query mapping timeline diagnostics retry refresh source-health journey", async ({ page }) => {
   const responses = [

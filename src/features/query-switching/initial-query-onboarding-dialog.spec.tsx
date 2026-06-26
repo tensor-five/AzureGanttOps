@@ -12,14 +12,10 @@ afterEach(() => {
 function renderDialog(overrides?: Partial<React.ComponentProps<typeof InitialQueryOnboardingDialog>>) {
   const props: React.ComponentProps<typeof InitialQueryOnboardingDialog> = {
     queryInput: "",
-    organization: "",
-    project: "",
     loading: false,
     statusMessage: null,
     errorMessage: null,
     onQueryInputChange: vi.fn(),
-    onOrganizationChange: vi.fn(),
-    onProjectChange: vi.fn(),
     onSubmit: vi.fn(),
     ...overrides
   };
@@ -37,10 +33,20 @@ describe("initial-query-onboarding-dialog", () => {
     const dialog = screen.getByRole("dialog", { name: "Erste Query verbinden" });
     expect(dialog.getAttribute("aria-modal")).toBe("true");
 
-    const queryInput = screen.getByLabelText("Erststart Query URL oder Query ID");
+    const queryInput = screen.getByLabelText("Erststart Query URL");
     await waitFor(() => {
       expect(document.activeElement).toBe(queryInput);
     });
+  });
+
+  it("only asks for the initial Azure DevOps query URL", () => {
+    renderDialog();
+
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getByLabelText("Erststart Query URL")).toBeTruthy();
+    expect(screen.queryByText("Organisation")).toBeNull();
+    expect(screen.queryByText("Projekt")).toBeNull();
+    expect(screen.queryByText("Query ID")).toBeNull();
   });
 
   it("shows loading status and alert errors", () => {
@@ -51,6 +57,17 @@ describe("initial-query-onboarding-dialog", () => {
 
     expect(screen.getByRole("status").textContent).toBe("Query wird geladen...");
     expect(screen.getByRole("alert").textContent).toBe("Azure CLI ist nicht angemeldet.");
+  });
+
+  it("keeps the submit button name stable and shows a hidden loading spinner", () => {
+    renderDialog({ loading: true });
+
+    const submitButton = screen.getByRole("button", { name: "Query laden" });
+    const spinner = screen.getByTestId("initial-query-onboarding-submit-spinner");
+
+    expect((submitButton as HTMLButtonElement).disabled).toBe(true);
+    expect(submitButton.getAttribute("aria-busy")).toBe("true");
+    expect(spinner.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("does not disappear on Escape or backdrop interaction", () => {
@@ -75,7 +92,7 @@ describe("initial-query-onboarding-dialog", () => {
     renderDialog();
 
     const dialog = screen.getByRole("dialog", { name: "Erste Query verbinden" });
-    const queryInput = screen.getByLabelText("Erststart Query URL oder Query ID");
+    const queryInput = screen.getByLabelText("Erststart Query URL");
     const submitButton = screen.getByRole("button", { name: "Query laden" });
 
     await waitFor(() => {
@@ -97,7 +114,7 @@ describe("initial-query-onboarding-dialog", () => {
 
     const { unmount } = renderDialog();
     await waitFor(() => {
-      expect(document.activeElement).toBe(screen.getByLabelText("Erststart Query URL oder Query ID"));
+      expect(document.activeElement).toBe(screen.getByLabelText("Erststart Query URL"));
     });
 
     unmount();

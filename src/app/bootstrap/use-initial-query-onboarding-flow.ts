@@ -15,10 +15,11 @@ import {
 } from "./ui-client-initial-query-onboarding.js";
 import type { HeaderQuerySaveResult } from "./ui-client-header-query-flow.js";
 
+const MISSING_QUERY_CONTEXT_ERROR_MESSAGE = "Add organization and project in settings.";
+const INITIAL_QUERY_URL_ERROR_MESSAGE = "Füge eine vollständige Azure DevOps Query-URL ein.";
+
 type UseInitialQueryOnboardingFlowParams = {
   restoredResponse: QueryIntakeResponse | null;
-  initialOrganization: string;
-  initialProject: string;
   runQuery: (request: { queryId: string }) => Promise<QueryIntakeResponse>;
   saveLoadedHeaderQuery: (input: RuntimeQueryInputResolution & {
     loadedResponse: QueryIntakeResponse;
@@ -30,17 +31,21 @@ export type InitialQueryOnboardingFlowApi = {
   status: InitialQueryOnboardingStatus;
   hydratedPreferences: UserPreferences | null;
   queryInput: string;
-  organization: string;
-  project: string;
   loading: boolean;
   statusMessage: string | null;
   errorMessage: string | null;
   setQueryInput: (value: string) => void;
-  setOrganization: (value: string) => void;
-  setProject: (value: string) => void;
   submit: () => Promise<void>;
   completeInitialQueryOnboarding: () => void;
 };
+
+function getInitialQueryOnboardingErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message === MISSING_QUERY_CONTEXT_ERROR_MESSAGE) {
+    return INITIAL_QUERY_URL_ERROR_MESSAGE;
+  }
+
+  return error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+}
 
 export function useInitialQueryOnboardingFlow(
   params: UseInitialQueryOnboardingFlowParams
@@ -49,8 +54,6 @@ export function useInitialQueryOnboardingFlow(
   const [status, setStatus] = React.useState<InitialQueryOnboardingStatus>("pending_hydration");
   const [hydratedPreferences, setHydratedPreferences] = React.useState<UserPreferences | null>(null);
   const [queryInput, setQueryInputState] = React.useState("");
-  const [organization, setOrganizationState] = React.useState(params.initialOrganization);
-  const [project, setProjectState] = React.useState(params.initialProject);
   const [loading, setLoading] = React.useState(false);
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -110,16 +113,6 @@ export function useInitialQueryOnboardingFlow(
     setErrorMessage(null);
   }, []);
 
-  const setOrganization = React.useCallback((value: string) => {
-    setOrganizationState(value);
-    setErrorMessage(null);
-  }, []);
-
-  const setProject = React.useCallback((value: string) => {
-    setProjectState(value);
-    setErrorMessage(null);
-  }, []);
-
   const submit = React.useCallback(async () => {
     if (loading) {
       return;
@@ -130,10 +123,7 @@ export function useInitialQueryOnboardingFlow(
     setStatusMessage("Query wird geprüft...");
 
     try {
-      const resolvedInput = resolveRuntimeQueryInput(queryInput, {
-        organization,
-        project
-      });
+      const resolvedInput = resolveRuntimeQueryInput(queryInput);
 
       setStatusMessage("Query wird geladen...");
       const loadedResponse = await params.runQuery({
@@ -160,7 +150,7 @@ export function useInitialQueryOnboardingFlow(
       );
       setStatusMessage(null);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Query konnte nicht geladen werden.");
+      setErrorMessage(getInitialQueryOnboardingErrorMessage(error));
       setStatusMessage(null);
     } finally {
       setLoading(false);
@@ -168,9 +158,7 @@ export function useInitialQueryOnboardingFlow(
   }, [
     completeInitialQueryOnboarding,
     loading,
-    organization,
     params,
-    project,
     queryInput
   ]);
 
@@ -178,14 +166,10 @@ export function useInitialQueryOnboardingFlow(
     status,
     hydratedPreferences,
     queryInput,
-    organization,
-    project,
     loading,
     statusMessage,
     errorMessage,
     setQueryInput,
-    setOrganization,
-    setProject,
     submit,
     completeInitialQueryOnboarding
   };

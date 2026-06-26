@@ -482,8 +482,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   });
   const initialQueryOnboardingFlow = useInitialQueryOnboardingFlow({
     restoredResponse: initialResponse,
-    initialOrganization: readLocalStorageValue(ORG_KEY),
-    initialProject: readLocalStorageValue(PROJECT_KEY),
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
@@ -1359,14 +1357,10 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     initialQueryOnboardingFlow.status === "required"
       ? React.createElement(InitialQueryOnboardingDialog, {
           queryInput: initialQueryOnboardingFlow.queryInput,
-          organization: initialQueryOnboardingFlow.organization,
-          project: initialQueryOnboardingFlow.project,
           loading: initialQueryOnboardingFlow.loading,
           statusMessage: initialQueryOnboardingFlow.statusMessage,
           errorMessage: initialQueryOnboardingFlow.errorMessage,
           onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
-          onOrganizationChange: initialQueryOnboardingFlow.setOrganization,
-          onProjectChange: initialQueryOnboardingFlow.setProject,
           onSubmit: initialQueryOnboardingFlow.submit
         })
       : null,
