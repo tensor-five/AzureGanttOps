@@ -38246,7 +38246,7 @@ function resolveEffectiveTheme(mode) {
   if (mode === "light") {
     return "light";
   }
-  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  if (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     return "dark";
   }
   return "light";
@@ -38278,7 +38278,9 @@ function persistThemeMode(storageKey, mode) {
   }
   localStorage.setItem(storageKey, mode);
 }
-var THEME_TOGGLE_ICON = "\u2600\u263E";
+function iconForEffectiveTheme(theme) {
+  return theme === "dark" ? "\u263E" : "\u2600";
+}
 function labelForThemeMode(mode) {
   if (mode === "dark") {
     return "Dark";
@@ -39343,6 +39345,7 @@ function UiShellApp(props) {
   const [blockerMessage, setBlockerMessage] = import_react35.default.useState(null);
   const [mappingFixResponse, setMappingFixResponse] = import_react35.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
   const [themeMode, setThemeMode] = import_react35.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [effectiveTheme, setEffectiveTheme] = import_react35.default.useState(() => resolveEffectiveTheme(themeMode));
   const [liveSyncEnabled, setLiveSyncEnabled] = import_react35.default.useState(() => loadTimelineLiveSyncEnabledPreference());
   const responseRef = import_react35.default.useRef(initialResponse);
   const [workItemSyncState, setWorkItemSyncState] = import_react35.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
@@ -39716,14 +39719,16 @@ function UiShellApp(props) {
       themeMode
     });
     persistThemeMode(THEME_MODE_KEY, themeMode);
-    applyThemeMode(themeMode);
-    if (themeMode !== "system" || typeof window === "undefined") {
+    const syncEffectiveTheme = () => {
+      applyThemeMode(themeMode);
+      setEffectiveTheme(resolveEffectiveTheme(themeMode));
+    };
+    syncEffectiveTheme();
+    if (themeMode !== "system" || typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return;
     }
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      applyThemeMode("system");
-    };
+    const handleSystemThemeChange = () => syncEffectiveTheme();
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", handleSystemThemeChange);
       return () => {
@@ -39906,7 +39911,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, THEME_TOGGLE_ICON))), import_react35.default.createElement(TrustBadge, {
+  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react35.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,

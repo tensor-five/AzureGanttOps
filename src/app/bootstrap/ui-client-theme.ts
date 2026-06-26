@@ -1,6 +1,7 @@
 export type ThemeMode = "system" | "light" | "dark";
+export type EffectiveTheme = "light" | "dark";
 
-export function resolveEffectiveTheme(mode: ThemeMode): "light" | "dark" {
+export function resolveEffectiveTheme(mode: ThemeMode): EffectiveTheme {
   if (mode === "dark") {
     return "dark";
   }
@@ -9,7 +10,11 @@ export function resolveEffectiveTheme(mode: ThemeMode): "light" | "dark" {
     return "light";
   }
 
-  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
     return "dark";
   }
 
@@ -51,7 +56,9 @@ export function persistThemeMode(storageKey: string, mode: ThemeMode): void {
   localStorage.setItem(storageKey, mode);
 }
 
-export const THEME_TOGGLE_ICON = "☀☾";
+export function iconForEffectiveTheme(theme: EffectiveTheme): string {
+  return theme === "dark" ? "☾" : "☀";
+}
 
 export function labelForThemeMode(mode: ThemeMode): string {
   if (mode === "dark") {

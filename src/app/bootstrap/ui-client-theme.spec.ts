@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  THEME_TOGGLE_ICON,
   applyThemeMode,
+  iconForEffectiveTheme,
   labelForThemeMode,
   nextThemeMode,
   persistThemeMode,
@@ -12,11 +12,22 @@ import {
   resolveEffectiveTheme
 } from "./ui-client-theme.js";
 
+const originalMatchMedia = window.matchMedia;
+
 describe("ui-client-theme", () => {
+  beforeEach(() => {
+    installMemoryStorage();
+  });
+
   afterEach(() => {
     localStorage.clear();
+    vi.unstubAllGlobals();
     document.documentElement.dataset.themeMode = "";
     document.documentElement.dataset.theme = "";
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: originalMatchMedia
+    });
   });
 
   it("resolves and cycles theme modes", () => {
@@ -25,7 +36,8 @@ describe("ui-client-theme", () => {
     expect(nextThemeMode("system")).toBe("dark");
     expect(nextThemeMode("dark")).toBe("light");
     expect(nextThemeMode("light")).toBe("system");
-    expect(THEME_TOGGLE_ICON).toBe("☀☾");
+    expect(iconForEffectiveTheme("light")).toBe("☀");
+    expect(iconForEffectiveTheme("dark")).toBe("☾");
     expect(labelForThemeMode("dark")).toBe("Dark");
   });
 
@@ -39,12 +51,43 @@ describe("ui-client-theme", () => {
   });
 
   it("uses system preference for effective theme", () => {
-    const matchMedia = vi.fn().mockReturnValue({ matches: true });
+    let prefersDark = true;
+    const matchMedia = vi.fn().mockImplementation(() => ({ matches: prefersDark }));
     Object.defineProperty(window, "matchMedia", {
       configurable: true,
       value: matchMedia
     });
 
     expect(resolveEffectiveTheme("system")).toBe("dark");
+    expect(iconForEffectiveTheme(resolveEffectiveTheme("system"))).toBe("☾");
+
+    prefersDark = false;
+    expect(resolveEffectiveTheme("system")).toBe("light");
+    expect(iconForEffectiveTheme(resolveEffectiveTheme("system"))).toBe("☀");
+  });
+
+  it("falls back to light when system preference cannot be read", () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: undefined
+    });
+
+    expect(resolveEffectiveTheme("system")).toBe("light");
   });
 });
+
+function installMemoryStorage(): void {
+  const values = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      values.delete(key);
+    }),
+    clear: vi.fn(() => {
+      values.clear();
+    })
+  });
+}

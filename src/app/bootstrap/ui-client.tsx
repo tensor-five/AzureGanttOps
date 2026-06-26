@@ -49,12 +49,14 @@ import {
   toShortQueryName
 } from "./ui-client-storage.js";
 import {
-  THEME_TOGGLE_ICON,
   applyThemeMode,
+  iconForEffectiveTheme,
   labelForThemeMode,
   nextThemeMode,
   persistThemeMode,
   readPersistedThemeMode,
+  resolveEffectiveTheme,
+  type EffectiveTheme,
   type ThemeMode
 } from "./ui-client-theme.js";
 import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
@@ -169,7 +171,7 @@ export function createDefaultUiShellComposition(params: Parameters<typeof create
   return createUiShellComposition(params);
 }
 
-function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
+export function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
   const restoredState = React.useMemo(
     () => readPersistedUiShellState<QueryIntakeResponse, RunRequest>(UI_SHELL_STATE_KEY),
     []
@@ -200,6 +202,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
     readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
   );
+  const [effectiveTheme, setEffectiveTheme] = React.useState<EffectiveTheme>(() => resolveEffectiveTheme(themeMode));
   const [liveSyncEnabled, setLiveSyncEnabled] = React.useState<boolean>(() => loadTimelineLiveSyncEnabledPreference());
   const responseRef = React.useRef<QueryIntakeResponse | null>(initialResponse);
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>(() =>
@@ -734,16 +737,19 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       themeMode
     });
     persistThemeMode(THEME_MODE_KEY, themeMode);
-    applyThemeMode(themeMode);
+    const syncEffectiveTheme = () => {
+      applyThemeMode(themeMode);
+      setEffectiveTheme(resolveEffectiveTheme(themeMode));
+    };
 
-    if (themeMode !== "system" || typeof window === "undefined") {
+    syncEffectiveTheme();
+
+    if (themeMode !== "system" || typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return;
     }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      applyThemeMode("system");
-    };
+    const handleSystemThemeChange = () => syncEffectiveTheme();
 
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", handleSystemThemeChange);
@@ -1062,7 +1068,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             onClick: () => {
               setThemeMode(nextThemeMode(themeMode));
             }
-          }, React.createElement("span", { "aria-hidden": "true" }, THEME_TOGGLE_ICON))
+          }, React.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))
         ),
         React.createElement(TrustBadge, {
           statusCode: uiModel.statusCode,
