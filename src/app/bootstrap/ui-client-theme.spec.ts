@@ -3,8 +3,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  THEME_TOGGLE_ICON,
   applyThemeMode,
-  iconForThemeMode,
   labelForThemeMode,
   nextThemeMode,
   persistThemeMode,
@@ -25,7 +25,7 @@ describe("ui-client-theme", () => {
     expect(nextThemeMode("system")).toBe("dark");
     expect(nextThemeMode("dark")).toBe("light");
     expect(nextThemeMode("light")).toBe("system");
-    expect(iconForThemeMode("system")).toBe("◩");
+    expect(THEME_TOGGLE_ICON).toBe("☀☾");
     expect(labelForThemeMode("dark")).toBe("Dark");
   });
 

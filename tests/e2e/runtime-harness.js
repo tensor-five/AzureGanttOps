@@ -38278,15 +38278,7 @@ function persistThemeMode(storageKey, mode) {
   }
   localStorage.setItem(storageKey, mode);
 }
-function iconForThemeMode(mode) {
-  if (mode === "dark") {
-    return "\u263E";
-  }
-  if (mode === "light") {
-    return "\u263C";
-  }
-  return "\u25E9";
-}
+var THEME_TOGGLE_ICON = "\u2600\u263E";
 function labelForThemeMode(mode) {
   if (mode === "dark") {
     return "Dark";
@@ -39914,7 +39906,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))), import_react35.default.createElement(TrustBadge, {
+  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, THEME_TOGGLE_ICON))), import_react35.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,

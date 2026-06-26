@@ -51,17 +51,7 @@ export function persistThemeMode(storageKey: string, mode: ThemeMode): void {
   localStorage.setItem(storageKey, mode);
 }
 
-export function iconForThemeMode(mode: ThemeMode): string {
-  if (mode === "dark") {
-    return "☾";
-  }
-
-  if (mode === "light") {
-    return "☼";
-  }
-
-  return "◩";
-}
+export const THEME_TOGGLE_ICON = "☀☾";
 
 export function labelForThemeMode(mode: ThemeMode): string {
   if (mode === "dark") {

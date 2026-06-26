@@ -49,8 +49,8 @@ import {
   toShortQueryName
 } from "./ui-client-storage.js";
 import {
+  THEME_TOGGLE_ICON,
   applyThemeMode,
-  iconForThemeMode,
   labelForThemeMode,
   nextThemeMode,
   persistThemeMode,
@@ -1062,7 +1062,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             onClick: () => {
               setThemeMode(nextThemeMode(themeMode));
             }
-          }, React.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))
+          }, React.createElement("span", { "aria-hidden": "true" }, THEME_TOGGLE_ICON))
         ),
         React.createElement(TrustBadge, {
           statusCode: uiModel.statusCode,
