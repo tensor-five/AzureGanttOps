@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
+import { APP_VERSION, CHANGELOG_PATH } from "../../src/shared/project-meta/project-meta.js";
+
 const HARNESS_HTML_URL = "/tests/e2e/runtime-harness.html";
 const USER_PREFERENCES_SESSION_KEY = "azure-ganttops.e2e.user-preferences";
 const QUERY_IDS = {
@@ -424,6 +426,11 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await mountRuntimeUi(page, responses);
 
   await expect(page.getByRole("heading", { name: "AzureGanttOps" })).toBeVisible();
+  await expect(page.getByText(`Changelog v${APP_VERSION}`)).toBeVisible();
+  await expect(page.getByRole("link", { name: `Changelog zu Version ${APP_VERSION} öffnen` })).toHaveAttribute(
+    "href",
+    CHANGELOG_PATH
+  );
   await expect(statusBadge(page)).toHaveText("Status");
   await expect(statusBadge(page)).not.toContainText("Needs attention");
   await expect(page.getByLabel("timeline-pane")).toBeVisible();

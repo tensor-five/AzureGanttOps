@@ -39,18 +39,51 @@ describe("local UI CSS structure", () => {
     expect(shellCss).toMatch(/\.local-config-reset-error\s*\{[\s\S]*color:\s*var\(--color-warning-text\)/);
   });
 
-  it("keeps the trust badge panel viewport anchored", () => {
+  it("anchors the trust badge panel below the status control", () => {
     const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
     const panelRule = readCssRule(shellCss, ".trust-badge-panel");
 
-    expect(panelRule).toContain("position: fixed;");
+    expect(panelRule).toContain("position: absolute;");
     expect(panelRule).toContain("box-sizing: border-box;");
     expect(panelRule).toContain("right: 12px;");
-    expect(panelRule).toContain("top: 64px;");
+    expect(panelRule).toContain("top: calc(100% + 8px);");
     expect(panelRule).toContain("width: min(430px, calc(100vw - 24px));");
-    expect(panelRule).toContain("max-height: calc(100vh - 76px);");
-    expect(panelRule).not.toContain("position: absolute;");
-    expect(panelRule).not.toContain("top: calc(100% + 8px);");
+    expect(panelRule).toContain("max-height: min(72vh, calc(100vh - 32px));");
+    expect(panelRule).not.toContain("position: fixed;");
+    expect(panelRule).not.toContain("top: var(--ui-shell-overlay-top);");
+  });
+
+  it("keeps the shell header sticky in the normal layout flow", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+    const mainRule = readCssRule(shellCss, 'main[data-ui-shell="phase-6-runtime"]');
+    const headerRule = readCssRule(shellCss, ".ui-shell-header");
+    const workspaceRule = readCssRule(shellCss, ".ui-shell-workspace");
+    const panelRule = readCssRule(shellCss, ".trust-badge-panel");
+
+    expect(mainRule).toContain("padding: 0 0 32px;");
+    expect(mainRule).not.toContain("--ui-shell-header-offset");
+    expect(mainRule).not.toContain("--ui-shell-overlay-top");
+    expect(headerRule).toContain("position: sticky;");
+    expect(headerRule).toContain("top: 0;");
+    expect(headerRule).toContain("box-sizing: border-box;");
+    expect(headerRule).toContain("width: 100%;");
+    expect(headerRule).not.toContain("position: fixed;");
+    expect(workspaceRule).toContain("position: static;");
+    expect(workspaceRule).toContain("margin: 0 16px 0 auto;");
+    expect(workspaceRule).toContain("max-height: min(72vh, calc(100vh - 32px));");
+    expect(panelRule).toContain("position: absolute;");
+    expect(panelRule).toContain("top: calc(100% + 8px);");
+    expect(shellCss).not.toContain("padding-top: 70px;");
+  });
+
+  it("does not rely on estimated mobile header offsets", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+
+    expect(shellCss).not.toContain("--ui-shell-header-offset");
+    expect(shellCss).not.toContain("--ui-shell-overlay-top");
+    expect(shellCss).not.toContain("--ui-shell-overlay-max-height");
+    expect(shellCss).not.toContain("padding-top: var(--ui-shell-header-offset);");
+    expect(shellCss).not.toMatch(/--ui-shell-(?:header-offset|overlay-top):\s*(?:180|188|196)px/);
   });
 
   it("keeps responsive trust badge panel sizing inside the header containing block", () => {
@@ -59,7 +92,7 @@ describe("local UI CSS structure", () => {
     const responsiveRules = [
       {
         media: "@media (max-width: 1024px)",
-        width: "width: min(430px, 100%);"
+        width: null
       },
       {
         media: "@media (max-width: 768px)",
@@ -79,10 +112,15 @@ describe("local UI CSS structure", () => {
       const panelRule = readCssRuleAfter(shellCss, media, ".trust-badge-panel");
 
       expect(panelRule).toContain("right: 0;");
-      expect(panelRule).toContain(width);
-      expect(panelRule).not.toContain("100vw");
+      if (width) {
+        expect(panelRule).toContain(width);
+        expect(panelRule).not.toContain("100vw");
+      }
       expect(panelRule).not.toMatch(/right:\s*(?:6|8|10|12)px;/);
     }
+
+    expect(readCssRuleAfter(shellCss, "@media (max-width: 768px)", ".trust-badge-details")).toContain("width: 100%;");
+    expect(readCssRuleAfter(shellCss, "@media (max-width: 768px)", ".trust-badge-trigger")).toContain("width: 100%;");
   });
 
   it("uses local brand title typography in the shell header", () => {
@@ -94,6 +132,21 @@ describe("local UI CSS structure", () => {
     expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*font-family:\s*var\(--font-display\)/);
     expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*font-weight:\s*var\(--font-black\)/);
     expect(shellCss).toMatch(/\.ui-shell-brand h1\s*\{[\s\S]*letter-spacing:\s*0/);
+  });
+
+  it("keeps the compact release badge inside the shell header contract", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+    const brandRowRule = readCssRule(shellCss, ".ui-shell-brand-row");
+    const badgeRule = readCssRule(shellCss, ".app-release-badge");
+    const responsiveBrandRowRule = readCssRuleAfter(shellCss, "@media (max-width: 768px)", ".ui-shell-brand-row");
+
+    expect(brandRowRule).toContain("display: inline-flex;");
+    expect(brandRowRule).toContain("align-items: center;");
+    expect(brandRowRule).toContain("flex-wrap: wrap;");
+    expect(badgeRule).toContain("min-height: 36px;");
+    expect(badgeRule).toContain("border-radius: var(--radius-pill);");
+    expect(badgeRule).toContain("white-space: nowrap;");
+    expect(responsiveBrandRowRule).toContain("width: 100%;");
   });
 
   it("retains required token contract", () => {

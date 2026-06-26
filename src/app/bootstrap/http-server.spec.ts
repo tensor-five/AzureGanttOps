@@ -15,6 +15,7 @@ import {
 import { PWA_SERVICE_WORKER_SOURCE } from "./pwa-assets.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { LOCAL_CONFIG_RESET_CONFIRMATION } from "../../application/ports/local-config-reset.port.js";
+import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
 
 type StartedServer = {
   baseUrl: string;
@@ -254,6 +255,28 @@ describe("createHttpServer", () => {
       expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8");
       expect(response.headers.get("cache-control")).toBe("no-store");
       expect(text).toBe(PWA_SERVICE_WORKER_SOURCE);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves changelog markdown without HTTP caching", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${CHANGELOG_PATH}`);
+      const text = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/markdown; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.get("content-security-policy")).toBe(expectedLocalOnlyCsp);
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(text).toContain(`## [${APP_VERSION}] - 2026-06-26`);
     } finally {
       await server.close();
     }

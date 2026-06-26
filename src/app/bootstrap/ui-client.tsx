@@ -94,6 +94,7 @@ import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
+import { AppReleaseBadge } from "./app-release-badge.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -875,8 +876,13 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
       { className: "ui-shell-header" },
       React.createElement(
         "div",
-        { className: "ui-shell-brand" },
-        React.createElement("h1", null, "AzureGanttOps")
+        { className: "ui-shell-brand-row" },
+        React.createElement(
+          "div",
+          { className: "ui-shell-brand" },
+          React.createElement("h1", null, "AzureGanttOps")
+        ),
+        React.createElement(AppReleaseBadge)
       ),
       React.createElement(
         "div",

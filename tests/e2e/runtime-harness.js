@@ -1222,18 +1222,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React50 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React50.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React51 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React51.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React50 = {
+      React51 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React50.react_stack_bottom_frame.bind(
-        React50,
+      var unknownOwnerDebugStack = React51.react_stack_bottom_frame.bind(
+        React51,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1597,7 +1597,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React50 = require_react(), Internals = {
+      var React51 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1615,7 +1615,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React50.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React51.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3150,7 +3150,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node.ownerDocument) === node || node.defaultValue === "" + value || (node.defaultValue = "" + value);
       }
       function validateOptionProps(element, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React50.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React51.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18782,14 +18782,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React50 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React51 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React50.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React51.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21577,7 +21577,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React50.version;
+        var isomorphicReactPackageVersion = React51.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -23797,7 +23797,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react35 = __toESM(require_react(), 1);
+var import_react36 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs
@@ -30557,6 +30557,8 @@ function formatPrintTimestamp(when) {
 var import_react14 = __toESM(require_react(), 1);
 
 // dist/src/shared/project-meta/project-meta.js
+var APP_VERSION = "1.8.1";
+var CHANGELOG_PATH = "/CHANGELOG.md";
 var GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
 var TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
 
@@ -39304,6 +39306,18 @@ function failed(target, label) {
   };
 }
 
+// dist/src/app/bootstrap/app-release-badge.js
+var import_react35 = __toESM(require_react(), 1);
+function AppReleaseBadge() {
+  const label = `Changelog v${APP_VERSION}`;
+  return import_react35.default.createElement("a", {
+    className: "app-release-badge",
+    href: CHANGELOG_PATH,
+    "aria-label": `Changelog zu Version ${APP_VERSION} \xF6ffnen`,
+    title: `Changelog zu Version ${APP_VERSION} \xF6ffnen`
+  }, label);
+}
+
 // dist/src/app/bootstrap/ui-client.js
 var ADO_COMM_LOG_POLL_INTERVAL_MS = 3e3;
 var ADO_COMM_LOG_READ_LIMIT = 200;
@@ -39312,12 +39326,12 @@ var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
 function renderAdoCommLogPanel(params) {
-  return import_react35.default.createElement("details", {
+  return import_react36.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
     open: true,
     "data-auto-dismiss": "off"
-  }, import_react35.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react35.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react35.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react35.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react35.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react35.default.createElement("pre", {
+  }, import_react36.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react36.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react36.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react36.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react36.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react36.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -39325,51 +39339,51 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root = (0, import_client.createRoot)(options.container);
-  root.render(import_react35.default.createElement(import_react35.default.StrictMode, null, import_react35.default.createElement(QueryClientProvider, {
+  root.render(import_react36.default.createElement(import_react36.default.StrictMode, null, import_react36.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react35.default.createElement(BrowserRouter, null, import_react35.default.createElement(UiShellApp, {
+  }, import_react36.default.createElement(BrowserRouter, null, import_react36.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react35.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react36.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react35.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react35.default.useState(false);
-  const [response, setResponse] = import_react35.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react35.default.useState(initialLastRunRequest);
-  const [uiModel, setUiModel] = import_react35.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react35.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react35.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react35.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const [effectiveTheme, setEffectiveTheme] = import_react35.default.useState(() => resolveEffectiveTheme(themeMode));
-  const [liveSyncEnabled, setLiveSyncEnabled] = import_react35.default.useState(() => loadTimelineLiveSyncEnabledPreference());
-  const responseRef = import_react35.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react35.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
-  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react35.default.useState(0);
-  const [isRefreshing, setIsRefreshing] = import_react35.default.useState(false);
-  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react35.default.useState(false);
-  const [detailsPanelDirty, setDetailsPanelDirty] = import_react35.default.useState(false);
-  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react35.default.useState(0);
-  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react35.default.useState(false);
-  const isRefreshingRef = import_react35.default.useRef(isRefreshing);
-  const workItemSyncInFlightRef = import_react35.default.useRef(0);
-  const pendingWorkItemMutationsRef = import_react35.default.useRef([]);
-  const preOptimisticResponseSnapshotRef = import_react35.default.useRef(null);
-  const flushPendingWorkItemMutationsPromiseRef = import_react35.default.useRef(null);
-  const retryRefreshInFlightPromiseRef = import_react35.default.useRef(null);
-  const refreshGuardStateRef = import_react35.default.useRef({
+  const [activeTab, setActiveTab] = import_react36.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react36.default.useState(false);
+  const [response, setResponse] = import_react36.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react36.default.useState(initialLastRunRequest);
+  const [uiModel, setUiModel] = import_react36.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react36.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react36.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react36.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [effectiveTheme, setEffectiveTheme] = import_react36.default.useState(() => resolveEffectiveTheme(themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react36.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react36.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react36.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react36.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react36.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react36.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react36.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react36.default.useState(0);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react36.default.useState(false);
+  const isRefreshingRef = import_react36.default.useRef(isRefreshing);
+  const workItemSyncInFlightRef = import_react36.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react36.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react36.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react36.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react36.default.useRef(null);
+  const refreshGuardStateRef = import_react36.default.useRef({
     detailsPanelDirty: false,
     hasOptimisticChanges: false,
     liveSyncEnabled,
     workItemSyncState
   });
-  const liveSyncEnabledRef = import_react35.default.useRef(liveSyncEnabled);
-  const timelineSelectionStoreRef = import_react35.default.useRef(createTimelineSelectionStore());
-  const workItemStateOptionsCacheRef = import_react35.default.useRef(/* @__PURE__ */ new Map());
+  const liveSyncEnabledRef = import_react36.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react36.default.useRef(createTimelineSelectionStore());
+  const workItemStateOptionsCacheRef = import_react36.default.useRef(/* @__PURE__ */ new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
     detailsPanelDirty,
@@ -39385,28 +39399,28 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const updateRefreshGuardState = import_react35.default.useCallback((patch) => {
+  const updateRefreshGuardState = import_react36.default.useCallback((patch) => {
     refreshGuardStateRef.current = {
       ...refreshGuardStateRef.current,
       ...patch
     };
   }, []);
-  const setGuardedHasOptimisticChanges = import_react35.default.useCallback((next) => {
+  const setGuardedHasOptimisticChanges = import_react36.default.useCallback((next) => {
     updateRefreshGuardState({ hasOptimisticChanges: next });
     setHasOptimisticChanges(next);
   }, [updateRefreshGuardState]);
-  const setGuardedWorkItemSyncState = import_react35.default.useCallback((next) => {
+  const setGuardedWorkItemSyncState = import_react36.default.useCallback((next) => {
     const current = refreshGuardStateRef.current.workItemSyncState;
     const resolved = typeof next === "function" ? next(current) : next;
     updateRefreshGuardState({ workItemSyncState: resolved });
     setWorkItemSyncState(resolved);
   }, [updateRefreshGuardState]);
-  const setGuardedLiveSyncEnabled = import_react35.default.useCallback((enabled) => {
+  const setGuardedLiveSyncEnabled = import_react36.default.useCallback((enabled) => {
     liveSyncEnabledRef.current = enabled;
     updateRefreshGuardState({ liveSyncEnabled: enabled });
     setLiveSyncEnabled(enabled);
   }, [updateRefreshGuardState]);
-  const fetchWorkItemStateOptionsCached = import_react35.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react36.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -39415,10 +39429,10 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react35.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react36.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react35.default.useCallback(async (request) => {
+  const runQuery = import_react36.default.useCallback(async (request) => {
     try {
       const result = await props.composition.runQuerySelectionFlow({
         queryId: request.queryId,
@@ -39458,11 +39472,11 @@ function UiShellApp(props) {
       throw error;
     }
   }, [enrichRuntimeStateColors, props.composition]);
-  const handleNeedsFix = import_react35.default.useCallback((needsFixResponse) => {
+  const handleNeedsFix = import_react36.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react35.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react36.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -39482,20 +39496,20 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const readRefreshGuardInput = import_react35.default.useCallback((options) => createRefreshDiscardWarningInput({
+  const readRefreshGuardInput = import_react36.default.useCallback((options) => createRefreshDiscardWarningInput({
     state: refreshGuardStateRef.current,
     pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
     afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
   }), []);
-  const handleDetailsDirtyChange = import_react35.default.useCallback((dirty) => {
+  const handleDetailsDirtyChange = import_react36.default.useCallback((dirty) => {
     updateRefreshGuardState({ detailsPanelDirty: dirty });
     setDetailsPanelDirty(dirty);
   }, [updateRefreshGuardState]);
-  const handleSetLiveSyncEnabled = import_react35.default.useCallback((enabled) => {
+  const handleSetLiveSyncEnabled = import_react36.default.useCallback((enabled) => {
     setGuardedLiveSyncEnabled(enabled);
     saveTimelineLiveSyncEnabledPreference(enabled);
   }, [setGuardedLiveSyncEnabled]);
-  const executeRefresh = import_react35.default.useCallback(async (discardPendingChanges) => {
+  const executeRefresh = import_react36.default.useCallback(async (discardPendingChanges) => {
     isRefreshingRef.current = true;
     setIsRefreshing(true);
     if (discardPendingChanges) {
@@ -39551,14 +39565,14 @@ function UiShellApp(props) {
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
-  const runTrackedWorkItemUpdate = import_react35.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react36.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
       setWorkItemSyncState: setGuardedWorkItemSyncState
     });
   }, [setGuardedWorkItemSyncState]);
-  const flushQueuedWorkItemMutations = import_react35.default.useCallback(async () => {
+  const flushQueuedWorkItemMutations = import_react36.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
     }
@@ -39584,7 +39598,7 @@ function UiShellApp(props) {
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
   }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
-  const runRetryRefresh = import_react35.default.useCallback(async () => {
+  const runRetryRefresh = import_react36.default.useCallback(async () => {
     if (isRefreshingRef.current) {
       return;
     }
@@ -39605,8 +39619,8 @@ function UiShellApp(props) {
     }
     await executeRefresh(false);
   }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
-  const retryRefresh = import_react35.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
-  const enqueuePendingWorkItemMutation = import_react35.default.useCallback((mutation) => {
+  const retryRefresh = import_react36.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
+  const enqueuePendingWorkItemMutation = import_react36.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
@@ -39614,7 +39628,7 @@ function UiShellApp(props) {
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
     setGuardedHasOptimisticChanges(true);
   }, [setGuardedHasOptimisticChanges]);
-  const scheduleWorkItemMutation = import_react35.default.useCallback(async (params) => {
+  const scheduleWorkItemMutation = import_react36.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "work_item",
@@ -39630,7 +39644,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleDependencyMutation = import_react35.default.useCallback(async (params) => {
+  const scheduleDependencyMutation = import_react36.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "dependency",
@@ -39647,7 +39661,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleReparentMutation = import_react35.default.useCallback(async (params) => {
+  const scheduleReparentMutation = import_react36.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "reparent",
@@ -39664,20 +39678,20 @@ function UiShellApp(props) {
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     liveSyncEnabledRef.current = liveSyncEnabled;
   }, [liveSyncEnabled]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     const preferences = initialQueryOnboardingFlow.hydratedPreferences;
     if (!preferences) {
       return;
@@ -39688,13 +39702,13 @@ function UiShellApp(props) {
     const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
     headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
   }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
   }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
       return;
@@ -39704,7 +39718,7 @@ function UiShellApp(props) {
     }
     setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
@@ -39714,7 +39728,7 @@ function UiShellApp(props) {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -39740,7 +39754,7 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
-  import_react35.default.useEffect(() => {
+  import_react36.default.useEffect(() => {
     const onPointerDown = (event) => {
       const target = event.target;
       const trustBadgeElement = document.querySelector("details.trust-badge-details");
@@ -39792,7 +39806,7 @@ function UiShellApp(props) {
     headerQueryLoading: headerQueryFlow.headerQueryLoading,
     workItemSyncState
   });
-  const controlsContent = import_react35.default.createElement(import_react35.default.Fragment, null, import_react35.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react35.default.createElement(TopTabs, {
+  const controlsContent = import_react36.default.createElement(import_react36.default.Fragment, null, import_react36.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react36.default.createElement(TopTabs, {
     activeTab,
     model: uiModel,
     onTabChange: (tab) => {
@@ -39802,10 +39816,10 @@ function UiShellApp(props) {
       setBlockerMessage(payload);
       setControlsOpen(true);
     }
-  }), blockerMessage ? import_react35.default.createElement("section", {
+  }), blockerMessage ? import_react36.default.createElement("section", {
     "aria-label": "tab-blocker-guidance",
     className: "tab-blocker-guidance"
-  }, import_react35.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react35.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react35.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react35.default.createElement(LocalConfigResetPanel, {
+  }, import_react36.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react36.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react36.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react36.default.createElement(LocalConfigResetPanel, {
     guard: localConfigResetGuard,
     onServerReset: props.composition.controller.resetLocalConfigs,
     onBrowserCleanup: () => clearBrowserLocalConfigs({
@@ -39815,7 +39829,7 @@ function UiShellApp(props) {
       window.location.reload();
     }
   }), mainPanel);
-  return import_react35.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react35.default.createElement("section", { className: "ui-shell-header" }, import_react35.default.createElement("div", { className: "ui-shell-brand" }, import_react35.default.createElement("h1", null, "AzureGanttOps")), import_react35.default.createElement("div", { className: "ui-shell-header-actions" }, import_react35.default.createElement("div", { className: "header-query-picker" }, import_react35.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react35.default.createElement("details", { className: "header-query-dropdown" }, import_react35.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react35.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react35.default.createElement("input", {
+  return import_react36.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react36.default.createElement("section", { className: "ui-shell-header" }, import_react36.default.createElement("div", { className: "ui-shell-brand-row" }, import_react36.default.createElement("div", { className: "ui-shell-brand" }, import_react36.default.createElement("h1", null, "AzureGanttOps")), import_react36.default.createElement(AppReleaseBadge)), import_react36.default.createElement("div", { className: "ui-shell-header-actions" }, import_react36.default.createElement("div", { className: "header-query-picker" }, import_react36.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react36.default.createElement("details", { className: "header-query-dropdown" }, import_react36.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react36.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react36.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -39823,7 +39837,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react35.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react35.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react35.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react35.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react35.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react36.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react36.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react36.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react36.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react36.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -39833,7 +39847,7 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react35.default.createElement("button", {
+  }, "\xD7"), import_react36.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-open",
     "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
@@ -39848,7 +39862,7 @@ function UiShellApp(props) {
         window.open(queryUrl, "_blank", "noopener,noreferrer");
       }
     }
-  }, import_react35.default.createElement("svg", {
+  }, import_react36.default.createElement("svg", {
     width: "14",
     height: "14",
     viewBox: "0 0 24 24",
@@ -39857,21 +39871,21 @@ function UiShellApp(props) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }, import_react35.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react35.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react35.default.createElement("button", {
+  }, import_react36.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react36.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react36.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react35.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react36.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react35.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react36.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -39887,23 +39901,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react35.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react36.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react35.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react36.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react35.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react35.default.createElement("span", {
+  }, import_react36.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react36.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react35.default.createElement("div", { className: "theme-menu" }, import_react35.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react36.default.createElement("div", { className: "theme-menu" }, import_react36.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -39911,7 +39925,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react35.default.createElement(TrustBadge, {
+  }, import_react36.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react36.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
@@ -39919,7 +39933,7 @@ function UiShellApp(props) {
     controlsOpen,
     onControlsOpenChange: setControlsOpen,
     controlsContent
-  }))), import_react35.default.createElement("section", { className: "ui-shell-content" }, import_react35.default.createElement("section", { className: "gantt-primary-card" }, import_react35.default.createElement(WarningBanner, {
+  }))), import_react36.default.createElement("section", { className: "ui-shell-content" }, import_react36.default.createElement("section", { className: "gantt-primary-card" }, import_react36.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -39927,7 +39941,7 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react35.default.createElement(TimelinePane, {
+  }), import_react36.default.createElement(TimelinePane, {
     key: response?.activeQueryId ?? "timeline-no-query",
     activeQueryId: response?.activeQueryId ?? null,
     activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
@@ -40143,27 +40157,27 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }))), import_react35.default.createElement("footer", { className: "ui-shell-footer" }, import_react35.default.createElement("span", null, "An "), import_react35.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react35.default.createElement("span", null, " by Christian Betz @ "), import_react35.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), initialQueryOnboardingFlow.status === "required" ? import_react35.default.createElement(InitialQueryOnboardingDialog, {
+  }))), import_react36.default.createElement("footer", { className: "ui-shell-footer" }, import_react36.default.createElement("span", null, "An "), import_react36.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react36.default.createElement("span", null, " by Christian Betz @ "), import_react36.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), initialQueryOnboardingFlow.status === "required" ? import_react36.default.createElement(InitialQueryOnboardingDialog, {
     queryInput: initialQueryOnboardingFlow.queryInput,
     loading: initialQueryOnboardingFlow.loading,
     statusMessage: initialQueryOnboardingFlow.statusMessage,
     errorMessage: initialQueryOnboardingFlow.errorMessage,
     onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
     onSubmit: initialQueryOnboardingFlow.submit
-  }) : null, showRefreshDiscardWarning ? import_react35.default.createElement("div", {
+  }) : null, showRefreshDiscardWarning ? import_react36.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, import_react35.default.createElement("div", {
+  }, import_react36.default.createElement("div", {
     className: "refresh-discard-warning-dialog",
     role: "alertdialog",
     "aria-labelledby": "refresh-discard-warning-title",
     "aria-describedby": "refresh-discard-warning-desc",
     onClick: (e) => e.stopPropagation()
-  }, import_react35.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react35.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react35.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react35.default.createElement("button", {
+  }, import_react36.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react36.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react36.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react36.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-cancel",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, "Abbrechen"), import_react35.default.createElement("button", {
+  }, "Abbrechen"), import_react36.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-confirm",
     onClick: () => {
@@ -40175,7 +40189,7 @@ function UiShellApp(props) {
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react35.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react35.default.createElement(QuerySelector, {
+    return import_react36.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react36.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
@@ -40185,19 +40199,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react35.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react35.default.createElement(MappingFixPanel, {
+    return import_react36.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react36.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react35.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react36.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react35.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react35.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react36.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react36.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react35.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react35.default.createElement(DiagnosticsTab, {
+  return import_react36.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react36.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
