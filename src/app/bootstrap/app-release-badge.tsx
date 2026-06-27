@@ -9,7 +9,7 @@ export type AppReleaseBadgeProps = {
 };
 
 export function AppReleaseBadge(props: AppReleaseBadgeProps): React.ReactElement {
-  const label = `Changelog v${APP_VERSION}`;
+  const label = `v${APP_VERSION}`;
 
   return React.createElement(
     "button",

@@ -4,6 +4,12 @@ Alle nennenswerten Änderungen an AzureGanttOps werden in dieser Datei dokumenti
 
 Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-Schwerpunkten rekonstruiert, da im Repository keine Release-Tags vorhanden sind.
 
+## [1.8.3] - 2026-06-27
+
+### Geändert
+
+- Header zeigt den Changelog-Einstieg kompakt nur noch als Versionsnummer `v1.8.3`.
+
 ## [1.8.2] - 2026-06-27
 
 ### Geändert

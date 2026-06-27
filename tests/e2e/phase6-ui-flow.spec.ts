@@ -428,7 +428,7 @@ test("query mapping timeline diagnostics retry refresh source-health journey", a
   await expect(page.getByRole("heading", { name: "AzureGanttOps" })).toBeVisible();
   const changelogButton = page.getByRole("button", { name: `Changelog zu Version ${APP_VERSION} öffnen` });
   await expect(changelogButton).toBeVisible();
-  await expect(changelogButton).toHaveText(`Changelog v${APP_VERSION}`);
+  await expect(changelogButton).toHaveText(`v${APP_VERSION}`);
   await expect(changelogButton).toHaveAttribute("aria-haspopup", "dialog");
   await expect(changelogButton).toHaveAttribute("aria-expanded", "false");
   await changelogButton.click();

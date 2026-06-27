@@ -21729,7 +21729,7 @@ var APP_VERSION, CHANGELOG_PATH, GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL;
 var init_project_meta = __esm({
   "dist/src/shared/project-meta/project-meta.js"() {
     "use strict";
-    APP_VERSION = "1.8.2";
+    APP_VERSION = "1.8.3";
     CHANGELOG_PATH = "/CHANGELOG.md";
     GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
     TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
@@ -53945,7 +53945,7 @@ function failed(target, label) {
 var import_react35 = __toESM(require_react(), 1);
 init_project_meta();
 function AppReleaseBadge(props) {
-  const label = `Changelog v${APP_VERSION}`;
+  const label = `v${APP_VERSION}`;
   return import_react35.default.createElement("button", {
     ref: props.buttonRef,
     type: "button",

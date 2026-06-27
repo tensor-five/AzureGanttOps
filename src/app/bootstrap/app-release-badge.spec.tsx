@@ -18,7 +18,7 @@ describe("AppReleaseBadge", () => {
       name: `Changelog zu Version ${APP_VERSION} öffnen`
     }) as HTMLButtonElement;
 
-    expect(button.textContent).toBe(`Changelog v${APP_VERSION}`);
+    expect(button.textContent).toBe(`v${APP_VERSION}`);
     expect(button.type).toBe("button");
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
     expect(button.getAttribute("aria-expanded")).toBe("false");
