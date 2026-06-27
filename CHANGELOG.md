@@ -16,6 +16,7 @@ Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-S
 
 - Header zeigt den Changelog-Einstieg kompakt nur noch als Versionsnummer `v1.8.3`.
 - One-Click-Start prüft npm-Abhängigkeiten jetzt gegen `package.json` und `package-lock.json`, damit neue Pakete nach einem Pull automatisch installiert werden.
+- npm-Abhängigkeiten aktualisiert, sodass `npm audit` keine bekannten Vulnerabilities mehr meldet.
 
 ## [1.8.2] - 2026-06-27
 
