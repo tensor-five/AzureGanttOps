@@ -143,10 +143,41 @@ describe("local UI CSS structure", () => {
     expect(brandRowRule).toContain("display: inline-flex;");
     expect(brandRowRule).toContain("align-items: center;");
     expect(brandRowRule).toContain("flex-wrap: wrap;");
+    expect(badgeRule).toContain("appearance: none;");
     expect(badgeRule).toContain("min-height: 36px;");
     expect(badgeRule).toContain("border-radius: var(--radius-pill);");
+    expect(badgeRule).toContain("font: inherit;");
+    expect(badgeRule).toContain("cursor: pointer;");
     expect(badgeRule).toContain("white-space: nowrap;");
     expect(responsiveBrandRowRule).toContain("width: 100%;");
+  });
+
+  it("keeps the changelog dialog bounded and internally scrollable", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+    const backdropRule = readCssRule(shellCss, ".app-changelog-backdrop");
+    const dialogRule = readCssRule(shellCss, ".app-changelog-dialog");
+    const headerRule = readCssRule(shellCss, ".app-changelog-header");
+    const closeRule = readCssRule(shellCss, ".app-changelog-close");
+    const contentRule = readCssRule(shellCss, ".app-changelog-content");
+    const markdownRule = readCssRule(shellCss, ".app-changelog-markdown");
+    const responsiveDialogRule = readCssRuleAfter(shellCss, "@media (max-width: 640px)", ".app-changelog-dialog");
+
+    expect(backdropRule).toContain("position: fixed;");
+    expect(backdropRule).toContain("inset: 0;");
+    expect(backdropRule).toContain("place-items: center;");
+    expect(dialogRule).toContain("width: min(760px, calc(100vw - 32px));");
+    expect(dialogRule).toContain("max-height: min(82vh, calc(100vh - 32px));");
+    expect(dialogRule).toContain("overflow: hidden;");
+    expect(dialogRule).toContain("display: flex;");
+    expect(dialogRule).toContain("flex-direction: column;");
+    expect(headerRule).toContain("justify-content: space-between;");
+    expect(closeRule).toContain("width: 36px;");
+    expect(closeRule).toContain("height: 36px;");
+    expect(closeRule).toContain("cursor: pointer;");
+    expect(contentRule).toContain("overflow: auto;");
+    expect(markdownRule).toContain("line-height: 1.58;");
+    expect(responsiveDialogRule).toContain("width: calc(100vw - 20px);");
+    expect(responsiveDialogRule).toContain("max-height: calc(100vh - 20px);");
   });
 
   it("retains required token contract", () => {
