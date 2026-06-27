@@ -7,7 +7,11 @@ import { fileURLToPath } from "node:url";
 import {
   BUILD_INPUT_PATHS,
   BUILD_CACHE_REASONS,
+  DEPENDENCY_CACHE_REASONS,
+  DEPENDENCY_INPUT_PATHS,
   createBuildStamp,
+  createDependencyStamp,
+  determineDependencyInstallAction,
   determineBuildAction,
   getCommitHashFromBuildStamp
 } from "./one-click-build-cache.mjs";
@@ -114,14 +118,43 @@ async function ensureAzureLogin() {
 
 async function ensureDependenciesInstalled() {
   const nodeModulesPath = path.join(projectRoot, "node_modules");
+  const dependencyMarkerPath = path.join(nodeModulesPath, ".azure-ganttops-dependencies");
   const hasNodeModules = await canAccess(nodeModulesPath);
+  const currentDependencyStamp = await getCurrentDependencyStamp();
 
+  let lastDependencyStamp = "";
   if (hasNodeModules) {
+    try {
+      lastDependencyStamp = (await readFile(dependencyMarkerPath, "utf8")).trim();
+    } catch {}
+  }
+
+  const installAction = determineDependencyInstallAction({
+    hasNodeModules,
+    currentDependencyStamp,
+    lastDependencyStamp
+  });
+
+  if (!installAction.shouldInstall) {
     return;
   }
 
-  log("Installiere npm-Abhängigkeiten (einmalig)...");
+  if (installAction.reason === DEPENDENCY_CACHE_REASONS.MISSING_NODE_MODULES) {
+    log("Installiere npm-Abhängigkeiten (einmalig)...");
+  } else if (installAction.reason === DEPENDENCY_CACHE_REASONS.INPUTS_CHANGED) {
+    log("npm-Abhängigkeiten haben sich geändert. Führe npm install aus...");
+  } else if (installAction.reason === DEPENDENCY_CACHE_REASONS.INPUTS_UNAVAILABLE) {
+    log("npm-Abhängigkeiten werden vorsorglich geprüft. Führe npm install aus...");
+  } else {
+    log("npm-Abhängigkeitsmarker fehlt. Führe npm install aus...");
+  }
+
   await run("npm", ["install"]);
+
+  const refreshedDependencyStamp = currentDependencyStamp || (await getCurrentDependencyStamp());
+  if (refreshedDependencyStamp) {
+    await writeFile(dependencyMarkerPath, refreshedDependencyStamp, "utf8");
+  }
 }
 
 // --------------------------------------------------
@@ -279,6 +312,20 @@ async function getCurrentBuildStamp() {
       )
     );
     return createBuildStamp(commitHash, statusOutput);
+  } catch {
+    return "";
+  }
+}
+
+async function getCurrentDependencyStamp() {
+  try {
+    const inputs = await Promise.all(
+      DEPENDENCY_INPUT_PATHS.map(async (inputPath) => ({
+        path: inputPath,
+        content: await readFile(path.join(projectRoot, inputPath), "utf8")
+      }))
+    );
+    return createDependencyStamp(inputs);
   } catch {
     return "";
   }
