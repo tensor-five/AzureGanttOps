@@ -59,6 +59,7 @@ import {
   PWA_MANIFEST_JSON,
   PWA_SERVICE_WORKER_SOURCE
 } from "./pwa-assets.js";
+import { CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -422,6 +423,10 @@ function isPwaIcon192Route(method: string, pathname: string): boolean {
 
 function isPwaIcon512Route(method: string, pathname: string): boolean {
   return method === "GET" && pathname === PWA_ICON_512_PATH;
+}
+
+function isChangelogRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === CHANGELOG_PATH;
 }
 
 function isQueryIntakeRoute(method: string, pathname: string): boolean {
@@ -1616,6 +1621,11 @@ async function handleDiagnosticsAndAssetsRoute(
     return true;
   }
 
+  if (isChangelogRoute(method, url.pathname)) {
+    await writeChangelog(res);
+    return true;
+  }
+
   if (isDistRoute(method, url.pathname)) {
     await serveDistAsset(url.pathname, deps.distRootPath, res);
     return true;
@@ -1849,6 +1859,23 @@ function writePwaIcon(res: ServerResponse, icon: Buffer): void {
   res.setHeader("content-type", "image/png");
   res.setHeader("cache-control", CACHE_CONTROL_PWA_ICON);
   res.end(icon);
+}
+
+async function writeChangelog(res: ServerResponse): Promise<void> {
+  try {
+    const content = await readFile(resolveChangelogFilePath(), "utf8");
+    res.statusCode = 200;
+    applySecurityHeaders(res);
+    res.setHeader("content-type", "text/markdown; charset=utf-8");
+    res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+    res.end(content);
+  } catch {
+    writeJson(res, 404, ADO_COMM_ROUTE_NOT_FOUND);
+  }
+}
+
+function resolveChangelogFilePath(): string {
+  return path.resolve(process.cwd(), CHANGELOG_PATH.slice(1));
 }
 
 function applySecurityHeaders(res: ServerResponse): void {

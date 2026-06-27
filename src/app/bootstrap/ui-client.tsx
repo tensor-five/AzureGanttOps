@@ -94,6 +94,7 @@ import { useHeaderQueryFlow } from "./use-header-query-flow.js";
 import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
+import { AppReleaseBadge } from "./app-release-badge.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -101,6 +102,11 @@ const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
+
+const LazyAppChangelogDialog = React.lazy(async () => {
+  const module = await import("./app-changelog-dialog.js");
+  return { default: module.AppChangelogDialog };
+});
 
 function renderAdoCommLogPanel(params: {
   logs: AdoCommLogEntry[];
@@ -186,6 +192,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
   const [controlsOpen, setControlsOpen] = React.useState(false);
+  const [changelogOpen, setChangelogOpen] = React.useState(false);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
   const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(initialLastRunRequest);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
@@ -228,6 +235,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   });
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
+  const changelogBadgeRef = React.useRef<HTMLButtonElement | null>(null);
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
@@ -875,8 +883,20 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
       { className: "ui-shell-header" },
       React.createElement(
         "div",
-        { className: "ui-shell-brand" },
-        React.createElement("h1", null, "AzureGanttOps")
+        { className: "ui-shell-brand-row" },
+        React.createElement(
+          "div",
+          { className: "ui-shell-brand" },
+          React.createElement("h1", null, "AzureGanttOps")
+        ),
+        React.createElement(AppReleaseBadge, {
+          open: changelogOpen,
+          buttonRef: changelogBadgeRef,
+          onClick: () => {
+            setControlsOpen(false);
+            setChangelogOpen(true);
+          }
+        })
       ),
       React.createElement(
         "div",
@@ -1360,6 +1380,17 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
         "TensorFive GmbH"
       )
     ),
+    changelogOpen
+      ? React.createElement(
+          React.Suspense,
+          { fallback: null },
+          React.createElement(LazyAppChangelogDialog, {
+            open: true,
+            onClose: () => setChangelogOpen(false),
+            returnFocusRef: changelogBadgeRef
+          })
+        )
+      : null,
     initialQueryOnboardingFlow.status === "required"
       ? React.createElement(InitialQueryOnboardingDialog, {
           queryInput: initialQueryOnboardingFlow.queryInput,
