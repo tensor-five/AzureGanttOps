@@ -41,6 +41,7 @@ import type {
   QueryIntakeTransport,
   WriteCommandTransportResult
 } from "../composition/ui-shell.composition.js";
+import { APP_VERSION } from "../../shared/project-meta/project-meta.js";
 
 const originalMatchMedia = window.matchMedia;
 
@@ -255,6 +256,13 @@ function createController(): QueryIntakeTransport {
     resetLocalConfigs: vi.fn(async () => ({
       status: "completed" as const,
       targets: []
+    })),
+    checkAppUpdate: vi.fn(async () => ({
+      status: "unavailable" as const,
+      currentVersion: APP_VERSION,
+      checkedAt: new Date().toISOString(),
+      source: "github" as const,
+      reason: "version_source_failed" as const
     }))
   };
 }

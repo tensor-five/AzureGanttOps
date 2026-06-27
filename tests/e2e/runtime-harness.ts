@@ -252,6 +252,13 @@ window.__phase6Mount = () => {
         return next as never;
       },
       fetchAdoCommLogs: async ({ afterSeq, limit }) => readAdoEntries(afterSeq, limit),
+      checkAppUpdate: async () => ({
+        status: "unavailable",
+        currentVersion: "0.0.0",
+        checkedAt: new Date().toISOString(),
+        source: "github",
+        reason: "version_source_failed"
+      }),
       adoptWorkItemSchedule: async () => ({
         accepted: true,
         mode: "EXECUTED",

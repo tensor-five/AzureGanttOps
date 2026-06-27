@@ -137,18 +137,27 @@ describe("local UI CSS structure", () => {
   it("keeps the compact release badge inside the shell header contract", () => {
     const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
     const brandRowRule = readCssRule(shellCss, ".ui-shell-brand-row");
+    const badgeGroupRule = readCssRule(shellCss, ".app-release-badge-group");
     const badgeRule = readCssRule(shellCss, ".app-release-badge");
+    const indicatorRule = readCssRule(shellCss, ".app-release-update-indicator");
     const responsiveBrandRowRule = readCssRuleAfter(shellCss, "@media (max-width: 768px)", ".ui-shell-brand-row");
 
     expect(brandRowRule).toContain("display: inline-flex;");
     expect(brandRowRule).toContain("align-items: center;");
     expect(brandRowRule).toContain("flex-wrap: wrap;");
+    expect(badgeGroupRule).toContain("display: inline-flex;");
+    expect(badgeGroupRule).toContain("align-items: center;");
+    expect(badgeGroupRule).toContain("gap: 4px;");
     expect(badgeRule).toContain("appearance: none;");
     expect(badgeRule).toContain("min-height: 36px;");
     expect(badgeRule).toContain("border-radius: var(--radius-pill);");
     expect(badgeRule).toContain("font: inherit;");
     expect(badgeRule).toContain("cursor: pointer;");
     expect(badgeRule).toContain("white-space: nowrap;");
+    expect(indicatorRule).toContain("width: 22px;");
+    expect(indicatorRule).toContain("height: 22px;");
+    expect(indicatorRule).toContain("border-radius: var(--radius-pill);");
+    expect(indicatorRule).toContain("cursor: pointer;");
     expect(responsiveBrandRowRule).toContain("width: 100%;");
   });
 
@@ -159,6 +168,7 @@ describe("local UI CSS structure", () => {
     const headerRule = readCssRule(shellCss, ".app-changelog-header");
     const closeRule = readCssRule(shellCss, ".app-changelog-close");
     const contentRule = readCssRule(shellCss, ".app-changelog-content");
+    const updateNoticeRule = readCssRule(shellCss, ".app-update-notice");
     const markdownRule = readCssRule(shellCss, ".app-changelog-markdown");
     const responsiveDialogRule = readCssRuleAfter(shellCss, "@media (max-width: 640px)", ".app-changelog-dialog");
 
@@ -175,6 +185,8 @@ describe("local UI CSS structure", () => {
     expect(closeRule).toContain("height: 36px;");
     expect(closeRule).toContain("cursor: pointer;");
     expect(contentRule).toContain("overflow: auto;");
+    expect(updateNoticeRule).toContain("border: 1px solid var(--color-warning-border);");
+    expect(updateNoticeRule).toContain("overflow-wrap: anywhere;");
     expect(markdownRule).toContain("line-height: 1.58;");
     expect(responsiveDialogRule).toContain("width: calc(100vw - 20px);");
     expect(responsiveDialogRule).toContain("max-height: calc(100vh - 20px);");

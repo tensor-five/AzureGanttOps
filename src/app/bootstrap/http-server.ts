@@ -10,15 +10,18 @@ import {
   LowdbUserPreferencesAdapter
 } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
 import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
+import { GithubPackageVersionAdapter } from "../../adapters/github/github-package-version.adapter.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { WriteCommandResult } from "../../application/dto/write-boundary/write-command.dto.js";
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
+import { CheckAppUpdateUseCase } from "../../application/use-cases/check-app-update.use-case.js";
 import {
   ClearLocalUserConfigsUseCase,
   LocalConfigResetConfirmationError
@@ -59,7 +62,7 @@ import {
   PWA_MANIFEST_JSON,
   PWA_SERVICE_WORKER_SOURCE
 } from "./pwa-assets.js";
-import { CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
+import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -184,6 +187,7 @@ const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
 const LOCAL_CONFIG_RESET_ROUTE_PATH = "/phase2/local-config-reset";
+const APP_UPDATE_CHECK_ROUTE_PATH = "/phase2/app-update-check";
 const ADO_CSRF_HEADER = "x-ado-csrf-token";
 const ADO_CSRF_MISSING_OR_INVALID = {
   code: "CSRF_INVALID",
@@ -493,6 +497,10 @@ function isLocalConfigResetRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === LOCAL_CONFIG_RESET_ROUTE_PATH;
 }
 
+function isAppUpdateCheckRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === APP_UPDATE_CHECK_ROUTE_PATH;
+}
+
 function isCsrfProtectedRoute(method: string, pathname: string): boolean {
   return (
     isAzLoginRoute(method, pathname) ||
@@ -536,6 +544,8 @@ export function createHttpServer(params: {
   azLoginRunner?: AzLoginRunner;
   azCliPathResolver?: AzCliPathResolver;
   authPreflightRunner?: CliCommandRunner;
+  appVersionSource?: AppVersionSourcePort;
+  appCurrentVersion?: string;
 }): HttpServer {
   const verboseLogs = process.env.ADO_VERBOSE_LOGS === "1";
   if (verboseLogs) {
@@ -654,6 +664,10 @@ export function createHttpServer(params: {
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
+  const appUpdateCheck = new CheckAppUpdateUseCase({
+    currentVersion: params.appCurrentVersion ?? APP_VERSION,
+    versionSource: params.appVersionSource ?? new GithubPackageVersionAdapter()
+  });
   const csrfToken = createCsrfToken();
 
   const server = createServer(async (req, res) => {
@@ -675,6 +689,7 @@ export function createHttpServer(params: {
       localConfigReset,
       azLoginRunner,
       azCliPathResolver,
+      appUpdateCheck,
       csrfToken
     );
   });
@@ -777,6 +792,7 @@ async function route(
   localConfigReset: ClearLocalUserConfigsUseCase,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver,
+  appUpdateCheck: CheckAppUpdateUseCase,
   csrfToken: string
 ): Promise<void> {
   const method = req.method ?? "GET";
@@ -831,7 +847,8 @@ async function route(
       adoCommLogStore,
       distRootPath,
       csrfToken,
-      writeEnabled
+      writeEnabled,
+      appUpdateCheck
     })
   ) {
     return;
@@ -1567,6 +1584,7 @@ type DiagnosticsRouteDeps = {
   distRootPath: string;
   csrfToken: string;
   writeEnabled: boolean;
+  appUpdateCheck: CheckAppUpdateUseCase;
 };
 
 async function handleDiagnosticsAndAssetsRoute(
@@ -1583,6 +1601,12 @@ async function handleDiagnosticsAndAssetsRoute(
 
   if (isHealthRoute(method, url.pathname)) {
     writeJson(res, 200, { status: "ok" });
+    return true;
+  }
+
+  if (isAppUpdateCheckRoute(method, url.pathname)) {
+    const result = await deps.appUpdateCheck.execute();
+    writeJsonNoStore(res, 200, result);
     return true;
   }
 
@@ -1821,6 +1845,11 @@ function writeJson(res: ServerResponse, statusCode: number, payload: unknown): v
   applySecurityHeaders(res);
   res.setHeader("content-type", "application/json; charset=utf-8");
   res.end(`${JSON.stringify(payload)}\n`);
+}
+
+function writeJsonNoStore(res: ServerResponse, statusCode: number, payload: unknown): void {
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+  writeJson(res, statusCode, payload);
 }
 
 function writeFavicon(res: ServerResponse): void {

@@ -95,6 +95,7 @@ import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-fl
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
 import { AppReleaseBadge } from "./app-release-badge.js";
+import { useAppUpdateCheck } from "./use-app-update-check.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -102,6 +103,8 @@ const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
+
+type ChangelogOpenMode = "standard" | "update_notice";
 
 const LazyAppChangelogDialog = React.lazy(async () => {
   const module = await import("./app-changelog-dialog.js");
@@ -192,7 +195,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
   const [controlsOpen, setControlsOpen] = React.useState(false);
-  const [changelogOpen, setChangelogOpen] = React.useState(false);
+  const [changelogMode, setChangelogMode] = React.useState<ChangelogOpenMode | null>(null);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
   const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(initialLastRunRequest);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
@@ -235,7 +238,8 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   });
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
-  const changelogBadgeRef = React.useRef<HTMLButtonElement | null>(null);
+  const changelogVersionButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const changelogUpdateButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
@@ -246,6 +250,12 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   };
   const organization = readLocalStorageValue(ORG_KEY);
   const project = readLocalStorageValue(PROJECT_KEY);
+  const changelogOpen = changelogMode !== null;
+  const changelogReturnFocusRef =
+    changelogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
+  const { updateNotice, trigger: triggerAppUpdateCheck } = useAppUpdateCheck({
+    checkAppUpdate: props.composition.controller.checkAppUpdate
+  });
   const adoCommLogPolling = useAdoCommLogPolling({
     controller: props.composition.controller,
     pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
@@ -350,6 +360,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
           setActiveTab(deriveActiveTabForQueryResponse(submitted));
         }
 
+        triggerAppUpdateCheck();
         return submitted;
       } catch (error: unknown) {
         const reason = error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -367,7 +378,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
         throw error;
       }
     },
-    [enrichRuntimeStateColors, props.composition]
+    [enrichRuntimeStateColors, props.composition, triggerAppUpdateCheck]
   );
 
   const handleNeedsFix = React.useCallback((needsFixResponse: QueryIntakeResponse) => {
@@ -472,6 +483,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
               : null
           );
         }
+        triggerAppUpdateCheck();
       }
       if (discardPendingChanges) {
         setDetailsDraftResetKey((current) => current + 1);
@@ -481,7 +493,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
       isRefreshingRef.current = false;
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges, triggerAppUpdateCheck]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -891,10 +903,16 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
         ),
         React.createElement(AppReleaseBadge, {
           open: changelogOpen,
-          buttonRef: changelogBadgeRef,
-          onClick: () => {
+          updateAvailable: updateNotice !== null,
+          versionButtonRef: changelogVersionButtonRef,
+          updateButtonRef: changelogUpdateButtonRef,
+          onVersionClick: () => {
             setControlsOpen(false);
-            setChangelogOpen(true);
+            setChangelogMode("standard");
+          },
+          onUpdateClick: () => {
+            setControlsOpen(false);
+            setChangelogMode("update_notice");
           }
         })
       ),
@@ -1386,8 +1404,9 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
           { fallback: null },
           React.createElement(LazyAppChangelogDialog, {
             open: true,
-            onClose: () => setChangelogOpen(false),
-            returnFocusRef: changelogBadgeRef
+            onClose: () => setChangelogMode(null),
+            returnFocusRef: changelogReturnFocusRef,
+            updateNotice: changelogMode === "update_notice" ? updateNotice : null
           })
         )
       : null,

@@ -40,6 +40,7 @@ describe("AppChangelogDialog", () => {
     expect(screen.getByRole("heading", { name: "Neu", level: 2 })).toBeTruthy();
     expect(screen.getByRole("listitem").textContent).toContain("Rendert Markdown sicher");
     expect(screen.getByText("Markdown").tagName).toBe("CODE");
+    expect(screen.queryByRole("note", { name: "Neue Version verfügbar" })).toBeNull();
 
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(fetchMock).toHaveBeenCalledWith(CHANGELOG_PATH, expect.objectContaining({
@@ -47,6 +48,31 @@ describe("AppChangelogDialog", () => {
       signal: expect.any(AbortSignal)
     }));
     expect(init.headers).toEqual({ accept: "text/markdown" });
+  });
+
+  it("renders an optional update notice above the changelog", async () => {
+    stubMarkdownFetch("# Changelog");
+
+    render(
+      React.createElement(AppChangelogDialog, {
+        open: true,
+        onClose: vi.fn(),
+        updateNotice: {
+          currentVersion: "1.8.3",
+          latestVersion: "1.9.0",
+          checkedAt: "2026-06-27T10:00:00.000Z",
+          source: "github"
+        }
+      })
+    );
+
+    const notice = screen.getByRole("note", { name: "Neue Version verfügbar" });
+    expect(notice.textContent).toContain("Installiert ist v1.8.3, verfügbar ist v1.9.0.");
+    expect(notice.textContent).toContain("git pull");
+    expect(notice.textContent).toContain(".cmd");
+    expect(notice.textContent).toContain(".command");
+    expect(notice.textContent).toContain("Strg+Shift+R");
+    expect(await screen.findByRole("heading", { name: "Changelog" })).toBeTruthy();
   });
 
   it("shows an alert when the changelog request fails", async () => {

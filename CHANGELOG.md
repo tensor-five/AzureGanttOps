@@ -6,6 +6,12 @@ Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-S
 
 ## [1.8.3] - 2026-06-27
 
+### Hinzugefügt
+
+- Azure-Query-Aktualisierungen prüfen im Hintergrund, ob auf GitHub eine neuere App-Version verfügbar ist.
+- Versionsanzeige zeigt bei verfügbarem Update ein dezentes Ausrufezeichen, das den Changelog mit Update-Hinweis öffnet.
+- Neuer lokaler Diagnose-Endpunkt `GET /phase2/app-update-check` liefert den stillen Update-Check ohne HTTP-Cache.
+
 ### Geändert
 
 - Header zeigt den Changelog-Einstieg kompakt nur noch als Versionsnummer `v1.8.3`.

@@ -4,6 +4,7 @@ import { registerServiceWorker } from "./register-service-worker.js";
 import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
+import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
 
 const container = document.getElementById("app");
 const csrfToken = readCsrfToken();
@@ -512,6 +513,26 @@ const composition = createDefaultUiShellComposition({
       }
 
       return payload as LocalConfigResetReport;
+    },
+    checkAppUpdate: async () => {
+      const response = await fetch("/phase2/app-update-check", {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as AppUpdateCheckResponse | { message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `App update check failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as AppUpdateCheckResponse;
     }
   }
 });

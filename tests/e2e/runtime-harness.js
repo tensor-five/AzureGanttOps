@@ -1229,18 +1229,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React54 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React54.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React55 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React54 = {
+      React55 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React54.react_stack_bottom_frame.bind(
-        React54,
+      var unknownOwnerDebugStack = React55.react_stack_bottom_frame.bind(
+        React55,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1281,6 +1281,18 @@ var require_jsx_runtime = __commonJS({
     } else {
       module.exports = require_react_jsx_runtime_development();
     }
+  }
+});
+
+// dist/src/shared/project-meta/project-meta.js
+var APP_VERSION, CHANGELOG_PATH, GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL;
+var init_project_meta = __esm({
+  "dist/src/shared/project-meta/project-meta.js"() {
+    "use strict";
+    APP_VERSION = "1.8.3";
+    CHANGELOG_PATH = "/CHANGELOG.md";
+    GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
+    TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
   }
 });
 
@@ -1604,7 +1616,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React54 = require_react(), Internals = {
+      var React55 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1622,7 +1634,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React54.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3157,7 +3169,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node2.ownerDocument) === node2 || node2.defaultValue === "" + value || (node2.defaultValue = "" + value);
       }
       function validateOptionProps(element3, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React54.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React55.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18789,14 +18801,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React54 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React55 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React54.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21584,7 +21596,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React54.version;
+        var isomorphicReactPackageVersion = React55.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -21724,18 +21736,6 @@ var require_client = __commonJS({
   }
 });
 
-// dist/src/shared/project-meta/project-meta.js
-var APP_VERSION, CHANGELOG_PATH, GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL;
-var init_project_meta = __esm({
-  "dist/src/shared/project-meta/project-meta.js"() {
-    "use strict";
-    APP_VERSION = "1.8.3";
-    CHANGELOG_PATH = "/CHANGELOG.md";
-    GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
-    TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
-  }
-});
-
 // dist/src/app/bootstrap/use-app-changelog-loader.js
 async function loadAppChangelogMarkdown(signal) {
   const response = await fetch(CHANGELOG_PATH, {
@@ -21751,13 +21751,13 @@ async function loadAppChangelogMarkdown(signal) {
   return response.text();
 }
 function useAppChangelogLoader(open) {
-  const requestIdRef = import_react36.default.useRef(0);
-  const [loadState, setLoadState] = import_react36.default.useState({
+  const requestIdRef = import_react37.default.useRef(0);
+  const [loadState, setLoadState] = import_react37.default.useState({
     status: "idle",
     content: "",
     error: null
   });
-  import_react36.default.useEffect(() => {
+  import_react37.default.useEffect(() => {
     if (!open) {
       return;
     }
@@ -21787,11 +21787,11 @@ function useAppChangelogLoader(open) {
 function isAbortError(error) {
   return error instanceof DOMException && error.name === "AbortError";
 }
-var import_react36;
+var import_react37;
 var init_use_app_changelog_loader = __esm({
   "dist/src/app/bootstrap/use-app-changelog-loader.js"() {
     "use strict";
-    import_react36 = __toESM(require_react(), 1);
+    import_react37 = __toESM(require_react(), 1);
     init_project_meta();
   }
 });
@@ -32629,14 +32629,14 @@ function defaultUrlTransform(value) {
   }
   return "";
 }
-var import_jsx_runtime2, import_react37, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
+var import_jsx_runtime2, import_react38, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
 var init_lib19 = __esm({
   "node_modules/react-markdown/lib/index.js"() {
     init_default();
     init_hast_util_to_jsx_runtime();
     init_html_url_attributes();
     import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-    import_react37 = __toESM(require_react(), 1);
+    import_react38 = __toESM(require_react(), 1);
     init_remark_parse();
     init_remark_rehype();
     init_unified();
@@ -36177,7 +36177,7 @@ __export(app_changelog_markdown_exports, {
   AppChangelogMarkdown: () => AppChangelogMarkdown
 });
 function AppChangelogMarkdown(props) {
-  return import_react38.default.createElement("div", { className: "app-changelog-markdown" }, import_react38.default.createElement(Markdown, {
+  return import_react39.default.createElement("div", { className: "app-changelog-markdown" }, import_react39.default.createElement(Markdown, {
     remarkPlugins: [remarkGfm],
     skipHtml: true,
     urlTransform: transformChangelogUrl,
@@ -36208,26 +36208,26 @@ function toAllowedChangelogHref(url) {
 function isExternalChangelogHref(href) {
   return href.startsWith("http://") || href.startsWith("https://");
 }
-var import_react38, changelogMarkdownComponents, transformChangelogUrl;
+var import_react39, changelogMarkdownComponents, transformChangelogUrl;
 var init_app_changelog_markdown = __esm({
   "dist/src/app/bootstrap/app-changelog-markdown.js"() {
     "use strict";
-    import_react38 = __toESM(require_react(), 1);
+    import_react39 = __toESM(require_react(), 1);
     init_react_markdown();
     init_remark_gfm();
     changelogMarkdownComponents = {
       a: ({ node: _node, href, children, ...rest }) => {
         const safeHref = typeof href === "string" ? toAllowedChangelogHref(href) : null;
         if (!safeHref) {
-          return import_react38.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
+          return import_react39.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
         }
-        return import_react38.default.createElement("a", {
+        return import_react39.default.createElement("a", {
           ...rest,
           href: safeHref,
           ...isExternalChangelogHref(safeHref) ? { target: "_blank", rel: "noreferrer" } : {}
         }, children);
       },
-      img: ({ node: _node, alt }) => import_react38.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Bild entfernt: ${alt}` : "Bild entfernt")
+      img: ({ node: _node, alt }) => import_react39.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Bild entfernt: ${alt}` : "Bild entfernt")
     };
     transformChangelogUrl = (url) => toAllowedChangelogHref(url);
   }
@@ -36239,10 +36239,10 @@ __export(app_changelog_dialog_exports, {
   AppChangelogDialog: () => AppChangelogDialog
 });
 function AppChangelogDialog(props) {
-  const dialogRef = import_react39.default.useRef(null);
-  const closeButtonRef = import_react39.default.useRef(null);
+  const dialogRef = import_react40.default.useRef(null);
+  const closeButtonRef = import_react40.default.useRef(null);
   const loadState = useAppChangelogLoader(props.open);
-  import_react39.default.useEffect(() => {
+  import_react40.default.useEffect(() => {
     if (!props.open) {
       return;
     }
@@ -36254,7 +36254,7 @@ function AppChangelogDialog(props) {
       }
     };
   }, [props.open, props.returnFocusRef]);
-  import_react39.default.useEffect(() => {
+  import_react40.default.useEffect(() => {
     if (!props.open) {
       return;
     }
@@ -36272,11 +36272,11 @@ function AppChangelogDialog(props) {
   if (!props.open) {
     return null;
   }
-  return import_react39.default.createElement("div", {
+  return import_react40.default.createElement("div", {
     className: "app-changelog-backdrop",
     "data-testid": "app-changelog-backdrop",
     onClick: props.onClose
-  }, import_react39.default.createElement("div", {
+  }, import_react40.default.createElement("div", {
     ref: dialogRef,
     className: "app-changelog-dialog",
     role: "dialog",
@@ -36288,27 +36288,34 @@ function AppChangelogDialog(props) {
     onKeyDown: (event) => {
       trapChangelogDialogFocus(event, dialogRef.current);
     }
-  }, import_react39.default.createElement("header", { className: "app-changelog-header" }, import_react39.default.createElement("h2", { id: "app-changelog-title" }, `Changelog v${APP_VERSION}`), import_react39.default.createElement("button", {
+  }, import_react40.default.createElement("header", { className: "app-changelog-header" }, import_react40.default.createElement("h2", { id: "app-changelog-title" }, `Changelog v${APP_VERSION}`), import_react40.default.createElement("button", {
     ref: closeButtonRef,
     type: "button",
     className: "app-changelog-close",
     "aria-label": "Changelog schlie\xDFen",
     onClick: props.onClose
-  }, "\xD7")), import_react39.default.createElement("div", { className: "app-changelog-content" }, renderChangelogContent(loadState))));
+  }, "\xD7")), import_react40.default.createElement("div", { className: "app-changelog-content" }, props.updateNotice ? renderAppUpdateNotice(props.updateNotice) : null, renderChangelogContent(loadState))));
+}
+function renderAppUpdateNotice(updateNotice) {
+  return import_react40.default.createElement("section", {
+    className: "app-update-notice",
+    role: "note",
+    "aria-label": "Neue Version verf\xFCgbar"
+  }, import_react40.default.createElement("strong", null, "Neue Version verf\xFCgbar"), import_react40.default.createElement("p", null, `Installiert ist v${updateNotice.currentVersion}, verf\xFCgbar ist v${updateNotice.latestVersion}. `, "Mit ", import_react40.default.createElement("code", null, "git pull"), " ziehen, die App \xFCber das ", import_react40.default.createElement("code", null, ".cmd"), " oder ", import_react40.default.createElement("code", null, ".command"), " Skript neu starten und bei Bedarf einen Hard Refresh mit ", import_react40.default.createElement("kbd", null, "Strg+Shift+R"), " ausf\xFChren."));
 }
 function renderChangelogContent(loadState) {
   if (loadState.status === "loading" || loadState.status === "idle") {
     return renderChangelogLoadingState();
   }
   if (loadState.status === "error") {
-    return import_react39.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Changelog konnte nicht geladen werden. ${loadState.error}`);
+    return import_react40.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Changelog konnte nicht geladen werden. ${loadState.error}`);
   }
-  return import_react39.default.createElement(import_react39.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react39.default.createElement(LazyAppChangelogMarkdown, {
+  return import_react40.default.createElement(import_react40.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react40.default.createElement(LazyAppChangelogMarkdown, {
     content: loadState.content
   }));
 }
 function renderChangelogLoadingState() {
-  return import_react39.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Changelog wird geladen...");
+  return import_react40.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Changelog wird geladen...");
 }
 function trapChangelogDialogFocus(event, dialogElement) {
   if (event.key !== "Tab" || !dialogElement) {
@@ -36342,14 +36349,14 @@ function findFocusableElements2(dialogElement) {
     "[tabindex]:not([tabindex='-1'])"
   ].join(","))).filter((element3) => element3.getAttribute("aria-hidden") !== "true");
 }
-var import_react39, LazyAppChangelogMarkdown;
+var import_react40, LazyAppChangelogMarkdown;
 var init_app_changelog_dialog = __esm({
   "dist/src/app/bootstrap/app-changelog-dialog.js"() {
     "use strict";
-    import_react39 = __toESM(require_react(), 1);
+    import_react40 = __toESM(require_react(), 1);
     init_project_meta();
     init_use_app_changelog_loader();
-    LazyAppChangelogMarkdown = import_react39.default.lazy(async () => {
+    LazyAppChangelogMarkdown = import_react40.default.lazy(async () => {
       const module = await Promise.resolve().then(() => (init_app_changelog_markdown(), app_changelog_markdown_exports));
       return { default: module.AppChangelogMarkdown };
     });
@@ -38407,6 +38414,7 @@ function mapQueryIntakeResponseToUiModel(response) {
 }
 
 // dist/src/app/composition/ui-shell.composition.js
+init_project_meta();
 function createUiShellComposition(params) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -38436,7 +38444,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react40 = __toESM(require_react(), 1);
+var import_react41 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs
@@ -53946,16 +53954,73 @@ var import_react35 = __toESM(require_react(), 1);
 init_project_meta();
 function AppReleaseBadge(props) {
   const label = `v${APP_VERSION}`;
-  return import_react35.default.createElement("button", {
-    ref: props.buttonRef,
+  return import_react35.default.createElement("span", {
+    className: "app-release-badge-group"
+  }, import_react35.default.createElement("button", {
+    ref: props.versionButtonRef,
     type: "button",
     className: "app-release-badge",
     "aria-haspopup": "dialog",
     "aria-expanded": props.open,
     "aria-label": `Changelog zu Version ${APP_VERSION} \xF6ffnen`,
     title: `Changelog zu Version ${APP_VERSION} \xF6ffnen`,
-    onClick: props.onClick
-  }, label);
+    onClick: props.onVersionClick
+  }, label), props.updateAvailable ? import_react35.default.createElement("button", {
+    ref: props.updateButtonRef,
+    type: "button",
+    className: "app-release-update-indicator",
+    "aria-haspopup": "dialog",
+    "aria-expanded": props.open,
+    "aria-label": "Neue Version verf\xFCgbar. Changelog mit Update-Hinweis \xF6ffnen",
+    title: "Neue Version verf\xFCgbar",
+    onClick: props.onUpdateClick
+  }, "!") : null);
+}
+
+// dist/src/app/bootstrap/use-app-update-check.js
+var import_react36 = __toESM(require_react(), 1);
+function useAppUpdateCheck(params) {
+  const { checkAppUpdate } = params;
+  const [updateNotice, setUpdateNotice] = import_react36.default.useState(null);
+  const mountedRef = import_react36.default.useRef(true);
+  const inFlightRef = import_react36.default.useRef(null);
+  import_react36.default.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+  const trigger = import_react36.default.useCallback(() => {
+    if (inFlightRef.current) {
+      return;
+    }
+    const inFlight = Promise.resolve().then(checkAppUpdate).then((response) => {
+      if (!mountedRef.current) {
+        return;
+      }
+      if (response.status === "update_available") {
+        setUpdateNotice({
+          currentVersion: response.currentVersion,
+          latestVersion: response.latestVersion,
+          checkedAt: response.checkedAt,
+          source: response.source
+        });
+        return;
+      }
+      if (response.status === "current") {
+        setUpdateNotice(null);
+      }
+    }).catch(() => void 0).finally(() => {
+      if (inFlightRef.current === inFlight) {
+        inFlightRef.current = null;
+      }
+    });
+    inFlightRef.current = inFlight;
+  }, [checkAppUpdate]);
+  return {
+    updateNotice,
+    trigger
+  };
 }
 
 // dist/src/app/bootstrap/ui-client.js
@@ -53965,17 +54030,17 @@ var ADO_COMM_LOG_UI_MAX = 1e3;
 var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
-var LazyAppChangelogDialog = import_react40.default.lazy(async () => {
+var LazyAppChangelogDialog = import_react41.default.lazy(async () => {
   const module = await Promise.resolve().then(() => (init_app_changelog_dialog(), app_changelog_dialog_exports));
   return { default: module.AppChangelogDialog };
 });
 function renderAdoCommLogPanel(params) {
-  return import_react40.default.createElement("details", {
+  return import_react41.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
     open: true,
     "data-auto-dismiss": "off"
-  }, import_react40.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react40.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react40.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react40.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react40.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react40.default.createElement("pre", {
+  }, import_react41.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react41.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react41.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react41.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react41.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react41.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -53983,53 +54048,54 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root4 = (0, import_client.createRoot)(options.container);
-  root4.render(import_react40.default.createElement(import_react40.default.StrictMode, null, import_react40.default.createElement(QueryClientProvider, {
+  root4.render(import_react41.default.createElement(import_react41.default.StrictMode, null, import_react41.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react40.default.createElement(BrowserRouter, null, import_react40.default.createElement(UiShellApp, {
+  }, import_react41.default.createElement(BrowserRouter, null, import_react41.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react40.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react41.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react40.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react40.default.useState(false);
-  const [changelogOpen, setChangelogOpen] = import_react40.default.useState(false);
-  const [response, setResponse] = import_react40.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react40.default.useState(initialLastRunRequest);
-  const [uiModel, setUiModel] = import_react40.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react40.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react40.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react40.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const [effectiveTheme, setEffectiveTheme] = import_react40.default.useState(() => resolveEffectiveTheme(themeMode));
-  const [liveSyncEnabled, setLiveSyncEnabled] = import_react40.default.useState(() => loadTimelineLiveSyncEnabledPreference());
-  const responseRef = import_react40.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react40.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
-  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react40.default.useState(0);
-  const [isRefreshing, setIsRefreshing] = import_react40.default.useState(false);
-  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react40.default.useState(false);
-  const [detailsPanelDirty, setDetailsPanelDirty] = import_react40.default.useState(false);
-  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react40.default.useState(0);
-  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react40.default.useState(false);
-  const isRefreshingRef = import_react40.default.useRef(isRefreshing);
-  const workItemSyncInFlightRef = import_react40.default.useRef(0);
-  const pendingWorkItemMutationsRef = import_react40.default.useRef([]);
-  const preOptimisticResponseSnapshotRef = import_react40.default.useRef(null);
-  const flushPendingWorkItemMutationsPromiseRef = import_react40.default.useRef(null);
-  const retryRefreshInFlightPromiseRef = import_react40.default.useRef(null);
-  const refreshGuardStateRef = import_react40.default.useRef({
+  const [activeTab, setActiveTab] = import_react41.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react41.default.useState(false);
+  const [changelogMode, setChangelogMode] = import_react41.default.useState(null);
+  const [response, setResponse] = import_react41.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react41.default.useState(initialLastRunRequest);
+  const [uiModel, setUiModel] = import_react41.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react41.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react41.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react41.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [effectiveTheme, setEffectiveTheme] = import_react41.default.useState(() => resolveEffectiveTheme(themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react41.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react41.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react41.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react41.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react41.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react41.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react41.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react41.default.useState(0);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react41.default.useState(false);
+  const isRefreshingRef = import_react41.default.useRef(isRefreshing);
+  const workItemSyncInFlightRef = import_react41.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react41.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react41.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react41.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react41.default.useRef(null);
+  const refreshGuardStateRef = import_react41.default.useRef({
     detailsPanelDirty: false,
     hasOptimisticChanges: false,
     liveSyncEnabled,
     workItemSyncState
   });
-  const liveSyncEnabledRef = import_react40.default.useRef(liveSyncEnabled);
-  const timelineSelectionStoreRef = import_react40.default.useRef(createTimelineSelectionStore());
-  const changelogBadgeRef = import_react40.default.useRef(null);
-  const workItemStateOptionsCacheRef = import_react40.default.useRef(/* @__PURE__ */ new Map());
+  const liveSyncEnabledRef = import_react41.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react41.default.useRef(createTimelineSelectionStore());
+  const changelogVersionButtonRef = import_react41.default.useRef(null);
+  const changelogUpdateButtonRef = import_react41.default.useRef(null);
+  const workItemStateOptionsCacheRef = import_react41.default.useRef(/* @__PURE__ */ new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
     detailsPanelDirty,
@@ -54039,34 +54105,39 @@ function UiShellApp(props) {
   };
   const organization = readLocalStorageValue(ORG_KEY);
   const project = readLocalStorageValue(PROJECT_KEY);
+  const changelogOpen = changelogMode !== null;
+  const changelogReturnFocusRef = changelogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
+  const { updateNotice, trigger: triggerAppUpdateCheck } = useAppUpdateCheck({
+    checkAppUpdate: props.composition.controller.checkAppUpdate
+  });
   const adoCommLogPolling = useAdoCommLogPolling({
     controller: props.composition.controller,
     pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const updateRefreshGuardState = import_react40.default.useCallback((patch2) => {
+  const updateRefreshGuardState = import_react41.default.useCallback((patch2) => {
     refreshGuardStateRef.current = {
       ...refreshGuardStateRef.current,
       ...patch2
     };
   }, []);
-  const setGuardedHasOptimisticChanges = import_react40.default.useCallback((next) => {
+  const setGuardedHasOptimisticChanges = import_react41.default.useCallback((next) => {
     updateRefreshGuardState({ hasOptimisticChanges: next });
     setHasOptimisticChanges(next);
   }, [updateRefreshGuardState]);
-  const setGuardedWorkItemSyncState = import_react40.default.useCallback((next) => {
+  const setGuardedWorkItemSyncState = import_react41.default.useCallback((next) => {
     const current = refreshGuardStateRef.current.workItemSyncState;
     const resolved = typeof next === "function" ? next(current) : next;
     updateRefreshGuardState({ workItemSyncState: resolved });
     setWorkItemSyncState(resolved);
   }, [updateRefreshGuardState]);
-  const setGuardedLiveSyncEnabled = import_react40.default.useCallback((enabled) => {
+  const setGuardedLiveSyncEnabled = import_react41.default.useCallback((enabled) => {
     liveSyncEnabledRef.current = enabled;
     updateRefreshGuardState({ liveSyncEnabled: enabled });
     setLiveSyncEnabled(enabled);
   }, [updateRefreshGuardState]);
-  const fetchWorkItemStateOptionsCached = import_react40.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react41.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -54075,10 +54146,10 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react40.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react41.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react40.default.useCallback(async (request) => {
+  const runQuery = import_react41.default.useCallback(async (request) => {
     try {
       const result = await props.composition.runQuerySelectionFlow({
         queryId: request.queryId,
@@ -54101,6 +54172,7 @@ function UiShellApp(props) {
         setMappingFixResponse(null);
         setActiveTab(deriveActiveTabForQueryResponse(submitted));
       }
+      triggerAppUpdateCheck();
       return submitted;
     } catch (error) {
       const reason = error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -54117,12 +54189,12 @@ function UiShellApp(props) {
       }));
       throw error;
     }
-  }, [enrichRuntimeStateColors, props.composition]);
-  const handleNeedsFix = import_react40.default.useCallback((needsFixResponse) => {
+  }, [enrichRuntimeStateColors, props.composition, triggerAppUpdateCheck]);
+  const handleNeedsFix = import_react41.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react40.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react41.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -54142,20 +54214,20 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const readRefreshGuardInput = import_react40.default.useCallback((options) => createRefreshDiscardWarningInput({
+  const readRefreshGuardInput = import_react41.default.useCallback((options) => createRefreshDiscardWarningInput({
     state: refreshGuardStateRef.current,
     pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
     afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
   }), []);
-  const handleDetailsDirtyChange = import_react40.default.useCallback((dirty) => {
+  const handleDetailsDirtyChange = import_react41.default.useCallback((dirty) => {
     updateRefreshGuardState({ detailsPanelDirty: dirty });
     setDetailsPanelDirty(dirty);
   }, [updateRefreshGuardState]);
-  const handleSetLiveSyncEnabled = import_react40.default.useCallback((enabled) => {
+  const handleSetLiveSyncEnabled = import_react41.default.useCallback((enabled) => {
     setGuardedLiveSyncEnabled(enabled);
     saveTimelineLiveSyncEnabledPreference(enabled);
   }, [setGuardedLiveSyncEnabled]);
-  const executeRefresh = import_react40.default.useCallback(async (discardPendingChanges) => {
+  const executeRefresh = import_react41.default.useCallback(async (discardPendingChanges) => {
     isRefreshingRef.current = true;
     setIsRefreshing(true);
     if (discardPendingChanges) {
@@ -54188,6 +54260,7 @@ function UiShellApp(props) {
           setActiveTab(result.activeTab);
           setBlockerMessage(result.response.preflightStatus === "SESSION_EXPIRED" ? buildSessionExpiredRefreshBlocker() : null);
         }
+        triggerAppUpdateCheck();
       }
       if (discardPendingChanges) {
         setDetailsDraftResetKey((current) => current + 1);
@@ -54197,7 +54270,7 @@ function UiShellApp(props) {
       isRefreshingRef.current = false;
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges, triggerAppUpdateCheck]);
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences2.savedQueries ?? [],
     initialSelectedHeaderQueryId: cachedPreferences2.selectedHeaderQueryId ?? "",
@@ -54211,14 +54284,14 @@ function UiShellApp(props) {
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
-  const runTrackedWorkItemUpdate = import_react40.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react41.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
       setWorkItemSyncState: setGuardedWorkItemSyncState
     });
   }, [setGuardedWorkItemSyncState]);
-  const flushQueuedWorkItemMutations = import_react40.default.useCallback(async () => {
+  const flushQueuedWorkItemMutations = import_react41.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
     }
@@ -54244,7 +54317,7 @@ function UiShellApp(props) {
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
   }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
-  const runRetryRefresh = import_react40.default.useCallback(async () => {
+  const runRetryRefresh = import_react41.default.useCallback(async () => {
     if (isRefreshingRef.current) {
       return;
     }
@@ -54265,8 +54338,8 @@ function UiShellApp(props) {
     }
     await executeRefresh(false);
   }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
-  const retryRefresh = import_react40.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
-  const enqueuePendingWorkItemMutation = import_react40.default.useCallback((mutation) => {
+  const retryRefresh = import_react41.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
+  const enqueuePendingWorkItemMutation = import_react41.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
@@ -54274,7 +54347,7 @@ function UiShellApp(props) {
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
     setGuardedHasOptimisticChanges(true);
   }, [setGuardedHasOptimisticChanges]);
-  const scheduleWorkItemMutation = import_react40.default.useCallback(async (params) => {
+  const scheduleWorkItemMutation = import_react41.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "work_item",
@@ -54290,7 +54363,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleDependencyMutation = import_react40.default.useCallback(async (params) => {
+  const scheduleDependencyMutation = import_react41.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "dependency",
@@ -54307,7 +54380,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleReparentMutation = import_react40.default.useCallback(async (params) => {
+  const scheduleReparentMutation = import_react41.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "reparent",
@@ -54324,20 +54397,20 @@ function UiShellApp(props) {
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     liveSyncEnabledRef.current = liveSyncEnabled;
   }, [liveSyncEnabled]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     const preferences = initialQueryOnboardingFlow.hydratedPreferences;
     if (!preferences) {
       return;
@@ -54348,13 +54421,13 @@ function UiShellApp(props) {
     const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
     headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
   }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
   }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
       return;
@@ -54364,7 +54437,7 @@ function UiShellApp(props) {
     }
     setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
@@ -54374,7 +54447,7 @@ function UiShellApp(props) {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -54400,7 +54473,7 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     const onPointerDown = (event) => {
       const target = event.target;
       const trustBadgeElement = document.querySelector("details.trust-badge-details");
@@ -54452,7 +54525,7 @@ function UiShellApp(props) {
     headerQueryLoading: headerQueryFlow.headerQueryLoading,
     workItemSyncState
   });
-  const controlsContent = import_react40.default.createElement(import_react40.default.Fragment, null, import_react40.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react40.default.createElement(TopTabs, {
+  const controlsContent = import_react41.default.createElement(import_react41.default.Fragment, null, import_react41.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react41.default.createElement(TopTabs, {
     activeTab,
     model: uiModel,
     onTabChange: (tab2) => {
@@ -54462,10 +54535,10 @@ function UiShellApp(props) {
       setBlockerMessage(payload);
       setControlsOpen(true);
     }
-  }), blockerMessage ? import_react40.default.createElement("section", {
+  }), blockerMessage ? import_react41.default.createElement("section", {
     "aria-label": "tab-blocker-guidance",
     className: "tab-blocker-guidance"
-  }, import_react40.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react40.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react40.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react40.default.createElement(LocalConfigResetPanel, {
+  }, import_react41.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react41.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react41.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react41.default.createElement(LocalConfigResetPanel, {
     guard: localConfigResetGuard,
     onServerReset: props.composition.controller.resetLocalConfigs,
     onBrowserCleanup: () => clearBrowserLocalConfigs({
@@ -54475,14 +54548,20 @@ function UiShellApp(props) {
       window.location.reload();
     }
   }), mainPanel);
-  return import_react40.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react40.default.createElement("section", { className: "ui-shell-header" }, import_react40.default.createElement("div", { className: "ui-shell-brand-row" }, import_react40.default.createElement("div", { className: "ui-shell-brand" }, import_react40.default.createElement("h1", null, "AzureGanttOps")), import_react40.default.createElement(AppReleaseBadge, {
+  return import_react41.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react41.default.createElement("section", { className: "ui-shell-header" }, import_react41.default.createElement("div", { className: "ui-shell-brand-row" }, import_react41.default.createElement("div", { className: "ui-shell-brand" }, import_react41.default.createElement("h1", null, "AzureGanttOps")), import_react41.default.createElement(AppReleaseBadge, {
     open: changelogOpen,
-    buttonRef: changelogBadgeRef,
-    onClick: () => {
+    updateAvailable: updateNotice !== null,
+    versionButtonRef: changelogVersionButtonRef,
+    updateButtonRef: changelogUpdateButtonRef,
+    onVersionClick: () => {
       setControlsOpen(false);
-      setChangelogOpen(true);
+      setChangelogMode("standard");
+    },
+    onUpdateClick: () => {
+      setControlsOpen(false);
+      setChangelogMode("update_notice");
     }
-  })), import_react40.default.createElement("div", { className: "ui-shell-header-actions" }, import_react40.default.createElement("div", { className: "header-query-picker" }, import_react40.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react40.default.createElement("details", { className: "header-query-dropdown" }, import_react40.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react40.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react40.default.createElement("input", {
+  })), import_react41.default.createElement("div", { className: "ui-shell-header-actions" }, import_react41.default.createElement("div", { className: "header-query-picker" }, import_react41.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react41.default.createElement("details", { className: "header-query-dropdown" }, import_react41.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react41.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react41.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -54490,7 +54569,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react40.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react40.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react40.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react40.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react40.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react41.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react41.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react41.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react41.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react41.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -54500,7 +54579,7 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react40.default.createElement("button", {
+  }, "\xD7"), import_react41.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-open",
     "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
@@ -54515,7 +54594,7 @@ function UiShellApp(props) {
         window.open(queryUrl, "_blank", "noopener,noreferrer");
       }
     }
-  }, import_react40.default.createElement("svg", {
+  }, import_react41.default.createElement("svg", {
     width: "14",
     height: "14",
     viewBox: "0 0 24 24",
@@ -54524,21 +54603,21 @@ function UiShellApp(props) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }, import_react40.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react40.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react40.default.createElement("button", {
+  }, import_react41.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react41.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react41.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react40.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react41.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react40.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react41.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -54554,23 +54633,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react40.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react41.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react40.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react41.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react40.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react40.default.createElement("span", {
+  }, import_react41.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react41.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react40.default.createElement("div", { className: "theme-menu" }, import_react40.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react41.default.createElement("div", { className: "theme-menu" }, import_react41.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -54578,7 +54657,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react40.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react40.default.createElement(TrustBadge, {
+  }, import_react41.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react41.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
@@ -54586,7 +54665,7 @@ function UiShellApp(props) {
     controlsOpen,
     onControlsOpenChange: setControlsOpen,
     controlsContent
-  }))), import_react40.default.createElement("section", { className: "ui-shell-content" }, import_react40.default.createElement("section", { className: "gantt-primary-card" }, import_react40.default.createElement(WarningBanner, {
+  }))), import_react41.default.createElement("section", { className: "ui-shell-content" }, import_react41.default.createElement("section", { className: "gantt-primary-card" }, import_react41.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -54594,7 +54673,7 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react40.default.createElement(TimelinePane, {
+  }), import_react41.default.createElement(TimelinePane, {
     key: response?.activeQueryId ?? "timeline-no-query",
     activeQueryId: response?.activeQueryId ?? null,
     activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
@@ -54810,31 +54889,32 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }))), import_react40.default.createElement("footer", { className: "ui-shell-footer" }, import_react40.default.createElement("span", null, "An "), import_react40.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react40.default.createElement("span", null, " by Christian Betz @ "), import_react40.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react40.default.createElement(import_react40.default.Suspense, { fallback: null }, import_react40.default.createElement(LazyAppChangelogDialog, {
+  }))), import_react41.default.createElement("footer", { className: "ui-shell-footer" }, import_react41.default.createElement("span", null, "An "), import_react41.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react41.default.createElement("span", null, " by Christian Betz @ "), import_react41.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react41.default.createElement(import_react41.default.Suspense, { fallback: null }, import_react41.default.createElement(LazyAppChangelogDialog, {
     open: true,
-    onClose: () => setChangelogOpen(false),
-    returnFocusRef: changelogBadgeRef
-  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react40.default.createElement(InitialQueryOnboardingDialog, {
+    onClose: () => setChangelogMode(null),
+    returnFocusRef: changelogReturnFocusRef,
+    updateNotice: changelogMode === "update_notice" ? updateNotice : null
+  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react41.default.createElement(InitialQueryOnboardingDialog, {
     queryInput: initialQueryOnboardingFlow.queryInput,
     loading: initialQueryOnboardingFlow.loading,
     statusMessage: initialQueryOnboardingFlow.statusMessage,
     errorMessage: initialQueryOnboardingFlow.errorMessage,
     onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
     onSubmit: initialQueryOnboardingFlow.submit
-  }) : null, showRefreshDiscardWarning ? import_react40.default.createElement("div", {
+  }) : null, showRefreshDiscardWarning ? import_react41.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, import_react40.default.createElement("div", {
+  }, import_react41.default.createElement("div", {
     className: "refresh-discard-warning-dialog",
     role: "alertdialog",
     "aria-labelledby": "refresh-discard-warning-title",
     "aria-describedby": "refresh-discard-warning-desc",
     onClick: (e) => e.stopPropagation()
-  }, import_react40.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react40.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react40.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react40.default.createElement("button", {
+  }, import_react41.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react41.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react41.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react41.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-cancel",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, "Abbrechen"), import_react40.default.createElement("button", {
+  }, "Abbrechen"), import_react41.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-confirm",
     onClick: () => {
@@ -54846,7 +54926,7 @@ function UiShellApp(props) {
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react40.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react40.default.createElement(QuerySelector, {
+    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react41.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
@@ -54856,19 +54936,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react40.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react40.default.createElement(MappingFixPanel, {
+    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react41.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react40.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react41.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react40.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react40.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react41.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react40.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react40.default.createElement(DiagnosticsTab, {
+  return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react41.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
@@ -55110,6 +55190,13 @@ window.__phase6Mount = () => {
         return next;
       },
       fetchAdoCommLogs: async ({ afterSeq, limit }) => readAdoEntries(afterSeq, limit),
+      checkAppUpdate: async () => ({
+        status: "unavailable",
+        currentVersion: "0.0.0",
+        checkedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        source: "github",
+        reason: "version_source_failed"
+      }),
       adoptWorkItemSchedule: async () => ({
         accepted: true,
         mode: "EXECUTED",

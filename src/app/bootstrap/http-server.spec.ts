@@ -15,6 +15,7 @@ import {
 import { PWA_SERVICE_WORKER_SOURCE } from "./pwa-assets.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 import { LOCAL_CONFIG_RESET_CONFIRMATION } from "../../application/ports/local-config-reset.port.js";
+import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
 import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
 
 type StartedServer = {
@@ -296,6 +297,69 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
       expect(body).toEqual({ status: "ok" });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("returns app update checks without caching or Azure communication logging", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const httpClientGet = vi.fn(async () => ({
+      status: 200,
+      json: { value: [] },
+      headers: {}
+    }));
+    const appVersionSource = createAppVersionSource("1.9.0");
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: httpClientGet
+      },
+      appVersionSource
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/app-update-check`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(body).toMatchObject({
+        status: "update_available",
+        currentVersion: APP_VERSION,
+        latestVersion: "1.9.0",
+        source: "github"
+      });
+      expect(body.checkedAt).toEqual(expect.any(String));
+      expect(appVersionSource.loadLatestVersion).toHaveBeenCalledTimes(1);
+      expect(httpClientGet).not.toHaveBeenCalled();
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("keeps app update source failures as HTTP 200 unavailable responses", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      appVersionSource: createAppVersionSource(new Error("GitHub unavailable"))
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/app-update-check`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(body).toMatchObject({
+        status: "unavailable",
+        currentVersion: APP_VERSION,
+        source: "github",
+        reason: "version_source_failed"
+      });
     } finally {
       await server.close();
     }
@@ -1992,6 +2056,8 @@ function startServer(params: {
   azLoginRunner?: () => Promise<{ message: string }>;
   azCliPathResolver?: () => Promise<string>;
   authPreflightRunner?: CliCommandRunner;
+  appVersionSource?: AppVersionSourcePort;
+  appCurrentVersion?: string;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
@@ -2013,12 +2079,29 @@ function startServer(params: {
       },
     azLoginRunner: params.azLoginRunner,
     azCliPathResolver: params.azCliPathResolver,
-    authPreflightRunner: params.authPreflightRunner
+    authPreflightRunner: params.authPreflightRunner,
+    appVersionSource: params.appVersionSource,
+    appCurrentVersion: params.appCurrentVersion
   });
 
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     close: () => server.close()
+  };
+}
+
+function createAppVersionSource(version: string | Error): AppVersionSourcePort & {
+  loadLatestVersion: ReturnType<typeof vi.fn<() => Promise<string>>>;
+} {
+  return {
+    source: "github",
+    loadLatestVersion: vi.fn(async () => {
+      if (version instanceof Error) {
+        throw version;
+      }
+
+      return version;
+    })
   };
 }
 

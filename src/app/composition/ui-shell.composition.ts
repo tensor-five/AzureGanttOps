@@ -9,6 +9,8 @@ import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
+import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
+import { APP_VERSION } from "../../shared/project-meta/project-meta.js";
 
 export type AdoCommLogEntry = {
   seq: number;
@@ -126,6 +128,7 @@ export type QueryIntakeTransport = {
     path: string;
   }>;
   resetLocalConfigs: (request: { confirmation: string }) => Promise<LocalConfigResetReport>;
+  checkAppUpdate: () => Promise<AppUpdateCheckResponse>;
 };
 
 export type UiShellCapabilities = {
@@ -277,6 +280,13 @@ export function createLocalUiShellController(params: {
     resetLocalConfigs: async () => ({
       status: "completed",
       targets: []
+    }),
+    checkAppUpdate: async () => ({
+      status: "unavailable",
+      currentVersion: APP_VERSION,
+      checkedAt: new Date().toISOString(),
+      source: "github",
+      reason: "version_source_failed"
     })
   };
 }

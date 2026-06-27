@@ -12,7 +12,7 @@ describe("AppReleaseBadge", () => {
   });
 
   it("renders a visible, accessible changelog dialog button for the current version", () => {
-    render(React.createElement(AppReleaseBadge, { open: false, onClick: vi.fn() }));
+    render(React.createElement(AppReleaseBadge, { open: false, onVersionClick: vi.fn() }));
 
     const button = screen.getByRole("button", {
       name: `Changelog zu Version ${APP_VERSION} öffnen`
@@ -23,11 +23,12 @@ describe("AppReleaseBadge", () => {
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
     expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(button.getAttribute("title")).toBe(`Changelog zu Version ${APP_VERSION} öffnen`);
+    expect(screen.queryByRole("button", { name: /Neue Version verfügbar/ })).toBeNull();
   });
 
   it("reflects the expanded state and delegates clicks to the caller", () => {
-    const onClick = vi.fn();
-    render(React.createElement(AppReleaseBadge, { open: true, onClick }));
+    const onVersionClick = vi.fn();
+    render(React.createElement(AppReleaseBadge, { open: true, onVersionClick }));
 
     const button = screen.getByRole("button", {
       name: `Changelog zu Version ${APP_VERSION} öffnen`
@@ -37,6 +38,34 @@ describe("AppReleaseBadge", () => {
 
     fireEvent.click(button);
 
-    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onVersionClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders the optional update indicator as a sibling button", () => {
+    const onUpdateClick = vi.fn();
+    render(
+      React.createElement(AppReleaseBadge, {
+        open: false,
+        updateAvailable: true,
+        onVersionClick: vi.fn(),
+        onUpdateClick
+      })
+    );
+
+    const versionButton = screen.getByRole("button", {
+      name: `Changelog zu Version ${APP_VERSION} öffnen`
+    });
+    const updateButton = screen.getByRole("button", {
+      name: "Neue Version verfügbar. Changelog mit Update-Hinweis öffnen"
+    });
+
+    expect(versionButton.contains(updateButton)).toBe(false);
+    expect(updateButton.textContent).toBe("!");
+    expect(updateButton.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(updateButton.getAttribute("title")).toBe("Neue Version verfügbar");
+
+    fireEvent.click(updateButton);
+
+    expect(onUpdateClick).toHaveBeenCalledTimes(1);
   });
 });
