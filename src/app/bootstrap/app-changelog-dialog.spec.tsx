@@ -156,7 +156,11 @@ describe("AppChangelogDialog", () => {
     fireEvent.click(dialog);
     expect(screen.getByRole("dialog", { name: `Changelog v${APP_VERSION}` })).toBeTruthy();
 
-    fireEvent.click(screen.getByTestId("app-changelog-backdrop"));
+    const backdrop = screen.getByTestId("app-dialog-backdrop");
+    expect(backdrop.classList.contains("app-changelog-backdrop")).toBe(true);
+    expect(dialog.classList.contains("app-changelog-dialog")).toBe(true);
+
+    fireEvent.click(backdrop);
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: `Changelog v${APP_VERSION}` })).toBeNull();

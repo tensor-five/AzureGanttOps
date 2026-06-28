@@ -139,6 +139,7 @@ describe("local UI CSS structure", () => {
     const brandRowRule = readCssRule(shellCss, ".ui-shell-brand-row");
     const badgeGroupRule = readCssRule(shellCss, ".app-release-badge-group");
     const badgeRule = readCssRule(shellCss, ".app-release-badge");
+    const shortcutsRule = readCssRule(shellCss, ".app-release-shortcuts-button");
     const indicatorRule = readCssRule(shellCss, ".app-release-update-indicator");
     const responsiveBrandRowRule = readCssRuleAfter(shellCss, "@media (max-width: 768px)", ".ui-shell-brand-row");
 
@@ -154,6 +155,10 @@ describe("local UI CSS structure", () => {
     expect(badgeRule).toContain("font: inherit;");
     expect(badgeRule).toContain("cursor: pointer;");
     expect(badgeRule).toContain("white-space: nowrap;");
+    expect(shortcutsRule).toContain("width: 30px;");
+    expect(shortcutsRule).toContain("height: 30px;");
+    expect(shortcutsRule).toContain("border-radius: var(--radius-pill);");
+    expect(shortcutsRule).toContain("cursor: pointer;");
     expect(indicatorRule).toContain("width: 22px;");
     expect(indicatorRule).toContain("height: 22px;");
     expect(indicatorRule).toContain("border-radius: var(--radius-pill);");
@@ -163,16 +168,20 @@ describe("local UI CSS structure", () => {
 
   it("keeps the changelog dialog bounded and internally scrollable", () => {
     const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
-    const backdropRule = readCssRule(shellCss, ".app-changelog-backdrop");
-    const dialogRule = readCssRule(shellCss, ".app-changelog-dialog");
-    const headerRule = readCssRule(shellCss, ".app-changelog-header");
-    const closeRule = readCssRule(shellCss, ".app-changelog-close");
-    const contentRule = readCssRule(shellCss, ".app-changelog-content");
+    const backdropRule = readCssRule(shellCss, ".app-dialog-backdrop");
+    const legacyBackdropRule = readCssRule(shellCss, ".app-changelog-backdrop");
+    const dialogRule = readCssRule(shellCss, ".app-dialog");
+    const legacyDialogRule = readCssRule(shellCss, ".app-changelog-dialog");
+    const headerRule = readCssRule(shellCss, ".app-dialog-header");
+    const closeRule = readCssRule(shellCss, ".app-dialog-close");
+    const contentRule = readCssRule(shellCss, ".app-dialog-content");
     const updateNoticeRule = readCssRule(shellCss, ".app-update-notice");
     const markdownRule = readCssRule(shellCss, ".app-changelog-markdown");
-    const responsiveDialogRule = readCssRuleAfter(shellCss, "@media (max-width: 640px)", ".app-changelog-dialog");
+    const responsiveDialogRule = readCssRuleAfter(shellCss, "@media (max-width: 640px)", ".app-dialog");
 
     expect(backdropRule).toContain("position: fixed;");
+    expect(legacyBackdropRule).toBe(backdropRule);
+    expect(legacyDialogRule).toBe(dialogRule);
     expect(backdropRule).toContain("inset: 0;");
     expect(backdropRule).toContain("place-items: center;");
     expect(dialogRule).toContain("width: min(760px, calc(100vw - 32px));");
@@ -190,6 +199,25 @@ describe("local UI CSS structure", () => {
     expect(markdownRule).toContain("line-height: 1.58;");
     expect(responsiveDialogRule).toContain("width: calc(100vw - 20px);");
     expect(responsiveDialogRule).toContain("max-height: calc(100vh - 20px);");
+  });
+
+  it("keeps keyboard shortcuts dialog content compact and responsive", () => {
+    const shellCss = readFileSync(path.join(bootstrapDir, "local-ui-shell.css"), "utf8");
+    const contentRule = readCssRule(shellCss, ".app-keyboard-shortcuts-content");
+    const shortcutsRule = readCssRule(shellCss, ".app-keyboard-shortcuts");
+    const itemRule = readCssRule(shellCss, ".app-keyboard-shortcut-item");
+    const keyRule = readCssRule(shellCss, ".app-keyboard-shortcut-keys kbd");
+    const descriptionRule = readCssRule(shellCss, ".app-keyboard-shortcut-description");
+    const responsiveItemRule = readCssRuleAfter(shellCss, "@media (max-width: 640px)", ".app-keyboard-shortcut-item");
+
+    expect(contentRule).toContain("min-height: 0;");
+    expect(shortcutsRule).toContain("display: grid;");
+    expect(shortcutsRule).toContain("gap: 18px;");
+    expect(itemRule).toContain("grid-template-columns: minmax(128px, 188px) minmax(0, 1fr);");
+    expect(itemRule).toContain("border-radius: var(--radius-sm);");
+    expect(keyRule).toContain("white-space: nowrap;");
+    expect(descriptionRule).toContain("overflow-wrap: anywhere;");
+    expect(responsiveItemRule).toContain("grid-template-columns: minmax(0, 1fr);");
   });
 
   it("retains required token contract", () => {
@@ -214,14 +242,26 @@ describe("local UI CSS structure", () => {
 });
 
 function readCssRule(css: string, selector: string): string {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = new RegExp(`${escapedSelector}\\s*\\{(?<body>[\\s\\S]*?)\\}`).exec(css);
+  const rulePattern = /(?<selectors>[^{}]+)\{(?<body>[^{}]*)\}/g;
+  const matches: Array<{ selectors: string[]; body: string }> = [];
 
-  if (!match?.groups?.body) {
-    throw new Error(`Missing CSS rule for ${selector}`);
+  for (const match of css.matchAll(rulePattern)) {
+    const selectors = match.groups?.selectors.split(",").map((item) => item.trim()) ?? [];
+    if (selectors.includes(selector) && match.groups?.body) {
+      matches.push({ selectors, body: match.groups.body });
+    }
   }
 
-  return match.groups.body;
+  const exactMatch = matches.find((match) => match.selectors.length === 1);
+  if (exactMatch) {
+    return exactMatch.body;
+  }
+
+  if (matches[0]) {
+    return matches[0].body;
+  }
+
+  throw new Error(`Missing CSS rule for ${selector}`);
 }
 
 function readCssRuleAfter(css: string, marker: string, selector: string): string {

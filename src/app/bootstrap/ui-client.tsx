@@ -104,11 +104,16 @@ const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
 
-type ChangelogOpenMode = "standard" | "update_notice";
+type HeaderDialogMode = "changelog" | "update_notice" | "keyboard_shortcuts";
 
 const LazyAppChangelogDialog = React.lazy(async () => {
   const module = await import("./app-changelog-dialog.js");
   return { default: module.AppChangelogDialog };
+});
+
+const LazyAppKeyboardShortcutsDialog = React.lazy(async () => {
+  const module = await import("./app-keyboard-shortcuts-dialog.js");
+  return { default: module.AppKeyboardShortcutsDialog };
 });
 
 function renderAdoCommLogPanel(params: {
@@ -195,7 +200,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
   const [controlsOpen, setControlsOpen] = React.useState(false);
-  const [changelogMode, setChangelogMode] = React.useState<ChangelogOpenMode | null>(null);
+  const [headerDialogMode, setHeaderDialogMode] = React.useState<HeaderDialogMode | null>(null);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
   const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(initialLastRunRequest);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
@@ -239,6 +244,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
   const changelogVersionButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const keyboardShortcutsButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const changelogUpdateButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   isRefreshingRef.current = isRefreshing;
@@ -250,9 +256,10 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   };
   const organization = readLocalStorageValue(ORG_KEY);
   const project = readLocalStorageValue(PROJECT_KEY);
-  const changelogOpen = changelogMode !== null;
+  const changelogOpen = headerDialogMode === "changelog" || headerDialogMode === "update_notice";
+  const keyboardShortcutsOpen = headerDialogMode === "keyboard_shortcuts";
   const changelogReturnFocusRef =
-    changelogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
+    headerDialogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
   const { updateNotice, trigger: triggerAppUpdateCheck } = useAppUpdateCheck({
     checkAppUpdate: props.composition.controller.checkAppUpdate
   });
@@ -903,16 +910,22 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
         ),
         React.createElement(AppReleaseBadge, {
           open: changelogOpen,
+          shortcutsOpen: keyboardShortcutsOpen,
           updateAvailable: updateNotice !== null,
           versionButtonRef: changelogVersionButtonRef,
+          shortcutsButtonRef: keyboardShortcutsButtonRef,
           updateButtonRef: changelogUpdateButtonRef,
           onVersionClick: () => {
             setControlsOpen(false);
-            setChangelogMode("standard");
+            setHeaderDialogMode("changelog");
+          },
+          onShortcutsClick: () => {
+            setControlsOpen(false);
+            setHeaderDialogMode("keyboard_shortcuts");
           },
           onUpdateClick: () => {
             setControlsOpen(false);
-            setChangelogMode("update_notice");
+            setHeaderDialogMode("update_notice");
           }
         })
       ),
@@ -1404,9 +1417,20 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
           { fallback: null },
           React.createElement(LazyAppChangelogDialog, {
             open: true,
-            onClose: () => setChangelogMode(null),
+            onClose: () => setHeaderDialogMode(null),
             returnFocusRef: changelogReturnFocusRef,
-            updateNotice: changelogMode === "update_notice" ? updateNotice : null
+            updateNotice: headerDialogMode === "update_notice" ? updateNotice : null
+          })
+        )
+      : null,
+    keyboardShortcutsOpen
+      ? React.createElement(
+          React.Suspense,
+          { fallback: null },
+          React.createElement(LazyAppKeyboardShortcutsDialog, {
+            open: true,
+            onClose: () => setHeaderDialogMode(null),
+            returnFocusRef: keyboardShortcutsButtonRef
           })
         )
       : null,

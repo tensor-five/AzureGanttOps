@@ -52,6 +52,12 @@ type ViewportConstrainedMenuStyle = ViewportConstrainedMenuPlacement & {
   key: string;
 };
 
+export const WORK_ITEM_CONTEXT_MENU_KEYBOARD_SHORTCUT_CONTRACTS = [
+  "menu.navigate",
+  "menu.activate-action",
+  "overlays.close-active"
+] as const;
+
 export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuProps): React.ReactElement | null {
   const firstActionRef = React.useRef<HTMLButtonElement | null>(null);
   const rootMenuItemRefs = React.useRef<Array<HTMLButtonElement | null>>([]);

@@ -29,6 +29,8 @@ type TimelineDetailsDraft = {
   state: string;
 };
 
+export const TIMELINE_DETAILS_KEYBOARD_SHORTCUT_CONTRACTS = ["details.save-or-sync"] as const;
+
 export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.ReactElement {
   const contentHidden = props.contentHidden ?? false;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);

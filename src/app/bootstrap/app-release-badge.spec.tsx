@@ -12,7 +12,13 @@ describe("AppReleaseBadge", () => {
   });
 
   it("renders a visible, accessible changelog dialog button for the current version", () => {
-    render(React.createElement(AppReleaseBadge, { open: false, onVersionClick: vi.fn() }));
+    render(
+      React.createElement(AppReleaseBadge, {
+        open: false,
+        onVersionClick: vi.fn(),
+        onShortcutsClick: vi.fn()
+      })
+    );
 
     const button = screen.getByRole("button", {
       name: `Changelog zu Version ${APP_VERSION} öffnen`
@@ -28,7 +34,7 @@ describe("AppReleaseBadge", () => {
 
   it("reflects the expanded state and delegates clicks to the caller", () => {
     const onVersionClick = vi.fn();
-    render(React.createElement(AppReleaseBadge, { open: true, onVersionClick }));
+    render(React.createElement(AppReleaseBadge, { open: true, onVersionClick, onShortcutsClick: vi.fn() }));
 
     const button = screen.getByRole("button", {
       name: `Changelog zu Version ${APP_VERSION} öffnen`
@@ -41,6 +47,31 @@ describe("AppReleaseBadge", () => {
     expect(onVersionClick).toHaveBeenCalledTimes(1);
   });
 
+  it("renders a keyboard shortcuts button next to the version", () => {
+    const onShortcutsClick = vi.fn();
+    render(
+      React.createElement(AppReleaseBadge, {
+        open: false,
+        shortcutsOpen: true,
+        onVersionClick: vi.fn(),
+        onShortcutsClick
+      })
+    );
+
+    const button = screen.getByRole("button", {
+      name: "Tastenkombinationen öffnen"
+    });
+
+    expect(button.textContent).toBe("⌘");
+    expect(button.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(button.getAttribute("title")).toBe("Tastenkombinationen öffnen");
+
+    fireEvent.click(button);
+
+    expect(onShortcutsClick).toHaveBeenCalledTimes(1);
+  });
+
   it("renders the optional update indicator as a sibling button", () => {
     const onUpdateClick = vi.fn();
     render(
@@ -48,6 +79,7 @@ describe("AppReleaseBadge", () => {
         open: false,
         updateAvailable: true,
         onVersionClick: vi.fn(),
+        onShortcutsClick: vi.fn(),
         onUpdateClick
       })
     );

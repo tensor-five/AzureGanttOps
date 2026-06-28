@@ -25,6 +25,11 @@ export type WorkItemContextMenuState = {
   };
 };
 
+export const WORK_ITEM_CONTEXT_MENU_TRIGGER_SHORTCUT_CONTRACTS = [
+  "work-item.open-context-menu",
+  "overlays.close-active"
+] as const;
+
 export function useWorkItemContextMenu(): {
   menuState: WorkItemContextMenuState | null;
   menuRef: React.RefObject<HTMLDivElement | null>;

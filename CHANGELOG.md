@@ -10,6 +10,7 @@ Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-S
 
 - Azure-Query-Aktualisierungen prüfen im Hintergrund, ob auf GitHub eine neuere App-Version verfügbar ist.
 - Versionsanzeige zeigt bei verfügbarem Update ein dezentes Ausrufezeichen, das den Changelog mit Update-Hinweis öffnet.
+- Tastatur-Symbol neben der Versionsnummer öffnet eine kompakte Übersicht der wichtigsten Timeline-Tastenkombinationen im gemeinsamen Header-Dialog.
 - Neuer lokaler Diagnose-Endpunkt `GET /phase2/app-update-check` liefert den stillen Update-Check ohne HTTP-Cache.
 
 ### Geändert

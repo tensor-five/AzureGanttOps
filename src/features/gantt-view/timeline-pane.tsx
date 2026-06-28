@@ -138,6 +138,12 @@ import {
 import { listTimelineTreeWorkItemIds, summarizeTimelineTreeLevels } from "./timeline-tree-levels.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
+export const TIMELINE_PANE_SHORTCUT_CONTRACTS = [
+  "overlays.close-active",
+  "timeline.pointer-wheel-zoom",
+  "work-item.focused-select"
+] as const;
+
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
 export type TimelinePaneProps = {
