@@ -277,7 +277,7 @@ describe("createHttpServer", () => {
       expect(response.headers.get("cache-control")).toBe("no-store");
       expect(response.headers.get("content-security-policy")).toBe(expectedLocalOnlyCsp);
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-      expect(text).toContain(`## [${APP_VERSION}] - 2026-06-27`);
+      expect(text).toContain(`## [${APP_VERSION}] - 2026-06-28`);
     } finally {
       await server.close();
     }

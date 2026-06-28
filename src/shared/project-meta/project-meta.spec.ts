@@ -18,6 +18,6 @@ describe("project-meta", () => {
     const changelog = readFileSync(path.resolve(process.cwd(), CHANGELOG_PATH.slice(1)), "utf8");
 
     expect(CHANGELOG_PATH).toBe("/CHANGELOG.md");
-    expect(changelog).toContain(`## [${APP_VERSION}] - 2026-06-27`);
+    expect(changelog).toContain(`## [${APP_VERSION}] - 2026-06-28`);
   });
 });

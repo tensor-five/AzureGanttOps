@@ -4,13 +4,18 @@ Alle nennenswerten Änderungen an AzureGanttOps werden in dieser Datei dokumenti
 
 Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-Schwerpunkten rekonstruiert, da im Repository keine Release-Tags vorhanden sind.
 
+## [1.8.4] - 2026-06-28
+
+### Hinzugefügt
+
+- Tastatur-Symbol neben der Versionsnummer öffnet eine kompakte Übersicht der wichtigsten Timeline-Tastenkombinationen im gemeinsamen Header-Dialog.
+
 ## [1.8.3] - 2026-06-27
 
 ### Hinzugefügt
 
 - Azure-Query-Aktualisierungen prüfen im Hintergrund, ob auf GitHub eine neuere App-Version verfügbar ist.
 - Versionsanzeige zeigt bei verfügbarem Update ein dezentes Ausrufezeichen, das den Changelog mit Update-Hinweis öffnet.
-- Tastatur-Symbol neben der Versionsnummer öffnet eine kompakte Übersicht der wichtigsten Timeline-Tastenkombinationen im gemeinsamen Header-Dialog.
 - Neuer lokaler Diagnose-Endpunkt `GET /phase2/app-update-check` liefert den stillen Update-Check ohne HTTP-Cache.
 
 ### Geändert
