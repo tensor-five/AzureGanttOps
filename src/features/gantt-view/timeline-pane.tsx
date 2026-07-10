@@ -132,9 +132,14 @@ import {
 } from "./timeline-filter-groups.js";
 import {
   hasTimelineFilterUrlSearchParams,
+  parseTimelineFilterHierarchyExpansionFromSearch,
   parseTimelineFilterGroupsFromSearch,
   syncTimelineFilterGroupsToUrl
 } from "./timeline-filter-url.js";
+import {
+  applyTimelineFilterHierarchyExpansion,
+  type TimelineFilterHierarchyExpansionOptions
+} from "./timeline-filter-hierarchy-expansion.js";
 import { listTimelineTreeWorkItemIds, summarizeTimelineTreeLevels } from "./timeline-tree-levels.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 
@@ -439,6 +444,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     timelineFilterGroups,
     setTimelineFilterGroups,
     timelineFieldFilters,
+    timelineFilterHierarchyExpansion,
+    setTimelineFilterHierarchyExpansion,
+    setIncludeTimelineFilterParents,
+    setIncludeTimelineFilterChildItems,
     nextFilterSlotId,
     setNextFilterSlotId,
     nextFilterGroupId,
@@ -719,9 +728,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     pendingTimelineFilterUrlHydrationRef.current = false;
     skipNextTimelineFilterUrlSyncRef.current = true;
     setTimelineFilterGroups(nextState.groups);
+    setTimelineFilterHierarchyExpansion(nextState.hierarchyExpansion);
     setNextFilterSlotId(nextState.nextSlotId);
     setNextFilterGroupId(nextState.nextGroupId);
-  }, [props.timeline, setNextFilterGroupId, setNextFilterSlotId, setTimelineFilterGroups]);
+  }, [
+    props.timeline,
+    setNextFilterGroupId,
+    setNextFilterSlotId,
+    setTimelineFilterGroups,
+    setTimelineFilterHierarchyExpansion
+  ]);
 
   React.useEffect(() => {
     if (skipNextTimelineFilterUrlSyncRef.current) {
@@ -733,8 +749,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       return;
     }
 
-    syncTimelineFilterGroupsToUrl(timelineFilterGroups);
-  }, [props.timeline, timelineFilterGroups]);
+    syncTimelineFilterGroupsToUrl(timelineFilterGroups, timelineFilterHierarchyExpansion);
+  }, [props.timeline, timelineFilterGroups, timelineFilterHierarchyExpansion]);
 
   React.useEffect(() => {
     initialViewportAppliedRef.current = false;
@@ -742,16 +758,25 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
-  }, [timelineFilterGroups]);
+  }, [timelineFilterGroups, timelineFilterHierarchyExpansion]);
 
   const availableFieldRefs = React.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
   const availableTimelineLabelFieldOptions = React.useMemo(
     () => buildTimelineLabelFieldOptions(availableFieldRefs),
     [availableFieldRefs]
   );
-  const filteredTimeline = React.useMemo(
+  const hardFilteredTimeline = React.useMemo(
     () => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups),
     [effectiveTimeline, timelineFilterGroups]
+  );
+  const filteredTimeline = React.useMemo(
+    () =>
+      applyTimelineFilterHierarchyExpansion({
+        sourceTimeline: effectiveTimeline,
+        seedTimeline: hardFilteredTimeline,
+        options: timelineFilterHierarchyExpansion
+      }),
+    [effectiveTimeline, hardFilteredTimeline, timelineFilterHierarchyExpansion]
   );
   const activeTimelineFiltersCount = React.useMemo(
     () => countActiveTimelineFieldFilters(timelineFieldFilters),
@@ -1936,6 +1961,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     setTimelineFilterGroups((current) => toggleTimelineFilterValueSelection(current, slotId, valueKey));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
 
+  const setIncludeParentsInTimelineFilters = React.useCallback((includeParents: boolean) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterParents(includeParents);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterParents]);
+
+  const setIncludeChildItemsInTimelineFilters = React.useCallback((includeChildItems: boolean) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterChildItems(includeChildItems);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterChildItems]);
+
   const toggleVisibleTimelineFieldValueSelections = React.useCallback((slotId: number, valueKeys: string[]) => {
     if (valueKeys.length === 0) {
       return;
@@ -2291,7 +2326,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
       onRemoveTimelineFilterGroup: removeTimelineFilterGroupById,
       onAddTimelineFilterCondition: addTimelineFilterCondition,
-      onAddTimelineFilterGroup: addTimelineFilterOrGroup
+      onAddTimelineFilterGroup: addTimelineFilterOrGroup,
+      includeParents: timelineFilterHierarchyExpansion.includeParents,
+      includeChildItems: timelineFilterHierarchyExpansion.includeChildItems,
+      onSetIncludeParents: setIncludeParentsInTimelineFilters,
+      onSetIncludeChildItems: setIncludeChildItemsInTimelineFilters
     }),
     adoptScheduleError
       ? React.createElement(
@@ -3815,16 +3854,22 @@ function resolveInitialTimelineFilterState(timeline: TimelineReadModel | null): 
   groups: TimelineFilterGroup[];
   nextSlotId: number;
   nextGroupId: number;
+  hierarchyExpansion: TimelineFilterHierarchyExpansionOptions;
 } {
   if (typeof globalThis.location === "undefined") {
     const groups = createInitialTimelineFilterGroups();
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion: {
+        includeParents: false,
+        includeChildItems: false
+      }
     };
   }
 
+  const hierarchyExpansion = parseTimelineFilterHierarchyExpansionFromSearch(globalThis.location.search);
   const parsedGroups = parseTimelineFilterGroupsFromSearch(globalThis.location.search, {
     dateFilterContext: buildTimelineDateFilterContext(timeline)
   });
@@ -3833,14 +3878,16 @@ function resolveInitialTimelineFilterState(timeline: TimelineReadModel | null): 
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion
     };
   }
 
   return {
     groups: parsedGroups,
     nextSlotId: resolveNextTimelineFilterSlotId(parsedGroups),
-    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups)
+    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups),
+    hierarchyExpansion
   };
 }
 

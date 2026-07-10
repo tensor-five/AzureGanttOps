@@ -17,10 +17,17 @@ import {
   normalizeTimelineDateIso,
   type TimelineDateFilterContext
 } from "./timeline-field-filtering.js";
+import {
+  DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS,
+  normalizeTimelineFilterHierarchyExpansionOptions,
+  type TimelineFilterHierarchyExpansionOptions
+} from "./timeline-filter-hierarchy-expansion.js";
 
 export const TIMELINE_VALUE_FILTERS_QUERY_PARAM = "tf";
 export const TIMELINE_DATE_FILTERS_QUERY_PARAM = "tdf";
 export const TIMELINE_FILTER_GROUPS_QUERY_PARAM = "tfg";
+export const TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM = "tfp";
+export const TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM = "tfc";
 export const LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
 
 type ParsedTimelineFilter =
@@ -39,7 +46,9 @@ export type SerializedTimelineFilterParam = {
   name:
     | typeof TIMELINE_VALUE_FILTERS_QUERY_PARAM
     | typeof TIMELINE_DATE_FILTERS_QUERY_PARAM
-    | typeof TIMELINE_FILTER_GROUPS_QUERY_PARAM;
+    | typeof TIMELINE_FILTER_GROUPS_QUERY_PARAM
+    | typeof TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM
+    | typeof TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM;
   value: string;
 };
 
@@ -50,6 +59,8 @@ export function hasTimelineFilterUrlSearchParams(search: string): boolean {
       params.has(TIMELINE_FILTER_GROUPS_QUERY_PARAM) ||
       params.has(TIMELINE_VALUE_FILTERS_QUERY_PARAM) ||
       params.has(TIMELINE_DATE_FILTERS_QUERY_PARAM) ||
+      params.has(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM) ||
+      params.has(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM) ||
       params.has(LEGACY_TIMELINE_FILTERS_QUERY_PARAM)
     );
   } catch {
@@ -86,6 +97,20 @@ export function parseTimelineFilterGroupsFromSearch(
   }
 }
 
+export function parseTimelineFilterHierarchyExpansionFromSearch(
+  search: string
+): TimelineFilterHierarchyExpansionOptions {
+  try {
+    const params = new URLSearchParams(search);
+    return {
+      includeParents: params.get(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM) === "1",
+      includeChildItems: params.get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM) === "1"
+    };
+  } catch {
+    return { ...DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS };
+  }
+}
+
 export function serializeTimelineFiltersForUrl(filters: TimelineFieldFilter[]): SerializedTimelineFilterParam[] {
   return serializeFlatTimelineFiltersForUrl(filters);
 }
@@ -113,11 +138,40 @@ export function serializeTimelineFilterGroupsForUrl(groups: TimelineFilterGroup[
   ];
 }
 
-export function syncTimelineFiltersToUrl(filters: TimelineFieldFilter[]): void {
-  syncTimelineFilterGroupsToUrl([createTimelineFilterGroup(0, filters)]);
+export function serializeTimelineFilterHierarchyExpansionForUrl(
+  options: TimelineFilterHierarchyExpansionOptions
+): SerializedTimelineFilterParam[] {
+  const normalizedOptions = normalizeTimelineFilterHierarchyExpansionOptions(options);
+  const entries: SerializedTimelineFilterParam[] = [];
+
+  if (normalizedOptions.includeParents) {
+    entries.push({
+      name: TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM,
+      value: "1"
+    });
+  }
+
+  if (normalizedOptions.includeChildItems) {
+    entries.push({
+      name: TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM,
+      value: "1"
+    });
+  }
+
+  return entries;
 }
 
-export function syncTimelineFilterGroupsToUrl(groups: TimelineFilterGroup[]): void {
+export function syncTimelineFiltersToUrl(
+  filters: TimelineFieldFilter[],
+  hierarchyExpansion: TimelineFilterHierarchyExpansionOptions = DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS
+): void {
+  syncTimelineFilterGroupsToUrl([createTimelineFilterGroup(0, filters)], hierarchyExpansion);
+}
+
+export function syncTimelineFilterGroupsToUrl(
+  groups: TimelineFilterGroup[],
+  hierarchyExpansion: TimelineFilterHierarchyExpansionOptions = DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS
+): void {
   if (typeof globalThis.window === "undefined") {
     return;
   }
@@ -126,8 +180,13 @@ export function syncTimelineFilterGroupsToUrl(groups: TimelineFilterGroup[]): vo
   params.delete(TIMELINE_FILTER_GROUPS_QUERY_PARAM);
   params.delete(TIMELINE_VALUE_FILTERS_QUERY_PARAM);
   params.delete(TIMELINE_DATE_FILTERS_QUERY_PARAM);
+  params.delete(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM);
+  params.delete(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM);
   params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
   serializeTimelineFilterGroupsForUrl(groups).forEach((entry) => {
+    params.append(entry.name, entry.value);
+  });
+  serializeTimelineFilterHierarchyExpansionForUrl(hierarchyExpansion).forEach((entry) => {
     params.append(entry.name, entry.value);
   });
 
