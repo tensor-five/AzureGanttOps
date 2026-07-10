@@ -254,7 +254,12 @@ describe("timeline-pane filters", () => {
 
     await user.click(screen.getByLabelText("Toggle timeline filters"));
 
-    expect(screen.getByLabelText("Include parents")).toBeTruthy();
+    const filterFieldControl = screen.getByLabelText("Select filter field 1");
+    const includeParentsControl = screen.getByLabelText("Include parents");
+    expect(
+      Boolean(filterFieldControl.compareDocumentPosition(includeParentsControl) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+    expect(includeParentsControl).toBeTruthy();
     expect(screen.getByLabelText("Include child items")).toBeTruthy();
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 

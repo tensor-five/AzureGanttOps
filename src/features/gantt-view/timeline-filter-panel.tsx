@@ -139,8 +139,8 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
         : React.createElement(
             "div",
             { className: "timeline-filter-grid" },
-            renderTimelineFilterHierarchyExpansionOptions(props),
             ...filterGroupNodes,
+            renderTimelineFilterHierarchyExpansionOptions(props),
             React.createElement(
               "button",
               {

@@ -8,7 +8,7 @@ Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-S
 
 ### Hinzugefügt
 
-- Timeline-Filter können in Baum-Queries optional vorhandene Eltern rekursiv sowie direkte Child Items der hart gefilterten Treffer einblenden; die Auswahl wird über URL-Parameter geteilt.
+- Timeline-Filter können in Baum-Queries optional vorhandene Eltern rekursiv sowie direkte Child Items der hart gefilterten Treffer einblenden; die Auswahl steht rechts neben den Filtern und wird über URL-Parameter geteilt.
 
 ## [1.8.4] - 2026-06-28
 
