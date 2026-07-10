@@ -18,7 +18,7 @@ describe("timeline-filter-hierarchy-expansion", () => {
     expect(listUnschedulableIds(expanded)).toEqual([]);
   });
 
-  it("includes only direct child items without recursive descendants", () => {
+  it("includes child items recursively down to leaf descendants", () => {
     const sourceTimeline = makeHierarchyTimeline();
     const seedTimeline = pickTimelineItems(sourceTimeline, [3]);
 
@@ -28,7 +28,25 @@ describe("timeline-filter-hierarchy-expansion", () => {
       options: { includeParents: false, includeChildItems: true }
     });
 
-    expect(listBarIds(expanded)).toEqual([3, 4]);
+    expect(listBarIds(expanded)).toEqual([3, 4, 5]);
+    expect(listUnschedulableIds(expanded)).toEqual([7]);
+  });
+
+  it("traverses missing intermediate child items without adding them", () => {
+    const baseTimeline = makeHierarchyTimeline();
+    const sourceTimeline = {
+      ...baseTimeline,
+      bars: baseTimeline.bars.filter((bar) => bar.workItemId !== 4)
+    };
+    const seedTimeline = pickTimelineItems(sourceTimeline, [3]);
+
+    const expanded = applyTimelineFilterHierarchyExpansion({
+      sourceTimeline,
+      seedTimeline,
+      options: { includeParents: false, includeChildItems: true }
+    });
+
+    expect(listBarIds(expanded)).toEqual([3, 5]);
     expect(listUnschedulableIds(expanded)).toEqual([7]);
   });
 
@@ -111,11 +129,23 @@ describe("timeline-filter-hierarchy-expansion", () => {
         successorWorkItemId: 4,
         dependencyType: "FS",
         label: "#3 [end] -> #4 [start]"
+      },
+      {
+        predecessorWorkItemId: 4,
+        successorWorkItemId: 5,
+        dependencyType: "FS",
+        label: "#4 [end] -> #5 [start]"
       }
     ]);
     expect(expanded?.suppressedDependencies).toEqual([
       {
         predecessorWorkItemId: 3,
+        successorWorkItemId: 7,
+        dependencyType: "FS",
+        reason: "unschedulable-endpoint"
+      },
+      {
+        predecessorWorkItemId: 5,
         successorWorkItemId: 7,
         dependencyType: "FS",
         reason: "unschedulable-endpoint"
