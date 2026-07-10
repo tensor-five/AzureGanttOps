@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
+import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import { TimelinePane } from "./timeline-pane.js";
 import { makeFieldFilterTimeline, registerTimelinePaneSpecCleanup } from "./timeline-pane.test-helpers.js";
 import { toTimelineDateTimeLocalInputValue } from "./timeline-field-filtering.js";
@@ -14,6 +15,8 @@ import {
 import {
   LEGACY_TIMELINE_FILTERS_QUERY_PARAM,
   serializeTimelineFiltersForUrl,
+  TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM,
+  TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM,
   TIMELINE_FILTER_GROUPS_QUERY_PARAM,
   TIMELINE_DATE_FILTERS_QUERY_PARAM,
   TIMELINE_VALUE_FILTERS_QUERY_PARAM
@@ -91,6 +94,134 @@ function makeContextOnlyDateFieldFilterTimeline() {
   };
 }
 
+function makeHierarchyFilterTimeline(): TimelineReadModel {
+  return {
+    queryType: "tree",
+    bars: [
+      makeHierarchyFilterBar(100, "Root", "Root", null, "2026-03-01T00:00:00.000Z"),
+      makeHierarchyFilterBar(101, "Parent", "Parent", 100, "2026-03-02T00:00:00.000Z"),
+      makeHierarchyFilterBar(102, "Sibling", "Sibling", 101, "2026-03-03T00:00:00.000Z"),
+      makeHierarchyFilterBar(103, "Alpha Seed", "Alpha", 101, "2026-03-04T00:00:00.000Z"),
+      makeHierarchyFilterBar(104, "Direct Child", "Child", 103, "2026-03-05T00:00:00.000Z"),
+      makeHierarchyFilterBar(105, "Grandchild", "Grandchild", 104, "2026-03-06T00:00:00.000Z")
+    ],
+    unschedulable: [
+      {
+        workItemId: 204,
+        title: "Direct Unsched Child",
+        state: { code: "New", badge: "N", color: "#2b6cb0" },
+        details: {
+          mappedId: "204",
+          parentWorkItemId: 103,
+          fieldValues: {
+            "Custom.Team": "Child"
+          }
+        },
+        reason: "missing-both-dates"
+      }
+    ],
+    dependencies: [],
+    suppressedDependencies: [],
+    treeLayout: {
+      100: {
+        depth: 0,
+        parentWorkItemId: null,
+        hasChildren: true,
+        isLastSibling: true,
+        ancestorIsLastSibling: []
+      },
+      101: {
+        depth: 1,
+        parentWorkItemId: 100,
+        hasChildren: true,
+        isLastSibling: true,
+        ancestorIsLastSibling: [true]
+      },
+      102: {
+        depth: 2,
+        parentWorkItemId: 101,
+        hasChildren: false,
+        isLastSibling: false,
+        ancestorIsLastSibling: [true, true]
+      },
+      103: {
+        depth: 2,
+        parentWorkItemId: 101,
+        hasChildren: true,
+        isLastSibling: true,
+        ancestorIsLastSibling: [true, true]
+      },
+      104: {
+        depth: 3,
+        parentWorkItemId: 103,
+        hasChildren: true,
+        isLastSibling: false,
+        ancestorIsLastSibling: [true, true, true]
+      },
+      105: {
+        depth: 4,
+        parentWorkItemId: 104,
+        hasChildren: false,
+        isLastSibling: true,
+        ancestorIsLastSibling: [true, true, true, false]
+      },
+      204: {
+        depth: 3,
+        parentWorkItemId: 103,
+        hasChildren: false,
+        isLastSibling: true,
+        ancestorIsLastSibling: [true, true, true]
+      }
+    },
+    mappingValidation: {
+      status: "valid",
+      issues: []
+    }
+  };
+}
+
+function makeHierarchyFilterBar(
+  workItemId: number,
+  title: string,
+  team: string,
+  parentWorkItemId: number | null,
+  startDate: string
+): TimelineReadModel["bars"][number] {
+  const start = new Date(startDate);
+  const end = new Date(start.getTime() + 86_400_000);
+
+  return {
+    workItemId,
+    title,
+    state: { code: "Active", badge: "A", color: "#2f855a" },
+    schedule: {
+      startDate,
+      endDate: end.toISOString(),
+      missingBoundary: null
+    },
+    details: {
+      mappedId: String(workItemId),
+      parentWorkItemId,
+      fieldValues: {
+        "Custom.Team": team
+      }
+    }
+  };
+}
+
+async function selectTeamFilterValue(user: ReturnType<typeof userEvent.setup>, value: string): Promise<void> {
+  await user.click(screen.getByLabelText("Toggle timeline filters"));
+  await selectTeamFilterValueInOpenPanel(user, value);
+}
+
+async function selectTeamFilterValueInOpenPanel(user: ReturnType<typeof userEvent.setup>, value: string): Promise<void> {
+  await user.click(screen.getByLabelText("Select filter field 1"));
+  await user.type(screen.getByLabelText("Search filter fields 1"), "team");
+  await user.click(screen.getByRole("button", { name: /Team/ }));
+  await user.click(screen.getByLabelText("Select filter values 1"));
+  await user.click(screen.getByLabelText(`Include ${value} in filter 1`));
+}
+
 describe("timeline-pane filters", () => {
   it("starts with one filter slot and adds another on plus click", async () => {
     const user = userEvent.setup();
@@ -109,6 +240,27 @@ describe("timeline-pane filters", () => {
     expect(screen.queryByLabelText("Select filter field 2")).toBeNull();
     await user.click(screen.getByLabelText("Add timeline filter"));
     expect(screen.getByLabelText("Select filter field 2")).toBeTruthy();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("shows hierarchy expansion checkboxes in the filter panel", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+
+    const filterFieldControl = screen.getByLabelText("Select filter field 1");
+    const includeParentsControl = screen.getByLabelText("Include parents");
+    expect(
+      Boolean(filterFieldControl.compareDocumentPosition(includeParentsControl) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+    expect(includeParentsControl).toBeTruthy();
+    expect(screen.getByLabelText("Include child items")).toBeTruthy();
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
   it("filters by one field with multi-select values", async () => {
@@ -138,6 +290,184 @@ describe("timeline-pane filters", () => {
     await user.click(screen.getByLabelText("Include Beta in filter 1"));
     expect(screen.getByLabelText("timeline-bar-12")).toBeTruthy();
     expect(screen.getByRole("button", { name: /#22 Unsched Beta/ })).toBeTruthy();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("adds the parent hierarchy for hard-filtered tree items", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await selectTeamFilterValue(user, "Alpha");
+
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-100")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-101")).toBeNull();
+
+    await user.click(screen.getByLabelText("Include parents"));
+
+    expect(screen.getByLabelText("timeline-bar-100")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-104")).toBeNull();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("adds direct child items for hard-filtered tree items", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await selectTeamFilterValue(user, "Alpha");
+    await user.click(screen.getByLabelText("Include child items"));
+
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /#204 Direct Unsched Child/ })).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-100")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-101")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("keeps the hard filter result as the hierarchy expansion seed", async () => {
+    const user = userEvent.setup();
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await selectTeamFilterValue(user, "Alpha");
+    await user.click(screen.getByLabelText("Include parents"));
+    await user.click(screen.getByLabelText("Include child items"));
+
+    expect(screen.getByLabelText("timeline-bar-100")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-102")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("hydrates hierarchy expansion URL flags after an initially null timeline rerenders", async () => {
+    const user = userEvent.setup();
+    const params = new URLSearchParams();
+    params.set(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM, "1");
+    params.set(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM, "1");
+    window.history.replaceState(window.history.state, "", `/?${params.toString()}`);
+
+    const { rerender } = render(
+      React.createElement(TimelinePane, {
+        timeline: null,
+        showDependencies: true
+      })
+    );
+
+    expect(new URLSearchParams(window.location.search).get(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM)).toBe("1");
+    expect(new URLSearchParams(window.location.search).get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM)).toBe("1");
+
+    rerender(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("timeline-bar-100")).toBeTruthy();
+    });
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    expect((screen.getByLabelText("Include parents") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Include child items") as HTMLInputElement).checked).toBe(true);
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    await selectTeamFilterValue(user, "Alpha");
+
+    expect(screen.getByLabelText("timeline-bar-100")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /#204 Direct Unsched Child/ })).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-102")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
+
+    await waitFor(() => {
+      const hydratedParams = new URLSearchParams(window.location.search);
+      expect(hydratedParams.get(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM)).toBe("1");
+      expect(hydratedParams.get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM)).toBe("1");
+    });
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("ignores invalid hierarchy expansion URL flag values", async () => {
+    const user = userEvent.setup();
+    const params = new URLSearchParams();
+    serializeTimelineFiltersForUrl([createTimelineValueFieldFilter(0, "Custom.Team", ["Alpha"])]).forEach((entry) =>
+      params.append(entry.name, entry.value)
+    );
+    params.set(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM, "true");
+    params.set(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM, "yes");
+    window.history.replaceState(window.history.state, "", `/?${params.toString()}`);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.queryByLabelText("timeline-bar-100")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-101")).toBeNull();
+    expect(screen.queryByLabelText("timeline-bar-104")).toBeNull();
+    expect(screen.queryByRole("button", { name: /#204 Direct Unsched Child/ })).toBeNull();
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    expect((screen.getByLabelText("Include parents") as HTMLInputElement).checked).toBe(false);
+    expect((screen.getByLabelText("Include child items") as HTMLInputElement).checked).toBe(false);
+  }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
+
+  it("keeps the full timeline visible when only hierarchy expansion flags are active", async () => {
+    const user = userEvent.setup();
+    const params = new URLSearchParams();
+    params.set(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM, "1");
+    params.set(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM, "1");
+    window.history.replaceState(window.history.state, "", `/?${params.toString()}`);
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeHierarchyFilterTimeline(),
+        showDependencies: true
+      })
+    );
+
+    expect(screen.getByLabelText("timeline-bar-100")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-102")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-105")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /#204 Direct Unsched Child/ })).toBeTruthy();
+
+    await user.click(screen.getByLabelText("Toggle timeline filters"));
+    expect((screen.getByLabelText("Include parents") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Include child items") as HTMLInputElement).checked).toBe(true);
+
+    await waitFor(() => {
+      const hydratedParams = new URLSearchParams(window.location.search);
+      expect(hydratedParams.get(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM)).toBe("1");
+      expect(hydratedParams.get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM)).toBe("1");
+    });
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
   it("selects all currently visible values from the filtered value search without clearing hidden selections", async () => {

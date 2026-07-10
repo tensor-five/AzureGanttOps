@@ -4,6 +4,12 @@ Alle nennenswerten Änderungen an AzureGanttOps werden in dieser Datei dokumenti
 
 Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-Schwerpunkten rekonstruiert, da im Repository keine Release-Tags vorhanden sind.
 
+## [1.8.5] - 2026-07-10
+
+### Hinzugefügt
+
+- Timeline-Filter können in Baum-Queries optional vorhandene Eltern rekursiv sowie direkte Child Items der hart gefilterten Treffer einblenden; die Auswahl steht rechts neben den Filtern und wird über URL-Parameter geteilt.
+
 ## [1.8.4] - 2026-06-28
 
 ### Hinzugefügt

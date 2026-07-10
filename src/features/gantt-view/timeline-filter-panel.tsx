@@ -56,6 +56,10 @@ export type TimelineFilterPanelProps = {
   onRemoveTimelineFilterGroup: (groupId: number) => void;
   onAddTimelineFilterCondition: (groupId: number) => void;
   onAddTimelineFilterGroup: () => void;
+  includeParents: boolean;
+  includeChildItems: boolean;
+  onSetIncludeParents: (value: boolean) => void;
+  onSetIncludeChildItems: (value: boolean) => void;
 };
 
 export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.ReactElement | null {
@@ -136,6 +140,7 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
             "div",
             { className: "timeline-filter-grid" },
             ...filterGroupNodes,
+            renderTimelineFilterHierarchyExpansionOptions(props),
             React.createElement(
               "button",
               {
@@ -148,6 +153,51 @@ export function TimelineFilterPanel(props: TimelineFilterPanelProps): React.Reac
               "+ OR Group"
             )
           )
+    )
+  );
+}
+
+function renderTimelineFilterHierarchyExpansionOptions(props: TimelineFilterPanelProps): React.ReactElement {
+  return React.createElement(
+    "div",
+    {
+      className: "timeline-filter-hierarchy-options",
+      role: "group",
+      "aria-label": "Timeline hierarchy filter expansion"
+    },
+    React.createElement(
+      "label",
+      {
+        className: props.includeParents
+          ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active"
+          : "timeline-filter-hierarchy-option"
+      },
+      React.createElement("input", {
+        type: "checkbox",
+        "aria-label": "Include parents",
+        checked: props.includeParents,
+        onChange: (event) => {
+          props.onSetIncludeParents((event.target as HTMLInputElement).checked);
+        }
+      }),
+      React.createElement("span", null, "Include parents")
+    ),
+    React.createElement(
+      "label",
+      {
+        className: props.includeChildItems
+          ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active"
+          : "timeline-filter-hierarchy-option"
+      },
+      React.createElement("input", {
+        type: "checkbox",
+        "aria-label": "Include child items",
+        checked: props.includeChildItems,
+        onChange: (event) => {
+          props.onSetIncludeChildItems((event.target as HTMLInputElement).checked);
+        }
+      }),
+      React.createElement("span", null, "Include child items")
     )
   );
 }

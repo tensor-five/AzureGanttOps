@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   createTimelineDateRangeFieldFilter,
@@ -8,16 +10,26 @@ import {
 import { matchesTimelineDateRangeValue } from "./timeline-field-filtering.js";
 import {
   LEGACY_TIMELINE_FILTERS_QUERY_PARAM,
+  hasTimelineFilterUrlSearchParams,
+  parseTimelineFilterHierarchyExpansionFromSearch,
   parseTimelineFilterGroupsFromSearch,
   parseTimelineFiltersFromSearch,
+  serializeTimelineFilterHierarchyExpansionForUrl,
   serializeTimelineFilterGroupsForUrl,
   serializeTimelineFiltersForUrl,
+  syncTimelineFilterGroupsToUrl,
   TIMELINE_FILTER_GROUPS_QUERY_PARAM,
+  TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM,
+  TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM,
   TIMELINE_DATE_FILTERS_QUERY_PARAM,
   TIMELINE_VALUE_FILTERS_QUERY_PARAM
 } from "./timeline-filter-url.js";
 
 describe("timeline-filter-url", () => {
+  afterEach(() => {
+    window.history.replaceState(window.history.state, "", "/");
+  });
+
   it("round-trips mixed value and date range filters in query order", () => {
     const params = new URLSearchParams();
     serializeTimelineFiltersForUrl([
@@ -482,5 +494,65 @@ describe("timeline-filter-url", () => {
 
     expect(parsed[0]?.filters[0]).toEqual(createTimelineValueFieldFilter(0, "Custom.Team", [specialValue]));
     expect(parsed[1]?.filters[0]).toEqual(createTimelineValueFieldFilter(1, "Custom.Stream", ["Platform/Delivery"]));
+  });
+
+  it("round-trips hierarchy expansion flags and omits false values", () => {
+    const serialized = serializeTimelineFilterHierarchyExpansionForUrl({
+      includeParents: true,
+      includeChildItems: true
+    });
+    const params = new URLSearchParams();
+    serialized.forEach((entry) => params.append(entry.name, entry.value));
+
+    expect(serialized).toEqual([
+      {
+        name: TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM,
+        value: "1"
+      },
+      {
+        name: TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM,
+        value: "1"
+      }
+    ]);
+    expect(parseTimelineFilterHierarchyExpansionFromSearch(`?${params.toString()}`)).toEqual({
+      includeParents: true,
+      includeChildItems: true
+    });
+    expect(serializeTimelineFilterHierarchyExpansionForUrl({
+      includeParents: false,
+      includeChildItems: false
+    })).toEqual([]);
+  });
+
+  it("treats invalid hierarchy expansion flag values as disabled", () => {
+    const params = new URLSearchParams();
+    params.set(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM, "true");
+    params.set(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM, "0");
+
+    expect(parseTimelineFilterHierarchyExpansionFromSearch(`?${params.toString()}`)).toEqual({
+      includeParents: false,
+      includeChildItems: false
+    });
+  });
+
+  it("detects hierarchy expansion params as timeline filter URL state", () => {
+    expect(hasTimelineFilterUrlSearchParams("?tfp=1")).toBe(true);
+    expect(hasTimelineFilterUrlSearchParams("?tfc=1")).toBe(true);
+    expect(hasTimelineFilterUrlSearchParams("?tfp=true")).toBe(true);
+    expect(hasTimelineFilterUrlSearchParams("?unrelated=1")).toBe(false);
+  });
+
+  it("syncs hierarchy expansion flags to the current URL", () => {
+    window.history.replaceState(window.history.state, "", "/?tfp=1&tfc=1&keep=1");
+
+    syncTimelineFilterGroupsToUrl([], {
+      includeParents: false,
+      includeChildItems: true
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    expect(params.has(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM)).toBe(false);
+    expect(params.get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM)).toBe("1");
+    expect(params.get("keep")).toBe("1");
   });
 });

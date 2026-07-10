@@ -122,4 +122,48 @@ describe("useTimelineFilters", () => {
       createTimelineValueFieldFilter(3, "Custom.Team", ["Alpha"])
     ]);
   });
+
+  it("initializes and updates hierarchy expansion options", () => {
+    const { result } = renderHook(() =>
+      useTimelineFilters({
+        groups: [
+          createTimelineFilterGroup(0, [
+            createTimelineValueFieldFilter(3, "Custom.Team", ["Alpha"])
+          ])
+        ],
+        nextSlotId: 4,
+        hierarchyExpansion: {
+          includeParents: true,
+          includeChildItems: false
+        }
+      })
+    );
+
+    expect(result.current.timelineFilterHierarchyExpansion).toEqual({
+      includeParents: true,
+      includeChildItems: false
+    });
+
+    act(() => {
+      result.current.setTimelineFilterHierarchyExpansion({
+        includeParents: false,
+        includeChildItems: true
+      });
+    });
+
+    expect(result.current.timelineFilterHierarchyExpansion).toEqual({
+      includeParents: false,
+      includeChildItems: true
+    });
+
+    act(() => {
+      result.current.setIncludeTimelineFilterParents(true);
+      result.current.setIncludeTimelineFilterChildItems((current) => !current);
+    });
+
+    expect(result.current.timelineFilterHierarchyExpansion).toEqual({
+      includeParents: true,
+      includeChildItems: false
+    });
+  });
 });
