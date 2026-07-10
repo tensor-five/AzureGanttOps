@@ -49,7 +49,7 @@ export function applyTimelineFilterHierarchyExpansion(input: {
   }
 
   if (options.includeChildItems) {
-    addDirectChildWorkItemIds({
+    addDescendantWorkItemIds({
       treeLayout: sourceTimeline.treeLayout,
       sourceWorkItemIds,
       seedWorkItemIds,
@@ -111,21 +111,42 @@ function addParentWorkItemIds(input: {
   });
 }
 
-function addDirectChildWorkItemIds(input: {
+function addDescendantWorkItemIds(input: {
   treeLayout: NonNullable<TimelineReadModel["treeLayout"]>;
   sourceWorkItemIds: ReadonlySet<number>;
   seedWorkItemIds: ReadonlySet<number>;
   targetWorkItemIds: Set<number>;
 }): void {
+  const childrenByParentId = new Map<number, number[]>();
   Object.entries(input.treeLayout).forEach(([workItemIdRaw, meta]) => {
     const workItemId = Number(workItemIdRaw);
-    if (!Number.isFinite(workItemId) || !input.sourceWorkItemIds.has(workItemId)) {
+    if (!Number.isFinite(workItemId)) {
       return;
     }
 
     const parentWorkItemId = meta.parentWorkItemId;
-    if (parentWorkItemId !== null && input.seedWorkItemIds.has(parentWorkItemId)) {
-      input.targetWorkItemIds.add(workItemId);
+    if (parentWorkItemId !== null) {
+      const children = childrenByParentId.get(parentWorkItemId) ?? [];
+      children.push(workItemId);
+      childrenByParentId.set(parentWorkItemId, children);
+    }
+  });
+
+  input.seedWorkItemIds.forEach((seedWorkItemId) => {
+    const pending = [...(childrenByParentId.get(seedWorkItemId) ?? [])];
+    const visitedChildIds = new Set<number>();
+
+    while (pending.length > 0) {
+      const workItemId = pending.shift();
+      if (typeof workItemId !== "number" || visitedChildIds.has(workItemId)) {
+        continue;
+      }
+
+      visitedChildIds.add(workItemId);
+      if (input.sourceWorkItemIds.has(workItemId)) {
+        input.targetWorkItemIds.add(workItemId);
+      }
+      pending.push(...(childrenByParentId.get(workItemId) ?? []));
     }
   });
 }

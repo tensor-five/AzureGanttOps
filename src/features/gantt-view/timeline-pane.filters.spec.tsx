@@ -316,7 +316,7 @@ describe("timeline-pane filters", () => {
     expect(screen.queryByLabelText("timeline-bar-104")).toBeNull();
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
-  it("adds direct child items for hard-filtered tree items", async () => {
+  it("adds child items recursively for hard-filtered tree items", async () => {
     const user = userEvent.setup();
 
     render(
@@ -331,10 +331,10 @@ describe("timeline-pane filters", () => {
 
     expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-105")).toBeTruthy();
     expect(screen.getByRole("button", { name: /#204 Direct Unsched Child/ })).toBeTruthy();
     expect(screen.queryByLabelText("timeline-bar-100")).toBeNull();
     expect(screen.queryByLabelText("timeline-bar-101")).toBeNull();
-    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
   it("keeps the hard filter result as the hierarchy expansion seed", async () => {
@@ -355,8 +355,8 @@ describe("timeline-pane filters", () => {
     expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-105")).toBeTruthy();
     expect(screen.queryByLabelText("timeline-bar-102")).toBeNull();
-    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
   }, FILTER_INTERACTION_TEST_TIMEOUT_MS);
 
   it("hydrates hierarchy expansion URL flags after an initially null timeline rerenders", async () => {
@@ -398,9 +398,9 @@ describe("timeline-pane filters", () => {
     expect(screen.getByLabelText("timeline-bar-101")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-103")).toBeTruthy();
     expect(screen.getByLabelText("timeline-bar-104")).toBeTruthy();
+    expect(screen.getByLabelText("timeline-bar-105")).toBeTruthy();
     expect(screen.getByRole("button", { name: /#204 Direct Unsched Child/ })).toBeTruthy();
     expect(screen.queryByLabelText("timeline-bar-102")).toBeNull();
-    expect(screen.queryByLabelText("timeline-bar-105")).toBeNull();
 
     await waitFor(() => {
       const hydratedParams = new URLSearchParams(window.location.search);
