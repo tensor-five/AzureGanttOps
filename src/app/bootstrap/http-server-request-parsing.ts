@@ -205,6 +205,32 @@ export function parseUpdateStatePayload(
   };
 }
 
+export function parseUpdateAssignedToPayload(
+  input: Record<string, unknown> | null
+): { targetWorkItemId: number; assignedTo: string } | null {
+  if (!input) {
+    return null;
+  }
+
+  const targetWorkItemId = input.targetWorkItemId;
+  const assignedTo = input.assignedTo;
+
+  if (
+    typeof targetWorkItemId !== "number" ||
+    !Number.isFinite(targetWorkItemId) ||
+    targetWorkItemId <= 0 ||
+    typeof assignedTo !== "string" ||
+    assignedTo.trim().length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    targetWorkItemId,
+    assignedTo: assignedTo.trim()
+  };
+}
+
 export function parseDuplicateWorkItemPayload(
   input: Record<string, unknown> | null
 ): { sourceWorkItemId: number; scheduleFieldRefs?: { start: string; endOrTarget: string } } | null {

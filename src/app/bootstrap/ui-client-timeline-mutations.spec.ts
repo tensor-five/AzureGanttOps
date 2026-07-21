@@ -8,6 +8,7 @@ import {
   applyDuplicateWorkItemToResponse,
   applyDuplicateWorkItemUpdate,
   applyScheduleUpdate,
+  applyWorkItemAssignedToUpdate,
   applyWorkItemMetadataUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
@@ -135,6 +136,14 @@ describe("ui-client-timeline-mutations", () => {
     expect(updated?.bars[0]?.details.descriptionHtml).toBe("<p>a</p>");
     expect(updated?.bars[0]?.state.code).toBe("Closed");
     expect(updated?.bars[0]?.state.color).toBe("#abcdef");
+  });
+
+  it("applies assigned-to updates to details and built-in field values", () => {
+    const updated = applyWorkItemAssignedToUpdate(makeTimeline(), 22, "Ada Lovelace");
+
+    expect(updated?.unschedulable[0]?.details.assignedTo).toBe("Ada Lovelace");
+    expect(updated?.unschedulable[0]?.details.fieldValues?.["System.AssignedTo"]).toBe("Ada Lovelace");
+    expect(updated?.bars[0]?.details.assignedTo).toBeUndefined();
   });
 
   it("adds and removes dependency links idempotently", () => {

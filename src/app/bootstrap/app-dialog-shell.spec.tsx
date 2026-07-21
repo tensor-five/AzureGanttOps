@@ -18,7 +18,7 @@ describe("AppDialogShell", () => {
           open: true,
           title: "Testdialog",
           titleId: "test-dialog-title",
-          closeLabel: "Testdialog schließen",
+          closeLabel: "Close test dialog",
           onClose: vi.fn()
         },
         React.createElement("button", { type: "button" }, "Dialogaktion")
@@ -26,7 +26,7 @@ describe("AppDialogShell", () => {
     );
 
     const dialog = screen.getByRole("dialog", { name: "Testdialog" });
-    const closeButton = screen.getByRole("button", { name: "Testdialog schließen" });
+    const closeButton = screen.getByRole("button", { name: "Close test dialog" });
     const actionButton = screen.getByRole("button", { name: "Dialogaktion" });
     const backdrop = screen.getByTestId("app-dialog-backdrop");
 
@@ -49,11 +49,11 @@ describe("AppDialogShell", () => {
   it("closes on Escape and restores focus to the configured trigger", async () => {
     render(React.createElement(ClosableShellHarness));
 
-    const trigger = screen.getByRole("button", { name: "Dialog öffnen" });
+    const trigger = screen.getByRole("button", { name: "Open dialog" });
     trigger.focus();
     fireEvent.click(trigger);
 
-    const closeButton = await screen.findByRole("button", { name: "Testdialog schließen" });
+    const closeButton = await screen.findByRole("button", { name: "Close test dialog" });
     await waitFor(() => {
       expect(document.activeElement).toBe(closeButton);
     });
@@ -81,7 +81,7 @@ function ClosableShellHarness(): React.ReactElement {
         type: "button",
         onClick: () => setOpen(true)
       },
-      "Dialog öffnen"
+      "Open dialog"
     ),
     React.createElement(
       AppDialogShell,
@@ -89,7 +89,7 @@ function ClosableShellHarness(): React.ReactElement {
         open,
         title: "Testdialog",
         titleId: "test-dialog-title",
-        closeLabel: "Testdialog schließen",
+        closeLabel: "Close test dialog",
         onClose: () => setOpen(false),
         returnFocusRef: triggerRef
       },

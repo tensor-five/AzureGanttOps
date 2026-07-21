@@ -31,15 +31,15 @@ describe("AppKeyboardShortcutsDialog", () => {
   it("renders available shortcuts in the shared dialog shell", () => {
     render(React.createElement(AppKeyboardShortcutsDialog, { open: true, onClose: vi.fn() }));
 
-    expect(screen.getByRole("dialog", { name: "Tastenkombinationen" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Tastenkombinationen schließen" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Allgemein", level: 3 })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Close keyboard shortcuts" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "General", level: 3 })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Timeline", level: 3 })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Work Items", level: 3 })).toBeTruthy();
-    expect(screen.getByText("Strg/Cmd+S").tagName).toBe("KBD");
-    expect(screen.getByText("Geänderte Details speichern oder ausstehende Work-Item-Änderungen synchronisieren")).toBeTruthy();
-    expect(screen.getByText("Umschalt+F10").tagName).toBe("KBD");
-    expect(screen.getByText("Kontextmenü am fokussierten Work Item öffnen")).toBeTruthy();
+    expect(screen.getByText("Ctrl/Cmd+S").tagName).toBe("KBD");
+    expect(screen.getByText("Save changed details or sync pending work item changes")).toBeTruthy();
+    expect(screen.getByText("Shift+F10").tagName).toBe("KBD");
+    expect(screen.getByText("Open the context menu for the focused work item")).toBeTruthy();
   });
 
   it("matches every audited catalog contract to exported feature shortcut contracts", () => {
@@ -73,13 +73,13 @@ describe("AppKeyboardShortcutsDialog", () => {
       React.createElement(
         React.Fragment,
         null,
-        React.createElement("button", { type: "button" }, "Außen"),
+        React.createElement("button", { type: "button" }, "Outside"),
         React.createElement(AppKeyboardShortcutsDialog, { open: true, onClose: vi.fn() })
       )
     );
 
-    const dialog = screen.getByRole("dialog", { name: "Tastenkombinationen" });
-    const closeButton = screen.getByRole("button", { name: "Tastenkombinationen schließen" });
+    const dialog = screen.getByRole("dialog", { name: "Keyboard shortcuts" });
+    const closeButton = screen.getByRole("button", { name: "Close keyboard shortcuts" });
 
     await waitFor(() => {
       expect(document.activeElement).toBe(closeButton);
@@ -95,11 +95,11 @@ describe("AppKeyboardShortcutsDialog", () => {
   it("closes on Escape and returns focus to the trigger", async () => {
     render(React.createElement(ClosableKeyboardShortcutsHarness));
 
-    const trigger = screen.getByRole("button", { name: "Tastenkombinationen öffnen" });
+    const trigger = screen.getByRole("button", { name: "Open keyboard shortcuts" });
     trigger.focus();
     fireEvent.click(trigger);
 
-    const closeButton = await screen.findByRole("button", { name: "Tastenkombinationen schließen" });
+    const closeButton = await screen.findByRole("button", { name: "Close keyboard shortcuts" });
     await waitFor(() => {
       expect(document.activeElement).toBe(closeButton);
     });
@@ -107,7 +107,7 @@ describe("AppKeyboardShortcutsDialog", () => {
     fireEvent.keyDown(window, { key: "Escape" });
 
     await waitFor(() => {
-      expect(screen.queryByRole("dialog", { name: "Tastenkombinationen" })).toBeNull();
+      expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull();
       expect(document.activeElement).toBe(trigger);
     });
   });
@@ -127,7 +127,7 @@ function ClosableKeyboardShortcutsHarness(): React.ReactElement {
         type: "button",
         onClick: () => setOpen(true)
       },
-      "Tastenkombinationen öffnen"
+      "Open keyboard shortcuts"
     ),
     React.createElement(AppKeyboardShortcutsDialog, {
       open,

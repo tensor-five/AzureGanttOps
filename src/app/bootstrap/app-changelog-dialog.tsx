@@ -26,7 +26,7 @@ export function AppChangelogDialog(props: AppChangelogDialogProps): React.ReactE
       open: props.open,
       title: `Changelog v${APP_VERSION}`,
       titleId: "app-changelog-title",
-      closeLabel: "Changelog schließen",
+      closeLabel: "Close changelog",
       onClose: props.onClose,
       returnFocusRef: props.returnFocusRef,
       busy: loadState.status === "loading",
@@ -47,22 +47,22 @@ function renderAppUpdateNotice(updateNotice: AppUpdateNotice): React.ReactElemen
     {
       className: "app-update-notice",
       role: "note",
-      "aria-label": "Neue Version verfügbar"
+      "aria-label": "New version available"
     },
-    React.createElement("strong", null, "Neue Version verfügbar"),
+    React.createElement("strong", null, "New version available"),
     React.createElement(
       "p",
       null,
-      `Installiert ist v${updateNotice.currentVersion}, verfügbar ist v${updateNotice.latestVersion}. `,
-      "Mit ",
+      `Installed v${updateNotice.currentVersion}; latest is v${updateNotice.latestVersion}. `,
+      "Run ",
       React.createElement("code", null, "git pull"),
-      " ziehen, die App über das ",
+      ", restart the app using the ",
       React.createElement("code", null, ".cmd"),
-      " oder ",
+      " or ",
       React.createElement("code", null, ".command"),
-      " Skript neu starten und bei Bedarf einen Hard Refresh mit ",
-      React.createElement("kbd", null, "Strg+Shift+R"),
-      " ausführen."
+      " script, and perform a hard refresh with ",
+      React.createElement("kbd", null, "Ctrl+Shift+R"),
+      " if needed."
     )
   );
 }
@@ -76,7 +76,7 @@ function renderChangelogContent(loadState: ChangelogLoadState): React.ReactNode 
     return React.createElement(
       "div",
       { className: "app-changelog-error", role: "alert" },
-      `Changelog konnte nicht geladen werden. ${loadState.error}`
+      `Could not load changelog. ${loadState.error}`
     );
   }
 
@@ -93,6 +93,6 @@ function renderChangelogLoadingState(): React.ReactElement {
   return React.createElement(
     "div",
     { className: "app-changelog-state", role: "status", "aria-live": "polite" },
-    "Changelog wird geladen..."
+    "Loading changelog..."
   );
 }

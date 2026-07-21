@@ -247,6 +247,31 @@ const composition = createDefaultUiShellComposition({
 
       return payload as WriteCommandTransportResult;
     },
+    updateWorkItemAssignedTo: async ({ targetWorkItemId, assignedTo }) => {
+      const response = await fetch("/phase2/work-item-assigned-to-update", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          targetWorkItemId,
+          assignedTo
+        })
+      });
+
+      const payload = (await response.json()) as WriteCommandTransportResult | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Work item assignment update failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as WriteCommandTransportResult;
+    },
     duplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
       const response = await fetch("/phase2/work-item-duplicate", {
         method: "POST",

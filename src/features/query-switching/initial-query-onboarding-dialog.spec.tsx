@@ -30,10 +30,10 @@ describe("initial-query-onboarding-dialog", () => {
   it("renders as a modal dialog and focuses the query input first", async () => {
     renderDialog();
 
-    const dialog = screen.getByRole("dialog", { name: "Erste Query verbinden" });
+    const dialog = screen.getByRole("dialog", { name: "Connect your first query" });
     expect(dialog.getAttribute("aria-modal")).toBe("true");
 
-    const queryInput = screen.getByLabelText("Erststart Query URL");
+    const queryInput = screen.getByLabelText("Initial query URL");
     await waitFor(() => {
       expect(document.activeElement).toBe(queryInput);
     });
@@ -43,26 +43,26 @@ describe("initial-query-onboarding-dialog", () => {
     renderDialog();
 
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
-    expect(screen.getByLabelText("Erststart Query URL")).toBeTruthy();
-    expect(screen.queryByText("Organisation")).toBeNull();
-    expect(screen.queryByText("Projekt")).toBeNull();
+    expect(screen.getByLabelText("Initial query URL")).toBeTruthy();
+    expect(screen.queryByText("Organization")).toBeNull();
+    expect(screen.queryByText("Project")).toBeNull();
     expect(screen.queryByText("Query ID")).toBeNull();
   });
 
   it("shows loading status and alert errors", () => {
     renderDialog({
       loading: true,
-      errorMessage: "Azure CLI ist nicht angemeldet."
+      errorMessage: "Azure CLI is not signed in."
     });
 
-    expect(screen.getByRole("status").textContent).toBe("Query wird geladen...");
-    expect(screen.getByRole("alert").textContent).toBe("Azure CLI ist nicht angemeldet.");
+    expect(screen.getByRole("status").textContent).toBe("Loading query...");
+    expect(screen.getByRole("alert").textContent).toBe("Azure CLI is not signed in.");
   });
 
   it("keeps the submit button name stable and shows a hidden loading spinner", () => {
     renderDialog({ loading: true });
 
-    const submitButton = screen.getByRole("button", { name: "Query laden" });
+    const submitButton = screen.getByRole("button", { name: "Load query" });
     const spinner = screen.getByTestId("initial-query-onboarding-submit-spinner");
 
     expect((submitButton as HTMLButtonElement).disabled).toBe(true);
@@ -76,14 +76,14 @@ describe("initial-query-onboarding-dialog", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     fireEvent.mouseDown(screen.getByTestId("initial-query-onboarding-backdrop"));
 
-    expect(screen.getByRole("dialog", { name: "Erste Query verbinden" })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Connect your first query" })).toBeTruthy();
   });
 
   it("submits the form through the provided callback", () => {
     const onSubmit = vi.fn();
     renderDialog({ onSubmit });
 
-    fireEvent.click(screen.getByRole("button", { name: "Query laden" }));
+    fireEvent.click(screen.getByRole("button", { name: "Load query" }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
@@ -91,9 +91,9 @@ describe("initial-query-onboarding-dialog", () => {
   it("traps Tab focus inside the dialog", async () => {
     renderDialog();
 
-    const dialog = screen.getByRole("dialog", { name: "Erste Query verbinden" });
-    const queryInput = screen.getByLabelText("Erststart Query URL");
-    const submitButton = screen.getByRole("button", { name: "Query laden" });
+    const dialog = screen.getByRole("dialog", { name: "Connect your first query" });
+    const queryInput = screen.getByLabelText("Initial query URL");
+    const submitButton = screen.getByRole("button", { name: "Load query" });
 
     await waitFor(() => {
       expect(document.activeElement).toBe(queryInput);
@@ -108,13 +108,13 @@ describe("initial-query-onboarding-dialog", () => {
 
   it("returns focus to the previously active element after closing", async () => {
     const previousButton = document.createElement("button");
-    previousButton.textContent = "Vorheriger Fokus";
+    previousButton.textContent = "Previous focus";
     document.body.appendChild(previousButton);
     previousButton.focus();
 
     const { unmount } = renderDialog();
     await waitFor(() => {
-      expect(document.activeElement).toBe(screen.getByLabelText("Erststart Query URL"));
+      expect(document.activeElement).toBe(screen.getByLabelText("Initial query URL"));
     });
 
     unmount();

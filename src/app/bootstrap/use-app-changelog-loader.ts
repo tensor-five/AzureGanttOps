@@ -55,7 +55,7 @@ export function useAppChangelogLoader(open: boolean): ChangelogLoadState {
           return;
         }
 
-        const message = error instanceof Error ? error.message : "Changelog konnte nicht geladen werden.";
+        const message = error instanceof Error ? error.message : "Could not load changelog.";
         setLoadState({ status: "error", content: "", error: message });
       });
 

@@ -16,7 +16,7 @@ import {
 import type { HeaderQuerySaveResult } from "./ui-client-header-query-flow.js";
 
 const MISSING_QUERY_CONTEXT_ERROR_MESSAGE = "Add organization and project in settings.";
-const INITIAL_QUERY_URL_ERROR_MESSAGE = "Füge eine vollständige Azure DevOps Query-URL ein.";
+const INITIAL_QUERY_URL_ERROR_MESSAGE = "Paste a complete Azure DevOps query URL.";
 
 type UseInitialQueryOnboardingFlowParams = {
   restoredResponse: QueryIntakeResponse | null;
@@ -44,7 +44,7 @@ function getInitialQueryOnboardingErrorMessage(error: unknown): string {
     return INITIAL_QUERY_URL_ERROR_MESSAGE;
   }
 
-  return error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+  return error instanceof Error ? error.message : "Could not load query.";
 }
 
 export function useInitialQueryOnboardingFlow(
@@ -120,17 +120,17 @@ export function useInitialQueryOnboardingFlow(
 
     setLoading(true);
     setErrorMessage(null);
-    setStatusMessage("Query wird geprüft...");
+    setStatusMessage("Validating query...");
 
     try {
       const resolvedInput = resolveRuntimeQueryInput(queryInput);
 
-      setStatusMessage("Query wird geladen...");
+      setStatusMessage("Loading query...");
       const loadedResponse = await params.runQuery({
         queryId: resolvedInput.transportQueryInput
       });
 
-      setStatusMessage("Query wird gespeichert...");
+      setStatusMessage("Saving query...");
       const saveResult = await params.saveLoadedHeaderQuery({
         ...resolvedInput,
         loadedResponse
@@ -146,7 +146,7 @@ export function useInitialQueryOnboardingFlow(
       setErrorMessage(
         saveResult.kind === "error"
           ? saveResult.message
-          : "Eine Query wird bereits geladen. Bitte warte kurz und versuche es erneut."
+          : "Another query is already loading. Please wait a moment and try again."
       );
       setStatusMessage(null);
     } catch (error) {

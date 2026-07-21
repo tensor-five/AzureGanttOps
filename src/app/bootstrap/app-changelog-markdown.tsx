@@ -28,7 +28,7 @@ const changelogMarkdownComponents: Components = {
     React.createElement(
       "span",
       { className: "app-changelog-image-fallback" },
-      alt ? `Bild entfernt: ${alt}` : "Bild entfernt"
+      alt ? `Image removed: ${alt}` : "Image removed"
     )
 };
 

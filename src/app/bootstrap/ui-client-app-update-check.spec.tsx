@@ -170,6 +170,7 @@ function createController(): TestController {
     linkDependency: vi.fn(async () => createWriteResult("DEPENDENCY_LINK")),
     updateWorkItemDetails: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
     updateWorkItemState: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
+    updateWorkItemAssignedTo: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
     duplicateWorkItem: vi.fn(async () => createWriteResult("WORK_ITEM_DUPLICATE")),
     createChildWorkItem: vi.fn(async () => createWriteResult("WORK_ITEM_CHILD_CREATE")),
     reparentWorkItem: vi.fn(async () => createWriteResult("HIERARCHY_LINK")),

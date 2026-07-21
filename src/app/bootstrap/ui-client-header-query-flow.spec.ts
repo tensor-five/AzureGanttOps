@@ -129,7 +129,7 @@ describe("ui-client-header-query-flow", () => {
         headerQueryLoading: false
       },
       runQuery: vi.fn(async () => {
-        throw new Error("Azure CLI ist nicht angemeldet.");
+        throw new Error("Azure CLI is not signed in.");
       }),
       persistPatch: vi.fn(),
       storage
@@ -137,7 +137,7 @@ describe("ui-client-header-query-flow", () => {
 
     expect(result).toEqual({
       kind: "error",
-      message: "Azure CLI ist nicht angemeldet."
+      message: "Azure CLI is not signed in."
     });
     expect(storage.setItem).not.toHaveBeenCalled();
   });

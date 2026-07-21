@@ -57,11 +57,11 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
       React.createElement(
         "header",
         { className: "initial-query-onboarding-header" },
-        React.createElement("h2", { id: "initial-query-onboarding-title" }, "Erste Query verbinden"),
+        React.createElement("h2", { id: "initial-query-onboarding-title" }, "Connect your first query"),
         React.createElement(
           "p",
           { id: "initial-query-onboarding-desc", className: "query-selector-hint" },
-          "Füge eine Azure DevOps Query-URL ein."
+          "Paste an Azure DevOps query URL."
         )
       ),
       React.createElement(
@@ -74,7 +74,7 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
           React.createElement("input", {
             ref: queryInputRef,
             className: "query-selector-input",
-            "aria-label": "Erststart Query URL",
+            "aria-label": "Initial query URL",
             autoComplete: "off",
             disabled: props.loading,
             value: props.queryInput,
@@ -102,7 +102,7 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
               "aria-live": "polite",
               className: "initial-query-onboarding-status"
             },
-            props.loading ? "Query wird geladen..." : props.statusMessage
+            props.loading ? "Loading query..." : props.statusMessage
           )
         : null,
       React.createElement(
@@ -126,7 +126,7 @@ export function InitialQueryOnboardingDialog(props: InitialQueryOnboardingDialog
                   "data-testid": "initial-query-onboarding-submit-spinner"
                 })
               : null,
-            React.createElement("span", null, "Query laden")
+            React.createElement("span", null, "Load query")
           )
         )
       )

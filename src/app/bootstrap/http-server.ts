@@ -39,6 +39,7 @@ import {
   parseQueryIdFromQuery,
   parseTargetWorkItemIdFromQuery,
   parseDuplicateWorkItemPayload,
+  parseUpdateAssignedToPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload,
   parseUserPreferencesPatch
@@ -63,6 +64,10 @@ import {
   PWA_SERVICE_WORKER_SOURCE
 } from "./pwa-assets.js";
 import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
+import {
+  writeAdoHttpFailureLog,
+  type AdoHttpFailureLogWriter
+} from "./ado-http-failure-logging.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -85,7 +90,7 @@ const FAVICON_SVG = [
 const FAVICON_SVG_BUFFER = Buffer.from(FAVICON_SVG, "utf8");
 
 const ROOT_HTML = `<!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -152,6 +157,11 @@ type AdoCommLogStore = {
   read: (afterSeq: number, limit: number) => { entries: AdoCommLogEntry[]; nextSeq: number };
   clear: () => boolean;
 };
+type AdoHttpResponse = {
+  status: number;
+  json: unknown;
+  headers?: Record<string, string | undefined>;
+};
 type WorkItemStateOption = {
   name: string;
   color: string | null;
@@ -178,6 +188,7 @@ const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
 const REPARENT_ROUTE_PATH = "/phase2/work-item-reparent";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const UPDATE_STATE_ROUTE_PATH = "/phase2/work-item-state-update";
+const UPDATE_ASSIGNED_TO_ROUTE_PATH = "/phase2/work-item-assigned-to-update";
 const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
 const CHILD_WORK_ITEM_CREATE_ROUTE_PATH = "/phase2/work-item-child-create";
 const WORK_ITEM_TYPES_ROUTE_PATH = "/phase2/work-item-types";
@@ -366,7 +377,7 @@ function appendAdoCommRequestLog(store: AdoCommLogStore, url: string, method: Ad
 function appendAdoCommResponseLog(store: AdoCommLogStore, params: {
   url: string;
   method: AdoCommMethod;
-  status: number;
+  status: number | null;
   durationMs: number;
   json: unknown;
 }): void {
@@ -379,6 +390,81 @@ function appendAdoCommResponseLog(store: AdoCommLogStore, params: {
     durationMs: params.durationMs,
     preview: createAdoCommLogPreview(params.json)
   });
+}
+
+async function executeInstrumentedAdoRequest(params: {
+  method: AdoCommMethod;
+  url: string;
+  requestBody?: unknown;
+  verboseLogs: boolean;
+  adoCommLogStore: AdoCommLogStore;
+  failureLogWriter?: AdoHttpFailureLogWriter;
+  execute: () => Promise<AdoHttpResponse>;
+}): Promise<AdoHttpResponse> {
+  const startedAt = Date.now();
+  logVerboseHttpRequest(params.verboseLogs, params.method, params.url);
+  appendAdoCommRequestLog(params.adoCommLogStore, params.url, params.method);
+
+  try {
+    const response = await params.execute();
+    const durationMs = ADO_COMM_DURATION(startedAt);
+    logVerboseHttpResponse(params.verboseLogs, response);
+    appendAdoCommResponseLog(params.adoCommLogStore, {
+      url: params.url,
+      method: params.method,
+      status: response.status,
+      durationMs,
+      json: response.json
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      writeAdoHttpFailureLog(
+        {
+          timestamp: ADO_COMM_TIMESTAMP(),
+          failureType: "response",
+          method: params.method,
+          url: sanitizeUrlForLog(params.url),
+          status: response.status,
+          durationMs,
+          requestBody: params.requestBody,
+          responseHeaders: response.headers,
+          responsePreview: createAdoCommLogPreview(response.json)
+        },
+        params.failureLogWriter
+      );
+    }
+
+    return response;
+  } catch (error) {
+    const durationMs = ADO_COMM_DURATION(startedAt);
+    const errorMessage = error instanceof Error ? error.message : "Unknown ADO transport error";
+    const errorPreview = createAdoCommLogPreview({
+      message: errorMessage
+    });
+    appendAdoCommResponseLog(params.adoCommLogStore, {
+      url: params.url,
+      method: params.method,
+      status: null,
+      durationMs,
+      json: {
+        message: errorMessage
+      }
+    });
+    writeAdoHttpFailureLog(
+      {
+        timestamp: ADO_COMM_TIMESTAMP(),
+        failureType: "transport",
+        method: params.method,
+        url: sanitizeUrlForLog(params.url),
+        status: null,
+        durationMs,
+        requestBody: params.requestBody,
+        responsePreview: errorPreview
+      },
+      params.failureLogWriter
+    );
+    throw error;
+  }
 }
 
 function sanitizeIncomingPath(url: string | undefined): URL {
@@ -457,6 +543,10 @@ function isUpdateStateRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_STATE_ROUTE_PATH;
 }
 
+function isUpdateAssignedToRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === UPDATE_ASSIGNED_TO_ROUTE_PATH;
+}
+
 function isDuplicateWorkItemRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === DUPLICATE_WORK_ITEM_ROUTE_PATH;
 }
@@ -512,6 +602,7 @@ function isCsrfProtectedRoute(method: string, pathname: string): boolean {
     isReparentRoute(method, pathname) ||
     isUpdateDetailsRoute(method, pathname) ||
     isUpdateStateRoute(method, pathname) ||
+    isUpdateAssignedToRoute(method, pathname) ||
     isDuplicateWorkItemRoute(method, pathname) ||
     isChildWorkItemCreateRoute(method, pathname)
   );
@@ -546,6 +637,7 @@ export function createHttpServer(params: {
   authPreflightRunner?: CliCommandRunner;
   appVersionSource?: AppVersionSourcePort;
   appCurrentVersion?: string;
+  adoHttpFailureLogWriter?: AdoHttpFailureLogWriter;
 }): HttpServer {
   const verboseLogs = process.env.ADO_VERBOSE_LOGS === "1";
   if (verboseLogs) {
@@ -566,62 +658,39 @@ export function createHttpServer(params: {
       headers?: Record<string, string | undefined>;
     }>;
   } = {
-    get: async (url: string) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "GET", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "GET");
-
-      const response = await params.httpClient.get(url);
-
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    get: async (url: string) =>
+      executeInstrumentedAdoRequest({
         method: "GET",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
-      });
-
-      return response;
-    }
+        url,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.get(url)
+      })
   };
   if (params.httpClient.patch) {
-    instrumentedHttpClient.patch = async (url: string, body: unknown, headers?: Record<string, string>) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "PATCH", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "PATCH");
-
-      const response = await params.httpClient.patch!(url, body, headers);
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    instrumentedHttpClient.patch = async (url: string, body: unknown, headers?: Record<string, string>) =>
+      executeInstrumentedAdoRequest({
         method: "PATCH",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
+        url,
+        requestBody: body,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.patch!(url, body, headers)
       });
-
-      return response;
-    };
   }
   if (params.httpClient.post) {
-    instrumentedHttpClient.post = async (url: string, body: unknown, headers?: Record<string, string>) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "POST", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "POST");
-
-      const response = await params.httpClient.post!(url, body, headers);
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    instrumentedHttpClient.post = async (url: string, body: unknown, headers?: Record<string, string>) =>
+      executeInstrumentedAdoRequest({
         method: "POST",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
+        url,
+        requestBody: body,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.post!(url, body, headers)
       });
-
-      return response;
-    };
   }
 
   const contextFilePath =
@@ -1298,6 +1367,47 @@ async function handleTimelineWritesRoute(
       writeJson(res, 500, {
         code: "WRITE_FAILED",
         message: error instanceof Error ? error.message : "Unable to update work item state."
+      });
+      return true;
+    }
+  }
+
+  if (isUpdateAssignedToRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const update = parseUpdateAssignedToPayload(payload);
+
+    if (!update) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId/assignedTo."
+      });
+      return true;
+    }
+
+    try {
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "WORK_ITEM_PATCH",
+          workItemId: update.targetWorkItemId,
+          operations: [
+            { op: "add", path: "/fields/System.AssignedTo", value: update.assignedTo }
+          ]
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeRejectedWriteResult(res, writeResult);
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: error instanceof Error ? error.message : "Unable to update work item assignment."
       });
       return true;
     }

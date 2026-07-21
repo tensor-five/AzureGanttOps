@@ -189,6 +189,10 @@ export type TimelinePaneProps = {
     state: string;
     stateColor: string | null;
   }) => Promise<void>;
+  onUpdateWorkItemAssignedTo?: (input: {
+    targetWorkItemId: number;
+    assignedTo: string;
+  }) => Promise<void>;
   onDuplicateWorkItem?: (input: {
     sourceWorkItemId: number;
     scheduleFieldRefs?: {
@@ -2367,7 +2371,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     React.createElement(TimelineWorkItemContextMenu, {
       menuState: workItemContextMenu.menuState,
       menuRef: workItemContextMenu.menuRef,
-      timeline: filteredTimeline,
+      timeline: props.timeline,
       organization: props.organization,
       project: props.project,
       onClose: workItemContextMenu.closeMenu,
@@ -2376,7 +2380,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onCreateChildWorkItem: props.onCreateChildWorkItem,
       onFetchWorkItemTypes: props.onFetchWorkItemTypes,
       onUpdateWorkItemState: props.onUpdateWorkItemState,
-      onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+      onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+      onUpdateWorkItemAssignedTo: props.onUpdateWorkItemAssignedTo
     }),
     React.createElement(TimelinePrintHeader, {
       queryName: props.activeQueryName ?? null,
@@ -3465,6 +3470,7 @@ type VisualTimelineBar = {
   color: string;
   stateColor: string;
   stateBadge: string;
+  assignedTo: string | null;
   fieldValues: Record<string, string | number | null>;
   x: number;
   width: number;
@@ -3518,6 +3524,7 @@ function buildContextMenuItemFromVisualBar(
     workItemId: bar.workItemId,
     title: bar.title,
     state: bar.stateCode,
+    assignedTo: bar.assignedTo,
     workItemType: bar.workItemType,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
@@ -3531,6 +3538,7 @@ function buildContextMenuItemFromUnschedulable(
     workItemId: item.workItemId,
     title: item.title,
     state: item.state.code,
+    assignedTo: item.details.assignedTo ?? null,
     workItemType: item.details.workItemType ?? null,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
@@ -3661,6 +3669,7 @@ function buildVisualChartModel(
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
+      assignedTo: bar.source.details.assignedTo ?? null,
       fieldValues: bar.source.details.fieldValues ?? {},
       sourceStartDateIso: writeOverride?.startDate ?? bar.source.schedule.startDate,
       sourceEndDateIso: writeOverride?.endDate ?? bar.source.schedule.endDate,

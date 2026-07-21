@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { WorkItemTypeOption } from "../../domain/work-items/child-work-item-type.js";
 import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
+import { buildTimelineAssigneeOptions } from "./timeline-assignee-options.js";
 import { useChildWorkItemTypeMenu } from "./use-child-work-item-type-menu.js";
 import { normalizeWorkItemStateOptions, type WorkItemStateOption } from "./work-item-state-options.js";
 import type { WorkItemContextMenuState } from "./use-work-item-context-menu.js";
@@ -40,6 +41,7 @@ export type TimelineWorkItemContextMenuProps = {
   onFetchWorkItemTypes?: () => Promise<WorkItemTypeOption[]>;
   onUpdateWorkItemState?: (input: { targetWorkItemId: number; state: string; stateColor: string | null }) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<WorkItemStateOption[]>;
+  onUpdateWorkItemAssignedTo?: (input: { targetWorkItemId: number; assignedTo: string }) => Promise<void>;
 };
 
 type StatusLoadState =
@@ -65,14 +67,17 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
   const childTypeOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const statusMenuButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const statusOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const assigneeMenuButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const assigneeOptionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
   const [statusMenuOpen, setStatusMenuOpen] = React.useState(false);
+  const [assigneeMenuOpen, setAssigneeMenuOpen] = React.useState(false);
   const [statusLoadState, setStatusLoadState] = React.useState<StatusLoadState>({
     status: "idle",
     options: [],
     error: null
   });
   const [actionError, setActionError] = React.useState<string | null>(null);
-  const [busyAction, setBusyAction] = React.useState<"duplicate" | "child" | "state" | "copy" | null>(null);
+  const [busyAction, setBusyAction] = React.useState<"duplicate" | "child" | "state" | "assignedTo" | "copy" | null>(null);
   const [constrainedMenuStyle, setConstrainedMenuStyle] = React.useState<ViewportConstrainedMenuStyle | null>(null);
 
   const menuState = props.menuState;
@@ -81,6 +86,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     ? `${menuState.item.workItemId}:${menuState.position.x}:${menuState.position.y}`
     : null;
   const currentState = menuState?.item.state ?? "";
+  const currentAssignedTo = menuState?.item.assignedTo?.trim() ?? "";
   const azureUrl = menuState
     ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId)
     : null;
@@ -93,9 +99,11 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded"
       ? normalizeWorkItemStateOptions(statusLoadState.options)
       : [];
+  const assigneeOptions = React.useMemo(() => buildTimelineAssigneeOptions(props.timeline), [props.timeline]);
 
   React.useEffect(() => {
     setStatusMenuOpen(false);
+    setAssigneeMenuOpen(false);
     setStatusLoadState({
       status: "idle",
       options: [],
@@ -140,6 +148,8 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     );
   }, [
     actionError,
+    assigneeMenuOpen,
+    assigneeOptions.length,
     busyAction,
     childTypeMenu.isOpen,
     childTypeMenu.loadState.status,
@@ -207,7 +217,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         setStatusLoadState({
           status: "error",
           options: [],
-          error: error instanceof Error ? error.message : "Status konnten nicht geladen werden."
+          error: error instanceof Error ? error.message : "Could not load statuses."
         });
       });
 
@@ -249,11 +259,30 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     }
   }, [currentState, stateOptions.length, statusLoadState.status, statusMenuOpen]);
 
+  React.useEffect(() => {
+    if (!assigneeMenuOpen || assigneeOptions.length === 0) {
+      return;
+    }
+
+    const currentIndex = assigneeOptions.findIndex(
+      (option) => option.name.trim().toLocaleLowerCase("en") === currentAssignedTo.toLocaleLowerCase("en")
+    );
+    const focusAssigneeOption = () => {
+      assigneeOptionRefs.current[currentIndex >= 0 ? currentIndex : 0]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusAssigneeOption);
+    } else {
+      window.setTimeout(focusAssigneeOption, 0);
+    }
+  }, [assigneeMenuOpen, assigneeOptions, currentAssignedTo]);
+
   if (!menuState) {
     return null;
   }
 
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
+  const assigneeControlsDisabled = busyAction !== null || !props.onUpdateWorkItemAssignedTo || assigneeOptions.length === 0;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
   const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
   const childCreateDisabled = busyAction !== null || !props.onCreateChildWorkItem || !props.onFetchWorkItemTypes;
@@ -274,7 +303,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");
+      setActionError(error instanceof Error ? error.message : "Could not duplicate the work item.");
     } finally {
       setBusyAction(null);
     }
@@ -296,7 +325,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : `${childWorkItemType} konnte nicht erstellt werden.`);
+      setActionError(error instanceof Error ? error.message : `Could not create ${childWorkItemType}.`);
     } finally {
       setBusyAction(null);
     }
@@ -322,7 +351,27 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Statuswechsel fehlgeschlagen.");
+      setActionError(error instanceof Error ? error.message : "Could not change the status.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const performAssignedToUpdate = async (assignedTo: string) => {
+    if (!props.onUpdateWorkItemAssignedTo || busyAction !== null) {
+      return;
+    }
+
+    setActionError(null);
+    setBusyAction("assignedTo");
+    try {
+      await props.onUpdateWorkItemAssignedTo({
+        targetWorkItemId: menuState.item.workItemId,
+        assignedTo
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not change the assignment.");
     } finally {
       setBusyAction(null);
     }
@@ -351,7 +400,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       await copyTextToClipboard(azureUrl);
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Link konnte nicht kopiert werden.");
+      setActionError(error instanceof Error ? error.message : "Could not copy the link.");
     } finally {
       setBusyAction(null);
     }
@@ -455,6 +504,11 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     statusMenuButtonRef.current?.focus();
   };
 
+  const closeAssigneeMenuAndFocusButton = () => {
+    setAssigneeMenuOpen(false);
+    assigneeMenuButtonRef.current?.focus();
+  };
+
   const focusStatusOption = (index: number) => {
     const option = statusOptionRefs.current[index];
     if (option && !option.disabled) {
@@ -478,6 +532,29 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
     focusStatusOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]!);
   };
 
+  const focusAssigneeOption = (index: number) => {
+    const option = assigneeOptionRefs.current[index];
+    if (option && !option.disabled) {
+      option.focus();
+    }
+  };
+
+  const focusAssigneeOptionByDelta = (currentIndex: number, delta: number) => {
+    const focusableIndexes = assigneeOptionRefs.current
+      .map((element, index) => ({ element, index }))
+      .filter((entry): entry is { element: HTMLButtonElement; index: number } => Boolean(entry.element && !entry.element.disabled))
+      .map((entry) => entry.index);
+
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusAssigneeOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]!);
+  };
+
   const handleChildMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -497,6 +574,15 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
         setStatusMenuOpen(true);
       },
       onArrowLeft: closeStatusMenuAndFocusButton
+    });
+  };
+
+  const handleAssigneeMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    handleRootMenuItemKeyDown(event, 3, {
+      onArrowRight: () => {
+        setAssigneeMenuOpen(true);
+      },
+      onArrowLeft: closeAssigneeMenuAndFocusButton
     });
   };
 
@@ -587,6 +673,47 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
       closeStatusMenuAndFocusButton();
     }
   };
+
+  const handleAssigneeOptionKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number,
+    assignedTo: string
+  ) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusAssigneeOptionByDelta(index, 1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusAssigneeOptionByDelta(index, -1);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusAssigneeOption(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      focusAssigneeOption(assigneeOptions.length - 1);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performAssignedToUpdate(assignedTo);
+      return;
+    }
+
+    if (event.key === "Escape" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeAssigneeMenuAndFocusButton();
+    }
+  };
   const renderedMenuStyle =
     menuState && constrainedMenuStyle?.key === menuPositionKey
       ? constrainedMenuStyle
@@ -638,7 +765,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
             void performDuplicate();
           }
         },
-        "Duplizieren"
+        "Duplicate"
       ),
       canCreateChild
         ? React.createElement(
@@ -662,7 +789,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                 },
                 onKeyDown: handleChildMenuButtonKeyDown
               },
-              "Child hinzufügen"
+              "Add child"
             ),
             childTypeMenu.isOpen
               ? React.createElement(
@@ -670,13 +797,13 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                   {
                     className: "timeline-work-item-context-submenu",
                     role: "menu",
-                    "aria-label": "Child Work Item Type auswählen"
+                    "aria-label": "Select child work item type"
                   },
                   childTypeMenu.loadState.status === "loading"
                     ? React.createElement(
                         "p",
                         { className: "timeline-work-item-context-menu-note" },
-                        "Work Item Types werden geladen..."
+                        "Loading work item types..."
                       )
                     : null,
                   childTypeMenu.loadState.status === "error"
@@ -690,7 +817,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                     ? React.createElement(
                         "p",
                         { className: "timeline-work-item-context-menu-note" },
-                        "Keine Work Item Types verfügbar."
+                        "No work item types available."
                       )
                     : null,
                   ...childTypeMenu.options.map((option, index) =>
@@ -749,7 +876,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
             },
             onKeyDown: handleStatusMenuButtonKeyDown
           },
-          "Status ändern"
+          "Change status"
         ),
         statusMenuOpen
           ? React.createElement(
@@ -757,10 +884,10 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
               {
                 className: "timeline-work-item-context-submenu",
                 role: "menu",
-                "aria-label": "Status ändern"
+                "aria-label": "Change status"
               },
               statusLoadState.status === "loading"
-                ? React.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Status werden geladen...")
+                ? React.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading statuses...")
                 : null,
               statusLoadState.status === "error"
                 ? React.createElement(
@@ -773,7 +900,7 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
                 ? React.createElement(
                     "p",
                     { className: "timeline-work-item-context-menu-note" },
-                    "Keine Statusoptionen verfügbar."
+                    "No status options available."
                   )
                 : null,
               ...stateOptions.map((option, index) =>
@@ -810,21 +937,72 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
           : null
       ),
       React.createElement(
-        "button",
-        {
-          ref: (element: HTMLButtonElement | null) => {
-            setRootMenuItemRef(3, element);
+        "div",
+        { className: "timeline-work-item-context-menu-status" },
+        React.createElement(
+          "button",
+          {
+            ref: (element: HTMLButtonElement | null) => {
+              assigneeMenuButtonRef.current = element;
+              setRootMenuItemRef(3, element);
+            },
+            type: "button",
+            role: "menuitem",
+            className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
+            "aria-haspopup": "menu",
+            "aria-expanded": assigneeMenuOpen ? "true" : "false",
+            disabled: assigneeControlsDisabled,
+            onClick: () => {
+              setAssigneeMenuOpen((current) => !current);
+            },
+            onKeyDown: handleAssigneeMenuButtonKeyDown
           },
-          type: "button",
-          role: "menuitem",
-          className: "timeline-work-item-context-menu-action",
-          disabled: linkControlsDisabled,
-          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
-            handleRootMenuItemKeyDown(event, 3);
-          },
-          onClick: openInAzureDevOps
-        },
-        "In Azure DevOps öffnen"
+          "Assigned to"
+        ),
+        assigneeMenuOpen
+          ? React.createElement(
+              "div",
+              {
+                className: "timeline-work-item-context-submenu",
+                role: "menu",
+                "aria-label": "Assigned to"
+              },
+              ...assigneeOptions.map((option, index) =>
+                React.createElement(
+                  "button",
+                  {
+                    key: option.name,
+                    ref: (element: HTMLButtonElement | null) => {
+                      assigneeOptionRefs.current[index] = element;
+                    },
+                    type: "button",
+                    role: "menuitem",
+                    "aria-label": option.name,
+                    className:
+                      option.name.trim().toLocaleLowerCase("en") === currentAssignedTo.toLocaleLowerCase("en")
+                        ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current timeline-work-item-context-menu-action-counted"
+                        : "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-counted",
+                    disabled: busyAction !== null || !props.onUpdateWorkItemAssignedTo,
+                    onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                      handleAssigneeOptionKeyDown(event, index, option.name);
+                    },
+                    onClick: () => {
+                      void performAssignedToUpdate(option.name);
+                    }
+                  },
+                  React.createElement("span", null, option.name),
+                  React.createElement(
+                    "span",
+                    {
+                      className: "timeline-work-item-context-menu-count",
+                      "aria-hidden": "true"
+                    },
+                    `${option.taskCount} ${option.taskCount === 1 ? "Task" : "Tasks"}`
+                  )
+                )
+              )
+            )
+          : null
       ),
       React.createElement(
         "button",
@@ -839,11 +1017,28 @@ export function TimelineWorkItemContextMenu(props: TimelineWorkItemContextMenuPr
           onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
             handleRootMenuItemKeyDown(event, 4);
           },
+          onClick: openInAzureDevOps
+        },
+        "Open in Azure DevOps"
+      ),
+      React.createElement(
+        "button",
+        {
+          ref: (element: HTMLButtonElement | null) => {
+            setRootMenuItemRef(5, element);
+          },
+          type: "button",
+          role: "menuitem",
+          className: "timeline-work-item-context-menu-action",
+          disabled: linkControlsDisabled,
+          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+            handleRootMenuItemKeyDown(event, 5);
+          },
           onClick: () => {
             void copyLink();
           }
         },
-        "Link kopieren"
+        "Copy link"
       ),
       actionError
         ? React.createElement(

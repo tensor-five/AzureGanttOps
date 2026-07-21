@@ -96,7 +96,7 @@ export function useChildWorkItemTypeMenu(input: {
         setLoadState({
           status: "error",
           options: [],
-          error: error instanceof Error ? error.message : "Work Item Types konnten nicht geladen werden."
+          error: error instanceof Error ? error.message : "Could not load work item types."
         });
         setActiveWorkItemType(null);
       });

@@ -922,6 +922,136 @@ describe("createHttpServer", () => {
     }
   });
 
+  it("updates only System.AssignedTo via /phase2/work-item-assigned-to-update", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        patch: async (url, body) => {
+          calls.push({ url, body });
+          return { status: 200, json: {}, headers: {} };
+        }
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-assigned-to-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          targetWorkItemId: 42,
+          assignedTo: "Ada Lovelace"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.commandKind).toBe("WORK_ITEM_PATCH");
+      expect(calls).toEqual([
+        {
+          url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+          body: [{ op: "add", path: "/fields/System.AssignedTo", value: "Ada Lovelace" }]
+        }
+      ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("logs structured ADO diagnostics when a state patch fails", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const adoHttpFailureLogWriter = vi.fn();
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      adoHttpFailureLogWriter,
+      httpClient: {
+        get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        patch: async () => ({
+          status: 400,
+          json: {
+            message: "TF401320: The transition to Closed is not allowed."
+          },
+          headers: {
+            "x-vss-e2eid": "request-closed-42"
+          }
+        })
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-state-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          targetWorkItemId: 42,
+          state: "Closed"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body).toEqual({
+        code: "WRITE_FAILED",
+        message: "WORK_ITEM_PATCH_FAILED"
+      });
+      expect(adoHttpFailureLogWriter).toHaveBeenCalledTimes(1);
+      expect(adoHttpFailureLogWriter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: "ado-http.failure",
+          failureType: "response",
+          method: "PATCH",
+          url: "/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+          status: 400,
+          requestId: {
+            header: "x-vss-e2eid",
+            value: "request-closed-42"
+          },
+          jsonPatch: {
+            operationCount: 1,
+            operations: [
+              {
+                op: "add",
+                path: "/fields/System.State",
+                value: "Closed"
+              }
+            ]
+          },
+          responsePreview: '{"message":"TF401320: The transition to Closed is not allowed."}'
+        })
+      );
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
   it("creates dependency links via /phase2/dependency-link", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
@@ -2058,6 +2188,7 @@ function startServer(params: {
   authPreflightRunner?: CliCommandRunner;
   appVersionSource?: AppVersionSourcePort;
   appCurrentVersion?: string;
+  adoHttpFailureLogWriter?: (payload: unknown) => void;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
@@ -2081,7 +2212,8 @@ function startServer(params: {
     azCliPathResolver: params.azCliPathResolver,
     authPreflightRunner: params.authPreflightRunner,
     appVersionSource: params.appVersionSource,
-    appCurrentVersion: params.appCurrentVersion
+    appCurrentVersion: params.appCurrentVersion,
+    adoHttpFailureLogWriter: params.adoHttpFailureLogWriter ?? (() => undefined)
   });
 
   return {

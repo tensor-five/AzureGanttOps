@@ -116,6 +116,37 @@ export function applyWorkItemStateUpdate(
   };
 }
 
+export function applyWorkItemAssignedToUpdate(
+  timeline: QueryIntakeResponse["timeline"],
+  targetWorkItemId: number,
+  assignedTo: string
+): QueryIntakeResponse["timeline"] {
+  if (!timeline) {
+    return timeline;
+  }
+
+  const applyAssignedTo = <T extends TimelineBar | TimelineUnschedulableItem>(item: T): T =>
+    item.workItemId === targetWorkItemId
+      ? {
+          ...item,
+          details: {
+            ...item.details,
+            assignedTo,
+            fieldValues: {
+              ...(item.details.fieldValues ?? {}),
+              "System.AssignedTo": assignedTo
+            }
+          }
+        }
+      : item;
+
+  return {
+    ...timeline,
+    bars: timeline.bars.map(applyAssignedTo),
+    unschedulable: timeline.unschedulable.map(applyAssignedTo)
+  };
+}
+
 export function applyDependencyLinkUpdate(
   timeline: QueryIntakeResponse["timeline"],
   predecessorWorkItemId: number,

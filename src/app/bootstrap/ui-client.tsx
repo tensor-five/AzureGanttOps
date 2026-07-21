@@ -40,6 +40,7 @@ import {
   applyDuplicateWorkItemToResponse,
   applyReparentUpdate,
   applyScheduleUpdate,
+  applyWorkItemAssignedToUpdate,
   applyWorkItemMetadataUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
@@ -1296,6 +1297,23 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
               }
             });
           },
+          onUpdateWorkItemAssignedTo: async ({ targetWorkItemId, assignedTo }) => {
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) =>
+                applyWorkItemAssignedToUpdate(timeline, targetWorkItemId, assignedTo),
+              executeDetails: async () => {
+                const writeResult = await props.composition.controller.updateWorkItemAssignedTo({
+                  targetWorkItemId,
+                  assignedTo
+                });
+
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
+              }
+            });
+          },
           onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
             const writeResult = await runTrackedWorkItemUpdate(async () => {
               const writeResult = await props.composition.controller.duplicateWorkItem({
@@ -1463,12 +1481,12 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
             React.createElement(
               "h3",
               { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" },
-              "Achtung: Ungespeicherte Änderungen"
+              "Warning: Unsaved changes"
             ),
             React.createElement(
               "p",
               { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" },
-              "Es gibt ungespeicherte Änderungen, die beim Aktualisieren verloren gehen."
+              "There are unsaved changes that will be lost when refreshing."
             ),
             React.createElement(
               "div",
@@ -1480,7 +1498,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
                   className: "refresh-discard-warning-cancel",
                   onClick: () => setShowRefreshDiscardWarning(false)
                 },
-                "Abbrechen"
+                "Cancel"
               ),
               React.createElement(
                 "button",
@@ -1492,7 +1510,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
                     void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
                   }
                 },
-                "Verwerfen & Aktualisieren"
+                "Discard & refresh"
               )
             )
           )

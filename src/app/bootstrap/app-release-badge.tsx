@@ -30,8 +30,8 @@ export function AppReleaseBadge(props: AppReleaseBadgeProps): React.ReactElement
         className: "app-release-badge",
         "aria-haspopup": "dialog",
         "aria-expanded": props.open,
-        "aria-label": `Changelog zu Version ${APP_VERSION} öffnen`,
-        title: `Changelog zu Version ${APP_VERSION} öffnen`,
+        "aria-label": `Open changelog for version ${APP_VERSION}`,
+        title: `Open changelog for version ${APP_VERSION}`,
         onClick: props.onVersionClick
       },
       label
@@ -44,8 +44,8 @@ export function AppReleaseBadge(props: AppReleaseBadgeProps): React.ReactElement
         className: "app-release-shortcuts-button",
         "aria-haspopup": "dialog",
         "aria-expanded": props.shortcutsOpen === true,
-        "aria-label": "Tastenkombinationen öffnen",
-        title: "Tastenkombinationen öffnen",
+        "aria-label": "Open keyboard shortcuts",
+        title: "Open keyboard shortcuts",
         onClick: props.onShortcutsClick
       },
       React.createElement("span", { "aria-hidden": "true" }, "⌘")
@@ -59,8 +59,8 @@ export function AppReleaseBadge(props: AppReleaseBadgeProps): React.ReactElement
             className: "app-release-update-indicator",
             "aria-haspopup": "dialog",
             "aria-expanded": props.open,
-            "aria-label": "Neue Version verfügbar. Changelog mit Update-Hinweis öffnen",
-            title: "Neue Version verfügbar",
+            "aria-label": "New version available. Open changelog with update notice",
+            title: "New version available",
             onClick: props.onUpdateClick
           },
           "!"

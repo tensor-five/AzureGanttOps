@@ -88,6 +88,10 @@ export type QueryIntakeTransport = {
     targetWorkItemId: number;
     state: string;
   }) => Promise<WriteCommandTransportResult>;
+  updateWorkItemAssignedTo: (request: {
+    targetWorkItemId: number;
+    assignedTo: string;
+  }) => Promise<WriteCommandTransportResult>;
   duplicateWorkItem: (request: {
     sourceWorkItemId: number;
     scheduleFieldRefs?: {
@@ -231,6 +235,13 @@ export function createLocalUiShellController(params: {
       reasonCode: "WRITE_DISABLED"
     }),
     updateWorkItemState: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_PATCH",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    }),
+    updateWorkItemAssignedTo: async () => ({
       accepted: false,
       mode: "NO_OP",
       commandKind: "WORK_ITEM_PATCH",

@@ -23,28 +23,28 @@ export type KeyboardShortcut = {
 };
 
 export type KeyboardShortcutSection = {
-  title: "Allgemein" | "Timeline" | "Work Items";
+  title: "General" | "Timeline" | "Work Items";
   shortcuts: readonly KeyboardShortcut[];
 };
 
 export const APP_KEYBOARD_SHORTCUT_SECTIONS = [
   {
-    title: "Allgemein",
+    title: "General",
     shortcuts: [
       {
         contract: "details.save-or-sync",
-        keys: ["Strg/Cmd+S"],
-        description: "Geänderte Details speichern oder ausstehende Work-Item-Änderungen synchronisieren"
+        keys: ["Ctrl/Cmd+S"],
+        description: "Save changed details or sync pending work item changes"
       },
       {
         contract: "timeline.print-current-view",
-        keys: ["Strg/Cmd+P"],
-        description: "Aktuelle Timeline-Ansicht drucken"
+        keys: ["Ctrl/Cmd+P"],
+        description: "Print the current timeline view"
       },
       {
         contract: "overlays.close-active",
         keys: ["Escape"],
-        description: "Offene Header-Dialoge, Timeline-Menüs und Panels schließen"
+        description: "Close open header dialogs, timeline menus, and panels"
       }
     ]
   },
@@ -54,47 +54,47 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS = [
       {
         contract: "timeline.refresh-query",
         keys: ["R"],
-        description: "Aktuelle Query neu laden, wenn gerade kein Refresh läuft"
+        description: "Refresh the current query when no refresh is already running"
       },
       {
         contract: "timeline.toggle-filters",
         keys: ["F"],
-        description: "Timeline-Filter öffnen oder schließen"
+        description: "Open or close timeline filters"
       },
       {
         contract: "timeline.toggle-sort",
         keys: ["S"],
-        description: "Sortierung öffnen oder schließen"
+        description: "Open or close sorting"
       },
       {
         contract: "timeline.toggle-labels",
         keys: ["L"],
-        description: "Label-Anzeige umschalten"
+        description: "Toggle label display"
       },
       {
         contract: "timeline.rotate-dependency-mode",
         keys: ["D"],
-        description: "Abhängigkeitsmodus wechseln"
+        description: "Switch dependency mode"
       },
       {
         contract: "timeline.zoom-month-week-quarter-year",
         keys: ["M", "W", "Q", "Y"],
-        description: "Zoom auf Monat, Woche, Quartal oder Jahr setzen"
+        description: "Set zoom to month, week, quarter, or year"
       },
       {
         contract: "timeline.space-pan",
-        keys: ["Leertaste"],
-        description: "Gedrückt halten und ziehen, um die Timeline zu verschieben"
+        keys: ["Space"],
+        description: "Hold and drag to pan the timeline"
       },
       {
         contract: "timeline.pointer-wheel-zoom",
-        keys: ["Strg/Cmd+Mausrad"],
-        description: "Um die Mausposition zoomen"
+        keys: ["Ctrl/Cmd+Mouse wheel"],
+        description: "Zoom around the pointer position"
       },
       {
         contract: "timeline.remove-selected-dependency",
-        keys: ["Entf", "Rücktaste"],
-        description: "Ausgewählte Abhängigkeit entfernen, sofern eine markiert ist"
+        keys: ["Delete", "Backspace"],
+        description: "Remove the selected dependency when one is selected"
       }
     ]
   },
@@ -103,23 +103,23 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS = [
     shortcuts: [
       {
         contract: "work-item.focused-select",
-        keys: ["Enter", "Leertaste"],
-        description: "Fokussiertes Work Item auswählen"
+        keys: ["Enter", "Space"],
+        description: "Select the focused work item"
       },
       {
         contract: "work-item.open-context-menu",
-        keys: ["Umschalt+F10", "Menü"],
-        description: "Kontextmenü am fokussierten Work Item öffnen"
+        keys: ["Shift+F10", "Menu"],
+        description: "Open the context menu for the focused work item"
       },
       {
         contract: "menu.navigate",
-        keys: ["Pfeiltasten", "Pos1", "Ende"],
-        description: "Im Kontextmenü und seinen Untermenüs navigieren"
+        keys: ["Arrow keys", "Home", "End"],
+        description: "Navigate the context menu and its submenus"
       },
       {
         contract: "menu.activate-action",
-        keys: ["Enter", "Leertaste"],
-        description: "Fokussierte Kontextmenü-Aktion ausführen"
+        keys: ["Enter", "Space"],
+        description: "Run the focused context menu action"
       }
     ]
   }

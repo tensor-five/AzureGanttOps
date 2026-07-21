@@ -4,6 +4,7 @@ import {
   parseChildWorkItemCreatePayload,
   parseDependencyLinkPayload,
   parseDuplicateWorkItemPayload,
+  parseUpdateAssignedToPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload
 } from "./http-server-request-parsing.js";
@@ -37,6 +38,20 @@ describe("parseUpdateStatePayload", () => {
   it("rejects invalid state updates", () => {
     expect(parseUpdateStatePayload({ targetWorkItemId: 0, state: "Active" })).toBeNull();
     expect(parseUpdateStatePayload({ targetWorkItemId: 11, state: " " })).toBeNull();
+  });
+});
+
+describe("parseUpdateAssignedToPayload", () => {
+  it("trims valid assigned-to updates", () => {
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 11, assignedTo: " Ada Lovelace " })).toEqual({
+      targetWorkItemId: 11,
+      assignedTo: "Ada Lovelace"
+    });
+  });
+
+  it("rejects invalid assigned-to updates", () => {
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 0, assignedTo: "Ada Lovelace" })).toBeNull();
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 11, assignedTo: " " })).toBeNull();
   });
 });
 

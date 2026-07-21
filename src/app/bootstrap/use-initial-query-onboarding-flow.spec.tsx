@@ -75,7 +75,7 @@ describe("use-initial-query-onboarding-flow", () => {
 
   it("keeps loading reset and surfaces runtime errors", async () => {
     const runQuery = vi.fn(async () => {
-      throw new Error("Azure CLI ist nicht angemeldet.");
+      throw new Error("Azure CLI is not signed in.");
     });
     const saveLoadedHeaderQuery = vi.fn();
     const hydratePreferences = vi.fn(async () => ({}));
@@ -103,7 +103,7 @@ describe("use-initial-query-onboarding-flow", () => {
     expect(saveLoadedHeaderQuery).not.toHaveBeenCalled();
     expect(result.current.status).toBe("required");
     expect(result.current.loading).toBe(false);
-    expect(result.current.errorMessage).toBe("Azure CLI ist nicht angemeldet.");
+    expect(result.current.errorMessage).toBe("Azure CLI is not signed in.");
   });
 
   it("rejects raw query IDs during initial onboarding", async () => {
@@ -135,6 +135,6 @@ describe("use-initial-query-onboarding-flow", () => {
     expect(saveLoadedHeaderQuery).not.toHaveBeenCalled();
     expect(result.current.status).toBe("required");
     expect(result.current.loading).toBe(false);
-    expect(result.current.errorMessage).toBe("Füge eine vollständige Azure DevOps Query-URL ein.");
+    expect(result.current.errorMessage).toBe("Paste a complete Azure DevOps query URL.");
   });
 });

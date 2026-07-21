@@ -23,24 +23,24 @@ describe("AppChangelogDialog", () => {
   });
 
   it("loads markdown with no-store cache headers and renders headings, lists and inline code", async () => {
-    const fetchMock = stubMarkdownFetch(`# Produktnotizen
+    const fetchMock = stubMarkdownFetch(`# Product notes
 
-## Neu
+## New
 
-- Rendert \`Markdown\` sicher
+- Renders \`Markdown\` safely
 `);
 
     render(React.createElement(AppChangelogDialog, { open: true, onClose: vi.fn() }));
 
     const dialog = screen.getByRole("dialog", { name: `Changelog v${APP_VERSION}` });
     expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(screen.getByRole("status").textContent).toBe("Changelog wird geladen...");
+    expect(screen.getByRole("status").textContent).toBe("Loading changelog...");
 
-    expect(await screen.findByRole("heading", { name: "Produktnotizen", level: 1 })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Neu", level: 2 })).toBeTruthy();
-    expect(screen.getByRole("listitem").textContent).toContain("Rendert Markdown sicher");
+    expect(await screen.findByRole("heading", { name: "Product notes", level: 1 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "New", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("listitem").textContent).toContain("Renders Markdown safely");
     expect(screen.getByText("Markdown").tagName).toBe("CODE");
-    expect(screen.queryByRole("note", { name: "Neue Version verfügbar" })).toBeNull();
+    expect(screen.queryByRole("note", { name: "New version available" })).toBeNull();
 
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(fetchMock).toHaveBeenCalledWith(CHANGELOG_PATH, expect.objectContaining({
@@ -66,25 +66,25 @@ describe("AppChangelogDialog", () => {
       })
     );
 
-    const notice = screen.getByRole("note", { name: "Neue Version verfügbar" });
-    expect(notice.textContent).toContain("Installiert ist v1.8.3, verfügbar ist v1.9.0.");
+    const notice = screen.getByRole("note", { name: "New version available" });
+    expect(notice.textContent).toContain("Installed v1.8.3; latest is v1.9.0.");
     expect(notice.textContent).toContain("git pull");
     expect(notice.textContent).toContain(".cmd");
     expect(notice.textContent).toContain(".command");
-    expect(notice.textContent).toContain("Strg+Shift+R");
+    expect(notice.textContent).toContain("Ctrl+Shift+R");
     expect(await screen.findByRole("heading", { name: "Changelog" })).toBeTruthy();
   });
 
   it("shows an alert when the changelog request fails", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response("kaputt", { status: 503 }))
+      vi.fn(async () => new Response("broken", { status: 503 }))
     );
 
     render(React.createElement(AppChangelogDialog, { open: true, onClose: vi.fn() }));
 
     const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("Changelog konnte nicht geladen werden.");
+    expect(alert.textContent).toContain("Could not load changelog.");
     expect(alert.textContent).toContain("503");
   });
 
@@ -117,26 +117,26 @@ describe("AppChangelogDialog", () => {
     });
 
     await act(async () => {
-      secondResponse.resolve(new Response("# Zweite Antwort", { status: 200 }));
+      secondResponse.resolve(new Response("# Second response", { status: 200 }));
       await secondResponse.promise;
     });
-    expect(await screen.findByRole("heading", { name: "Zweite Antwort" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Second response" })).toBeTruthy();
 
     await act(async () => {
-      firstResponse.resolve(new Response("# Erste Antwort", { status: 200 }));
+      firstResponse.resolve(new Response("# First response", { status: 200 }));
       await firstResponse.promise;
       await Promise.resolve();
     });
 
-    expect(screen.getByRole("heading", { name: "Zweite Antwort" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "Erste Antwort" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Second response" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "First response" })).toBeNull();
   });
 
   it("closes on Escape", async () => {
     stubMarkdownFetch("# Changelog");
     render(React.createElement(ClosableDialogHarness));
 
-    fireEvent.click(screen.getByRole("button", { name: "Changelog öffnen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open changelog" }));
     expect(await screen.findByRole("dialog", { name: `Changelog v${APP_VERSION}` })).toBeTruthy();
 
     fireEvent.keyDown(window, { key: "Escape" });
@@ -150,7 +150,7 @@ describe("AppChangelogDialog", () => {
     stubMarkdownFetch("# Changelog");
     render(React.createElement(ClosableDialogHarness));
 
-    fireEvent.click(screen.getByRole("button", { name: "Changelog öffnen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open changelog" }));
     const dialog = await screen.findByRole("dialog", { name: `Changelog v${APP_VERSION}` });
 
     fireEvent.click(dialog);
@@ -171,11 +171,11 @@ describe("AppChangelogDialog", () => {
     stubMarkdownFetch("# Changelog");
     render(React.createElement(ClosableDialogHarness));
 
-    const trigger = screen.getByRole("button", { name: "Changelog öffnen" });
+    const trigger = screen.getByRole("button", { name: "Open changelog" });
     trigger.focus();
     fireEvent.click(trigger);
 
-    const closeButton = await screen.findByRole("button", { name: "Changelog schließen" });
+    const closeButton = await screen.findByRole("button", { name: "Close changelog" });
     await waitFor(() => {
       expect(document.activeElement).toBe(closeButton);
     });
@@ -189,12 +189,12 @@ describe("AppChangelogDialog", () => {
   });
 
   it("traps Tab and Shift+Tab focus inside the dialog", async () => {
-    stubMarkdownFetch("[Dokumentation](https://example.test/docs)");
+    stubMarkdownFetch("[Documentation](https://example.test/docs)");
     render(React.createElement(AppChangelogDialog, { open: true, onClose: vi.fn() }));
 
     const dialog = await screen.findByRole("dialog", { name: `Changelog v${APP_VERSION}` });
-    const closeButton = screen.getByRole("button", { name: "Changelog schließen" });
-    const link = await screen.findByRole("link", { name: "Dokumentation" });
+    const closeButton = screen.getByRole("button", { name: "Close changelog" });
+    const link = await screen.findByRole("link", { name: "Documentation" });
 
     await waitFor(() => {
       expect(document.activeElement).toBe(closeButton);
@@ -208,13 +208,13 @@ describe("AppChangelogDialog", () => {
   });
 
   it("drops raw HTML, unsafe links and rendered images from markdown output", async () => {
-    stubMarkdownFetch(`# Sicher
+    stubMarkdownFetch(`# Safe
 
-[Sicherer Link](https://example.test)
-[Lokaler Link](/CHANGELOG.md)
-[Hash Link](#top)
-[Javascript Link](javascript:alert(1))
-[Relativer Link](docs/changelog)
+[Safe link](https://example.test)
+[Local link](/CHANGELOG.md)
+[Hash link](#top)
+[Javascript link](javascript:alert(1))
+[Relative link](docs/changelog)
 <strong>Raw HTML</strong>
 <script>alert("xss")</script>
 ![Screenshot](https://example.test/image.png)
@@ -223,17 +223,17 @@ describe("AppChangelogDialog", () => {
       React.createElement(AppChangelogDialog, { open: true, onClose: vi.fn() })
     );
 
-    expect(await screen.findByRole("heading", { name: "Sicher" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Sicherer Link" }).getAttribute("href")).toBe("https://example.test");
-    expect(screen.getByRole("link", { name: "Lokaler Link" }).getAttribute("href")).toBe("/CHANGELOG.md");
-    expect(screen.getByRole("link", { name: "Hash Link" }).getAttribute("href")).toBe("#top");
+    expect(await screen.findByRole("heading", { name: "Safe" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Safe link" }).getAttribute("href")).toBe("https://example.test");
+    expect(screen.getByRole("link", { name: "Local link" }).getAttribute("href")).toBe("/CHANGELOG.md");
+    expect(screen.getByRole("link", { name: "Hash link" }).getAttribute("href")).toBe("#top");
 
-    expect(screen.getByText("Javascript Link").closest("a")).toBeNull();
-    expect(screen.getByText("Relativer Link").closest("a")).toBeNull();
+    expect(screen.getByText("Javascript link").closest("a")).toBeNull();
+    expect(screen.getByText("Relative link").closest("a")).toBeNull();
     expect(container.querySelector("strong")).toBeNull();
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelector("img")).toBeNull();
-    expect(screen.getByText("Bild entfernt: Screenshot")).toBeTruthy();
+    expect(screen.getByText("Image removed: Screenshot")).toBeTruthy();
   });
 });
 
@@ -272,7 +272,7 @@ function ClosableDialogHarness(): React.ReactElement {
         type: "button",
         onClick: () => setOpen(true)
       },
-      "Changelog öffnen"
+      "Open changelog"
     ),
     React.createElement(AppChangelogDialog, {
       open,

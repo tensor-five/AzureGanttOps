@@ -83,7 +83,7 @@ vi.mock("./app-changelog-dialog.js", async () => {
             "div",
             {
               role: "dialog",
-              "aria-label": props.updateNotice ? "Update-Hinweis" : "Changelog"
+              "aria-label": props.updateNotice ? "Update notice" : "Changelog"
             },
             react.createElement(
               "button",
@@ -91,7 +91,7 @@ vi.mock("./app-changelog-dialog.js", async () => {
                 type: "button",
                 onClick: props.onClose
               },
-              "Schließen"
+              "Close"
             )
           )
         : null
@@ -105,14 +105,14 @@ vi.mock("./app-keyboard-shortcuts-dialog.js", async () => {
       props.open
         ? react.createElement(
             "div",
-            { role: "dialog", "aria-label": "Tastenkombinationen" },
+            { role: "dialog", "aria-label": "Keyboard shortcuts" },
             react.createElement(
               "button",
               {
                 type: "button",
                 onClick: props.onClose
               },
-              "Schließen"
+              "Close"
             )
           )
         : null
@@ -149,34 +149,34 @@ describe("UiShellApp header dialogs", () => {
   it("keeps changelog, update notice and keyboard shortcuts dialogs mutually exclusive", async () => {
     renderUiShell();
 
-    fireEvent.click(screen.getByRole("button", { name: /Changelog zu Version .* öffnen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Open changelog for version/ }));
 
     expect(await screen.findByRole("dialog", { name: "Changelog" })).toBeTruthy();
-    expect(screen.queryByRole("dialog", { name: "Update-Hinweis" })).toBeNull();
-    expect(screen.queryByRole("dialog", { name: "Tastenkombinationen" })).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Update notice" })).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Tastenkombinationen öffnen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open keyboard shortcuts" }));
 
-    expect(await screen.findByRole("dialog", { name: "Tastenkombinationen" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Keyboard shortcuts" })).toBeTruthy();
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "Changelog" })).toBeNull();
-      expect(screen.queryByRole("dialog", { name: "Update-Hinweis" })).toBeNull();
+      expect(screen.queryByRole("dialog", { name: "Update notice" })).toBeNull();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Neue Version verfügbar. Changelog mit Update-Hinweis öffnen" }));
+    fireEvent.click(screen.getByRole("button", { name: "New version available. Open changelog with update notice" }));
 
-    expect(await screen.findByRole("dialog", { name: "Update-Hinweis" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Update notice" })).toBeTruthy();
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "Changelog" })).toBeNull();
-      expect(screen.queryByRole("dialog", { name: "Tastenkombinationen" })).toBeNull();
+      expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Changelog zu Version .* öffnen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Open changelog for version/ }));
 
     expect(await screen.findByRole("dialog", { name: "Changelog" })).toBeTruthy();
     await waitFor(() => {
-      expect(screen.queryByRole("dialog", { name: "Update-Hinweis" })).toBeNull();
-      expect(screen.queryByRole("dialog", { name: "Tastenkombinationen" })).toBeNull();
+      expect(screen.queryByRole("dialog", { name: "Update notice" })).toBeNull();
+      expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull();
     });
   });
 });
@@ -214,6 +214,7 @@ function createController(): QueryIntakeTransport {
     linkDependency: vi.fn(async () => createWriteResult("DEPENDENCY_LINK")),
     updateWorkItemDetails: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
     updateWorkItemState: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
+    updateWorkItemAssignedTo: vi.fn(async () => createWriteResult("WORK_ITEM_PATCH")),
     duplicateWorkItem: vi.fn(async () => createWriteResult("WORK_ITEM_DUPLICATE")),
     createChildWorkItem: vi.fn(async () => createWriteResult("WORK_ITEM_CHILD_CREATE")),
     reparentWorkItem: vi.fn(async () => createWriteResult("HIERARCHY_LINK")),

@@ -14,9 +14,9 @@ export function AppKeyboardShortcutsDialog(props: AppKeyboardShortcutsDialogProp
     AppDialogShell,
     {
       open: props.open,
-      title: "Tastenkombinationen",
+      title: "Keyboard shortcuts",
       titleId: "app-keyboard-shortcuts-title",
-      closeLabel: "Tastenkombinationen schließen",
+      closeLabel: "Close keyboard shortcuts",
       onClose: props.onClose,
       returnFocusRef: props.returnFocusRef,
       contentClassName: "app-keyboard-shortcuts-content"

@@ -1,174 +1,182 @@
 # Changelog
 
-Alle nennenswerten Änderungen an AzureGanttOps werden in dieser Datei dokumentiert.
+All notable changes to AzureGanttOps are documented in this file.
 
-Hinweis: Historische Versionen vor `1.8.1` sind grob aus den sichtbaren Commit-Schwerpunkten rekonstruiert, da im Repository keine Release-Tags vorhanden sind.
+Note: Historical versions before `1.8.1` were reconstructed approximately from visible commit themes because the repository contains no release tags.
+
+## [Unreleased]
+
+### Added
+
+- Failed Azure DevOps calls now produce structured terminal diagnostics with HTTP status, duration, request ID, sanitized Azure response, and a data-minimized JSON Patch context.
+- The timeline context menu can change `Assigned To` to a person already used in the current query; the list is sorted by the number of assigned tasks.
+- The visible application interface, dialogs, keyboard shortcut help, and in-app changelog are now consistently in English.
 
 ## [1.8.6] - 2026-07-10
 
-### Geändert
+### Changed
 
-- `Include child items` in Timeline-Filtern läuft jetzt rekursiv durch die gesamte vorhandene Child-Hierarchie nach unten.
+- `Include child items` in timeline filters now traverses the complete available child hierarchy recursively.
 
 ## [1.8.5] - 2026-07-10
 
-### Hinzugefügt
+### Added
 
-- Timeline-Filter können in Baum-Queries optional vorhandene Eltern rekursiv sowie direkte Child Items der hart gefilterten Treffer einblenden; die Auswahl steht rechts neben den Filtern und wird über URL-Parameter geteilt.
+- Timeline filters for tree queries can optionally include existing parents recursively and direct child items of hard-filtered matches; the selection appears to the right of the filters and is shared through URL parameters.
 
 ## [1.8.4] - 2026-06-28
 
-### Hinzugefügt
+### Added
 
-- Tastatur-Symbol neben der Versionsnummer öffnet eine kompakte Übersicht der wichtigsten Timeline-Tastenkombinationen im gemeinsamen Header-Dialog.
+- A keyboard icon next to the version number opens a compact overview of the most important timeline keyboard shortcuts in the shared header dialog.
 
 ## [1.8.3] - 2026-06-27
 
-### Hinzugefügt
+### Added
 
-- Azure-Query-Aktualisierungen prüfen im Hintergrund, ob auf GitHub eine neuere App-Version verfügbar ist.
-- Versionsanzeige zeigt bei verfügbarem Update ein dezentes Ausrufezeichen, das den Changelog mit Update-Hinweis öffnet.
-- Neuer lokaler Diagnose-Endpunkt `GET /phase2/app-update-check` liefert den stillen Update-Check ohne HTTP-Cache.
+- Azure query refreshes check in the background whether a newer app version is available on GitHub.
+- The version display shows a subtle exclamation mark when an update is available and opens the changelog with an update notice.
+- A new local diagnostics endpoint, `GET /phase2/app-update-check`, provides the silent update check without HTTP caching.
 
-### Geändert
+### Changed
 
-- Header zeigt den Changelog-Einstieg kompakt nur noch als Versionsnummer `v1.8.3`.
-- One-Click-Start prüft npm-Abhängigkeiten jetzt gegen `package.json` und `package-lock.json`, damit neue Pakete nach einem Pull automatisch installiert werden.
-- npm-Abhängigkeiten aktualisiert, sodass `npm audit` keine bekannten Vulnerabilities mehr meldet.
+- The header now shows the changelog entry compactly as version number `v1.8.3` only.
+- One-click startup now checks npm dependencies against `package.json` and `package-lock.json` so new packages are installed automatically after a pull.
+- npm dependencies were updated so `npm audit` reports no known vulnerabilities.
 
 ## [1.8.2] - 2026-06-27
 
-### Geändert
+### Changed
 
-- Changelog-Hinweis im Header öffnet die Release-Notizen jetzt als zugänglichen Dialog in der App.
-- Paketversion für die Changelog-Dialog-Verbesserung auf `1.8.2` erhöht.
+- The changelog indicator in the header now opens the release notes in an accessible in-app dialog.
+- The package version was increased to `1.8.2` for the changelog dialog improvement.
 
 ## [1.8.1] - 2026-06-26
 
-### Hinzugefügt
+### Added
 
-- Sichtbarer Changelog-Hinweis im Header mit direktem Zugriff auf die Release-Notizen.
-- Zentrale Projektmetadaten für App-Version und Changelog-Pfad, damit UI und lokaler Server dieselben Werte verwenden.
-- Read-only Route `GET /CHANGELOG.md` mit Markdown-Auslieferung, Sicherheitsheadern und deaktiviertem HTTP-Cache.
+- A visible changelog indicator in the header provides direct access to release notes.
+- Central project metadata keeps the app version and changelog path consistent between the UI and local server.
+- A read-only `GET /CHANGELOG.md` route serves Markdown with security headers and disabled HTTP caching.
 
-### Geändert
+### Changed
 
-- Paketversion explizit auf `1.8.1` gesetzt.
+- The package version was explicitly set to `1.8.1`.
 
 ## [1.8.0] - 2026-06-26
 
-### Hinzugefügt
+### Added
 
-- Erststart-Dialog für die Verbindung einer Azure DevOps Query per vollständiger Query-URL.
-- Lokaler Konfigurationsreset aus dem Statusbereich.
+- A first-run dialog connects an Azure DevOps query through its complete query URL.
+- Local configuration can be reset from the status area.
 
-### Geändert
+### Changed
 
-- Header-Statusbadge und Theme-Umschaltung kompakter gestaltet.
-- Initialer Query-Flow stärker auf URL-Eingabe ausgerichtet.
+- The header status badge and theme switcher use a more compact layout.
+- The initial query flow focuses more strongly on URL input.
 
 ## [1.7.0] - 2026-06-10
 
-### Hinzugefügt
+### Added
 
-- PWA-Unterstützung mit Manifest, Icons und Service Worker.
-- Verbesserte Hinweise bei abgelaufener Azure-Session.
+- PWA support with manifest, icons, and service worker.
+- Improved guidance for expired Azure sessions.
 
-### Geändert
+### Changed
 
-- Dependency-Writeback korrigiert.
-- Kind-Work-Items übernehmen relevante Felder wie zugewiesene Person, Tags und Planungsdaten.
-- Gantt-Zieldaten werden lokal konsistent auf 17:00 gesetzt.
+- Dependency writeback was corrected.
+- Child work items inherit relevant fields such as assigned person, tags, and planning dates.
+- Gantt target dates are set consistently to 17:00 locally.
 
 ## [1.6.0] - 2026-06-03
 
-### Hinzugefügt
+### Added
 
-- Timeline-Filtergruppen und Datumsbereichsfilter.
-- Kontextmenüs für Work Items mit Tastaturbedienung und Viewport-Begrenzung.
-- Erstellung von Child Work Items aus dem Kontextmenü mit eingeschränkter Auswahl geeigneter Planungstypen.
-- Baumlevel-Badges für sichtbare Query-Ebenen.
+- Timeline filter groups and date-range filters.
+- Work item context menus with keyboard operation and viewport constraints.
+- Creation of child work items from the context menu with a restricted list of suitable planning types.
+- Tree-level badges for visible query levels.
 
-### Geändert
+### Changed
 
-- Child-Type-Menü bleibt bei Re-Renders stabil.
-- Externe Fontshare-Abhängigkeit aus UI und CSP entfernt.
+- The child type menu remains stable across re-renders.
+- The external Fontshare dependency was removed from the UI and CSP.
 
 ## [1.5.0] - 2026-05-27
 
-### Hinzugefügt
+### Added
 
-- Optimistische Duplizierung von Work Items.
-- Performance-Logging für Refresh-Pfade.
+- Optimistic duplication of work items.
+- Performance logging for refresh paths.
 
-### Geändert
+### Changed
 
-- Azure-Hydration mit größerer Parallelität und abgestimmter Batch-Größe beschleunigt.
-- Duplizierte Work Items übernehmen relevante System- und Planungsfelder.
+- Azure hydration was accelerated with greater concurrency and adjusted batch sizes.
+- Duplicated work items inherit relevant system and planning fields.
 
 ## [1.4.0] - 2026-05-04
 
-### Hinzugefügt
+### Added
 
-- Print-Ansicht per `Cmd+P` für den aktuellen Gantt-Snapshot.
-- Automatische Standard-Feldzuordnung beim ersten Query-Lauf.
-- Iterationsbasierte Datumsableitung für halb geplante Work Items inklusive Hinweis in den Details.
+- A `Cmd+P` print view for the current Gantt snapshot.
+- Automatic default field mapping on the first query run.
+- Iteration-based date derivation for partially planned work items, including a notice in the details panel.
 
-### Geändert
+### Changed
 
-- Node.js-Engine und Lockfile-Angaben präzisiert.
-- Verbose-Logging-Konfiguration für Azure DevOps korrigiert.
+- Node.js engine and lockfile declarations were clarified.
+- Verbose logging configuration for Azure DevOps was corrected.
 
 ## [1.3.0] - 2026-04-21
 
-### Hinzugefügt
+### Added
 
-- Edit-Modus mit per Work Item auslösbarer Übernahme geplanter Daten.
-- Quarter- und Year-Zoomlevel sowie Auto-Scroll beim Ziehen von Timeline-Balken.
-- Warnungen bei ungespeicherten Timeline-Änderungen vor Refresh oder Tab-Schließen.
+- An edit mode that adopts planned dates per work item.
+- Quarter and year zoom levels plus auto-scroll while dragging timeline bars.
+- Warnings about unsaved timeline changes before refresh or tab close.
 
-### Geändert
+### Changed
 
-- Iterationsdaten werden über einen eigenen Port geladen und gecacht.
-- Zoom- und Drag-Verhalten stabilisiert.
+- Iteration dates are loaded and cached through a dedicated port.
+- Zoom and drag behavior were stabilized.
 
 ## [1.2.0] - 2026-04-13
 
-### Hinzugefügt
+### Added
 
-- Tree- und One-Hop-Query-Unterstützung mit Erhalt von Hierarchie und Abhängigkeiten.
-- Reparenting per Drag-and-drop.
-- Verbesserte Dependency-Pfeile und Interaktionen.
-- Öffnen gespeicherter Queries direkt in Azure DevOps aus dem Header.
+- Tree and one-hop query support that preserves hierarchy and dependencies.
+- Drag-and-drop reparenting.
+- Improved dependency arrows and interactions.
+- Saved queries can be opened directly in Azure DevOps from the header.
 
-### Geändert
+### Changed
 
-- Query-Dropdown optisch verdichtet und mit Link-Icon versehen.
+- The query dropdown uses a denser visual layout and includes a link icon.
 
 ## [1.1.0] - 2026-03-19
 
-### Hinzugefügt
+### Added
 
-- Lokale HTTP-UI-Shell mit One-Click-Startup.
-- Persistente Timeline-Preferences für Dichte, Farbcodierung, Sidebar, Details, Labels und Viewport.
-- Live-Sync-Steuerung für Timeline-Änderungen.
-- Timeline-Sortierung, Feldfilter, Auswahlhervorhebung und Overlay-Korrekturen.
+- A local HTTP UI shell with one-click startup.
+- Persistent timeline preferences for density, color coding, sidebar, details, labels, and viewport.
+- Live-sync controls for timeline changes.
+- Timeline sorting, field filters, selection highlighting, and overlay corrections.
 
-### Geändert
+### Changed
 
-- UI-Client und Timeline-Interaktionen modularisiert.
-- Lokaler Server-Start und Build-Artefaktprüfung robuster gestaltet.
+- The UI client and timeline interactions were modularized.
+- Local server startup and build artifact checks were made more robust.
 
 ## [1.0.0] - 2026-03-09
 
-### Hinzugefügt
+### Added
 
-- Query-driven Gantt-Grundlage mit Azure CLI Preflight, Azure DevOps Kontext, Query-Ausführung und Work-Item-Hydration.
-- Mapping-Validierung, Mapping-Persistenz und Canonical Planning Model.
-- Timeline-Rendering mit Balken, unschedulable Work Items, Dependency-Darstellung und Trust-/Freshness-Zuständen.
-- Diagnostics-Tab, Statusflächen und strukturierte Laufzeitdiagnostik.
-- Read/Write-Grenze mit initial deaktiviertem Write-Pfad.
+- A query-driven Gantt foundation with Azure CLI preflight, Azure DevOps context, query execution, and work item hydration.
+- Mapping validation, mapping persistence, and a canonical planning model.
+- Timeline rendering with bars, unschedulable work items, dependency visualization, and trust/freshness states.
+- A diagnostics tab, status surfaces, and structured runtime diagnostics.
+- A read/write boundary with write operations initially disabled.
 
-### Geändert
+### Changed
 
-- Phase-6-Runtime, lokale UI und Quality-Gates als lauffähige Basis zusammengeführt.
+- The phase 6 runtime, local UI, and quality gates were combined into an executable foundation.

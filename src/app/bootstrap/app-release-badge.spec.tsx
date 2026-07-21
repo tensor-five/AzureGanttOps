@@ -21,15 +21,15 @@ describe("AppReleaseBadge", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: `Changelog zu Version ${APP_VERSION} öffnen`
+      name: `Open changelog for version ${APP_VERSION}`
     }) as HTMLButtonElement;
 
     expect(button.textContent).toBe(`v${APP_VERSION}`);
     expect(button.type).toBe("button");
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
     expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(button.getAttribute("title")).toBe(`Changelog zu Version ${APP_VERSION} öffnen`);
-    expect(screen.queryByRole("button", { name: /Neue Version verfügbar/ })).toBeNull();
+    expect(button.getAttribute("title")).toBe(`Open changelog for version ${APP_VERSION}`);
+    expect(screen.queryByRole("button", { name: /New version available/ })).toBeNull();
   });
 
   it("reflects the expanded state and delegates clicks to the caller", () => {
@@ -37,7 +37,7 @@ describe("AppReleaseBadge", () => {
     render(React.createElement(AppReleaseBadge, { open: true, onVersionClick, onShortcutsClick: vi.fn() }));
 
     const button = screen.getByRole("button", {
-      name: `Changelog zu Version ${APP_VERSION} öffnen`
+      name: `Open changelog for version ${APP_VERSION}`
     });
 
     expect(button.getAttribute("aria-expanded")).toBe("true");
@@ -59,13 +59,13 @@ describe("AppReleaseBadge", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: "Tastenkombinationen öffnen"
+      name: "Open keyboard shortcuts"
     });
 
     expect(button.textContent).toBe("⌘");
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
     expect(button.getAttribute("aria-expanded")).toBe("true");
-    expect(button.getAttribute("title")).toBe("Tastenkombinationen öffnen");
+    expect(button.getAttribute("title")).toBe("Open keyboard shortcuts");
 
     fireEvent.click(button);
 
@@ -85,16 +85,16 @@ describe("AppReleaseBadge", () => {
     );
 
     const versionButton = screen.getByRole("button", {
-      name: `Changelog zu Version ${APP_VERSION} öffnen`
+      name: `Open changelog for version ${APP_VERSION}`
     });
     const updateButton = screen.getByRole("button", {
-      name: "Neue Version verfügbar. Changelog mit Update-Hinweis öffnen"
+      name: "New version available. Open changelog with update notice"
     });
 
     expect(versionButton.contains(updateButton)).toBe(false);
     expect(updateButton.textContent).toBe("!");
     expect(updateButton.getAttribute("aria-haspopup")).toBe("dialog");
-    expect(updateButton.getAttribute("title")).toBe("Neue Version verfügbar");
+    expect(updateButton.getAttribute("title")).toBe("New version available");
 
     fireEvent.click(updateButton);
 
