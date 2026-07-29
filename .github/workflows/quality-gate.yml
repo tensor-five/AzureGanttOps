@@ -9,7 +9,11 @@ on:
 
 jobs:
   quality-gate:
-    runs-on: ubuntu-latest
+    # rz-prod = ARC-Runner im TensorFive-RZ (arm64, Ubuntu 24.04) statt
+    # GitHub-hosted. Der Job ist reines Node/TypeScript; das Lockfile enthaelt
+    # die linux-arm64-Optional-Deps von esbuild und rollup, `npm ci` laeuft
+    # also durch.
+    runs-on: rz-prod
     timeout-minutes: 20
 
     steps:
