@@ -7,13 +7,31 @@ on:
       - master
   pull_request:
 
+# head_ref (PR-Quellbranch) bzw. ref_name (Push-Branch) liefern denselben
+# Schluessel. NICHT github.ref: der ist beim Push refs/heads/<branch>, beim PR
+# refs/pull/<n>/merge — zwei Gruppen, die sich nie gegenseitig aufheben.
+concurrency:
+  group: quality-gate-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   quality-gate:
-    # rz-prod = ARC-Runner im TensorFive-RZ (arm64, Ubuntu 24.04) statt
-    # GitHub-hosted. Der Job ist reines Node/TypeScript; das Lockfile enthaelt
-    # die linux-arm64-Optional-Deps von esbuild und rollup, `npm ci` laeuft
-    # also durch.
-    runs-on: rz-prod
+    # rz-ci-pr = UNPRIVILEGIERTER ARC-Runner im TensorFive-RZ (arm64,
+    # Ubuntu 24.04) statt GitHub-hosted. Der Job ist reines Node/TypeScript; das
+    # Lockfile enthaelt die linux-arm64-Optional-Deps von esbuild und rollup,
+    # `npm ci` laeuft also durch.
+    #
+    # NICHT rz-prod: dieser Workflow ist pull_request-getriggert und fuehrt
+    # damit Code aus dem PR-Branch aus, bevor ihn jemand gesehen hat. rz-prods
+    # ServiceAccount arc-runner ist an cluster-admin gebunden und der Token wird
+    # in den Runner-Container projiziert — eine Datei lesen wuerde reichen.
+    # rz-ci-pr traegt eine SA ohne jedes RoleBinding und
+    # automountServiceAccountToken: false. Der Job nutzt kein kubectl/helm/flux,
+    # braucht den Token also ohnehin nicht. (Invariante aus rz-betrieb#156.)
+    runs-on: rz-ci-pr
     timeout-minutes: 20
 
     steps:
