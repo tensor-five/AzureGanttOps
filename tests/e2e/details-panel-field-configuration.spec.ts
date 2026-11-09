@@ -688,7 +688,11 @@ test.describe("details panel field configuration", () => {
 
     const start = shownItem(page, "Start");
     await expect(start).toContainText("½");
-    await expect(start).not.toContainText("Edit");
+    await expect(start).toContainText("Edit");
+
+    const dependencies = shownItem(page, "Dependencies");
+    await expect(dependencies).toContainText("½");
+    await expect(dependencies).not.toContainText("Edit");
 
     const description = shownItem(page, "Description");
     await expect(description.getByRole("button", { name: "Move Description down" })).toBeDisabled();
@@ -1047,7 +1051,9 @@ test.describe("details panel field configuration", () => {
     await selectItem(page, 801);
     await configureShownFields(page, ["Title", "Start", "End", "Area Path", "Tags", "Comments", "Reviewer", "Due Date"]);
     const bar = page.getByLabel("timeline-bar-801");
+    const referenceBar = page.getByLabel("timeline-bar-802");
     const barBefore = await boxOf(bar);
+    const referenceBefore = await boxOf(referenceBar);
 
     const nextStart = "2026-03-04T08:00:00.000Z";
     const nextEnd = "2026-03-10T16:00:00.000Z";
@@ -1073,7 +1079,10 @@ test.describe("details panel field configuration", () => {
     expect(new Date(String(update.fields?.[REF.dueDate])).toISOString()).toBe(nextDueDate);
 
     const barAfter = await boxOf(bar);
-    expect(barAfter.x).toBeGreaterThan(barBefore.x + 1);
+    const referenceAfter = await boxOf(referenceBar);
+    const gapBefore = referenceBefore.x - barBefore.x;
+    const gapAfter = referenceAfter.x - barAfter.x;
+    expect(gapAfter).toBeLessThan(gapBefore - 1);
     expect(barAfter.width).toBeGreaterThan(barBefore.width + 1);
   });
 
