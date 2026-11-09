@@ -29,6 +29,7 @@ import {
   type DetailsFieldSaveValue
 } from "./details-panel-field-values.js";
 import { DetailsPanelRichTextField } from "./details-panel-rich-text-field.js";
+import { GearIcon } from "./gear-icon.js";
 import { buildTimelineAssigneeOptions } from "./timeline-assignee-options.js";
 import { resolveWorkItemStateOptions } from "./work-item-state-options.js";
 
@@ -513,7 +514,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
                 "aria-haspopup": "dialog",
                 onClick: () => setConfigOpen((current) => !current)
               },
-              gearIcon()
+              React.createElement(GearIcon, { className: "timeline-details-config-toggle-icon" })
             ),
             configOpen
               ? React.createElement(DetailsPanelFieldConfigMenu, {
@@ -733,28 +734,6 @@ function renderWorkItemPill(workItemId: number, azureLink: string | null): React
         strokeLinejoin: "round"
       })
     )
-  );
-}
-
-function gearIcon(): React.ReactElement {
-  return React.createElement(
-    "svg",
-    { viewBox: "0 0 16 16", "aria-hidden": "true" },
-    React.createElement("path", {
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "1.4",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      d: "M8 10.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"
-    }),
-    React.createElement("path", {
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "1.4",
-      strokeLinejoin: "round",
-      d: "M6.9 1.8h2.2l.35 1.6 1.2.7 1.55-.5 1.1 1.9-1.2 1.1v1.4l1.2 1.1-1.1 1.9-1.55-.5-1.2.7-.35 1.6H6.9l-.35-1.6-1.2-.7-1.55.5-1.1-1.9 1.2-1.1V7.3l-1.2-1.1 1.1-1.9 1.55.5 1.2-.7z"
-    })
   );
 }
 
