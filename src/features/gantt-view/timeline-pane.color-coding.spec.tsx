@@ -42,7 +42,7 @@ describe("timeline-pane color coding", () => {
 
     await user.click(screen.getByLabelText("Open color coding settings"));
     const closeButton = screen.getByRole("button", { name: "Close color coding settings" });
-    expect(closeButton.textContent).toBe("×");
+    expect(closeButton.querySelector("svg.timeline-color-coding-close-icon")).not.toBeNull();
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
 
     await user.click(closeButton);
