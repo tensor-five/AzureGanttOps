@@ -48,4 +48,43 @@ describe("AzureFieldDefinitionsAdapter", () => {
     const noContext = new AzureFieldDefinitionsAdapter({ get: async () => ({ status: 200, json: {} }) }, async () => null);
     await expect(noContext.listFieldDefinitions(["Bug"])).rejects.toThrow("ADO_CONTEXT_MISSING");
   });
+
+  it("caches project field types per context and refreshes them after the TTL", async () => {
+    let calls = 0;
+    let now = 0;
+    const adapter = new AzureFieldDefinitionsAdapter(
+      {
+        get: async () => {
+          calls += 1;
+          return { status: 200, json: { value: [{ referenceName: "A.Html", type: "html" }] } };
+        }
+      },
+      context,
+      () => now
+    );
+
+    expect((await adapter.getFieldTypes()).get("A.Html")).toBe("html");
+    await adapter.getFieldTypes();
+    expect(calls).toBe(1);
+
+    now = 11 * 60 * 1000;
+    await adapter.getFieldTypes();
+    expect(calls).toBe(2);
+  });
+
+  it("does not cache failed project field requests", async () => {
+    let calls = 0;
+    const adapter = new AzureFieldDefinitionsAdapter(
+      {
+        get: async () => {
+          calls += 1;
+          return calls === 1 ? { status: 500, json: {} } : { status: 200, json: { value: [] } };
+        }
+      },
+      context
+    );
+
+    await expect(adapter.getFieldTypes()).rejects.toThrow("FIELD_DEFINITIONS_FETCH_FAILED:500");
+    await expect(adapter.getFieldTypes()).resolves.toEqual(new Map());
+  });
 });

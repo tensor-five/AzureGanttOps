@@ -156,11 +156,13 @@ export type UpdateDetailsOperation =
 
 /**
  * Parses a details update. Accepts `fields` (reference name -> value, `null` clears the field)
- * and the legacy `title`/`descriptionHtml`/`state` shape. Values of System.Description and of every
- * reference listed in `htmlFields` are sanitized as HTML fragments.
+ * and the legacy `title`/`descriptionHtml`/`state` shape. Values of System.Description, of every
+ * server-determined HTML field (`options.htmlFieldRefs`) and of every reference the client lists in
+ * `htmlFields` are sanitized as HTML fragments; the client list can only add sanitization.
  */
 export function parseUpdateDetailsPayload(
-  input: Record<string, unknown> | null
+  input: Record<string, unknown> | null,
+  options: { htmlFieldRefs?: Iterable<string> } = {}
 ): { targetWorkItemId: number; operations: UpdateDetailsOperation[] } | null {
   if (!input) {
     return null;
@@ -181,7 +183,7 @@ export function parseUpdateDetailsPayload(
     return null;
   }
 
-  const htmlFieldRefs = new Set<string>(["System.Description"]);
+  const htmlFieldRefs = new Set<string>(["System.Description", ...(options.htmlFieldRefs ?? [])]);
   if (Array.isArray(input.htmlFields)) {
     input.htmlFields.forEach((entry) => {
       if (typeof entry === "string") {

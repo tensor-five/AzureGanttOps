@@ -3,6 +3,7 @@ import React from "react";
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
 import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import {
   DEFAULT_DETAILS_PANEL_FIELD_IDS,
   DETAILS_FIELD_IDS,
@@ -52,6 +53,7 @@ export type TimelineDetailsPanelProps = {
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
   onFetchWorkItemFieldDefinitions?: (input: { workItemTypes: string[] }) => Promise<WorkItemFieldDefinition[]>;
   onDirtyChange?: (dirty: boolean) => void;
+  workItemSyncState?: WorkItemSyncState;
 };
 
 type FieldDefinitionsState =
@@ -69,13 +71,20 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   const definitionsState = useFieldDefinitions(catalogTimeline, props.activeQueryId ?? null, props.onFetchWorkItemFieldDefinitions);
   const serverStateOptions = useServerStateOptions(selected?.workItemId ?? null, props.onFetchWorkItemStateOptions);
   const [configOpen, setConfigOpen] = React.useState(false);
-  const [drafts, setDrafts] = React.useState<Record<string, string>>({});
+  const [draftState, setDraftState] = React.useState<{ workItemId: number | null; values: Record<string, string> }>({
+    workItemId: null,
+    values: {}
+  });
   const [failedBaseline, setFailedBaseline] = React.useState<{ workItemId: number; values: Record<string, string> } | null>(
     null
   );
-  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const [saveError, setSaveError] = React.useState<{ workItemId: number; message: string } | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
   const configAreaRef = React.useRef<HTMLDivElement | null>(null);
+  const configToggleRef = React.useRef<HTMLButtonElement | null>(null);
+  const selectedWorkItemId = selected?.workItemId ?? null;
+  const selectedWorkItemIdRef = React.useRef<number | null>(selectedWorkItemId);
+  selectedWorkItemIdRef.current = selectedWorkItemId;
 
   const catalog = React.useMemo(
     () =>
@@ -108,22 +117,52 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     }
     return values;
   }, [catalog, catalogTimeline, selected]);
-  const baseline =
-    failedBaseline && selected && failedBaseline.workItemId === selected.workItemId ? failedBaseline.values : computedBaseline;
-  const baselineKey = selected ? `${selected.workItemId}\u0000${JSON.stringify(computedBaseline)}` : null;
+  const activeFailedBaseline =
+    failedBaseline && failedBaseline.workItemId === selectedWorkItemId ? failedBaseline.values : null;
+  const baseline = activeFailedBaseline ?? computedBaseline;
+  const drafts = draftState.workItemId !== null && draftState.workItemId === selectedWorkItemId ? draftState.values : {};
+  const activeSaveError = saveError && saveError.workItemId === selectedWorkItemId ? saveError.message : null;
 
+  // Drafts are reset when the selection or the reset key changes, or when the server value of a
+  // field that has a draft changes. Fields that only join the catalog later never reset drafts.
+  const previousBaselineRef = React.useRef<{ workItemId: number | null; resetKey: number | undefined; values: Record<string, string> }>({
+    workItemId: selectedWorkItemId,
+    resetKey: props.draftResetKey,
+    values: computedBaseline
+  });
   React.useEffect(() => {
+    const previous = previousBaselineRef.current;
+    previousBaselineRef.current = { workItemId: selectedWorkItemId, resetKey: props.draftResetKey, values: computedBaseline };
+
+    if (previous.workItemId !== selectedWorkItemId || previous.resetKey !== props.draftResetKey) {
+      setDraftState({ workItemId: null, values: {} });
+      setFailedBaseline(null);
+      setSaveError(null);
+      return;
+    }
+
     if (isSaving) {
       return;
     }
-    setDrafts({});
-    setSaveError(null);
-    setFailedBaseline((current) => (current && selected && current.workItemId === selected.workItemId ? current : null));
-  }, [baselineKey, props.draftResetKey]);
+
+    const serverChangedDraftedField = Object.keys(drafts).some(
+      (id) => previous.values[id] !== undefined && previous.values[id] !== computedBaseline[id]
+    );
+    if (serverChangedDraftedField && !activeFailedBaseline) {
+      setDraftState({ workItemId: null, values: {} });
+      setSaveError(null);
+    }
+  }, [selectedWorkItemId, computedBaseline, props.draftResetKey]);
 
   React.useEffect(() => {
-    setFailedBaseline(null);
-  }, [selected?.workItemId, props.draftResetKey]);
+    if (props.workItemSyncState === "up_to_date" && failedBaseline) {
+      setFailedBaseline(null);
+      setSaveError(null);
+      setDraftState((current) =>
+        current.workItemId === failedBaseline.workItemId ? { workItemId: null, values: {} } : current
+      );
+    }
+  }, [props.workItemSyncState]);
 
   const currentDraft = (id: string): string => drafts[id] ?? baseline[id] ?? "";
   const dirtyFieldIds = Object.keys(drafts).filter((id) => {
@@ -173,6 +212,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       return;
     }
 
+    const savedWorkItemId = selected.workItemId;
+    const submittedDrafts = { ...drafts };
     const fields: Record<string, DetailsFieldSaveValue> = {};
     const htmlFields: string[] = [];
     dirtyFieldIds.forEach((id) => {
@@ -195,16 +236,27 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     setIsSaving(true);
     try {
       await props.onUpdateSelectedWorkItemDetails({
-        targetWorkItemId: selected.workItemId,
+        targetWorkItemId: savedWorkItemId,
         fields,
         htmlFields,
         stateColor
       });
-      setFailedBaseline(null);
-      setDrafts({});
+      setFailedBaseline((current) => (current?.workItemId === savedWorkItemId ? null : current));
+      setDraftState((current) => {
+        if (current.workItemId !== savedWorkItemId) {
+          return current;
+        }
+        const remaining = Object.fromEntries(
+          Object.entries(current.values).filter(([id, value]) => submittedDrafts[id] !== value)
+        );
+        return { workItemId: savedWorkItemId, values: remaining };
+      });
     } catch (error) {
-      setFailedBaseline({ workItemId: selected.workItemId, values: confirmedBaseline });
-      setSaveError(error instanceof Error ? error.message : "Saving details failed.");
+      setFailedBaseline({ workItemId: savedWorkItemId, values: confirmedBaseline });
+      setSaveError({
+        workItemId: savedWorkItemId,
+        message: error instanceof Error ? error.message : "Saving details failed."
+      });
     } finally {
       setIsSaving(false);
     }
@@ -230,6 +282,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setConfigOpen(false);
+        configToggleRef.current?.focus();
       }
     };
     const onPointerDown = (event: MouseEvent) => {
@@ -252,7 +305,15 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
   }, [contentHidden]);
 
   const updateDraft = (fieldId: string, value: string) => {
-    setDrafts((current) => ({ ...current, [fieldId]: value }));
+    const workItemId = selectedWorkItemIdRef.current;
+    if (workItemId === null) {
+      return;
+    }
+    setDraftState((current) =>
+      current.workItemId === workItemId
+        ? { workItemId, values: { ...current.values, [fieldId]: value } }
+        : { workItemId, values: { [fieldId]: value } }
+    );
   };
 
   const azureLink = selected ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId) : null;
@@ -290,7 +351,9 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
         hint
       ),
       selected ? renderFieldControl(field, selected, error) : null,
-      error ? React.createElement("p", { className: "timeline-details-field-error", role: "status" }, error) : null
+      error
+        ? React.createElement("p", { id: toErrorId(field.id), className: "timeline-details-field-error", role: "status" }, error)
+        : null
     );
   };
 
@@ -354,6 +417,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
         .join(" "),
       "aria-label": field.name,
       "aria-invalid": error ? "true" : "false",
+      "aria-describedby": error ? toErrorId(field.id) : undefined,
       inputMode: field.kind === "double" ? "decimal" : field.kind === "integer" ? "numeric" : undefined,
       placeholder: "—",
       disabled,
@@ -407,6 +471,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               "button",
               {
                 type: "button",
+                ref: configToggleRef,
                 className: "timeline-details-config-toggle",
                 "aria-label": "Configure details fields",
                 title: "Configure fields",
@@ -441,8 +506,8 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
               { className: "timeline-details-field-grid" },
               ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))
             ),
-            saveError
-              ? React.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${saveError}`)
+            activeSaveError
+              ? React.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${activeSaveError}`)
               : null
           )
         : React.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."),
@@ -573,6 +638,10 @@ function resolveSelectOptions(
     options.unshift({ value: "", label: "—" });
   }
   return options;
+}
+
+function toErrorId(fieldId: string): string {
+  return `timeline-details-field-error-${fieldId.replace(/[^A-Za-z0-9_-]/g, "-")}`;
 }
 
 function isIterationFallbackField(fieldId: string, item: TimelineDetailsItem): boolean {

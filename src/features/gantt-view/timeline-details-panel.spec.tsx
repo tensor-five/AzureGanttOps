@@ -505,4 +505,62 @@ describe("timeline-details-panel configurable fields", () => {
     fireEvent.click(screen.getByRole("button", { name: "Configure details fields" }));
     expect(await screen.findByText("Field definitions unavailable – showing loaded fields read-only.")).toBeTruthy();
   });
+
+  it("keeps drafts bound to their work item when the selection changes", async () => {
+    const timeline = makeStoryTimeline();
+    timeline.bars.push({
+      ...timeline.bars[0],
+      workItemId: 12,
+      title: "Other Item",
+      details: { ...timeline.bars[0].details, mappedId: "12" }
+    });
+    const { rerender } = render(
+      React.createElement(TimelineDetailsPanel, { timeline, selectedWorkItemId: 11 })
+    );
+
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Draft for 11" } });
+    rerender(React.createElement(TimelineDetailsPanel, { timeline, selectedWorkItemId: 12 }));
+
+    await waitFor(() => {
+      expect((screen.getByLabelText("Title") as HTMLInputElement).value).toBe("Other Item");
+    });
+    expect((screen.getByRole("button", { name: "Save" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("keeps drafts typed while field definitions are still loading", async () => {
+    let resolveDefinitions: (fields: typeof storyPointsDefinition[]) => void = () => undefined;
+    const definitions = new Promise<typeof storyPointsDefinition[]>((resolve) => {
+      resolveDefinitions = resolve;
+    });
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions: () => definitions
+      })
+    );
+
+    const title = screen.getByLabelText("Title") as HTMLInputElement;
+    fireEvent.change(title, { target: { value: "Early draft" } });
+    resolveDefinitions([storyPointsDefinition]);
+
+    await screen.findByLabelText("Story Points");
+    expect(title.value).toBe("Early draft");
+  });
+
+  it("links validation errors to their input", async () => {
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions: async () => [storyPointsDefinition]
+      })
+    );
+
+    const storyPoints = (await screen.findByLabelText("Story Points")) as HTMLInputElement;
+    fireEvent.change(storyPoints, { target: { value: "-2" } });
+    const errorId = storyPoints.getAttribute("aria-describedby");
+    expect(errorId).toBeTruthy();
+    expect(document.getElementById(errorId as string)?.textContent).toBe("Enter a number ≥ 0 with up to 2 decimals.");
+  });
 });

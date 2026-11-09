@@ -233,4 +233,29 @@ describe("ui-client-work-item-sync", () => {
 
     expect(queue).toEqual([]);
   });
+
+  it("keeps every queued partial details update for the same work item in order", async () => {
+    const executed: string[] = [];
+    const makeDetails = (name: string): PendingWorkItemMutation => ({
+      kind: "work_item",
+      key: "work_item:42",
+      queryId: "query-1",
+      workItemId: 42,
+      applyToTimeline: (timeline) => timeline,
+      executeDetails: async () => {
+        executed.push(name);
+      }
+    });
+
+    const queueRef = {
+      current: upsertPendingWorkItemMutation([makeDetails("title")], makeDetails("storyPoints"))
+    };
+    await flushPendingWorkItemMutations({
+      queueRef,
+      onPendingCountChange: () => undefined,
+      runTrackedWorkItemSync: async (operation) => operation()
+    });
+
+    expect(executed).toEqual(["title", "storyPoints"]);
+  });
 });

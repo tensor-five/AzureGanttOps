@@ -4,6 +4,7 @@ import type { AdoContext } from "../../../application/ports/context-settings.por
 import type { HttpClient } from "../queries/azure-query-runtime.adapter.js";
 
 const API_VERSION = "7.1";
+const PROJECT_FIELDS_CACHE_TTL_MS = 10 * 60 * 1000;
 
 type ProjectField = {
   referenceName: string;
@@ -20,22 +21,27 @@ type TypeField = {
 };
 
 export class AzureFieldDefinitionsAdapter implements WorkItemFieldDefinitionsPort {
+  private readonly projectFieldsCache = new Map<string, { expiresAt: number; fields: Promise<Map<string, ProjectField>> }>();
+
   public constructor(
     private readonly httpClient: HttpClient,
-    private readonly resolveContext: () => Promise<AdoContext | null>
+    private readonly resolveContext: () => Promise<AdoContext | null>,
+    private readonly now: () => number = Date.now
   ) {}
 
-  public async listFieldDefinitions(workItemTypes: string[]): Promise<WorkItemFieldDefinition[]> {
-    const context = await this.resolveContext();
-    if (!context) {
-      throw new Error("ADO_CONTEXT_MISSING");
-    }
+  public async getFieldTypes(): Promise<Map<string, string>> {
+    const context = await this.requireContext();
+    const fields = await this.loadProjectFields(context);
+    return new Map([...fields.values()].map((field) => [field.referenceName, field.type]));
+  }
 
+  public async listFieldDefinitions(workItemTypes: string[]): Promise<WorkItemFieldDefinition[]> {
+    const context = await this.requireContext();
     const uniqueTypes = [...new Set(workItemTypes.map((type) => type.trim()).filter((type) => type.length > 0))];
-    const baseUrl = `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}/_apis/wit`;
+    const baseUrl = buildWitBaseUrl(context);
 
     const [projectFields, typeFieldLists] = await Promise.all([
-      this.fetchProjectFields(`${baseUrl}/fields?api-version=${API_VERSION}`),
+      this.loadProjectFields(context),
       Promise.all(
         uniqueTypes.map(async (type) => ({
           type,
@@ -47,6 +53,29 @@ export class AzureFieldDefinitionsAdapter implements WorkItemFieldDefinitionsPor
     ]);
 
     return mergeFieldDefinitions(projectFields, typeFieldLists);
+  }
+
+  private async requireContext(): Promise<AdoContext> {
+    const context = await this.resolveContext();
+    if (!context) {
+      throw new Error("ADO_CONTEXT_MISSING");
+    }
+    return context;
+  }
+
+  private loadProjectFields(context: AdoContext): Promise<Map<string, ProjectField>> {
+    const key = `${context.organization}\u0000${context.project}`;
+    const cached = this.projectFieldsCache.get(key);
+    if (cached && cached.expiresAt > this.now()) {
+      return cached.fields;
+    }
+
+    const fields = this.fetchProjectFields(`${buildWitBaseUrl(context)}/fields?api-version=${API_VERSION}`);
+    this.projectFieldsCache.set(key, { expiresAt: this.now() + PROJECT_FIELDS_CACHE_TTL_MS, fields });
+    fields.catch(() => {
+      this.projectFieldsCache.delete(key);
+    });
+    return fields;
   }
 
   private async fetchProjectFields(url: string): Promise<Map<string, ProjectField>> {
@@ -131,6 +160,10 @@ export function mergeFieldDefinitions(
   });
 
   return [...merged.values()];
+}
+
+function buildWitBaseUrl(context: AdoContext): string {
+  return `https://dev.azure.com/${encodeURIComponent(context.organization)}/${encodeURIComponent(context.project)}/_apis/wit`;
 }
 
 function readValueArray(payload: unknown): Array<Record<string, unknown>> {

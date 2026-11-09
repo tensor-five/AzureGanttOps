@@ -2200,7 +2200,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
     onFetchWorkItemFieldDefinitions: props.onFetchWorkItemFieldDefinitions,
-    onDirtyChange: props.onDetailsDirtyChange
+    onDirtyChange: props.onDetailsDirtyChange,
+    workItemSyncState: props.workItemSyncState
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,

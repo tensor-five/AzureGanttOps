@@ -26,6 +26,7 @@ export function DetailsPanelFieldConfigMenu(props: DetailsPanelFieldConfigMenuPr
       dialog.style.maxHeight = `${resolveDialogMaxHeightPx(dialog)}px`;
     };
     constrainHeight();
+    dialog.focus({ preventScroll: true });
     window.addEventListener("resize", constrainHeight);
     window.addEventListener("scroll", constrainHeight, true);
     return () => {
@@ -73,7 +74,7 @@ export function DetailsPanelFieldConfigMenu(props: DetailsPanelFieldConfigMenuPr
 
   return React.createElement(
     "div",
-    { className: "timeline-details-config-menu", role: "dialog", "aria-label": "Details fields", ref: dialogRef },
+    { className: "timeline-details-config-menu", role: "dialog", "aria-label": "Details fields", ref: dialogRef, tabIndex: -1 },
     React.createElement(
       "div",
       { className: "timeline-details-config-head" },
@@ -166,9 +167,11 @@ export function DetailsPanelFieldConfigMenu(props: DetailsPanelFieldConfigMenuPr
             { className: "timeline-details-config-actions" },
             iconButton(`Move ${name} up`, "↑", index === 0, () => moveItem(index, index - 1)),
             iconButton(`Move ${name} down`, "↓", index === props.shownIds.length - 1, () => moveItem(index, index + 1)),
-            iconButton(`Remove ${name}`, "×", false, () =>
-              props.onChangeShownIds(props.shownIds.filter((entry) => entry !== fieldId))
-            )
+            iconButton(`Remove ${name}`, "×", false, () => {
+              const neighbor = props.shownIds[index + 1] ?? props.shownIds[index - 1] ?? null;
+              pendingFocusIdRef.current = neighbor;
+              props.onChangeShownIds(props.shownIds.filter((entry) => entry !== fieldId));
+            })
           )
         );
       })

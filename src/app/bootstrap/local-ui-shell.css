@@ -4077,6 +4077,10 @@ button {
   animation: ui-menu-surface-enter var(--transition-duration-base) var(--transition-easing-standard);
 }
 
+.timeline-details-config-menu:focus {
+  outline: none;
+}
+
 .timeline-details-config-head {
   display: flex;
   justify-content: space-between;

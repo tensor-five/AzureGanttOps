@@ -6,4 +6,7 @@ export interface WorkItemFieldDefinitionsPort {
    * each annotated with the work item types that define it.
    */
   listFieldDefinitions(workItemTypes: string[]): Promise<WorkItemFieldDefinition[]>;
+
+  /** Returns the raw field type (e.g. "html", "string") for every known field reference name. */
+  getFieldTypes(): Promise<Map<string, string>>;
 }

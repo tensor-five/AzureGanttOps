@@ -42797,6 +42797,7 @@ function DetailsPanelFieldConfigMenu(props) {
       dialog.style.maxHeight = `${resolveDialogMaxHeightPx(dialog)}px`;
     };
     constrainHeight();
+    dialog.focus({ preventScroll: true });
     window.addEventListener("resize", constrainHeight);
     window.addEventListener("scroll", constrainHeight, true);
     return () => {
@@ -42829,7 +42830,7 @@ function DetailsPanelFieldConfigMenu(props) {
     setDragIndex(null);
     setDropIndex(null);
   };
-  return import_react5.default.createElement("div", { className: "timeline-details-config-menu", role: "dialog", "aria-label": "Details fields", ref: dialogRef }, import_react5.default.createElement("div", { className: "timeline-details-config-head" }, import_react5.default.createElement("h4", { className: "timeline-details-config-title" }, "Details fields"), import_react5.default.createElement("button", { type: "button", className: "timeline-details-config-reset", onClick: props.onReset }, "Reset to default")), import_react5.default.createElement("p", { className: "timeline-details-config-section-title" }, import_react5.default.createElement("span", null, "Shown"), import_react5.default.createElement("span", null, String(props.shownIds.length))), import_react5.default.createElement("ul", { className: "timeline-details-config-list", "aria-label": "Shown fields" }, ...props.shownIds.map((fieldId, index2) => {
+  return import_react5.default.createElement("div", { className: "timeline-details-config-menu", role: "dialog", "aria-label": "Details fields", ref: dialogRef, tabIndex: -1 }, import_react5.default.createElement("div", { className: "timeline-details-config-head" }, import_react5.default.createElement("h4", { className: "timeline-details-config-title" }, "Details fields"), import_react5.default.createElement("button", { type: "button", className: "timeline-details-config-reset", onClick: props.onReset }, "Reset to default")), import_react5.default.createElement("p", { className: "timeline-details-config-section-title" }, import_react5.default.createElement("span", null, "Shown"), import_react5.default.createElement("span", null, String(props.shownIds.length))), import_react5.default.createElement("ul", { className: "timeline-details-config-list", "aria-label": "Shown fields" }, ...props.shownIds.map((fieldId, index2) => {
     const field = props.catalog.byId.get(fieldId) ?? null;
     const name2 = field?.name ?? fieldId;
     const className = [
@@ -42884,7 +42885,11 @@ function DetailsPanelFieldConfigMenu(props) {
         finishDrag();
       },
       onDragEnd: finishDrag
-    }, gripIcon(), import_react5.default.createElement("span", { className: "timeline-details-config-meta" }, import_react5.default.createElement("strong", null, name2), import_react5.default.createElement("span", null, field?.subtitle ?? fieldId)), import_react5.default.createElement("span", { className: "timeline-details-config-badges" }, ...renderBadges(field)), import_react5.default.createElement("span", { className: "timeline-details-config-actions" }, iconButton(`Move ${name2} up`, "\u2191", index2 === 0, () => moveItem(index2, index2 - 1)), iconButton(`Move ${name2} down`, "\u2193", index2 === props.shownIds.length - 1, () => moveItem(index2, index2 + 1)), iconButton(`Remove ${name2}`, "\xD7", false, () => props.onChangeShownIds(props.shownIds.filter((entry) => entry !== fieldId)))));
+    }, gripIcon(), import_react5.default.createElement("span", { className: "timeline-details-config-meta" }, import_react5.default.createElement("strong", null, name2), import_react5.default.createElement("span", null, field?.subtitle ?? fieldId)), import_react5.default.createElement("span", { className: "timeline-details-config-badges" }, ...renderBadges(field)), import_react5.default.createElement("span", { className: "timeline-details-config-actions" }, iconButton(`Move ${name2} up`, "\u2191", index2 === 0, () => moveItem(index2, index2 - 1)), iconButton(`Move ${name2} down`, "\u2193", index2 === props.shownIds.length - 1, () => moveItem(index2, index2 + 1)), iconButton(`Remove ${name2}`, "\xD7", false, () => {
+      const neighbor = props.shownIds[index2 + 1] ?? props.shownIds[index2 - 1] ?? null;
+      pendingFocusIdRef.current = neighbor;
+      props.onChangeShownIds(props.shownIds.filter((entry) => entry !== fieldId));
+    })));
   })), import_react5.default.createElement("p", { className: "timeline-details-config-note" }, "Drag, use \u2191 \u2193 or Alt+\u2191/\u2193 to reorder. Width is chosen automatically."), props.catalog.definitionsUnavailable ? import_react5.default.createElement("p", { className: "timeline-details-config-note timeline-details-config-warning", role: "status" }, "Field definitions unavailable \u2013 showing loaded fields read-only.") : null, import_react5.default.createElement("div", { className: "timeline-details-config-divider", "aria-hidden": "true" }), import_react5.default.createElement("p", { className: "timeline-details-config-section-title" }, import_react5.default.createElement("span", null, "Available")), import_react5.default.createElement("input", {
     type: "search",
     className: "timeline-details-config-search",
@@ -44773,11 +44778,18 @@ function TimelineDetailsPanel(props) {
   const definitionsState = useFieldDefinitions(catalogTimeline, props.activeQueryId ?? null, props.onFetchWorkItemFieldDefinitions);
   const serverStateOptions = useServerStateOptions(selected?.workItemId ?? null, props.onFetchWorkItemStateOptions);
   const [configOpen, setConfigOpen] = import_react7.default.useState(false);
-  const [drafts, setDrafts] = import_react7.default.useState({});
+  const [draftState, setDraftState] = import_react7.default.useState({
+    workItemId: null,
+    values: {}
+  });
   const [failedBaseline, setFailedBaseline] = import_react7.default.useState(null);
   const [saveError, setSaveError] = import_react7.default.useState(null);
   const [isSaving, setIsSaving] = import_react7.default.useState(false);
   const configAreaRef = import_react7.default.useRef(null);
+  const configToggleRef = import_react7.default.useRef(null);
+  const selectedWorkItemId = selected?.workItemId ?? null;
+  const selectedWorkItemIdRef = import_react7.default.useRef(selectedWorkItemId);
+  selectedWorkItemIdRef.current = selectedWorkItemId;
   const catalog = import_react7.default.useMemo(() => buildDetailsFieldCatalog({
     definitions: definitionsState.status === "ready" ? definitionsState.fields : definitionsState.status === "loading" ? [] : null,
     timeline: catalogTimeline
@@ -44792,19 +44804,40 @@ function TimelineDetailsPanel(props) {
     }
     return values;
   }, [catalog, catalogTimeline, selected]);
-  const baseline = failedBaseline && selected && failedBaseline.workItemId === selected.workItemId ? failedBaseline.values : computedBaseline;
-  const baselineKey = selected ? `${selected.workItemId}\0${JSON.stringify(computedBaseline)}` : null;
+  const activeFailedBaseline = failedBaseline && failedBaseline.workItemId === selectedWorkItemId ? failedBaseline.values : null;
+  const baseline = activeFailedBaseline ?? computedBaseline;
+  const drafts = draftState.workItemId !== null && draftState.workItemId === selectedWorkItemId ? draftState.values : {};
+  const activeSaveError = saveError && saveError.workItemId === selectedWorkItemId ? saveError.message : null;
+  const previousBaselineRef = import_react7.default.useRef({
+    workItemId: selectedWorkItemId,
+    resetKey: props.draftResetKey,
+    values: computedBaseline
+  });
   import_react7.default.useEffect(() => {
+    const previous3 = previousBaselineRef.current;
+    previousBaselineRef.current = { workItemId: selectedWorkItemId, resetKey: props.draftResetKey, values: computedBaseline };
+    if (previous3.workItemId !== selectedWorkItemId || previous3.resetKey !== props.draftResetKey) {
+      setDraftState({ workItemId: null, values: {} });
+      setFailedBaseline(null);
+      setSaveError(null);
+      return;
+    }
     if (isSaving) {
       return;
     }
-    setDrafts({});
-    setSaveError(null);
-    setFailedBaseline((current) => current && selected && current.workItemId === selected.workItemId ? current : null);
-  }, [baselineKey, props.draftResetKey]);
+    const serverChangedDraftedField = Object.keys(drafts).some((id) => previous3.values[id] !== void 0 && previous3.values[id] !== computedBaseline[id]);
+    if (serverChangedDraftedField && !activeFailedBaseline) {
+      setDraftState({ workItemId: null, values: {} });
+      setSaveError(null);
+    }
+  }, [selectedWorkItemId, computedBaseline, props.draftResetKey]);
   import_react7.default.useEffect(() => {
-    setFailedBaseline(null);
-  }, [selected?.workItemId, props.draftResetKey]);
+    if (props.workItemSyncState === "up_to_date" && failedBaseline) {
+      setFailedBaseline(null);
+      setSaveError(null);
+      setDraftState((current) => current.workItemId === failedBaseline.workItemId ? { workItemId: null, values: {} } : current);
+    }
+  }, [props.workItemSyncState]);
   const currentDraft = (id) => drafts[id] ?? baseline[id] ?? "";
   const dirtyFieldIds = Object.keys(drafts).filter((id) => {
     const field = catalog.byId.get(id);
@@ -44835,6 +44868,8 @@ function TimelineDetailsPanel(props) {
     if (!canSave || !selected || !props.onUpdateSelectedWorkItemDetails) {
       return;
     }
+    const savedWorkItemId = selected.workItemId;
+    const submittedDrafts = { ...drafts };
     const fields = {};
     const htmlFields = [];
     dirtyFieldIds.forEach((id) => {
@@ -44854,16 +44889,25 @@ function TimelineDetailsPanel(props) {
     setIsSaving(true);
     try {
       await props.onUpdateSelectedWorkItemDetails({
-        targetWorkItemId: selected.workItemId,
+        targetWorkItemId: savedWorkItemId,
         fields,
         htmlFields,
         stateColor
       });
-      setFailedBaseline(null);
-      setDrafts({});
+      setFailedBaseline((current) => current?.workItemId === savedWorkItemId ? null : current);
+      setDraftState((current) => {
+        if (current.workItemId !== savedWorkItemId) {
+          return current;
+        }
+        const remaining = Object.fromEntries(Object.entries(current.values).filter(([id, value]) => submittedDrafts[id] !== value));
+        return { workItemId: savedWorkItemId, values: remaining };
+      });
     } catch (error) {
-      setFailedBaseline({ workItemId: selected.workItemId, values: confirmedBaseline });
-      setSaveError(error instanceof Error ? error.message : "Saving details failed.");
+      setFailedBaseline({ workItemId: savedWorkItemId, values: confirmedBaseline });
+      setSaveError({
+        workItemId: savedWorkItemId,
+        message: error instanceof Error ? error.message : "Saving details failed."
+      });
     } finally {
       setIsSaving(false);
     }
@@ -44886,6 +44930,7 @@ function TimelineDetailsPanel(props) {
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         setConfigOpen(false);
+        configToggleRef.current?.focus();
       }
     };
     const onPointerDown = (event) => {
@@ -44906,7 +44951,11 @@ function TimelineDetailsPanel(props) {
     }
   }, [contentHidden]);
   const updateDraft = (fieldId, value) => {
-    setDrafts((current) => ({ ...current, [fieldId]: value }));
+    const workItemId = selectedWorkItemIdRef.current;
+    if (workItemId === null) {
+      return;
+    }
+    setDraftState((current) => current.workItemId === workItemId ? { workItemId, values: { ...current.values, [fieldId]: value } } : { workItemId, values: { [fieldId]: value } });
   };
   const azureLink = selected ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId) : null;
   const lines = buildTimelineDetailsLines(props);
@@ -44922,7 +44971,7 @@ function TimelineDetailsPanel(props) {
       className: "timeline-details-row-hint timeline-details-row-hint-iteration",
       title: "Date inherited from the iteration; not set on this work item"
     }, "from iteration") : null;
-    return import_react7.default.createElement("div", { key: field.id, className }, import_react7.default.createElement("div", { className: "timeline-details-field-head" }, import_react7.default.createElement("span", { className: "timeline-details-label" }, field.name), hint), selected ? renderFieldControl(field, selected, error) : null, error ? import_react7.default.createElement("p", { className: "timeline-details-field-error", role: "status" }, error) : null);
+    return import_react7.default.createElement("div", { key: field.id, className }, import_react7.default.createElement("div", { className: "timeline-details-field-head" }, import_react7.default.createElement("span", { className: "timeline-details-label" }, field.name), hint), selected ? renderFieldControl(field, selected, error) : null, error ? import_react7.default.createElement("p", { id: toErrorId(field.id), className: "timeline-details-field-error", role: "status" }, error) : null);
   };
   const renderFieldControl = (field, item, error) => {
     const value = currentDraft(field.id);
@@ -44968,6 +45017,7 @@ function TimelineDetailsPanel(props) {
       ].filter(Boolean).join(" "),
       "aria-label": field.name,
       "aria-invalid": error ? "true" : "false",
+      "aria-describedby": error ? toErrorId(field.id) : void 0,
       inputMode: field.kind === "double" ? "decimal" : field.kind === "integer" ? "numeric" : void 0,
       placeholder: "\u2014",
       disabled,
@@ -44991,6 +45041,7 @@ function TimelineDetailsPanel(props) {
     disabled: !canSave
   }, isSaving ? "Saving..." : "Save")), contentHidden ? null : import_react7.default.createElement("div", { className: "timeline-details-head-actions", ref: configAreaRef }, selected ? renderWorkItemPill(selected.workItemId, azureLink) : null, import_react7.default.createElement("button", {
     type: "button",
+    ref: configToggleRef,
     className: "timeline-details-config-toggle",
     "aria-label": "Configure details fields",
     title: "Configure fields",
@@ -45002,7 +45053,7 @@ function TimelineDetailsPanel(props) {
     shownIds: shownIds.value,
     onChangeShownIds: shownIds.update,
     onReset: () => shownIds.update([...DEFAULT_DETAILS_PANEL_FIELD_IDS])
-  }) : null)), contentHidden ? import_react7.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react7.default.createElement("div", { className: "timeline-details-edit-form" }, import_react7.default.createElement("div", { className: "timeline-details-field-grid" }, ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))), saveError ? import_react7.default.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${saveError}`) : null) : import_react7.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."), contentHidden ? null : import_react7.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
+  }) : null)), contentHidden ? import_react7.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react7.default.createElement("div", { className: "timeline-details-edit-form" }, import_react7.default.createElement("div", { className: "timeline-details-field-grid" }, ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))), activeSaveError ? import_react7.default.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${activeSaveError}`) : null) : import_react7.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."), contentHidden ? null : import_react7.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
 }
 function useDetailsPanelFieldIds() {
   const [value, setValue] = import_react7.default.useState(() => loadDetailsPanelFields() ?? [...DEFAULT_DETAILS_PANEL_FIELD_IDS]);
@@ -45095,6 +45146,9 @@ function resolveSelectOptions(field, value, stateOptionNames, assigneeNames) {
     options.unshift({ value: "", label: "\u2014" });
   }
   return options;
+}
+function toErrorId(fieldId) {
+  return `timeline-details-field-error-${fieldId.replace(/[^A-Za-z0-9_-]/g, "-")}`;
 }
 function isIterationFallbackField(fieldId, item) {
   const fallback = "iterationFallback" in (item.schedule ?? {}) ? item.schedule.iterationFallback : void 0;
@@ -51538,7 +51592,8 @@ function TimelinePane(props) {
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
     onFetchWorkItemFieldDefinitions: props.onFetchWorkItemFieldDefinitions,
-    onDirtyChange: props.onDetailsDirtyChange
+    onDirtyChange: props.onDetailsDirtyChange,
+    workItemSyncState: props.workItemSyncState
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
@@ -54930,7 +54985,7 @@ function upsertPendingWorkItemMutation(queue, mutation) {
       ...existing,
       applyToTimeline: composeTimelineMutations(existing.applyToTimeline, mutation.applyToTimeline),
       executeSchedule: mutation.executeSchedule ?? existing.executeSchedule,
-      executeDetails: mutation.executeDetails ?? existing.executeDetails
+      executeDetails: composeDetailExecutors(existing.executeDetails, mutation.executeDetails)
     };
     return next2;
   }
@@ -54971,6 +55026,15 @@ async function flushPendingWorkItemMutations(params) {
     params.queueRef.current = params.queueRef.current.slice(1);
     params.onPendingCountChange(params.queueRef.current.length);
   }
+}
+function composeDetailExecutors(first, second) {
+  if (!first || !second) {
+    return second ?? first;
+  }
+  return async () => {
+    await first();
+    await second();
+  };
 }
 function composeTimelineMutations(first, second) {
   return (timeline) => second(first(timeline));
