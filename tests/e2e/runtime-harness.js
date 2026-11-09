@@ -42929,13 +42929,9 @@ function renderBadges(field) {
   if (!field) {
     return [import_react5.default.createElement("span", { key: "missing", className: "timeline-details-config-badge" }, "Not in current query")];
   }
-  const badges = [
+  return [
     import_react5.default.createElement("span", { key: "width", className: "timeline-details-config-badge" }, field.width === "half" ? "\xBD" : "Full")
   ];
-  if (field.editable) {
-    badges.push(import_react5.default.createElement("span", { key: "edit", className: "timeline-details-config-badge timeline-details-config-badge-edit" }, "Edit"));
-  }
-  return badges;
 }
 function iconButton(label, symbol, disabled, onClick) {
   return import_react5.default.createElement("button", {
@@ -48655,9 +48651,11 @@ function TimelineColorCodingPanel(props) {
     }
   }, import_react25.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react25.default.createElement("h4", null, "Color coding settings"), import_react25.default.createElement("button", {
     type: "button",
-    className: "timeline-color-coding-settings-button",
+    className: "app-dialog-close timeline-color-coding-close",
+    "aria-label": "Close color coding settings",
+    title: "Close",
     onClick: props.onClose
-  }, "Close")), import_react25.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react25.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react25.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
+  }, "\xD7")), import_react25.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react25.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react25.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
     const scopedKey = props.toScopedFieldValueColorKey(props.selectedFieldRef, entry.key);
     const customColor = (scopedKey ? props.fieldColorCoding.valueColors[scopedKey] : null) ?? props.fieldColorCoding.valueColors[entry.key] ?? null;
     const effectiveColor = customColor ?? entry.defaultColor;

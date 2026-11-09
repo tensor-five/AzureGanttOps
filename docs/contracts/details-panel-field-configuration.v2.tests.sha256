@@ -1,6 +1,0 @@
-# Eingefrorene Tests zum Vertrag details-panel-field-configuration.v2 (ersetzt die v1-Tests; Test-Gate PASS, unabhängiges Review, 09.11.2026)
-# Revision 2: vom Nutzer freigegebene Korrektur zweier Testfehler (DPF-06 Badge, Balkenverschiebung relativ), erneutes Gate-Review PASS
-b7a4fd2c75393901e6511d248ae34fb184fc9fd8417f3076f3693673aec903b3  tests/e2e/details-panel-field-configuration.spec.ts
-1c4310db23a3889910b99dba82662a2d04a26dd6eae9ac30011e380176d969e1  tests/e2e/runtime-harness.ts
-31c1c8745e9ee9ad717578dbfbd1e26e52433de563af52766ad3258c49d071ce  src/app/bootstrap/http-server.details-fields.spec.ts
-6051a83669a936acd873a9587a0978f594f072b31fc16215bd59c9d4e923ac3b  docs/contracts/details-panel-field-configuration.v2.traceability.md

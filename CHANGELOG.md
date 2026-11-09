@@ -19,6 +19,8 @@ Note: Historical versions before `1.8.1` were reconstructed approximately from v
 - The details panel shows all work item information in one field grid; the separate row list below the form was removed.
 - Every configured details field is shown for every work item, regardless of its work item type, and every field is editable except Azure DevOps system fields (ID, Rev, created/changed metadata, Work Item Type, Dependencies). Newly editable: Start/End and other date fields, Area/Iteration Path, Tags, multi-line text and all person fields. Saved Start/End changes move the bar immediately.
 - Rejected work item updates now show the Azure DevOps error message (with credentials redacted) instead of a generic failure code.
+- The details field picker no longer shows an "Edit" badge; editability is visible from the controls in the details panel.
+- The color coding settings dialog closes with a × button like the other dialogs instead of a "Close" text button.
 
 ## [1.8.6] - 2026-07-10
 

@@ -1,8 +1,8 @@
 /**
  * Frozen backend tests for the approved contract
- * docs/contracts/details-panel-field-configuration.v2.html.
+ * docs/contracts/details-panel-field-configuration.v3.html.
  * Requirement IDs are named in each test title; see
- * docs/contracts/details-panel-field-configuration.v2.traceability.md.
+ * docs/contracts/details-panel-field-configuration.v3.traceability.md.
  */
 import { afterEach, describe, expect, it } from "vitest";
 

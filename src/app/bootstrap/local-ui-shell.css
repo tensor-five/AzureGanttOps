@@ -3028,6 +3028,11 @@ button {
   gap: 8px;
 }
 
+.timeline-color-coding-modal-header .timeline-color-coding-close {
+  width: 32px;
+  height: 32px;
+}
+
 .timeline-color-coding-active-selection {
   margin: 0;
   font-size: var(--text-xs);
@@ -4219,14 +4224,6 @@ button {
   white-space: nowrap;
 }
 
-.timeline-details-config-badge-edit {
-  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-  color: var(--color-primary);
-}
-
-[data-theme="dark"] .timeline-details-config-badge-edit {
-  color: #c9a3ec;
-}
 
 .timeline-details-config-icon-button {
   width: 24px;
