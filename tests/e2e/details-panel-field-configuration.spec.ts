@@ -1,8 +1,8 @@
 /**
  * Frozen E2E tests for the approved contract
- * docs/contracts/details-panel-field-configuration.v1.html (DPF-01 .. DPF-22).
+ * docs/contracts/details-panel-field-configuration.v2.html (DPF-01 .. DPF-22).
  * Each test title starts with the requirement IDs it verifies; see
- * docs/contracts/details-panel-field-configuration.v1.traceability.md.
+ * docs/contracts/details-panel-field-configuration.v2.traceability.md.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
@@ -33,7 +33,10 @@ const REF = {
   workItemType: "System.WorkItemType",
   changedBy: "System.ChangedBy",
   externalRef: "Custom.ExternalRef",
-  correlationId: "Custom.CorrelationId"
+  correlationId: "Custom.CorrelationId",
+  comments: "Custom.Comments",
+  reviewer: "Custom.Reviewer",
+  dueDate: "Microsoft.VSTS.Scheduling.DueDate"
 } as const;
 
 const PRIMARY_RGB = "rgb(132, 44, 195)";
@@ -41,6 +44,7 @@ const MUTED_TEXT_LIGHT_RGB = "rgb(168, 162, 158)";
 
 const DEFAULT_FIELD_ORDER = ["Title", "State", "Assigned To", "Start", "End", "Story Points", "Dependencies", "Description"];
 const LONG_AREA_PATH = "Delivery\\Platform\\Frontend\\Timeline\\Details Panel\\Field Configuration\\Very Long Area Segment";
+const LONG_EXTERNAL_REF = "EXT-42 / upstream ticket in the partner system with a deliberately very long reference text";
 
 type FieldDefinition = {
   referenceName: string;
@@ -103,7 +107,10 @@ function buildFieldDefinitions(): FieldDefinition[] {
     definition(REF.targetDate, "Target Date", "dateTime"),
     definition(REF.id, "ID", "integer", { readOnly: true }),
     definition(REF.workItemType, "Work Item Type", "string", { readOnly: true }),
-    definition(REF.changedBy, "Changed By", "identity", { isIdentity: true }),
+    definition(REF.changedBy, "Changed By", "identity", { isIdentity: true, readOnly: true }),
+    definition(REF.reviewer, "Reviewer", "identity", { isIdentity: true }),
+    definition(REF.comments, "Comments", "plainText"),
+    definition(REF.dueDate, "Due Date", "dateTime"),
     definition(REF.externalRef, "External Ref", "string", { readOnly: true }),
     definition(REF.correlationId, "Correlation Id", "guid")
   ];
@@ -140,7 +147,10 @@ function buildTimeline(options: { storyPoints?: number | null } = {}) {
             [REF.notes]: "Alpha notes",
             [REF.assignedTo]: "Ada Lovelace",
             [REF.changedBy]: "Grace Hopper",
-            [REF.externalRef]: "EXT-42",
+            [REF.externalRef]: LONG_EXTERNAL_REF,
+            [REF.comments]: "First line\nSecond line",
+            [REF.reviewer]: "Linus Torvalds",
+            [REF.dueDate]: "2026-03-20T12:00:00.000Z",
             [REF.correlationId]: "6f1c2d3e-4b5a-4978-8a1b-2c3d4e5f6a7b",
             [REF.acceptanceCriteria]: "<p>Alpha criteria</p>",
             "System.WorkItemType": "User Story"
@@ -457,6 +467,12 @@ async function readStoredPreferences(page: Page): Promise<Record<string, unknown
   return page.evaluate((key) => JSON.parse(window.sessionStorage.getItem(key) ?? "{}") as Record<string, unknown>, USER_PREFERENCES_SESSION_KEY);
 }
 
+function toLocalInputValue(iso: string): string {
+  const date = new Date(iso);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function formatLocalDateTime(iso: string): string {
   const date = new Date(iso);
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -613,12 +629,12 @@ test.describe("details panel field configuration", () => {
     expect(requests).toContain("Bug");
   });
 
-  test("DPF-05 unavailable definitions fall back to loaded fields shown read-only and full width with a notice", async ({ page }) => {
+  test("DPF-05 unavailable definitions fall back to loaded fields edited as text, full width, with a notice", async ({ page }) => {
     await mountAndLoad(page, { fieldDefinitions: { error: "TF400813: not authorized" } });
     await selectItem(page, 801);
     await openConfig(page);
 
-    await expect(configDialog(page)).toContainText("Field definitions unavailable – showing loaded fields read-only.");
+    await expect(configDialog(page)).toContainText("Field definitions unavailable – loaded fields are edited as text.");
     const fallbackNames = [...(await shownFieldNames(page)), ...(await availableFieldNames(page))];
     for (const builtIn of ["Title", "State", "Description", "Assigned To", "Start", "End", "ID", "Work Item Type", "Dependencies"]) {
       expect(fallbackNames.filter((name) => name === builtIn)).toHaveLength(1);
@@ -634,14 +650,21 @@ test.describe("details panel field configuration", () => {
     const priority = availableList(page).getByRole("listitem").filter({ hasText: REF.priority });
     await expect(priority).toHaveCount(1);
     await expect(priority).toContainText("Full");
-    await expect(priority).not.toContainText("Edit");
+    await expect(priority).toContainText("Edit");
     await priority.getByRole("button", { name: /^Show / }).click();
+    const createdDate = availableList(page).getByRole("listitem").filter({ hasText: REF.createdDate });
+    await expect(createdDate).toHaveCount(1);
+    await expect(createdDate).not.toContainText("Edit");
+    await createdDate.getByRole("button", { name: /^Show / }).click();
     await closeConfig(page);
 
-    const lastBlock = fieldBlocks(page).last();
-    await expect(lastBlock).toContainText("2");
-    await expect(lastBlock.locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
-    await expectFullWidth(lastBlock, detailsPanel(page));
+    const priorityBlock = fieldBlocks(page).nth(-2);
+    await expect(priorityBlock.getByRole("textbox")).toHaveValue("2");
+    await expect(priorityBlock.locator("input[type='text']")).toHaveCount(1);
+    await expect(priorityBlock.locator("textarea")).toHaveCount(0);
+    await expectFullWidth(priorityBlock, detailsPanel(page));
+    const createdBlock = fieldBlocks(page).last();
+    await expect(createdBlock.locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
   });
 
   test("DPF-06 shown entries show grip, name, reference, width badge, edit badge and move/remove buttons", async ({ page }) => {
@@ -750,7 +773,7 @@ test.describe("details panel field configuration", () => {
     });
     await runQuery(page, QUERY_A);
     await selectItem(page, 801);
-    await configureShownFields(page, ["Title", "Story Points", "Priority"]);
+    await configureShownFields(page, ["Priority", "Story Points", "Value Area"]);
 
     await page.evaluate(
       (fields) => window.__phase6ConfigureFieldDefinitions({ fields }),
@@ -767,10 +790,14 @@ test.describe("details panel field configuration", () => {
     expect(opacity).toBeLessThan(1);
     const itemTexts = await shownList(page).getByRole("listitem").allTextContents();
     expect(itemTexts).toHaveLength(3);
-    expect(itemTexts[0]).toContain("Title");
+    expect(itemTexts[0]).toContain("Priority");
     expect(itemTexts[1]).toContain(REF.storyPoints);
-    expect(itemTexts[2]).toContain("Priority");
-    expect(await panelFieldLabels(page)).toEqual(["Title", "Priority"]);
+    expect(itemTexts[2]).toContain("Value Area");
+    expect(await panelFieldLabels(page)).toEqual(["Priority", "Value Area"]);
+    await closeConfig(page);
+    await setDetailsPanelWidth(page, 340);
+    await expectSameRow(fieldBlock(page, "Priority"), fieldBlock(page, "Value Area"), detailsPanel(page));
+    await openConfig(page);
 
     await missing.getByRole("button", { name: /^Remove / }).click();
     await expect(shownList(page).getByRole("listitem").filter({ hasText: REF.storyPoints })).toHaveCount(0);
@@ -779,25 +806,25 @@ test.describe("details panel field configuration", () => {
   test("DPF-11 DPF-15 single grid replaces the old row list and read-only values are formatted", async ({ page }) => {
     await mountAndLoad(page);
     await selectItem(page, 801);
-    await configureShownFields(page, ["Title", "Start", "End", "Dependencies", "Created Date", "Area Path", "ID", "Work Item Type"]);
+    await configureShownFields(page, ["Title", "Start", "End", "Dependencies", "Created Date", "External Ref", "ID", "Work Item Type"]);
 
     await expect(detailsPanel(page).locator(".timeline-details-row")).toHaveCount(0);
     await expect(detailsPanel(page).locator(".timeline-details-list")).toHaveCount(0);
 
-    await expect(fieldBlock(page, "Start")).toContainText(formatLocalDateTime("2026-03-02T08:00:00.000Z"));
-    await expect(fieldBlock(page, "End")).toContainText(formatLocalDateTime("2026-03-06T16:00:00.000Z"));
+    await expect(fieldBlock(page, "Start").getByLabel("Start")).toHaveValue(toLocalInputValue("2026-03-02T08:00:00.000Z"));
+    await expect(fieldBlock(page, "End").getByLabel("End")).toHaveValue(toLocalInputValue("2026-03-06T16:00:00.000Z"));
     await expect(fieldBlock(page, "End")).toContainText(/from iteration/i);
     await expect(fieldBlock(page, "Created Date")).toContainText(formatLocalDateTime("2026-02-20T09:30:00.000Z"));
     await expect(fieldBlock(page, "Dependencies")).toContainText("0 pred · 1 succ");
     await expect(fieldBlock(page, "ID")).toContainText("801");
     await expect(fieldBlock(page, "Work Item Type")).toContainText("User Story");
 
-    for (const label of ["Start", "End", "Dependencies", "Created Date", "Area Path", "ID", "Work Item Type"]) {
+    for (const label of ["Dependencies", "Created Date", "External Ref", "ID", "Work Item Type"]) {
       await expect(fieldBlock(page, label).locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
     }
 
-    const areaValue = fieldBlock(page, "Area Path").locator("[title]").filter({ hasText: "Delivery" });
-    await expect(areaValue).toHaveAttribute("title", LONG_AREA_PATH);
+    const areaValue = fieldBlock(page, "External Ref").locator("[title]").filter({ hasText: "EXT-42" });
+    await expect(areaValue).toHaveAttribute("title", LONG_EXTERNAL_REF);
     const overflow = await areaValue.evaluate((element) => ({
       textOverflow: getComputedStyle(element).textOverflow,
       truncated: element.scrollWidth > element.clientWidth
@@ -876,17 +903,21 @@ test.describe("details panel field configuration", () => {
     expect((await readHarness(page)).callLog.length).toBe(callsBefore);
   });
 
-  test("DPF-14 empty values show a dash and fields undefined for the item type are hidden", async ({ page }) => {
+  test("DPF-14 every configured field shows for every item, empty values show a dash", async ({ page }) => {
     await mountAndLoad(page);
     await selectItem(page, 801);
     await configureShownFields(page, ["Title", "Story Points", "Remaining Work", "Priority", "Notes"]);
 
-    expect(await panelFieldLabels(page)).toEqual(["Title", "Story Points", "Priority", "Notes"]);
+    expect(await panelFieldLabels(page)).toEqual(["Title", "Story Points", "Remaining Work", "Priority", "Notes"]);
+    await expect(fieldBlock(page, "Remaining Work").getByLabel("Remaining Work")).toHaveValue("");
+    await expect(fieldBlock(page, "Remaining Work").getByLabel("Remaining Work")).toHaveAttribute("placeholder", "—");
     await setDetailsPanelWidth(page, 340);
-    await expectSameRow(fieldBlock(page, "Story Points"), fieldBlock(page, "Priority"), detailsPanel(page));
+    await expectSameRow(fieldBlock(page, "Story Points"), fieldBlock(page, "Remaining Work"), detailsPanel(page));
 
     await selectItem(page, 802);
-    expect(await panelFieldLabels(page)).toEqual(["Title", "Remaining Work", "Priority", "Notes"]);
+    expect(await panelFieldLabels(page)).toEqual(["Title", "Story Points", "Remaining Work", "Priority", "Notes"]);
+    await expect(fieldBlock(page, "Story Points").getByLabel("Story Points")).toHaveValue("");
+    await expect(fieldBlock(page, "Story Points").getByLabel("Story Points")).toHaveAttribute("placeholder", "—");
     const priorityInput = fieldBlock(page, "Priority").getByLabel("Priority");
     await expect(priorityInput).toHaveValue("");
     await expect(priorityInput).toHaveAttribute("placeholder", "—");
@@ -894,7 +925,8 @@ test.describe("details panel field configuration", () => {
     await expect(fieldBlock(page, "Notes").getByLabel("Notes")).toHaveAttribute("placeholder", "—");
 
     await configureShownFields(page, ["Title", "Area Path", "Acceptance Criteria", "Created Date"]);
-    for (const label of ["Area Path", "Acceptance Criteria", "Created Date"]) {
+    await expect(fieldBlock(page, "Area Path").getByLabel("Area Path")).toHaveAttribute("placeholder", "—");
+    for (const label of ["Acceptance Criteria", "Created Date"]) {
       const dash = fieldBlock(page, label).getByText("—", { exact: true });
       await expect(dash).toBeVisible();
       await expect(dash).toHaveCSS("color", MUTED_TEXT_LIGHT_RGB);
@@ -905,7 +937,7 @@ test.describe("details panel field configuration", () => {
     await expect(readOnlyBox).toHaveCSS("border-top-style", "dashed");
   });
 
-  test("DPF-17 editable field types render the matching controls and the rest stays read-only", async ({ page }) => {
+  test("DPF-17 every field is editable with a matching control except system fields", async ({ page }) => {
     await mountAndLoad(page);
     await selectItem(page, 801);
     await configureShownFields(page, [
@@ -949,23 +981,140 @@ test.describe("details panel field configuration", () => {
     await fieldBlock(page, "Description").getByText("Alpha description").click();
     await expect(fieldBlock(page, "Description").locator("[contenteditable='true']")).toHaveCount(1);
 
-    for (const label of ["Created Date", "Tags", "Area Path"]) {
-      await expect(fieldBlock(page, label).locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
+    await expect(fieldBlock(page, "Tags").getByRole("textbox", { name: "Tags" })).toHaveValue("auth; reliability");
+    await expect(fieldBlock(page, "Area Path").getByRole("textbox", { name: "Area Path" })).toHaveValue(LONG_AREA_PATH);
+    for (const label of ["Tags", "Area Path"]) {
+      expect(await fieldBlock(page, label).getByRole("textbox", { name: label }).evaluate((element) => element.tagName)).toBe("INPUT");
     }
+    await expect(fieldBlock(page, "Created Date").locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
 
-    await configureShownFields(page, ["Title", "External Ref", "Changed By", "Acceptance Criteria"]);
-    await expect(fieldBlock(page, "External Ref")).toContainText("EXT-42");
-    await expect(fieldBlock(page, "External Ref").locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
-    await expect(fieldBlock(page, "Changed By")).toContainText("Grace Hopper");
-    await expect(fieldBlock(page, "Changed By").locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
+    await configureShownFields(page, [
+      "Title",
+      "Start",
+      "End",
+      "Comments",
+      "Reviewer",
+      "Correlation Id",
+      "Due Date",
+      "External Ref",
+      "Changed By",
+      "Acceptance Criteria",
+      "ID",
+      "Work Item Type",
+      "Dependencies"
+    ]);
+    const start = fieldBlock(page, "Start").getByLabel("Start");
+    await expect(start).toHaveAttribute("type", "datetime-local");
+    await expect(start).toHaveValue(toLocalInputValue("2026-03-02T08:00:00.000Z"));
+    await expect(fieldBlock(page, "End").getByLabel("End")).toHaveAttribute("type", "datetime-local");
+    const comments = fieldBlock(page, "Comments").locator("textarea");
+    await expect(comments).toHaveCount(1);
+    await expect(comments).toHaveValue("First line\nSecond line");
+    const reviewer = fieldBlock(page, "Reviewer").getByRole("combobox", { name: "Reviewer" });
+    const reviewerOptions = await reviewer.locator("option").allTextContents();
+    expect(reviewerOptions).toContain("Unassigned");
+    expect(reviewerOptions.some((option) => option.includes("Ada Lovelace"))).toBe(true);
+    expect(reviewerOptions.some((option) => option.includes("Grace Hopper"))).toBe(true);
+    expect(reviewerOptions).toContain("Linus Torvalds");
+    await expect(reviewer).toHaveValue("Linus Torvalds");
+    const dueDate = fieldBlock(page, "Due Date").getByLabel("Due Date");
+    await expect(dueDate).toHaveAttribute("type", "datetime-local");
+    await expect(dueDate).toHaveValue(toLocalInputValue("2026-03-20T12:00:00.000Z"));
+    await expect(fieldBlock(page, "Correlation Id").getByRole("textbox", { name: "Correlation Id" })).toHaveValue(
+      "6f1c2d3e-4b5a-4978-8a1b-2c3d4e5f6a7b"
+    );
     await fieldBlock(page, "Acceptance Criteria").getByText("Alpha criteria").click();
     await expect(fieldBlock(page, "Acceptance Criteria").locator("[contenteditable='true']")).toHaveCount(1);
 
+    for (const label of ["External Ref", "Changed By", "ID", "Work Item Type", "Dependencies"]) {
+      await expect(fieldBlock(page, label).locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
+    }
+    await expect(fieldBlock(page, "External Ref")).toContainText("EXT-42");
+    await expect(fieldBlock(page, "Changed By")).toContainText("Grace Hopper");
+
     await openConfig(page);
-    await expect(shownItem(page, "External Ref")).not.toContainText("Edit");
-    await expect(shownItem(page, "Changed By")).not.toContainText("Edit");
-    await expect(shownItem(page, "Acceptance Criteria")).toContainText("Edit");
+    for (const editable of ["Start", "End", "Comments", "Reviewer", "Correlation Id", "Due Date", "Acceptance Criteria"]) {
+      await expect(shownItem(page, editable)).toContainText("Edit");
+    }
+    for (const readOnly of ["External Ref", "Changed By", "ID", "Work Item Type", "Dependencies"]) {
+      await expect(shownItem(page, readOnly)).not.toContainText("Edit");
+    }
     await closeConfig(page);
+  });
+
+  test("DPF-17 DPF-19 Start, End, paths, tags and other fields are saved and Start/End move the bar", async ({ page }) => {
+    await mountAndLoad(page);
+    await selectItem(page, 801);
+    await configureShownFields(page, ["Title", "Start", "End", "Area Path", "Tags", "Comments", "Reviewer", "Due Date"]);
+    const bar = page.getByLabel("timeline-bar-801");
+    const barBefore = await boxOf(bar);
+
+    const nextStart = "2026-03-04T08:00:00.000Z";
+    const nextEnd = "2026-03-10T16:00:00.000Z";
+    await fieldBlock(page, "Start").getByLabel("Start").fill(toLocalInputValue(nextStart));
+    await fieldBlock(page, "End").getByLabel("End").fill(toLocalInputValue(nextEnd));
+    await fieldBlock(page, "Area Path").getByLabel("Area Path").fill("Delivery\\Backend");
+    await fieldBlock(page, "Tags").getByLabel("Tags").fill("auth; api");
+    await fieldBlock(page, "Comments").locator("textarea").fill("Only line");
+    await fieldBlock(page, "Reviewer").getByRole("combobox", { name: "Reviewer" }).selectOption("Ada Lovelace");
+    const nextDueDate = "2026-03-25T09:30:00.000Z";
+    await fieldBlock(page, "Due Date").getByLabel("Due Date").fill(toLocalInputValue(nextDueDate));
+    await detailsPanel(page).getByRole("button", { name: "Save" }).click();
+    await expect(detailsPanel(page).getByRole("button", { name: "Save" })).toBeDisabled();
+
+    const update = lastDetailsUpdate((await readHarness(page)).detailsUpdates);
+    expect(update.targetWorkItemId).toBe(801);
+    expect(new Date(String(update.fields?.[REF.startDate])).toISOString()).toBe(nextStart);
+    expect(new Date(String(update.fields?.[REF.targetDate])).toISOString()).toBe(nextEnd);
+    expect(update.fields?.[REF.areaPath]).toBe("Delivery\\Backend");
+    expect(update.fields?.[REF.tags]).toBe("auth; api");
+    expect(update.fields?.[REF.comments]).toBe("Only line");
+    expect(update.fields?.[REF.reviewer]).toBe("Ada Lovelace");
+    expect(new Date(String(update.fields?.[REF.dueDate])).toISOString()).toBe(nextDueDate);
+
+    const barAfter = await boxOf(bar);
+    expect(barAfter.x).toBeGreaterThan(barBefore.x + 1);
+    expect(barAfter.width).toBeGreaterThan(barBefore.width + 1);
+  });
+
+  test("DPF-17 Title and State cannot be saved empty", async ({ page }) => {
+    await mountAndLoad(page);
+    await selectItem(page, 801);
+    const save = detailsPanel(page).getByRole("button", { name: "Save" });
+    const updatesBefore = (await readHarness(page)).detailsUpdates.length;
+
+    await fieldBlock(page, "Title").getByRole("textbox", { name: "Title" }).fill("");
+    await expect(save).toBeDisabled();
+    await page.keyboard.press(process.platform === "darwin" ? "Meta+s" : "Control+s");
+    await page.waitForTimeout(400);
+    await expect(save).toHaveText("Save");
+    await expect(save).toBeDisabled();
+    expect((await readHarness(page)).detailsUpdates.length).toBe(updatesBefore);
+
+    const stateOptions = await fieldBlock(page, "State").getByRole("combobox", { name: "State" }).locator("option").allTextContents();
+    expect(stateOptions.map((option) => option.trim()).filter((option) => option === "" || option === "—")).toEqual([]);
+  });
+
+  test("DPF-14 DPF-19 fields unknown to the item type are saved without warning and Azure errors are shown verbatim", async ({ page }) => {
+    await mountAndLoad(page);
+    await selectItem(page, 802);
+    const storyPoints = fieldBlock(page, "Story Points").getByLabel("Story Points");
+    await expect(storyPoints).toHaveValue("");
+    await expect(fieldBlock(page, "Story Points")).not.toContainText(/not on|not defined|warning/i);
+
+    await page.evaluate(() =>
+      window.__phase6FailNextDetailsUpdate("TF51535: Cannot find field Microsoft.VSTS.Scheduling.StoryPoints.")
+    );
+    await storyPoints.fill("3");
+    await detailsPanel(page).getByRole("button", { name: "Save" }).click();
+
+    await expect(detailsPanel(page)).toContainText(
+      "Save failed: TF51535: Cannot find field Microsoft.VSTS.Scheduling.StoryPoints."
+    );
+    await expect(storyPoints).toHaveValue("3");
+    const update = lastDetailsUpdate((await readHarness(page)).detailsUpdates);
+    expect(update.targetWorkItemId).toBe(802);
+    expect(update.fields?.[REF.storyPoints]).toBe(3);
   });
 
   test("DPF-18 number validation, comma input, clearing and integer rules", async ({ page }) => {

@@ -1,8 +1,8 @@
 /**
  * Frozen backend tests for the approved contract
- * docs/contracts/details-panel-field-configuration.v1.html.
+ * docs/contracts/details-panel-field-configuration.v2.html.
  * Requirement IDs are named in each test title; see
- * docs/contracts/details-panel-field-configuration.v1.traceability.md.
+ * docs/contracts/details-panel-field-configuration.v2.traceability.md.
  */
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -203,6 +203,45 @@ describe("details panel field configuration backend", () => {
         ])
       );
       expect(operations).toHaveLength(4);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("DPF-19 returns the Azure DevOps error message when a field update is rejected", async () => {
+    previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer(fixture, {
+      get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+      patch: async () => ({
+        status: 400,
+        json: {
+          message:
+            "TF51535: Cannot find field Microsoft.VSTS.Scheduling.StoryPoints. Authorization: Bearer abc.def.ghi token=secret-value",
+          typeKey: "WorkItemFieldInvalidException"
+        },
+        headers: {}
+      })
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-details-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({ targetWorkItemId: 802, fields: { [STORY_POINTS]: 3 } })
+      });
+      const body = (await response.json()) as { message?: string };
+
+      expect(response.ok).toBe(false);
+      expect(body.message).toContain("TF51535: Cannot find field Microsoft.VSTS.Scheduling.StoryPoints.");
+      expect(body.message).not.toContain("abc.def.ghi");
+      expect(body.message).not.toContain("secret-value");
     } finally {
       await server.close();
     }

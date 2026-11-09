@@ -1,6 +1,0 @@
-# Eingefrorene Tests zum Vertrag details-panel-field-configuration.v1 (Test-Gate PASS, unabhängiges Review, 09.11.2026)
-# Revision 2: vom Nutzer freigegebene Korrektur von Testfehlern (selectItem, DPF-07, DPF-18), erneutes Gate-Review PASS
-0375fa68fad88778527996ad0cf8ba98854cfeb15aa976f803cd0d57ec3c8f30  tests/e2e/details-panel-field-configuration.spec.ts
-1c4310db23a3889910b99dba82662a2d04a26dd6eae9ac30011e380176d969e1  tests/e2e/runtime-harness.ts
-66f2649952f7aa598c00d47bbecc8fd1802d16010d4b7d3d4eb9ac5c920c72a3  src/app/bootstrap/http-server.details-fields.spec.ts
-defcd2d96f113d8756ad0dab78700e570f398fc82166f4821bbbcd36c48ec976  docs/contracts/details-panel-field-configuration.v1.traceability.md
