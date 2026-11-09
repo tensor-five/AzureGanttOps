@@ -41,7 +41,7 @@ import {
   applyReparentUpdate,
   applyScheduleUpdate,
   applyWorkItemAssignedToUpdate,
-  applyWorkItemMetadataUpdate,
+  applyWorkItemFieldsUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import {
@@ -691,6 +691,17 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
   );
 
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
+  const fetchWorkItemFieldDefinitions = React.useCallback(
+    async ({ workItemTypes }: { workItemTypes: string[] }) => {
+      const fetchDefinitions = props.composition.controller.fetchWorkItemFieldDefinitions;
+      if (!fetchDefinitions) {
+        throw new Error("Field definitions are not available.");
+      }
+      const response = await fetchDefinitions({ workItemTypes });
+      return response.fields;
+    },
+    [props.composition.controller]
+  );
 
   React.useEffect(() => {
     responseRef.current = response;
@@ -1261,17 +1272,15 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
               }
             });
           },
-          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state, stateColor }) => {
+          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, fields, htmlFields, stateColor }) => {
             await scheduleWorkItemMutation({
               workItemId: targetWorkItemId,
-              applyToTimeline: (timeline) =>
-                applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state, stateColor),
+              applyToTimeline: (timeline) => applyWorkItemFieldsUpdate(timeline, targetWorkItemId, fields, stateColor),
               executeDetails: async () => {
                 const writeResult = await props.composition.controller.updateWorkItemDetails({
                   targetWorkItemId,
-                  title,
-                  descriptionHtml,
-                  state
+                  fields,
+                  ...(htmlFields.length > 0 ? { htmlFields } : {})
                 });
 
                 if (!writeResult.accepted) {
@@ -1407,6 +1416,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
             });
           },
           onFetchWorkItemStateOptions: fetchWorkItemStateOptions,
+          onFetchWorkItemFieldDefinitions: fetchWorkItemFieldDefinitions,
           onRetryRefresh: () => {
             void retryRefresh();
           }

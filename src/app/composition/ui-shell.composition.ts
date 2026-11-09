@@ -11,6 +11,7 @@ import type { QueryIntakeResponse } from "../../features/query-switching/query-i
 import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
 import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
 import { APP_VERSION } from "../../shared/project-meta/project-meta.js";
+import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 
 export type AdoCommLogEntry = {
   seq: number;
@@ -21,6 +22,14 @@ export type AdoCommLogEntry = {
   status: number | null;
   durationMs: number | null;
   preview: string;
+};
+
+export type WorkItemFieldUpdateValue = string | number | boolean | null;
+
+export type WorkItemDetailsUpdateRequest = {
+  targetWorkItemId: number;
+  fields: Record<string, WorkItemFieldUpdateValue>;
+  htmlFields?: string[];
 };
 
 export type WorkItemStateOption = {
@@ -78,12 +87,7 @@ export type QueryIntakeTransport = {
     successorWorkItemId: number;
     action: "add" | "remove";
   }) => Promise<WriteCommandTransportResult>;
-  updateWorkItemDetails: (request: {
-    targetWorkItemId: number;
-    title: string;
-    descriptionHtml: string;
-    state: string;
-  }) => Promise<WriteCommandTransportResult>;
+  updateWorkItemDetails: (request: WorkItemDetailsUpdateRequest) => Promise<WriteCommandTransportResult>;
   updateWorkItemState: (request: {
     targetWorkItemId: number;
     state: string;
@@ -117,6 +121,9 @@ export type QueryIntakeTransport = {
   }>;
   fetchWorkItemTypes: () => Promise<{
     workItemTypes: WorkItemTypeOption[];
+  }>;
+  fetchWorkItemFieldDefinitions?: (request: { workItemTypes: string[] }) => Promise<{
+    fields: WorkItemFieldDefinition[];
   }>;
   fetchQueryDetails: (request: { queryId: string }) => Promise<{
     id: string;

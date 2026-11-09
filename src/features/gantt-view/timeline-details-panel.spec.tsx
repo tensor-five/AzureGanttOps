@@ -11,10 +11,10 @@ afterEach(() => {
 });
 
 function rowLabelsWithIterationHint(container: HTMLElement): string[] {
-  const rows = Array.from(container.querySelectorAll(".timeline-details-row"));
-  return rows
-    .filter((row) => row.querySelector(".timeline-details-row-hint-iteration") !== null)
-    .map((row) => row.querySelector(".timeline-details-row-label")?.textContent?.trim() ?? "");
+  const fields = Array.from(container.querySelectorAll(".timeline-details-field"));
+  return fields
+    .filter((field) => field.querySelector(".timeline-details-row-hint-iteration") !== null)
+    .map((field) => field.querySelector(".timeline-details-label")?.textContent?.trim() ?? "");
 }
 
 function makeTimeline(): TimelineReadModel {
@@ -56,22 +56,22 @@ describe("timeline-details-panel keyboard shortcuts", () => {
       })
     );
 
-    const description = container.querySelector(".timeline-details-richtext");
-    expect(description?.className).toContain("timeline-details-richtext-collapsed");
+    const readDescription = () => container.querySelector(".timeline-details-richtext");
+    expect(readDescription()?.className).toContain("timeline-details-richtext-collapsed");
 
     const toggle = screen.getByRole("button", { name: "Show more" });
     fireEvent.click(toggle);
-    expect(description?.className).not.toContain("timeline-details-richtext-collapsed");
+    expect(readDescription()?.className).not.toContain("timeline-details-richtext-collapsed");
 
-    fireEvent.click(toggle);
-    expect(description?.className).toContain("timeline-details-richtext-collapsed");
+    fireEvent.click(screen.getByRole("button", { name: "Show less" }));
+    expect(readDescription()?.className).toContain("timeline-details-richtext-collapsed");
 
-    fireEvent.click(description as HTMLDivElement);
+    fireEvent.click(readDescription() as HTMLDivElement);
 
     await waitFor(() => {
-      expect(description?.getAttribute("contenteditable")).toBe("true");
+      expect(readDescription()?.getAttribute("contenteditable")).toBe("true");
     });
-    expect(description?.className).not.toContain("timeline-details-richtext-collapsed");
+    expect(readDescription()?.className).not.toContain("timeline-details-richtext-collapsed");
   });
 
   it("saves on Ctrl+S when details are dirty", async () => {
@@ -98,8 +98,7 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith(
       expect.objectContaining({
         targetWorkItemId: 11,
-        title: "Updated Source Item",
-        state: "Active"
+        fields: { "System.Title": "Updated Source Item" }
       })
     );
     expect(event.defaultPrevented).toBe(true);
@@ -319,7 +318,7 @@ describe("timeline-details-panel keyboard shortcuts", () => {
       })
     );
 
-    expect(rowLabelsWithIterationHint(container)).toEqual(["start:"]);
+    expect(rowLabelsWithIterationHint(container)).toEqual(["Start"]);
   });
 
   it("marks only the end row when only the end was filled from the iteration", () => {
@@ -333,7 +332,7 @@ describe("timeline-details-panel keyboard shortcuts", () => {
       })
     );
 
-    expect(rowLabelsWithIterationHint(container)).toEqual(["end:"]);
+    expect(rowLabelsWithIterationHint(container)).toEqual(["End"]);
   });
 
   it("does not show the iteration hint when dates come from the work item", () => {
@@ -366,8 +365,14 @@ describe("timeline-details-panel keyboard shortcuts", () => {
     expect(description?.innerHTML).not.toContain("onclick=");
     expect(description?.innerHTML).not.toContain("<script");
 
-    const titleInput = screen.getByLabelText("Title");
-    fireEvent.change(titleInput, { target: { value: "Updated Source Item" } });
+    fireEvent.click(description as HTMLDivElement);
+    const editor = await waitFor(() => {
+      const element = container.querySelector(".timeline-details-richtext-editing");
+      expect(element).not.toBeNull();
+      return element as HTMLDivElement;
+    });
+    editor.innerHTML = '<p onclick="evil()">Safe edit</p><script>alert(1)</script>';
+    fireEvent.input(editor);
 
     const event = new KeyboardEvent("keydown", { key: "s", ctrlKey: true, cancelable: true });
     window.dispatchEvent(event);
@@ -378,8 +383,126 @@ describe("timeline-details-panel keyboard shortcuts", () => {
 
     expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith(
       expect.objectContaining({
-        descriptionHtml: "<p>Safe</p>"
+        fields: { "System.Description": "<p>Safe edit</p>" }
       })
     );
+  });
+});
+
+describe("timeline-details-panel configurable fields", () => {
+  const storyPointsDefinition = {
+    referenceName: "Microsoft.VSTS.Scheduling.StoryPoints",
+    name: "Story Points",
+    type: "double",
+    readOnly: false,
+    isIdentity: false,
+    allowedValues: [],
+    workItemTypes: ["User Story"]
+  };
+
+  function makeStoryTimeline(): TimelineReadModel {
+    const timeline = makeTimeline();
+    timeline.bars[0].details.workItemType = "User Story";
+    timeline.bars[0].details.fieldValues = { "Microsoft.VSTS.Scheduling.StoryPoints": 5 };
+    return timeline;
+  }
+
+  it("loads field definitions for the query's work item types and saves story points", async () => {
+    const onFetchWorkItemFieldDefinitions = vi.fn(async () => [storyPointsDefinition]);
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
+
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    const storyPoints = (await screen.findByLabelText("Story Points")) as HTMLInputElement;
+    expect(onFetchWorkItemFieldDefinitions).toHaveBeenCalledWith({ workItemTypes: ["User Story"] });
+    expect(storyPoints.value).toBe("5");
+
+    fireEvent.change(storyPoints, { target: { value: "1.234" } });
+    expect(screen.getByText("Enter a number ≥ 0 with up to 2 decimals.")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Save" }) as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.change(storyPoints, { target: { value: "8" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith({
+        targetWorkItemId: 11,
+        fields: { "Microsoft.VSTS.Scheduling.StoryPoints": 8 },
+        htmlFields: [],
+        stateColor: null
+      });
+    });
+  });
+
+  it("keeps the draft and the save button after a failed save", async () => {
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => {
+      throw new Error("TF401320: denied");
+    });
+
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions: async () => [storyPointsDefinition],
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    const storyPoints = (await screen.findByLabelText("Story Points")) as HTMLInputElement;
+    fireEvent.change(storyPoints, { target: { value: "13" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Save failed: TF401320: denied")).toBeTruthy();
+    expect(storyPoints.value).toBe("13");
+    expect((screen.getByRole("button", { name: "Save" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("opens the configuration from the gear and hides removed fields immediately", async () => {
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions: async () => [storyPointsDefinition]
+      })
+    );
+
+    await screen.findByLabelText("Story Points");
+    const gear = screen.getByRole("button", { name: "Configure details fields" });
+    fireEvent.click(gear);
+    expect(gear.getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove Story Points" }));
+    expect(screen.queryByLabelText("Story Points")).toBeNull();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Details fields" })).toBeNull();
+
+    fireEvent.click(gear);
+    fireEvent.click(screen.getByRole("button", { name: "Reset to default" }));
+    expect(await screen.findByLabelText("Story Points")).toBeTruthy();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("dialog", { name: "Details fields" })).toBeNull();
+  });
+
+  it("falls back to read-only loaded fields when definitions fail", async () => {
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline: makeStoryTimeline(),
+        selectedWorkItemId: 11,
+        onFetchWorkItemFieldDefinitions: async () => {
+          throw new Error("offline");
+        }
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure details fields" }));
+    expect(await screen.findByText("Field definitions unavailable – showing loaded fields read-only.")).toBeTruthy();
   });
 });

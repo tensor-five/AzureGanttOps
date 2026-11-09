@@ -147,35 +147,110 @@ export function parseReparentPayload(
   return { targetWorkItemId, newParentId };
 }
 
+const FIELD_REFERENCE_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$/;
+const MAX_UPDATE_FIELDS = 100;
+
+export type UpdateDetailsOperation =
+  | { op: "add"; path: string; value: string | number | boolean }
+  | { op: "remove"; path: string };
+
+/**
+ * Parses a details update. Accepts `fields` (reference name -> value, `null` clears the field)
+ * and the legacy `title`/`descriptionHtml`/`state` shape. Values of System.Description and of every
+ * reference listed in `htmlFields` are sanitized as HTML fragments.
+ */
 export function parseUpdateDetailsPayload(
   input: Record<string, unknown> | null
-): { targetWorkItemId: number; title: string; descriptionHtml: string; state: string } | null {
+): { targetWorkItemId: number; operations: UpdateDetailsOperation[] } | null {
   if (!input) {
     return null;
   }
 
   const targetWorkItemId = input.targetWorkItemId;
-  const title = input.title;
-  const descriptionHtml = input.descriptionHtml;
-  const state = input.state;
+  if (typeof targetWorkItemId !== "number" || !Number.isInteger(targetWorkItemId) || targetWorkItemId <= 0) {
+    return null;
+  }
 
-  if (
-    typeof targetWorkItemId !== "number" ||
-    !Number.isFinite(targetWorkItemId) ||
-    typeof title !== "string" ||
-    title.trim().length === 0 ||
-    typeof descriptionHtml !== "string" ||
-    typeof state !== "string" ||
-    state.trim().length === 0
-  ) {
+  const fields = resolveUpdateFields(input);
+  if (!fields) {
+    return null;
+  }
+
+  const entries = Object.entries(fields);
+  if (entries.length === 0 || entries.length > MAX_UPDATE_FIELDS) {
+    return null;
+  }
+
+  const htmlFieldRefs = new Set<string>(["System.Description"]);
+  if (Array.isArray(input.htmlFields)) {
+    input.htmlFields.forEach((entry) => {
+      if (typeof entry === "string") {
+        htmlFieldRefs.add(entry);
+      }
+    });
+  }
+
+  const operations: UpdateDetailsOperation[] = [];
+  for (const [referenceName, rawValue] of entries) {
+    if (!FIELD_REFERENCE_NAME_PATTERN.test(referenceName)) {
+      return null;
+    }
+
+    const path = `/fields/${referenceName}`;
+    if (rawValue === null) {
+      if (referenceName === "System.Title" || referenceName === "System.State") {
+        return null;
+      }
+      operations.push({ op: "remove", path });
+      continue;
+    }
+
+    if (typeof rawValue === "number") {
+      if (!Number.isFinite(rawValue)) {
+        return null;
+      }
+      operations.push({ op: "add", path, value: rawValue });
+      continue;
+    }
+
+    if (typeof rawValue === "boolean") {
+      operations.push({ op: "add", path, value: rawValue });
+      continue;
+    }
+
+    if (typeof rawValue !== "string") {
+      return null;
+    }
+
+    const value = htmlFieldRefs.has(referenceName) ? sanitizeHtmlFragment(rawValue) : rawValue;
+    if ((referenceName === "System.Title" || referenceName === "System.State") && value.trim().length === 0) {
+      return null;
+    }
+    operations.push({
+      op: "add",
+      path,
+      value: referenceName === "System.Title" || referenceName === "System.State" ? value.trim() : value
+    });
+  }
+
+  return { targetWorkItemId, operations };
+}
+
+function resolveUpdateFields(input: Record<string, unknown>): Record<string, unknown> | null {
+  const fields = input.fields;
+  if (fields !== undefined) {
+    return fields && typeof fields === "object" && !Array.isArray(fields) ? (fields as Record<string, unknown>) : null;
+  }
+
+  const { title, descriptionHtml, state } = input;
+  if (typeof title !== "string" || typeof descriptionHtml !== "string" || typeof state !== "string") {
     return null;
   }
 
   return {
-    targetWorkItemId,
-    title: title.trim(),
-    descriptionHtml: sanitizeHtmlFragment(descriptionHtml),
-    state: state.trim()
+    "System.Title": title,
+    "System.Description": descriptionHtml,
+    "System.State": state
   };
 }
 

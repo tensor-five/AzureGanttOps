@@ -1,6 +1,7 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
   DEFAULT_OVERDUE_EXCLUDED_STATE_CODES,
@@ -15,7 +16,8 @@ import {
 import {
   buildTimelineDetailsLines,
   TimelineDetailsPanel,
-  type TimelineDetailsPanelProps
+  type TimelineDetailsPanelProps,
+  type TimelineDetailsUpdateInput
 } from "./timeline-details-panel.js";
 import {
   hydrateTimelineViewportPreference,
@@ -177,13 +179,8 @@ export type TimelinePaneProps = {
     startDate: string;
     endDate: string;
   }) => Promise<void>;
-  onUpdateSelectedWorkItemDetails?: (input: {
-    targetWorkItemId: number;
-    title: string;
-    descriptionHtml: string;
-    state: string;
-    stateColor: string | null;
-  }) => Promise<void>;
+  onUpdateSelectedWorkItemDetails?: (input: TimelineDetailsUpdateInput) => Promise<void>;
+  onFetchWorkItemFieldDefinitions?: (input: { workItemTypes: string[] }) => Promise<WorkItemFieldDefinition[]>;
   onUpdateWorkItemState?: (input: {
     targetWorkItemId: number;
     state: string;
@@ -2193,6 +2190,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const detailProps: TimelineDetailsPanelProps = {
     timeline: filteredTimeline,
+    catalogTimeline: effectiveTimeline,
+    activeQueryId,
     selectedWorkItemId,
     contentHidden: detailsContentHidden,
     organization: props.organization,
@@ -2200,6 +2199,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     draftResetKey: props.detailsDraftResetKey,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+    onFetchWorkItemFieldDefinitions: props.onFetchWorkItemFieldDefinitions,
     onDirtyChange: props.onDetailsDirtyChange
   };
   const timelineMainGridStyle = {

@@ -16,6 +16,7 @@ import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cl
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { AzureFieldDefinitionsAdapter } from "../../adapters/azure-devops/work-items/field-definitions.azure.adapter.js";
 import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
@@ -193,6 +194,7 @@ const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
 const CHILD_WORK_ITEM_CREATE_ROUTE_PATH = "/phase2/work-item-child-create";
 const WORK_ITEM_TYPES_ROUTE_PATH = "/phase2/work-item-types";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
+const WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH = "/phase2/work-item-field-definitions";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
@@ -557,6 +559,10 @@ function isChildWorkItemCreateRoute(method: string, pathname: string): boolean {
 
 function isWorkItemTypesRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_TYPES_ROUTE_PATH;
+}
+
+function isWorkItemFieldDefinitionsRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH;
 }
 
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
@@ -1008,6 +1014,33 @@ async function handleQueryDomainRoute(
     }
   }
 
+  if (isWorkItemFieldDefinitionsRoute(method, url.pathname)) {
+    const workItemTypes = url.searchParams
+      .getAll("workItemTypes")
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    if (workItemTypes.length === 0) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide at least one workItemTypes query param."
+      });
+      return true;
+    }
+
+    try {
+      const adapter = new AzureFieldDefinitionsAdapter(deps.httpClient, () => deps.contextStore.getActiveContext());
+      const fields = await adapter.listFieldDefinitions(workItemTypes);
+      writeJson(res, 200, { fields });
+      return true;
+    } catch {
+      writeJson(res, 502, {
+        code: "FIELD_DEFINITIONS_FAILED",
+        message: "Unable to load work item field definitions."
+      });
+      return true;
+    }
+  }
+
   if (isWorkItemStateOptionsRoute(method, url.pathname)) {
     const targetWorkItemId = parseTargetWorkItemIdFromQuery(url);
     if (!targetWorkItemId) {
@@ -1296,7 +1329,7 @@ async function handleTimelineWritesRoute(
     if (!update) {
       writeJson(res, 400, {
         code: "INVALID_INPUT",
-        message: "Provide targetWorkItemId/title/descriptionHtml/state."
+        message: "Provide targetWorkItemId and fields with valid field reference names."
       });
       return true;
     }
@@ -1307,11 +1340,7 @@ async function handleTimelineWritesRoute(
         command: {
           kind: "WORK_ITEM_PATCH",
           workItemId: update.targetWorkItemId,
-          operations: [
-            { op: "add", path: "/fields/System.Title", value: update.title },
-            { op: "add", path: "/fields/System.Description", value: update.descriptionHtml },
-            { op: "add", path: "/fields/System.State", value: update.state }
-          ]
+          operations: update.operations
         }
       });
 

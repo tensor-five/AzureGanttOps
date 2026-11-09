@@ -11,6 +11,12 @@ Note: Historical versions before `1.8.1` were reconstructed approximately from v
 - Failed Azure DevOps calls now produce structured terminal diagnostics with HTTP status, duration, request ID, sanitized Azure response, and a data-minimized JSON Patch context.
 - The timeline context menu can change `Assigned To` to a person already used in the current query; the list is sorted by the number of assigned tasks.
 - The visible application interface, dialogs, keyboard shortcut help, and in-app changelog are now consistently in English.
+- The details panel is configurable: a gear button opens a field picker to show, hide and reorder any Azure DevOps field. Field widths adapt automatically to the field type and to the panel width, and the configuration is stored globally in the local user preferences.
+- Story Points and other editable fields (numbers, single-line text, pick lists, Yes/No, Assigned To, HTML) can be edited directly in the details panel and are saved together in one Azure DevOps update.
+
+### Changed
+
+- The details panel shows all work item information in one field grid; the separate row list below the form was removed.
 
 ## [1.8.6] - 2026-07-10
 
