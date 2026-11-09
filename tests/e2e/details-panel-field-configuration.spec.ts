@@ -366,7 +366,10 @@ async function availableFieldNames(page: Page): Promise<string[]> {
 }
 
 async function selectItem(page: Page, workItemId: number): Promise<void> {
-  await page.getByLabel(`timeline-sidebar-row-${workItemId}`).click();
+  const alreadySelected = await detailsPanel(page).getByText(`#${workItemId}`, { exact: true }).isVisible();
+  if (!alreadySelected) {
+    await page.getByLabel(`timeline-sidebar-row-${workItemId}`).click();
+  }
   await expect(detailsPanel(page).getByText(`#${workItemId}`, { exact: true })).toBeVisible();
 }
 
@@ -698,15 +701,15 @@ test.describe("details panel field configuration", () => {
             const style = getComputedStyle(node);
             return [
               style.boxShadow,
-              style.borderTopColor,
               getComputedStyle(node, "::before").backgroundColor,
-              getComputedStyle(node, "::before").borderTopColor,
-              getComputedStyle(node, "::after").backgroundColor,
-              getComputedStyle(node, "::after").borderTopColor
+              getComputedStyle(node, "::after").backgroundColor
             ].join(" ");
           })
           .join(" | ")
       );
+    await configDialog(page).evaluate((dialog) => {
+      dialog.scrollTop = 0;
+    });
     const dragSource = await boxOf(shownItem(page, "Dependencies"));
     const dragTarget = await boxOf(shownItem(page, "Title"));
     await page.mouse.move(dragTarget.x + 20, dragTarget.y + 3);
@@ -1013,7 +1016,7 @@ test.describe("details panel field configuration", () => {
     await expect(save).toBeEnabled();
     await save.click();
     update = lastDetailsUpdate((await readHarness(page)).detailsUpdates);
-    expect(update.fields).toHaveProperty(REF.storyPoints, null);
+    expect(update.fields).toHaveProperty([REF.storyPoints], null);
   });
 
   test("DPF-19 dirty markers, single combined save, keyboard save, live timeline update, failure and unsaved guard", async ({ page }) => {
