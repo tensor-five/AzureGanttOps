@@ -54,7 +54,8 @@ jobs:
   contract-e2e:
     # Frozen E2E tests of approved contracts. Runs only the contract suites, because
     # other E2E suites are not yet part of the CI gate.
-    runs-on: ubuntu-latest
+    # Pinned to 24.04: the installed Playwright version has no Chromium build for ubuntu-latest (26.04).
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
