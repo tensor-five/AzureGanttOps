@@ -6,6 +6,11 @@ on:
       - main
       - master
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: quality-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality-gate:
@@ -15,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,6 +31,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Frozen contract and test checksums
+        env:
+          FROZEN_CHANGE_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'approved-frozen-change') }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run check:frozen -- --base "origin/${{ github.base_ref }}"
+          else
+            npm run check:frozen
+          fi
 
       - name: Typecheck
         run: npm run typecheck
