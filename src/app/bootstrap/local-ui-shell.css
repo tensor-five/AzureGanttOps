@@ -3031,6 +3031,13 @@ button {
 .timeline-color-coding-modal-header .timeline-color-coding-close {
   width: 32px;
   height: 32px;
+  padding: 0;
+}
+
+.timeline-color-coding-close-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .timeline-color-coding-active-selection {
