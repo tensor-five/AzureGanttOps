@@ -1,8 +1,8 @@
 /**
  * Frozen E2E tests for the approved contract
- * docs/contracts/details-panel-field-configuration.v2.html (DPF-01 .. DPF-22).
+ * docs/contracts/details-panel-field-configuration.v3.html (DPF-01 .. DPF-22).
  * Each test title starts with the requirement IDs it verifies; see
- * docs/contracts/details-panel-field-configuration.v2.traceability.md.
+ * docs/contracts/details-panel-field-configuration.v3.traceability.md.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
@@ -646,17 +646,19 @@ test.describe("details panel field configuration", () => {
     for (const ref of [REF.assignedTo, REF.workItemType]) {
       expect(fallbackTexts.filter((text) => text.includes(ref)).length).toBeLessThanOrEqual(1);
     }
-    await expect(shownItem(page, "Title")).toContainText("Edit");
+    await expect(shownItem(page, "Title")).not.toContainText("Edit");
     const priority = availableList(page).getByRole("listitem").filter({ hasText: REF.priority });
     await expect(priority).toHaveCount(1);
     await expect(priority).toContainText("Full");
-    await expect(priority).toContainText("Edit");
+    await expect(priority).not.toContainText("Edit");
     await priority.getByRole("button", { name: /^Show / }).click();
     const createdDate = availableList(page).getByRole("listitem").filter({ hasText: REF.createdDate });
     await expect(createdDate).toHaveCount(1);
     await expect(createdDate).not.toContainText("Edit");
     await createdDate.getByRole("button", { name: /^Show / }).click();
     await closeConfig(page);
+
+    await expect(fieldBlock(page, "Title").getByRole("textbox", { name: "Title" })).toHaveValue("Alpha timeline item");
 
     const priorityBlock = fieldBlocks(page).nth(-2);
     await expect(priorityBlock.getByRole("textbox")).toHaveValue("2");
@@ -667,7 +669,7 @@ test.describe("details panel field configuration", () => {
     await expect(createdBlock.locator("input, select, textarea, [contenteditable='true']")).toHaveCount(0);
   });
 
-  test("DPF-06 shown entries show grip, name, reference, width badge, edit badge and move/remove buttons", async ({ page }) => {
+  test("DPF-06 shown entries show grip, name, reference, width badge and move/remove buttons, but no edit badge", async ({ page }) => {
     await mountAndLoad(page);
     await selectItem(page, 801);
     await openConfig(page);
@@ -675,7 +677,7 @@ test.describe("details panel field configuration", () => {
     const title = shownItem(page, "Title");
     await expect(title).toContainText("Built-in");
     await expect(title).toContainText("Full");
-    await expect(title).toContainText("Edit");
+    await expect(title).not.toContainText("Edit");
     await expect(title.locator("svg").first()).toBeVisible();
     await expect(title.getByRole("button", { name: "Move Title up" })).toBeDisabled();
     await expect(title.getByRole("button", { name: "Move Title down" })).toBeEnabled();
@@ -684,15 +686,17 @@ test.describe("details panel field configuration", () => {
     const storyPoints = shownItem(page, "Story Points");
     await expect(storyPoints).toContainText(REF.storyPoints);
     await expect(storyPoints).toContainText("½");
-    await expect(storyPoints).toContainText("Edit");
+    await expect(storyPoints).not.toContainText("Edit");
 
     const start = shownItem(page, "Start");
     await expect(start).toContainText("½");
-    await expect(start).toContainText("Edit");
+    await expect(start).not.toContainText("Edit");
 
     const dependencies = shownItem(page, "Dependencies");
     await expect(dependencies).toContainText("½");
     await expect(dependencies).not.toContainText("Edit");
+
+    await expect(configDialog(page).getByText("Edit", { exact: true })).toHaveCount(0);
 
     const description = shownItem(page, "Description");
     await expect(description.getByRole("button", { name: "Move Description down" })).toBeDisabled();
@@ -1038,7 +1042,7 @@ test.describe("details panel field configuration", () => {
 
     await openConfig(page);
     for (const editable of ["Start", "End", "Comments", "Reviewer", "Correlation Id", "Due Date", "Acceptance Criteria"]) {
-      await expect(shownItem(page, editable)).toContainText("Edit");
+      await expect(shownItem(page, editable)).not.toContainText("Edit");
     }
     for (const readOnly of ["External Ref", "Changed By", "ID", "Work Item Type", "Dependencies"]) {
       await expect(shownItem(page, readOnly)).not.toContainText("Edit");
