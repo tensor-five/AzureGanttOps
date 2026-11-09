@@ -50,3 +50,30 @@ jobs:
 
       - name: Dependency cycle check
         run: npm run check:cycles
+
+  contract-e2e:
+    # Frozen E2E tests of approved contracts. Runs only the contract suites, because
+    # other E2E suites are not yet part of the CI gate.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Contract E2E tests (details panel field configuration)
+        env:
+          CI: "true"
+        run: npm run test:e2e -- tests/e2e/details-panel-field-configuration.spec.ts

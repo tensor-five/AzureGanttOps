@@ -1238,18 +1238,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React55 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React57 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React57.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React55 = {
+      React57 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React55.react_stack_bottom_frame.bind(
-        React55,
+      var unknownOwnerDebugStack = React57.react_stack_bottom_frame.bind(
+        React57,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1298,7 +1298,7 @@ var APP_VERSION, CHANGELOG_PATH, GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL;
 var init_project_meta = __esm({
   "dist/src/shared/project-meta/project-meta.js"() {
     "use strict";
-    APP_VERSION = "1.8.3";
+    APP_VERSION = "1.8.6";
     CHANGELOG_PATH = "/CHANGELOG.md";
     GITHUB_REPO_URL = "https://github.com/tensor-five/AzureGanttOps";
     TENSORFIVE_WEBSITE_URL = "https://tensorfive.com";
@@ -1625,7 +1625,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React55 = require_react(), Internals = {
+      var React57 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1643,7 +1643,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React57.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3178,7 +3178,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node2.ownerDocument) === node2 || node2.defaultValue === "" + value || (node2.defaultValue = "" + value);
       }
       function validateOptionProps(element3, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React55.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React57.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18810,14 +18810,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React55 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React57 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React55.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React57.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21605,7 +21605,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React55.version;
+        var isomorphicReactPackageVersion = React57.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -21745,6 +21745,107 @@ var require_client = __commonJS({
   }
 });
 
+// dist/src/app/bootstrap/app-dialog-shell.js
+function AppDialogShell(props) {
+  const dialogRef = import_react37.default.useRef(null);
+  const closeButtonRef = import_react37.default.useRef(null);
+  import_react37.default.useEffect(() => {
+    if (!props.open) {
+      return;
+    }
+    closeButtonRef.current?.focus();
+    return () => {
+      const returnFocusElement = props.returnFocusRef?.current;
+      if (returnFocusElement && document.contains(returnFocusElement)) {
+        returnFocusElement.focus();
+      }
+    };
+  }, [props.open, props.returnFocusRef]);
+  import_react37.default.useEffect(() => {
+    if (!props.open) {
+      return;
+    }
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        props.onClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [props.open, props.onClose]);
+  if (!props.open) {
+    return null;
+  }
+  return import_react37.default.createElement("div", {
+    className: joinClassNames("app-dialog-backdrop", props.backdropClassName),
+    "data-testid": "app-dialog-backdrop",
+    onClick: props.onClose
+  }, import_react37.default.createElement("div", {
+    ref: dialogRef,
+    className: joinClassNames("app-dialog", props.dialogClassName),
+    role: "dialog",
+    tabIndex: -1,
+    "aria-modal": "true",
+    "aria-labelledby": props.titleId,
+    "aria-busy": props.busy === true,
+    onClick: (event) => event.stopPropagation(),
+    onKeyDown: (event) => {
+      trapAppDialogFocus(event, dialogRef.current);
+    }
+  }, import_react37.default.createElement("header", { className: joinClassNames("app-dialog-header", props.headerClassName) }, import_react37.default.createElement("h2", { id: props.titleId }, props.title), import_react37.default.createElement("button", {
+    ref: closeButtonRef,
+    type: "button",
+    className: joinClassNames("app-dialog-close", props.closeButtonClassName),
+    "aria-label": props.closeLabel,
+    onClick: props.onClose
+  }, "\xD7")), import_react37.default.createElement("div", { className: joinClassNames("app-dialog-content", props.contentClassName) }, props.children)));
+}
+function joinClassNames(...classNames) {
+  return classNames.filter((className) => className && className.trim().length > 0).join(" ");
+}
+function trapAppDialogFocus(event, dialogElement) {
+  if (event.key !== "Tab" || !dialogElement) {
+    return;
+  }
+  const focusableElements = findFocusableElements2(dialogElement);
+  if (focusableElements.length === 0) {
+    event.preventDefault();
+    dialogElement.focus();
+    return;
+  }
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus();
+    return;
+  }
+  if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+function findFocusableElements2(dialogElement) {
+  return Array.from(dialogElement.querySelectorAll([
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(","))).filter((element3) => element3.getAttribute("aria-hidden") !== "true");
+}
+var import_react37;
+var init_app_dialog_shell = __esm({
+  "dist/src/app/bootstrap/app-dialog-shell.js"() {
+    "use strict";
+    import_react37 = __toESM(require_react(), 1);
+  }
+});
+
 // dist/src/app/bootstrap/use-app-changelog-loader.js
 async function loadAppChangelogMarkdown(signal) {
   const response = await fetch(CHANGELOG_PATH, {
@@ -21760,13 +21861,13 @@ async function loadAppChangelogMarkdown(signal) {
   return response.text();
 }
 function useAppChangelogLoader(open) {
-  const requestIdRef = import_react37.default.useRef(0);
-  const [loadState, setLoadState] = import_react37.default.useState({
+  const requestIdRef = import_react38.default.useRef(0);
+  const [loadState, setLoadState] = import_react38.default.useState({
     status: "idle",
     content: "",
     error: null
   });
-  import_react37.default.useEffect(() => {
+  import_react38.default.useEffect(() => {
     if (!open) {
       return;
     }
@@ -21783,7 +21884,7 @@ function useAppChangelogLoader(open) {
       if (requestIdRef.current !== requestId || isAbortError(error)) {
         return;
       }
-      const message = error instanceof Error ? error.message : "Changelog konnte nicht geladen werden.";
+      const message = error instanceof Error ? error.message : "Could not load changelog.";
       setLoadState({ status: "error", content: "", error: message });
     });
     return () => {
@@ -21796,11 +21897,11 @@ function useAppChangelogLoader(open) {
 function isAbortError(error) {
   return error instanceof DOMException && error.name === "AbortError";
 }
-var import_react37;
+var import_react38;
 var init_use_app_changelog_loader = __esm({
   "dist/src/app/bootstrap/use-app-changelog-loader.js"() {
     "use strict";
-    import_react37 = __toESM(require_react(), 1);
+    import_react38 = __toESM(require_react(), 1);
     init_project_meta();
   }
 });
@@ -32638,14 +32739,14 @@ function defaultUrlTransform(value) {
   }
   return "";
 }
-var import_jsx_runtime2, import_react38, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
+var import_jsx_runtime2, import_react39, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
 var init_lib19 = __esm({
   "node_modules/react-markdown/lib/index.js"() {
     init_default();
     init_hast_util_to_jsx_runtime();
     init_html_url_attributes();
     import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-    import_react38 = __toESM(require_react(), 1);
+    import_react39 = __toESM(require_react(), 1);
     init_remark_parse();
     init_remark_rehype();
     init_unified();
@@ -36186,7 +36287,7 @@ __export(app_changelog_markdown_exports, {
   AppChangelogMarkdown: () => AppChangelogMarkdown
 });
 function AppChangelogMarkdown(props) {
-  return import_react39.default.createElement("div", { className: "app-changelog-markdown" }, import_react39.default.createElement(Markdown, {
+  return import_react40.default.createElement("div", { className: "app-changelog-markdown" }, import_react40.default.createElement(Markdown, {
     remarkPlugins: [remarkGfm],
     skipHtml: true,
     urlTransform: transformChangelogUrl,
@@ -36217,26 +36318,26 @@ function toAllowedChangelogHref(url) {
 function isExternalChangelogHref(href) {
   return href.startsWith("http://") || href.startsWith("https://");
 }
-var import_react39, changelogMarkdownComponents, transformChangelogUrl;
+var import_react40, changelogMarkdownComponents, transformChangelogUrl;
 var init_app_changelog_markdown = __esm({
   "dist/src/app/bootstrap/app-changelog-markdown.js"() {
     "use strict";
-    import_react39 = __toESM(require_react(), 1);
+    import_react40 = __toESM(require_react(), 1);
     init_react_markdown();
     init_remark_gfm();
     changelogMarkdownComponents = {
       a: ({ node: _node, href, children, ...rest }) => {
         const safeHref = typeof href === "string" ? toAllowedChangelogHref(href) : null;
         if (!safeHref) {
-          return import_react39.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
+          return import_react40.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
         }
-        return import_react39.default.createElement("a", {
+        return import_react40.default.createElement("a", {
           ...rest,
           href: safeHref,
           ...isExternalChangelogHref(safeHref) ? { target: "_blank", rel: "noreferrer" } : {}
         }, children);
       },
-      img: ({ node: _node, alt }) => import_react39.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Bild entfernt: ${alt}` : "Bild entfernt")
+      img: ({ node: _node, alt }) => import_react40.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Image removed: ${alt}` : "Image removed")
     };
     transformChangelogUrl = (url) => toAllowedChangelogHref(url);
   }
@@ -36248,127 +36349,195 @@ __export(app_changelog_dialog_exports, {
   AppChangelogDialog: () => AppChangelogDialog
 });
 function AppChangelogDialog(props) {
-  const dialogRef = import_react40.default.useRef(null);
-  const closeButtonRef = import_react40.default.useRef(null);
   const loadState = useAppChangelogLoader(props.open);
-  import_react40.default.useEffect(() => {
-    if (!props.open) {
-      return;
-    }
-    closeButtonRef.current?.focus();
-    return () => {
-      const returnFocusElement = props.returnFocusRef?.current;
-      if (returnFocusElement && document.contains(returnFocusElement)) {
-        returnFocusElement.focus();
-      }
-    };
-  }, [props.open, props.returnFocusRef]);
-  import_react40.default.useEffect(() => {
-    if (!props.open) {
-      return;
-    }
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        props.onClose();
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [props.open, props.onClose]);
-  if (!props.open) {
-    return null;
-  }
-  return import_react40.default.createElement("div", {
-    className: "app-changelog-backdrop",
-    "data-testid": "app-changelog-backdrop",
-    onClick: props.onClose
-  }, import_react40.default.createElement("div", {
-    ref: dialogRef,
-    className: "app-changelog-dialog",
-    role: "dialog",
-    tabIndex: -1,
-    "aria-modal": "true",
-    "aria-labelledby": "app-changelog-title",
-    "aria-busy": loadState.status === "loading",
-    onClick: (event) => event.stopPropagation(),
-    onKeyDown: (event) => {
-      trapChangelogDialogFocus(event, dialogRef.current);
-    }
-  }, import_react40.default.createElement("header", { className: "app-changelog-header" }, import_react40.default.createElement("h2", { id: "app-changelog-title" }, `Changelog v${APP_VERSION}`), import_react40.default.createElement("button", {
-    ref: closeButtonRef,
-    type: "button",
-    className: "app-changelog-close",
-    "aria-label": "Changelog schlie\xDFen",
-    onClick: props.onClose
-  }, "\xD7")), import_react40.default.createElement("div", { className: "app-changelog-content" }, props.updateNotice ? renderAppUpdateNotice(props.updateNotice) : null, renderChangelogContent(loadState))));
+  return import_react41.default.createElement(AppDialogShell, {
+    open: props.open,
+    title: `Changelog v${APP_VERSION}`,
+    titleId: "app-changelog-title",
+    closeLabel: "Close changelog",
+    onClose: props.onClose,
+    returnFocusRef: props.returnFocusRef,
+    busy: loadState.status === "loading",
+    backdropClassName: "app-changelog-backdrop",
+    dialogClassName: "app-changelog-dialog",
+    headerClassName: "app-changelog-header",
+    closeButtonClassName: "app-changelog-close",
+    contentClassName: "app-changelog-content"
+  }, props.updateNotice ? renderAppUpdateNotice(props.updateNotice) : null, renderChangelogContent(loadState));
 }
 function renderAppUpdateNotice(updateNotice) {
-  return import_react40.default.createElement("section", {
+  return import_react41.default.createElement("section", {
     className: "app-update-notice",
     role: "note",
-    "aria-label": "Neue Version verf\xFCgbar"
-  }, import_react40.default.createElement("strong", null, "Neue Version verf\xFCgbar"), import_react40.default.createElement("p", null, `Installiert ist v${updateNotice.currentVersion}, verf\xFCgbar ist v${updateNotice.latestVersion}. `, "Mit ", import_react40.default.createElement("code", null, "git pull"), " ziehen, die App \xFCber das ", import_react40.default.createElement("code", null, ".cmd"), " oder ", import_react40.default.createElement("code", null, ".command"), " Skript neu starten und bei Bedarf einen Hard Refresh mit ", import_react40.default.createElement("kbd", null, "Strg+Shift+R"), " ausf\xFChren."));
+    "aria-label": "New version available"
+  }, import_react41.default.createElement("strong", null, "New version available"), import_react41.default.createElement("p", null, `Installed v${updateNotice.currentVersion}; latest is v${updateNotice.latestVersion}. `, "Run ", import_react41.default.createElement("code", null, "git pull"), ", restart the app using the ", import_react41.default.createElement("code", null, ".cmd"), " or ", import_react41.default.createElement("code", null, ".command"), " script, and perform a hard refresh with ", import_react41.default.createElement("kbd", null, "Ctrl+Shift+R"), " if needed."));
 }
 function renderChangelogContent(loadState) {
   if (loadState.status === "loading" || loadState.status === "idle") {
     return renderChangelogLoadingState();
   }
   if (loadState.status === "error") {
-    return import_react40.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Changelog konnte nicht geladen werden. ${loadState.error}`);
+    return import_react41.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Could not load changelog. ${loadState.error}`);
   }
-  return import_react40.default.createElement(import_react40.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react40.default.createElement(LazyAppChangelogMarkdown, {
+  return import_react41.default.createElement(import_react41.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react41.default.createElement(LazyAppChangelogMarkdown, {
     content: loadState.content
   }));
 }
 function renderChangelogLoadingState() {
-  return import_react40.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Changelog wird geladen...");
+  return import_react41.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Loading changelog...");
 }
-function trapChangelogDialogFocus(event, dialogElement) {
-  if (event.key !== "Tab" || !dialogElement) {
-    return;
-  }
-  const focusableElements = findFocusableElements2(dialogElement);
-  if (focusableElements.length === 0) {
-    event.preventDefault();
-    dialogElement.focus();
-    return;
-  }
-  const firstElement = focusableElements[0];
-  const lastElement = focusableElements[focusableElements.length - 1];
-  if (event.shiftKey && document.activeElement === firstElement) {
-    event.preventDefault();
-    lastElement.focus();
-    return;
-  }
-  if (!event.shiftKey && document.activeElement === lastElement) {
-    event.preventDefault();
-    firstElement.focus();
-  }
-}
-function findFocusableElements2(dialogElement) {
-  return Array.from(dialogElement.querySelectorAll([
-    "a[href]",
-    "button:not([disabled])",
-    "input:not([disabled])",
-    "select:not([disabled])",
-    "textarea:not([disabled])",
-    "[tabindex]:not([tabindex='-1'])"
-  ].join(","))).filter((element3) => element3.getAttribute("aria-hidden") !== "true");
-}
-var import_react40, LazyAppChangelogMarkdown;
+var import_react41, LazyAppChangelogMarkdown;
 var init_app_changelog_dialog = __esm({
   "dist/src/app/bootstrap/app-changelog-dialog.js"() {
     "use strict";
-    import_react40 = __toESM(require_react(), 1);
+    import_react41 = __toESM(require_react(), 1);
     init_project_meta();
+    init_app_dialog_shell();
     init_use_app_changelog_loader();
-    LazyAppChangelogMarkdown = import_react40.default.lazy(async () => {
+    LazyAppChangelogMarkdown = import_react41.default.lazy(async () => {
       const module = await Promise.resolve().then(() => (init_app_changelog_markdown(), app_changelog_markdown_exports));
       return { default: module.AppChangelogMarkdown };
     });
+  }
+});
+
+// dist/src/app/bootstrap/app-keyboard-shortcuts.catalog.js
+var APP_KEYBOARD_SHORTCUT_SECTIONS;
+var init_app_keyboard_shortcuts_catalog = __esm({
+  "dist/src/app/bootstrap/app-keyboard-shortcuts.catalog.js"() {
+    "use strict";
+    APP_KEYBOARD_SHORTCUT_SECTIONS = [
+      {
+        title: "General",
+        shortcuts: [
+          {
+            contract: "details.save-or-sync",
+            keys: ["Ctrl/Cmd+S"],
+            description: "Save changed details or sync pending work item changes"
+          },
+          {
+            contract: "timeline.print-current-view",
+            keys: ["Ctrl/Cmd+P"],
+            description: "Print the current timeline view"
+          },
+          {
+            contract: "overlays.close-active",
+            keys: ["Escape"],
+            description: "Close open header dialogs, timeline menus, and panels"
+          }
+        ]
+      },
+      {
+        title: "Timeline",
+        shortcuts: [
+          {
+            contract: "timeline.refresh-query",
+            keys: ["R"],
+            description: "Refresh the current query when no refresh is already running"
+          },
+          {
+            contract: "timeline.toggle-filters",
+            keys: ["F"],
+            description: "Open or close timeline filters"
+          },
+          {
+            contract: "timeline.toggle-sort",
+            keys: ["S"],
+            description: "Open or close sorting"
+          },
+          {
+            contract: "timeline.toggle-labels",
+            keys: ["L"],
+            description: "Toggle label display"
+          },
+          {
+            contract: "timeline.rotate-dependency-mode",
+            keys: ["D"],
+            description: "Switch dependency mode"
+          },
+          {
+            contract: "timeline.zoom-month-week-quarter-year",
+            keys: ["M", "W", "Q", "Y"],
+            description: "Set zoom to month, week, quarter, or year"
+          },
+          {
+            contract: "timeline.space-pan",
+            keys: ["Space"],
+            description: "Hold and drag to pan the timeline"
+          },
+          {
+            contract: "timeline.pointer-wheel-zoom",
+            keys: ["Ctrl/Cmd+Mouse wheel"],
+            description: "Zoom around the pointer position"
+          },
+          {
+            contract: "timeline.remove-selected-dependency",
+            keys: ["Delete", "Backspace"],
+            description: "Remove the selected dependency when one is selected"
+          }
+        ]
+      },
+      {
+        title: "Work Items",
+        shortcuts: [
+          {
+            contract: "work-item.focused-select",
+            keys: ["Enter", "Space"],
+            description: "Select the focused work item"
+          },
+          {
+            contract: "work-item.open-context-menu",
+            keys: ["Shift+F10", "Menu"],
+            description: "Open the context menu for the focused work item"
+          },
+          {
+            contract: "menu.navigate",
+            keys: ["Arrow keys", "Home", "End"],
+            description: "Navigate the context menu and its submenus"
+          },
+          {
+            contract: "menu.activate-action",
+            keys: ["Enter", "Space"],
+            description: "Run the focused context menu action"
+          }
+        ]
+      }
+    ];
+  }
+});
+
+// dist/src/app/bootstrap/app-keyboard-shortcuts-dialog.js
+var app_keyboard_shortcuts_dialog_exports = {};
+__export(app_keyboard_shortcuts_dialog_exports, {
+  AppKeyboardShortcutsDialog: () => AppKeyboardShortcutsDialog
+});
+function AppKeyboardShortcutsDialog(props) {
+  return import_react42.default.createElement(AppDialogShell, {
+    open: props.open,
+    title: "Keyboard shortcuts",
+    titleId: "app-keyboard-shortcuts-title",
+    closeLabel: "Close keyboard shortcuts",
+    onClose: props.onClose,
+    returnFocusRef: props.returnFocusRef,
+    contentClassName: "app-keyboard-shortcuts-content"
+  }, import_react42.default.createElement("div", { className: "app-keyboard-shortcuts" }, APP_KEYBOARD_SHORTCUT_SECTIONS.map((section) => renderKeyboardShortcutSection(section))));
+}
+function renderKeyboardShortcutSection(section) {
+  return import_react42.default.createElement("section", { key: section.title, className: "app-keyboard-shortcuts-section", "aria-labelledby": shortcutSectionId(section.title) }, import_react42.default.createElement("h3", { id: shortcutSectionId(section.title) }, section.title), import_react42.default.createElement("dl", { className: "app-keyboard-shortcuts-list" }, section.shortcuts.map((shortcut) => renderKeyboardShortcut(shortcut))));
+}
+function renderKeyboardShortcut(shortcut) {
+  return import_react42.default.createElement("div", { key: `${shortcut.keys.join("|")}:${shortcut.description}`, className: "app-keyboard-shortcut-item" }, import_react42.default.createElement("dt", { className: "app-keyboard-shortcut-keys" }, shortcut.keys.map((key) => import_react42.default.createElement("kbd", { key }, key))), import_react42.default.createElement("dd", { className: "app-keyboard-shortcut-description" }, shortcut.description));
+}
+function shortcutSectionId(title) {
+  return `app-keyboard-shortcuts-${title.toLowerCase().replaceAll(" ", "-")}`;
+}
+var import_react42;
+var init_app_keyboard_shortcuts_dialog = __esm({
+  "dist/src/app/bootstrap/app-keyboard-shortcuts-dialog.js"() {
+    "use strict";
+    import_react42 = __toESM(require_react(), 1);
+    init_app_dialog_shell();
+    init_app_keyboard_shortcuts_catalog();
   }
 });
 
@@ -38453,7 +38622,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react41 = __toESM(require_react(), 1);
+var import_react43 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-4ZMWKKQ3.mjs
@@ -41674,10 +41843,10 @@ function InitialQueryOnboardingDialog(props) {
       event.preventDefault();
       props.onSubmit();
     }
-  }, import_react3.default.createElement("header", { className: "initial-query-onboarding-header" }, import_react3.default.createElement("h2", { id: "initial-query-onboarding-title" }, "Erste Query verbinden"), import_react3.default.createElement("p", { id: "initial-query-onboarding-desc", className: "query-selector-hint" }, "F\xFCge eine Azure DevOps Query-URL ein.")), import_react3.default.createElement("div", { className: "query-selector-form" }, import_react3.default.createElement("label", { className: "query-selector-field" }, "Query URL", import_react3.default.createElement("input", {
+  }, import_react3.default.createElement("header", { className: "initial-query-onboarding-header" }, import_react3.default.createElement("h2", { id: "initial-query-onboarding-title" }, "Connect your first query"), import_react3.default.createElement("p", { id: "initial-query-onboarding-desc", className: "query-selector-hint" }, "Paste an Azure DevOps query URL.")), import_react3.default.createElement("div", { className: "query-selector-form" }, import_react3.default.createElement("label", { className: "query-selector-field" }, "Query URL", import_react3.default.createElement("input", {
     ref: queryInputRef,
     className: "query-selector-input",
-    "aria-label": "Erststart Query URL",
+    "aria-label": "Initial query URL",
     autoComplete: "off",
     disabled: props.loading,
     value: props.queryInput,
@@ -41691,7 +41860,7 @@ function InitialQueryOnboardingDialog(props) {
     role: "status",
     "aria-live": "polite",
     className: "initial-query-onboarding-status"
-  }, props.loading ? "Query wird geladen..." : props.statusMessage) : null, import_react3.default.createElement("div", { className: "initial-query-onboarding-actions" }, import_react3.default.createElement("button", {
+  }, props.loading ? "Loading query..." : props.statusMessage) : null, import_react3.default.createElement("div", { className: "initial-query-onboarding-actions" }, import_react3.default.createElement("button", {
     type: "submit",
     className: "query-selector-primary initial-query-onboarding-submit",
     disabled: props.loading,
@@ -41700,7 +41869,7 @@ function InitialQueryOnboardingDialog(props) {
     className: "initial-query-onboarding-submit-spinner",
     "aria-hidden": true,
     "data-testid": "initial-query-onboarding-submit-spinner"
-  }) : null, import_react3.default.createElement("span", null, "Query laden"))))));
+  }) : null, import_react3.default.createElement("span", null, "Load query"))))));
 }
 function trapDialogFocus(event, dialogElement) {
   if (event.key !== "Tab" || !dialogElement) {
@@ -42168,19 +42337,27 @@ function createUserPreferenceStore(config) {
     }
     return `${storagePrefix}${encodeURIComponent(scopeKey)}`;
   };
-  const isLocalStorageAvailable = () => {
-    try {
-      return typeof globalThis.localStorage !== "undefined" && globalThis.localStorage !== null && typeof globalThis.localStorage.getItem === "function" && typeof globalThis.localStorage.setItem === "function";
-    } catch {
-      return false;
+  const resolveLocalStorage = () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+    if (descriptor && "value" in descriptor) {
+      return readStorage(descriptor.value);
     }
-  };
-  const readFromLocalStorage = (scopeKey) => {
-    if (!isLocalStorageAvailable()) {
+    if (typeof window === "undefined" || globalThis !== window) {
       return null;
     }
     try {
-      const raw = globalThis.localStorage.getItem(resolveStorageKey(scopeKey));
+      return readStorage(window.localStorage);
+    } catch {
+      return null;
+    }
+  };
+  const readFromLocalStorage = (scopeKey) => {
+    const storage = resolveLocalStorage();
+    if (!storage) {
+      return null;
+    }
+    try {
+      const raw = storage.getItem(resolveStorageKey(scopeKey));
       if (!raw) {
         return null;
       }
@@ -42190,11 +42367,12 @@ function createUserPreferenceStore(config) {
     }
   };
   const writeToLocalStorage = (value, scopeKey) => {
-    if (!isLocalStorageAvailable()) {
+    const storage = resolveLocalStorage();
+    if (!storage) {
       return;
     }
     try {
-      globalThis.localStorage.setItem(resolveStorageKey(scopeKey), serialize3(value));
+      storage.setItem(resolveStorageKey(scopeKey), serialize3(value));
     } catch {
     }
   };
@@ -42245,18 +42423,19 @@ function createUserPreferenceStore(config) {
   const clearForTests = () => {
     memoryValues.clear();
     hydratedScopes.clear();
-    if (isLocalStorageAvailable()) {
+    const storage = resolveLocalStorage();
+    if (storage) {
       try {
-        globalThis.localStorage.removeItem(config.storageKey);
+        storage.removeItem(config.storageKey);
         const toRemove = [];
-        for (let index2 = 0; index2 < globalThis.localStorage.length; index2 += 1) {
-          const key = globalThis.localStorage.key(index2);
+        for (let index2 = 0; index2 < storage.length; index2 += 1) {
+          const key = storage.key(index2);
           if (key && key.startsWith(storagePrefix)) {
             toRemove.push(key);
           }
         }
         toRemove.forEach((key) => {
-          globalThis.localStorage.removeItem(key);
+          storage.removeItem(key);
         });
       } catch {
       }
@@ -42268,6 +42447,13 @@ function createUserPreferenceStore(config) {
     hydrate,
     clearForTests
   };
+}
+function readStorage(value) {
+  const storage = value;
+  if (typeof storage?.getItem !== "function" || typeof storage.setItem !== "function" || typeof storage.removeItem !== "function" || typeof storage.clear !== "function" || typeof storage.key !== "function") {
+    return null;
+  }
+  return storage;
 }
 
 // dist/src/features/gantt-view/query-scoped-timeline-preferences.js
@@ -45256,17 +45442,123 @@ function mapTimelineFilterBySlotId(groups, slotId, mapFilter) {
   });
 }
 
+// dist/src/features/gantt-view/timeline-filter-hierarchy-expansion.js
+var DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS = {
+  includeParents: false,
+  includeChildItems: false
+};
+function normalizeTimelineFilterHierarchyExpansionOptions(options) {
+  return {
+    includeParents: options?.includeParents === true,
+    includeChildItems: options?.includeChildItems === true
+  };
+}
+function applyTimelineFilterHierarchyExpansion(input) {
+  const { sourceTimeline, seedTimeline } = input;
+  const options = normalizeTimelineFilterHierarchyExpansionOptions(input.options);
+  if (!sourceTimeline || !seedTimeline || sourceTimeline.treeLayout === null) {
+    return seedTimeline;
+  }
+  if (!options.includeParents && !options.includeChildItems) {
+    return seedTimeline;
+  }
+  const sourceWorkItemIds = listTimelineWorkItemIds(sourceTimeline);
+  const seedWorkItemIds = listTimelineWorkItemIds(seedTimeline);
+  const finalWorkItemIds = new Set(seedWorkItemIds);
+  if (options.includeParents) {
+    addParentWorkItemIds({
+      treeLayout: sourceTimeline.treeLayout,
+      sourceWorkItemIds,
+      seedWorkItemIds,
+      targetWorkItemIds: finalWorkItemIds
+    });
+  }
+  if (options.includeChildItems) {
+    addDescendantWorkItemIds({
+      treeLayout: sourceTimeline.treeLayout,
+      sourceWorkItemIds,
+      seedWorkItemIds,
+      targetWorkItemIds: finalWorkItemIds
+    });
+  }
+  return {
+    ...sourceTimeline,
+    bars: sourceTimeline.bars.filter((bar) => finalWorkItemIds.has(bar.workItemId)),
+    unschedulable: sourceTimeline.unschedulable.filter((item) => finalWorkItemIds.has(item.workItemId)),
+    dependencies: sourceTimeline.dependencies.filter((dependency) => finalWorkItemIds.has(dependency.predecessorWorkItemId) && finalWorkItemIds.has(dependency.successorWorkItemId)),
+    suppressedDependencies: sourceTimeline.suppressedDependencies.filter((dependency) => finalWorkItemIds.has(dependency.predecessorWorkItemId) && finalWorkItemIds.has(dependency.successorWorkItemId))
+  };
+}
+function listTimelineWorkItemIds(timeline) {
+  return /* @__PURE__ */ new Set([
+    ...timeline.bars.map((bar) => bar.workItemId),
+    ...timeline.unschedulable.map((item) => item.workItemId)
+  ]);
+}
+function addParentWorkItemIds(input) {
+  input.seedWorkItemIds.forEach((seedWorkItemId) => {
+    let parentWorkItemId = input.treeLayout[seedWorkItemId]?.parentWorkItemId ?? null;
+    const visitedParentIds = /* @__PURE__ */ new Set();
+    while (parentWorkItemId !== null) {
+      if (visitedParentIds.has(parentWorkItemId)) {
+        break;
+      }
+      visitedParentIds.add(parentWorkItemId);
+      if (input.sourceWorkItemIds.has(parentWorkItemId)) {
+        input.targetWorkItemIds.add(parentWorkItemId);
+      }
+      const parentMeta = input.treeLayout[parentWorkItemId];
+      if (!parentMeta) {
+        break;
+      }
+      parentWorkItemId = parentMeta.parentWorkItemId;
+    }
+  });
+}
+function addDescendantWorkItemIds(input) {
+  const childrenByParentId = /* @__PURE__ */ new Map();
+  Object.entries(input.treeLayout).forEach(([workItemIdRaw, meta]) => {
+    const workItemId = Number(workItemIdRaw);
+    if (!Number.isFinite(workItemId)) {
+      return;
+    }
+    const parentWorkItemId = meta.parentWorkItemId;
+    if (parentWorkItemId !== null) {
+      const children = childrenByParentId.get(parentWorkItemId) ?? [];
+      children.push(workItemId);
+      childrenByParentId.set(parentWorkItemId, children);
+    }
+  });
+  input.seedWorkItemIds.forEach((seedWorkItemId) => {
+    const pending = [...childrenByParentId.get(seedWorkItemId) ?? []];
+    const visitedChildIds = /* @__PURE__ */ new Set();
+    while (pending.length > 0) {
+      const workItemId = pending.shift();
+      if (typeof workItemId !== "number" || visitedChildIds.has(workItemId)) {
+        continue;
+      }
+      visitedChildIds.add(workItemId);
+      if (input.sourceWorkItemIds.has(workItemId)) {
+        input.targetWorkItemIds.add(workItemId);
+      }
+      pending.push(...childrenByParentId.get(workItemId) ?? []);
+    }
+  });
+}
+
 // dist/src/features/gantt-view/use-timeline-filters.js
 function useTimelineFilters(initialState) {
   const [resolvedInitialState] = import_react9.default.useState(() => {
     const groups = resolveInitialTimelineFilterGroups(initialState);
     return {
       groups,
-      nextGroupId: initialState.nextGroupId ?? resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: initialState.nextGroupId ?? resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion: normalizeTimelineFilterHierarchyExpansionOptions(initialState.hierarchyExpansion ?? DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS)
     };
   });
   const [timelineFiltersOpen, setTimelineFiltersOpen] = import_react9.default.useState(false);
   const [timelineFilterGroups, setTimelineFilterGroups] = import_react9.default.useState(() => resolvedInitialState.groups);
+  const [timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion] = import_react9.default.useState(() => resolvedInitialState.hierarchyExpansion);
   const [nextFilterSlotId, setNextFilterSlotId] = import_react9.default.useState(() => initialState.nextSlotId);
   const [nextFilterGroupId, setNextFilterGroupId] = import_react9.default.useState(() => resolvedInitialState.nextGroupId);
   const [openFilterDropdown, setOpenFilterDropdown] = import_react9.default.useState(null);
@@ -45281,6 +45573,18 @@ function useTimelineFilters(initialState) {
       return nextGroups.length > 0 ? nextGroups : createInitialTimelineFilterGroups();
     });
   }, []);
+  const setIncludeTimelineFilterParents = import_react9.default.useCallback((next) => {
+    setTimelineFilterHierarchyExpansion((current) => {
+      const includeParents = typeof next === "function" ? next(current.includeParents) : next;
+      return current.includeParents === includeParents ? current : { ...current, includeParents };
+    });
+  }, []);
+  const setIncludeTimelineFilterChildItems = import_react9.default.useCallback((next) => {
+    setTimelineFilterHierarchyExpansion((current) => {
+      const includeChildItems = typeof next === "function" ? next(current.includeChildItems) : next;
+      return current.includeChildItems === includeChildItems ? current : { ...current, includeChildItems };
+    });
+  }, []);
   return {
     timelineFiltersOpen,
     setTimelineFiltersOpen,
@@ -45288,6 +45592,10 @@ function useTimelineFilters(initialState) {
     setTimelineFilterGroups,
     timelineFieldFilters,
     setTimelineFieldFilters,
+    timelineFilterHierarchyExpansion,
+    setTimelineFilterHierarchyExpansion,
+    setIncludeTimelineFilterParents,
+    setIncludeTimelineFilterChildItems,
     nextFilterSlotId,
     setNextFilterSlotId,
     nextFilterGroupId,
@@ -47201,13 +47509,38 @@ function TimelineFilterPanel(props) {
     role: "group",
     "aria-label": "Timeline filters",
     ref: props.panelRef
-  }, props.availableFieldRefs.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react22.default.createElement("div", { className: "timeline-filter-grid" }, ...filterGroupNodes, import_react22.default.createElement("button", {
+  }, props.availableFieldRefs.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react22.default.createElement("div", { className: "timeline-filter-grid" }, ...filterGroupNodes, renderTimelineFilterHierarchyExpansionOptions(props), import_react22.default.createElement("button", {
     type: "button",
     className: "timeline-filter-add timeline-filter-add-group",
     "aria-label": "Add OR filter group",
     disabled: totalFilterSlots >= props.maxFilterSlots,
     onClick: props.onAddTimelineFilterGroup
   }, "+ OR Group"))));
+}
+function renderTimelineFilterHierarchyExpansionOptions(props) {
+  return import_react22.default.createElement("div", {
+    className: "timeline-filter-hierarchy-options",
+    role: "group",
+    "aria-label": "Timeline hierarchy filter expansion"
+  }, import_react22.default.createElement("label", {
+    className: props.includeParents ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active" : "timeline-filter-hierarchy-option"
+  }, import_react22.default.createElement("input", {
+    type: "checkbox",
+    "aria-label": "Include parents",
+    checked: props.includeParents,
+    onChange: (event) => {
+      props.onSetIncludeParents(event.target.checked);
+    }
+  }), import_react22.default.createElement("span", null, "Include parents")), import_react22.default.createElement("label", {
+    className: props.includeChildItems ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active" : "timeline-filter-hierarchy-option"
+  }, import_react22.default.createElement("input", {
+    type: "checkbox",
+    "aria-label": "Include child items",
+    checked: props.includeChildItems,
+    onChange: (event) => {
+      props.onSetIncludeChildItems(event.target.checked);
+    }
+  }), import_react22.default.createElement("span", null, "Include child items")));
 }
 function renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdownTriggerRefs, filterDropdownStyle) {
   const nodes = [];
@@ -47579,6 +47912,32 @@ function TimelineColorCodingPanel(props) {
 var import_react25 = __toESM(require_react(), 1);
 var import_react_dom3 = __toESM(require_react_dom(), 1);
 
+// dist/src/features/gantt-view/timeline-assignee-options.js
+function buildTimelineAssigneeOptions(timeline) {
+  if (!timeline) {
+    return [];
+  }
+  const countsByNormalizedName = /* @__PURE__ */ new Map();
+  const items = [...timeline.bars, ...timeline.unschedulable];
+  items.forEach((item) => {
+    const name2 = item.details.assignedTo?.trim();
+    if (!name2) {
+      return;
+    }
+    const normalizedName = name2.toLocaleLowerCase("en");
+    const current = countsByNormalizedName.get(normalizedName);
+    if (current) {
+      current.taskCount += 1;
+      return;
+    }
+    countsByNormalizedName.set(normalizedName, {
+      name: name2,
+      taskCount: 1
+    });
+  });
+  return [...countsByNormalizedName.values()].sort((left, right) => right.taskCount - left.taskCount || left.name.localeCompare(right.name, "en", { sensitivity: "base" }));
+}
+
 // dist/src/features/gantt-view/use-child-work-item-type-menu.js
 var import_react24 = __toESM(require_react(), 1);
 
@@ -47699,7 +48058,7 @@ function useChildWorkItemTypeMenu(input) {
       setLoadState({
         status: "error",
         options: [],
-        error: error instanceof Error ? error.message : "Work Item Types konnten nicht geladen werden."
+        error: error instanceof Error ? error.message : "Could not load work item types."
       });
       setActiveWorkItemType(null);
     });
@@ -47772,7 +48131,10 @@ function TimelineWorkItemContextMenu(props) {
   const childTypeOptionRefs = import_react25.default.useRef([]);
   const statusMenuButtonRef = import_react25.default.useRef(null);
   const statusOptionRefs = import_react25.default.useRef([]);
+  const assigneeMenuButtonRef = import_react25.default.useRef(null);
+  const assigneeOptionRefs = import_react25.default.useRef([]);
   const [statusMenuOpen, setStatusMenuOpen] = import_react25.default.useState(false);
+  const [assigneeMenuOpen, setAssigneeMenuOpen] = import_react25.default.useState(false);
   const [statusLoadState, setStatusLoadState] = import_react25.default.useState({
     status: "idle",
     options: [],
@@ -47785,6 +48147,7 @@ function TimelineWorkItemContextMenu(props) {
   const workItemId = menuState?.item.workItemId ?? null;
   const menuPositionKey = menuState ? `${menuState.item.workItemId}:${menuState.position.x}:${menuState.position.y}` : null;
   const currentState = menuState?.item.state ?? "";
+  const currentAssignedTo = menuState?.item.assignedTo?.trim() ?? "";
   const azureUrl = menuState ? buildAzureWorkItemUrl(props.organization, props.project, menuState.item.workItemId) : null;
   const childTypeMenu = useChildWorkItemTypeMenu({
     menuKey: workItemId,
@@ -47792,8 +48155,10 @@ function TimelineWorkItemContextMenu(props) {
     onFetchWorkItemTypes: props.onFetchWorkItemTypes
   });
   const stateOptions = props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded" ? normalizeWorkItemStateOptions(statusLoadState.options) : [];
+  const assigneeOptions = import_react25.default.useMemo(() => buildTimelineAssigneeOptions(props.timeline), [props.timeline]);
   import_react25.default.useEffect(() => {
     setStatusMenuOpen(false);
+    setAssigneeMenuOpen(false);
     setStatusLoadState({
       status: "idle",
       options: [],
@@ -47827,6 +48192,8 @@ function TimelineWorkItemContextMenu(props) {
     setConstrainedMenuStyle((current) => current?.key === nextStyle.key && current.leftPx === nextStyle.leftPx && current.topPx === nextStyle.topPx && current.maxHeightPx === nextStyle.maxHeightPx ? current : nextStyle);
   }, [
     actionError,
+    assigneeMenuOpen,
+    assigneeOptions.length,
     busyAction,
     childTypeMenu.isOpen,
     childTypeMenu.loadState.status,
@@ -47885,7 +48252,7 @@ function TimelineWorkItemContextMenu(props) {
       setStatusLoadState({
         status: "error",
         options: [],
-        error: error instanceof Error ? error.message : "Status konnten nicht geladen werden."
+        error: error instanceof Error ? error.message : "Could not load statuses."
       });
     });
     return () => {
@@ -47919,10 +48286,25 @@ function TimelineWorkItemContextMenu(props) {
       window.setTimeout(focusStatusOption2, 0);
     }
   }, [currentState, stateOptions.length, statusLoadState.status, statusMenuOpen]);
+  import_react25.default.useEffect(() => {
+    if (!assigneeMenuOpen || assigneeOptions.length === 0) {
+      return;
+    }
+    const currentIndex = assigneeOptions.findIndex((option) => option.name.trim().toLocaleLowerCase("en") === currentAssignedTo.toLocaleLowerCase("en"));
+    const focusAssigneeOption2 = () => {
+      assigneeOptionRefs.current[currentIndex >= 0 ? currentIndex : 0]?.focus();
+    };
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(focusAssigneeOption2);
+    } else {
+      window.setTimeout(focusAssigneeOption2, 0);
+    }
+  }, [assigneeMenuOpen, assigneeOptions, currentAssignedTo]);
   if (!menuState) {
     return null;
   }
   const statusControlsDisabled = busyAction !== null || !props.onUpdateWorkItemState || !props.onFetchWorkItemStateOptions;
+  const assigneeControlsDisabled = busyAction !== null || !props.onUpdateWorkItemAssignedTo || assigneeOptions.length === 0;
   const duplicateDisabled = busyAction !== null || !props.onDuplicateWorkItem;
   const canCreateChild = Boolean(props.canCreateChildWorkItem && props.onCreateChildWorkItem && props.onFetchWorkItemTypes);
   const childCreateDisabled = busyAction !== null || !props.onCreateChildWorkItem || !props.onFetchWorkItemTypes;
@@ -47941,7 +48323,7 @@ function TimelineWorkItemContextMenu(props) {
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Duplizieren fehlgeschlagen.");
+      setActionError(error instanceof Error ? error.message : "Could not duplicate the work item.");
     } finally {
       setBusyAction(null);
     }
@@ -47961,7 +48343,7 @@ function TimelineWorkItemContextMenu(props) {
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : `${childWorkItemType} konnte nicht erstellt werden.`);
+      setActionError(error instanceof Error ? error.message : `Could not create ${childWorkItemType}.`);
     } finally {
       setBusyAction(null);
     }
@@ -47980,7 +48362,25 @@ function TimelineWorkItemContextMenu(props) {
       });
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Statuswechsel fehlgeschlagen.");
+      setActionError(error instanceof Error ? error.message : "Could not change the status.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+  const performAssignedToUpdate = async (assignedTo) => {
+    if (!props.onUpdateWorkItemAssignedTo || busyAction !== null) {
+      return;
+    }
+    setActionError(null);
+    setBusyAction("assignedTo");
+    try {
+      await props.onUpdateWorkItemAssignedTo({
+        targetWorkItemId: menuState.item.workItemId,
+        assignedTo
+      });
+      props.onClose();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not change the assignment.");
     } finally {
       setBusyAction(null);
     }
@@ -48005,7 +48405,7 @@ function TimelineWorkItemContextMenu(props) {
       await copyTextToClipboard(azureUrl);
       props.onClose();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Link konnte nicht kopiert werden.");
+      setActionError(error instanceof Error ? error.message : "Could not copy the link.");
     } finally {
       setBusyAction(null);
     }
@@ -48083,6 +48483,10 @@ function TimelineWorkItemContextMenu(props) {
     setStatusMenuOpen(false);
     statusMenuButtonRef.current?.focus();
   };
+  const closeAssigneeMenuAndFocusButton = () => {
+    setAssigneeMenuOpen(false);
+    assigneeMenuButtonRef.current?.focus();
+  };
   const focusStatusOption = (index2) => {
     const option = statusOptionRefs.current[index2];
     if (option && !option.disabled) {
@@ -48098,6 +48502,22 @@ function TimelineWorkItemContextMenu(props) {
     const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
     const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
     focusStatusOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]);
+  };
+  const focusAssigneeOption = (index2) => {
+    const option = assigneeOptionRefs.current[index2];
+    if (option && !option.disabled) {
+      option.focus();
+    }
+  };
+  const focusAssigneeOptionByDelta = (currentIndex, delta) => {
+    const focusableIndexes = assigneeOptionRefs.current.map((element3, index2) => ({ element: element3, index: index2 })).filter((entry) => Boolean(entry.element && !entry.element.disabled)).map((entry) => entry.index);
+    if (focusableIndexes.length === 0) {
+      return;
+    }
+    const currentFocusableIndex = focusableIndexes.indexOf(currentIndex);
+    const currentPosition = currentFocusableIndex >= 0 ? currentFocusableIndex : 0;
+    const nextPosition = (currentPosition + delta + focusableIndexes.length) % focusableIndexes.length;
+    focusAssigneeOption(focusableIndexes[nextPosition] ?? focusableIndexes[0]);
   };
   const handleChildMenuButtonKeyDown = (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -48116,6 +48536,14 @@ function TimelineWorkItemContextMenu(props) {
         setStatusMenuOpen(true);
       },
       onArrowLeft: closeStatusMenuAndFocusButton
+    });
+  };
+  const handleAssigneeMenuButtonKeyDown = (event) => {
+    handleRootMenuItemKeyDown(event, 3, {
+      onArrowRight: () => {
+        setAssigneeMenuOpen(true);
+      },
+      onArrowLeft: closeAssigneeMenuAndFocusButton
     });
   };
   const handleChildTypeOptionKeyDown = (event, index2, option) => {
@@ -48185,6 +48613,37 @@ function TimelineWorkItemContextMenu(props) {
       closeStatusMenuAndFocusButton();
     }
   };
+  const handleAssigneeOptionKeyDown = (event, index2, assignedTo) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusAssigneeOptionByDelta(index2, 1);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusAssigneeOptionByDelta(index2, -1);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusAssigneeOption(0);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      focusAssigneeOption(assigneeOptions.length - 1);
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      void performAssignedToUpdate(assignedTo);
+      return;
+    }
+    if (event.key === "Escape" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeAssigneeMenuAndFocusButton();
+    }
+  };
   const renderedMenuStyle = menuState && constrainedMenuStyle?.key === menuPositionKey ? constrainedMenuStyle : {
     leftPx: menuState.position.x,
     topPx: menuState.position.y,
@@ -48219,7 +48678,7 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void performDuplicate();
     }
-  }, "Duplizieren"), canCreateChild ? import_react25.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react25.default.createElement("button", {
+  }, "Duplicate"), canCreateChild ? import_react25.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react25.default.createElement("button", {
     ref: (element3) => {
       childMenuButtonRef.current = element3;
       setRootMenuItemRef(1, element3);
@@ -48234,11 +48693,11 @@ function TimelineWorkItemContextMenu(props) {
       childTypeMenu.toggleMenu();
     },
     onKeyDown: handleChildMenuButtonKeyDown
-  }, "Child hinzuf\xFCgen"), childTypeMenu.isOpen ? import_react25.default.createElement("div", {
+  }, "Add child"), childTypeMenu.isOpen ? import_react25.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
-    "aria-label": "Child Work Item Type ausw\xE4hlen"
-  }, childTypeMenu.loadState.status === "loading" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Work Item Types werden geladen...") : null, childTypeMenu.loadState.status === "error" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, childTypeMenu.loadState.error) : null, childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0 ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Work Item Types verf\xFCgbar.") : null, ...childTypeMenu.options.map((option, index2) => import_react25.default.createElement("button", {
+    "aria-label": "Select child work item type"
+  }, childTypeMenu.loadState.status === "loading" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading work item types...") : null, childTypeMenu.loadState.status === "error" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, childTypeMenu.loadState.error) : null, childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0 ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No work item types available.") : null, ...childTypeMenu.options.map((option, index2) => import_react25.default.createElement("button", {
     key: option.name,
     ref: (element3) => {
       childTypeOptionRefs.current[index2] = element3;
@@ -48274,11 +48733,11 @@ function TimelineWorkItemContextMenu(props) {
       setStatusMenuOpen((current) => !current);
     },
     onKeyDown: handleStatusMenuButtonKeyDown
-  }, "Status \xE4ndern"), statusMenuOpen ? import_react25.default.createElement("div", {
+  }, "Change status"), statusMenuOpen ? import_react25.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
-    "aria-label": "Status \xE4ndern"
-  }, statusLoadState.status === "loading" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Status werden geladen...") : null, statusLoadState.status === "error" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Keine Statusoptionen verf\xFCgbar.") : null, ...stateOptions.map((option, index2) => import_react25.default.createElement("button", {
+    "aria-label": "Change status"
+  }, statusLoadState.status === "loading" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading statuses...") : null, statusLoadState.status === "error" ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react25.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No status options available.") : null, ...stateOptions.map((option, index2) => import_react25.default.createElement("button", {
     key: option.name,
     ref: (element3) => {
       statusOptionRefs.current[index2] = element3;
@@ -48297,19 +48756,45 @@ function TimelineWorkItemContextMenu(props) {
     className: "timeline-work-item-context-menu-swatch",
     style: option.color ? { backgroundColor: normalizeStateColor(option.color) } : void 0,
     "aria-hidden": "true"
-  }), option.name))) : null), import_react25.default.createElement("button", {
+  }), option.name))) : null), import_react25.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react25.default.createElement("button", {
     ref: (element3) => {
+      assigneeMenuButtonRef.current = element3;
       setRootMenuItemRef(3, element3);
     },
     type: "button",
     role: "menuitem",
-    className: "timeline-work-item-context-menu-action",
-    disabled: linkControlsDisabled,
-    onKeyDown: (event) => {
-      handleRootMenuItemKeyDown(event, 3);
+    className: "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-submenu",
+    "aria-haspopup": "menu",
+    "aria-expanded": assigneeMenuOpen ? "true" : "false",
+    disabled: assigneeControlsDisabled,
+    onClick: () => {
+      setAssigneeMenuOpen((current) => !current);
     },
-    onClick: openInAzureDevOps
-  }, "In Azure DevOps \xF6ffnen"), import_react25.default.createElement("button", {
+    onKeyDown: handleAssigneeMenuButtonKeyDown
+  }, "Assigned to"), assigneeMenuOpen ? import_react25.default.createElement("div", {
+    className: "timeline-work-item-context-submenu",
+    role: "menu",
+    "aria-label": "Assigned to"
+  }, ...assigneeOptions.map((option, index2) => import_react25.default.createElement("button", {
+    key: option.name,
+    ref: (element3) => {
+      assigneeOptionRefs.current[index2] = element3;
+    },
+    type: "button",
+    role: "menuitem",
+    "aria-label": option.name,
+    className: option.name.trim().toLocaleLowerCase("en") === currentAssignedTo.toLocaleLowerCase("en") ? "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-current timeline-work-item-context-menu-action-counted" : "timeline-work-item-context-menu-action timeline-work-item-context-menu-action-counted",
+    disabled: busyAction !== null || !props.onUpdateWorkItemAssignedTo,
+    onKeyDown: (event) => {
+      handleAssigneeOptionKeyDown(event, index2, option.name);
+    },
+    onClick: () => {
+      void performAssignedToUpdate(option.name);
+    }
+  }, import_react25.default.createElement("span", null, option.name), import_react25.default.createElement("span", {
+    className: "timeline-work-item-context-menu-count",
+    "aria-hidden": "true"
+  }, `${option.taskCount} ${option.taskCount === 1 ? "Task" : "Tasks"}`)))) : null), import_react25.default.createElement("button", {
     ref: (element3) => {
       setRootMenuItemRef(4, element3);
     },
@@ -48320,10 +48805,22 @@ function TimelineWorkItemContextMenu(props) {
     onKeyDown: (event) => {
       handleRootMenuItemKeyDown(event, 4);
     },
+    onClick: openInAzureDevOps
+  }, "Open in Azure DevOps"), import_react25.default.createElement("button", {
+    ref: (element3) => {
+      setRootMenuItemRef(5, element3);
+    },
+    type: "button",
+    role: "menuitem",
+    className: "timeline-work-item-context-menu-action",
+    disabled: linkControlsDisabled,
+    onKeyDown: (event) => {
+      handleRootMenuItemKeyDown(event, 5);
+    },
     onClick: () => {
       void copyLink();
     }
-  }, "Link kopieren"), actionError ? import_react25.default.createElement("p", {
+  }, "Copy link"), actionError ? import_react25.default.createElement("p", {
     className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error",
     role: "status"
   }, actionError) : null), document.body);
@@ -48598,11 +49095,13 @@ function addUtcDays(value, days) {
 var TIMELINE_VALUE_FILTERS_QUERY_PARAM = "tf";
 var TIMELINE_DATE_FILTERS_QUERY_PARAM = "tdf";
 var TIMELINE_FILTER_GROUPS_QUERY_PARAM = "tfg";
+var TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM = "tfp";
+var TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM = "tfc";
 var LEGACY_TIMELINE_FILTERS_QUERY_PARAM = "timelineFilters";
 function hasTimelineFilterUrlSearchParams(search2) {
   try {
     const params = new URLSearchParams(search2);
-    return params.has(TIMELINE_FILTER_GROUPS_QUERY_PARAM) || params.has(TIMELINE_VALUE_FILTERS_QUERY_PARAM) || params.has(TIMELINE_DATE_FILTERS_QUERY_PARAM) || params.has(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
+    return params.has(TIMELINE_FILTER_GROUPS_QUERY_PARAM) || params.has(TIMELINE_VALUE_FILTERS_QUERY_PARAM) || params.has(TIMELINE_DATE_FILTERS_QUERY_PARAM) || params.has(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM) || params.has(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM) || params.has(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
   } catch {
     return false;
   }
@@ -48621,6 +49120,17 @@ function parseTimelineFilterGroupsFromSearch(search2, options = {}) {
     return parsed.length > 0 ? [createTimelineFilterGroup(0, withSlotIds(parsed))] : [];
   } catch {
     return [];
+  }
+}
+function parseTimelineFilterHierarchyExpansionFromSearch(search2) {
+  try {
+    const params = new URLSearchParams(search2);
+    return {
+      includeParents: params.get(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM) === "1",
+      includeChildItems: params.get(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM) === "1"
+    };
+  } catch {
+    return { ...DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS };
   }
 }
 function serializeTimelineFilterGroupsForUrl(groups) {
@@ -48643,7 +49153,24 @@ function serializeTimelineFilterGroupsForUrl(groups) {
     }
   ];
 }
-function syncTimelineFilterGroupsToUrl(groups) {
+function serializeTimelineFilterHierarchyExpansionForUrl(options) {
+  const normalizedOptions = normalizeTimelineFilterHierarchyExpansionOptions(options);
+  const entries2 = [];
+  if (normalizedOptions.includeParents) {
+    entries2.push({
+      name: TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM,
+      value: "1"
+    });
+  }
+  if (normalizedOptions.includeChildItems) {
+    entries2.push({
+      name: TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM,
+      value: "1"
+    });
+  }
+  return entries2;
+}
+function syncTimelineFilterGroupsToUrl(groups, hierarchyExpansion = DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS) {
   if (typeof globalThis.window === "undefined") {
     return;
   }
@@ -48651,8 +49178,13 @@ function syncTimelineFilterGroupsToUrl(groups) {
   params.delete(TIMELINE_FILTER_GROUPS_QUERY_PARAM);
   params.delete(TIMELINE_VALUE_FILTERS_QUERY_PARAM);
   params.delete(TIMELINE_DATE_FILTERS_QUERY_PARAM);
+  params.delete(TIMELINE_FILTER_INCLUDE_PARENTS_QUERY_PARAM);
+  params.delete(TIMELINE_FILTER_INCLUDE_CHILD_ITEMS_QUERY_PARAM);
   params.delete(LEGACY_TIMELINE_FILTERS_QUERY_PARAM);
   serializeTimelineFilterGroupsForUrl(groups).forEach((entry) => {
+    params.append(entry.name, entry.value);
+  });
+  serializeTimelineFilterHierarchyExpansionForUrl(hierarchyExpansion).forEach((entry) => {
     params.append(entry.name, entry.value);
   });
   const nextSearch = params.toString();
@@ -49123,7 +49655,7 @@ function TimelinePane(props) {
     };
   }, [editInfoOpen]);
   const { activeDependencyDrag, setActiveDependencyDrag, dependencyViewMode, setDependencyViewMode, selectedDependency, setSelectedDependency } = dependencyEditing;
-  const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFilterGroups, setTimelineFilterGroups, timelineFieldFilters, nextFilterSlotId, setNextFilterSlotId, nextFilterGroupId, setNextFilterGroupId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
+  const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFilterGroups, setTimelineFilterGroups, timelineFieldFilters, timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion, setIncludeTimelineFilterParents, setIncludeTimelineFilterChildItems, nextFilterSlotId, setNextFilterSlotId, nextFilterGroupId, setNextFilterGroupId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
   const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField, togglePrimarySortDirection, toggleSecondarySortDirection } = timelineSorting;
   const sortedBaseTimeline = import_react27.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
   const effectiveTimeline = import_react27.default.useMemo(() => {
@@ -49298,9 +49830,16 @@ function TimelinePane(props) {
     pendingTimelineFilterUrlHydrationRef.current = false;
     skipNextTimelineFilterUrlSyncRef.current = true;
     setTimelineFilterGroups(nextState.groups);
+    setTimelineFilterHierarchyExpansion(nextState.hierarchyExpansion);
     setNextFilterSlotId(nextState.nextSlotId);
     setNextFilterGroupId(nextState.nextGroupId);
-  }, [props.timeline, setNextFilterGroupId, setNextFilterSlotId, setTimelineFilterGroups]);
+  }, [
+    props.timeline,
+    setNextFilterGroupId,
+    setNextFilterSlotId,
+    setTimelineFilterGroups,
+    setTimelineFilterHierarchyExpansion
+  ]);
   import_react27.default.useEffect(() => {
     if (skipNextTimelineFilterUrlSyncRef.current) {
       skipNextTimelineFilterUrlSyncRef.current = false;
@@ -49309,18 +49848,23 @@ function TimelinePane(props) {
     if (pendingTimelineFilterUrlHydrationRef.current && props.timeline === null && hasCurrentTimelineFilterUrlSearchParams()) {
       return;
     }
-    syncTimelineFilterGroupsToUrl(timelineFilterGroups);
-  }, [props.timeline, timelineFilterGroups]);
+    syncTimelineFilterGroupsToUrl(timelineFilterGroups, timelineFilterHierarchyExpansion);
+  }, [props.timeline, timelineFilterGroups, timelineFilterHierarchyExpansion]);
   import_react27.default.useEffect(() => {
     initialViewportAppliedRef.current = false;
     const scrollElement = chartScrollRef.current;
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
-  }, [timelineFilterGroups]);
+  }, [timelineFilterGroups, timelineFilterHierarchyExpansion]);
   const availableFieldRefs = import_react27.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
   const availableTimelineLabelFieldOptions = import_react27.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredTimeline = import_react27.default.useMemo(() => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups), [effectiveTimeline, timelineFilterGroups]);
+  const hardFilteredTimeline = import_react27.default.useMemo(() => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups), [effectiveTimeline, timelineFilterGroups]);
+  const filteredTimeline = import_react27.default.useMemo(() => applyTimelineFilterHierarchyExpansion({
+    sourceTimeline: effectiveTimeline,
+    seedTimeline: hardFilteredTimeline,
+    options: timelineFilterHierarchyExpansion
+  }), [effectiveTimeline, hardFilteredTimeline, timelineFilterHierarchyExpansion]);
   const activeTimelineFiltersCount = import_react27.default.useMemo(() => countActiveTimelineFieldFilters(timelineFieldFilters), [timelineFieldFilters]);
   const colorCodingOptions = import_react27.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
   const filteredColorCodingOptions = import_react27.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
@@ -50188,6 +50732,14 @@ function TimelinePane(props) {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => toggleTimelineFilterValueSelection(current, slotId, valueKey));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
+  const setIncludeParentsInTimelineFilters = import_react27.default.useCallback((includeParents) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterParents(includeParents);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterParents]);
+  const setIncludeChildItemsInTimelineFilters = import_react27.default.useCallback((includeChildItems) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterChildItems(includeChildItems);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterChildItems]);
   const toggleVisibleTimelineFieldValueSelections = import_react27.default.useCallback((slotId, valueKeys) => {
     if (valueKeys.length === 0) {
       return;
@@ -50485,7 +51037,11 @@ function TimelinePane(props) {
     onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
     onRemoveTimelineFilterGroup: removeTimelineFilterGroupById,
     onAddTimelineFilterCondition: addTimelineFilterCondition,
-    onAddTimelineFilterGroup: addTimelineFilterOrGroup
+    onAddTimelineFilterGroup: addTimelineFilterOrGroup,
+    includeParents: timelineFilterHierarchyExpansion.includeParents,
+    includeChildItems: timelineFilterHierarchyExpansion.includeChildItems,
+    onSetIncludeParents: setIncludeParentsInTimelineFilters,
+    onSetIncludeChildItems: setIncludeChildItemsInTimelineFilters
   }), adoptScheduleError ? import_react27.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
@@ -50510,7 +51066,7 @@ function TimelinePane(props) {
   }), import_react27.default.createElement(TimelineWorkItemContextMenu, {
     menuState: workItemContextMenu.menuState,
     menuRef: workItemContextMenu.menuRef,
-    timeline: filteredTimeline,
+    timeline: props.timeline,
     organization: props.organization,
     project: props.project,
     onClose: workItemContextMenu.closeMenu,
@@ -50519,7 +51075,8 @@ function TimelinePane(props) {
     onCreateChildWorkItem: props.onCreateChildWorkItem,
     onFetchWorkItemTypes: props.onFetchWorkItemTypes,
     onUpdateWorkItemState: props.onUpdateWorkItemState,
-    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+    onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+    onUpdateWorkItemAssignedTo: props.onUpdateWorkItemAssignedTo
   }), import_react27.default.createElement(TimelinePrintHeader, {
     queryName: props.activeQueryName ?? null,
     queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
@@ -51171,6 +51728,7 @@ function buildContextMenuItemFromVisualBar(bar, scheduleFieldRefs) {
     workItemId: bar.workItemId,
     title: bar.title,
     state: bar.stateCode,
+    assignedTo: bar.assignedTo,
     workItemType: bar.workItemType,
     ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
   };
@@ -51180,6 +51738,7 @@ function buildContextMenuItemFromUnschedulable(item, scheduleFieldRefs) {
     workItemId: item.workItemId,
     title: item.title,
     state: item.state.code,
+    assignedTo: item.details.assignedTo ?? null,
     workItemType: item.details.workItemType ?? null,
     ...scheduleFieldRefs ? { scheduleFieldRefs } : {}
   };
@@ -51281,6 +51840,7 @@ function buildVisualChartModel(timeline, dayWidthPx, zoomLevel, colorByWorkItemI
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
+      assignedTo: bar.source.details.assignedTo ?? null,
       fieldValues: bar.source.details.fieldValues ?? {},
       sourceStartDateIso: writeOverride?.startDate ?? bar.source.schedule.startDate,
       sourceEndDateIso: writeOverride?.endDate ?? bar.source.schedule.endDate,
@@ -51435,9 +51995,14 @@ function resolveInitialTimelineFilterState(timeline) {
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion: {
+        includeParents: false,
+        includeChildItems: false
+      }
     };
   }
+  const hierarchyExpansion = parseTimelineFilterHierarchyExpansionFromSearch(globalThis.location.search);
   const parsedGroups = parseTimelineFilterGroupsFromSearch(globalThis.location.search, {
     dateFilterContext: buildTimelineDateFilterContext(timeline)
   });
@@ -51446,13 +52011,15 @@ function resolveInitialTimelineFilterState(timeline) {
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion
     };
   }
   return {
     groups: parsedGroups,
     nextSlotId: resolveNextTimelineFilterSlotId(parsedGroups),
-    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups)
+    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups),
+    hierarchyExpansion
   };
 }
 function hasCurrentTimelineFilterUrlSearchParams() {
@@ -52940,6 +53507,27 @@ function applyWorkItemStateUpdate(timeline, targetWorkItemId, stateCode, stateCo
     } : item)
   };
 }
+function applyWorkItemAssignedToUpdate(timeline, targetWorkItemId, assignedTo) {
+  if (!timeline) {
+    return timeline;
+  }
+  const applyAssignedTo = (item) => item.workItemId === targetWorkItemId ? {
+    ...item,
+    details: {
+      ...item.details,
+      assignedTo,
+      fieldValues: {
+        ...item.details.fieldValues ?? {},
+        "System.AssignedTo": assignedTo
+      }
+    }
+  } : item;
+  return {
+    ...timeline,
+    bars: timeline.bars.map(applyAssignedTo),
+    unschedulable: timeline.unschedulable.map(applyAssignedTo)
+  };
+}
 function applyDependencyLinkUpdate(timeline, predecessorWorkItemId, successorWorkItemId, action) {
   if (!timeline) {
     return timeline;
@@ -54219,12 +54807,12 @@ function isCompletedRestoredQueryResponse(response) {
 
 // dist/src/app/bootstrap/use-initial-query-onboarding-flow.js
 var MISSING_QUERY_CONTEXT_ERROR_MESSAGE = "Add organization and project in settings.";
-var INITIAL_QUERY_URL_ERROR_MESSAGE = "F\xFCge eine vollst\xE4ndige Azure DevOps Query-URL ein.";
+var INITIAL_QUERY_URL_ERROR_MESSAGE = "Paste a complete Azure DevOps query URL.";
 function getInitialQueryOnboardingErrorMessage(error) {
   if (error instanceof Error && error.message === MISSING_QUERY_CONTEXT_ERROR_MESSAGE) {
     return INITIAL_QUERY_URL_ERROR_MESSAGE;
   }
-  return error instanceof Error ? error.message : "Query konnte nicht geladen werden.";
+  return error instanceof Error ? error.message : "Could not load query.";
 }
 function useInitialQueryOnboardingFlow(params) {
   const hydratePreferences = params.hydratePreferences ?? hydrateUserPreferences;
@@ -54283,14 +54871,14 @@ function useInitialQueryOnboardingFlow(params) {
     }
     setLoading(true);
     setErrorMessage(null);
-    setStatusMessage("Query wird gepr\xFCft...");
+    setStatusMessage("Validating query...");
     try {
       const resolvedInput = resolveRuntimeQueryInput(queryInput);
-      setStatusMessage("Query wird geladen...");
+      setStatusMessage("Loading query...");
       const loadedResponse = await params.runQuery({
         queryId: resolvedInput.transportQueryInput
       });
-      setStatusMessage("Query wird gespeichert...");
+      setStatusMessage("Saving query...");
       const saveResult = await params.saveLoadedHeaderQuery({
         ...resolvedInput,
         loadedResponse
@@ -54301,7 +54889,7 @@ function useInitialQueryOnboardingFlow(params) {
         setStatusMessage(null);
         return;
       }
-      setErrorMessage(saveResult.kind === "error" ? saveResult.message : "Eine Query wird bereits geladen. Bitte warte kurz und versuche es erneut.");
+      setErrorMessage(saveResult.kind === "error" ? saveResult.message : "Another query is already loading. Please wait a moment and try again.");
       setStatusMessage(null);
     } catch (error) {
       setErrorMessage(getInitialQueryOnboardingErrorMessage(error));
@@ -54335,13 +54923,13 @@ async function clearBrowserLocalConfigs(params) {
   const localStorageResult = clearStorageByPrefix({
     target: "browser-local-storage",
     label: "Browser localStorage app keys",
-    storage: params.localStorage ?? readStorage("localStorage"),
+    storage: params.localStorage ?? readStorage2("localStorage"),
     prefix: BROWSER_STORAGE_PREFIX
   });
   const sessionStorageResult = clearStorageByPrefix({
     target: "browser-session-storage",
     label: "Browser sessionStorage app keys",
-    storage: params.sessionStorage ?? readStorage("sessionStorage"),
+    storage: params.sessionStorage ?? readStorage2("sessionStorage"),
     prefix: BROWSER_STORAGE_PREFIX
   });
   const cacheStorageResult = await clearCachesByPrefix({
@@ -54403,7 +54991,7 @@ function clearQueryClient(queryClient) {
     return failed("browser-query-client-cache", "Browser query client cache");
   }
 }
-function readStorage(name2) {
+function readStorage2(name2) {
   try {
     if (typeof globalThis[name2] === "undefined") {
       return null;
@@ -54461,17 +55049,26 @@ function AppReleaseBadge(props) {
     className: "app-release-badge",
     "aria-haspopup": "dialog",
     "aria-expanded": props.open,
-    "aria-label": `Changelog zu Version ${APP_VERSION} \xF6ffnen`,
-    title: `Changelog zu Version ${APP_VERSION} \xF6ffnen`,
+    "aria-label": `Open changelog for version ${APP_VERSION}`,
+    title: `Open changelog for version ${APP_VERSION}`,
     onClick: props.onVersionClick
-  }, label), props.updateAvailable ? import_react35.default.createElement("button", {
+  }, label), import_react35.default.createElement("button", {
+    ref: props.shortcutsButtonRef,
+    type: "button",
+    className: "app-release-shortcuts-button",
+    "aria-haspopup": "dialog",
+    "aria-expanded": props.shortcutsOpen === true,
+    "aria-label": "Open keyboard shortcuts",
+    title: "Open keyboard shortcuts",
+    onClick: props.onShortcutsClick
+  }, import_react35.default.createElement("span", { "aria-hidden": "true" }, "\u2318")), props.updateAvailable ? import_react35.default.createElement("button", {
     ref: props.updateButtonRef,
     type: "button",
     className: "app-release-update-indicator",
     "aria-haspopup": "dialog",
     "aria-expanded": props.open,
-    "aria-label": "Neue Version verf\xFCgbar. Changelog mit Update-Hinweis \xF6ffnen",
-    title: "Neue Version verf\xFCgbar",
+    "aria-label": "New version available. Open changelog with update notice",
+    title: "New version available",
     onClick: props.onUpdateClick
   }, "!") : null);
 }
@@ -54529,17 +55126,21 @@ var ADO_COMM_LOG_UI_MAX = 1e3;
 var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
-var LazyAppChangelogDialog = import_react41.default.lazy(async () => {
+var LazyAppChangelogDialog = import_react43.default.lazy(async () => {
   const module = await Promise.resolve().then(() => (init_app_changelog_dialog(), app_changelog_dialog_exports));
   return { default: module.AppChangelogDialog };
 });
+var LazyAppKeyboardShortcutsDialog = import_react43.default.lazy(async () => {
+  const module = await Promise.resolve().then(() => (init_app_keyboard_shortcuts_dialog(), app_keyboard_shortcuts_dialog_exports));
+  return { default: module.AppKeyboardShortcutsDialog };
+});
 function renderAdoCommLogPanel(params) {
-  return import_react41.default.createElement("details", {
+  return import_react43.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
     open: true,
     "data-auto-dismiss": "off"
-  }, import_react41.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react41.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react41.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react41.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react41.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react41.default.createElement("pre", {
+  }, import_react43.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react43.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react43.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react43.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react43.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react43.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -54547,54 +55148,55 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root4 = (0, import_client.createRoot)(options.container);
-  root4.render(import_react41.default.createElement(import_react41.default.StrictMode, null, import_react41.default.createElement(QueryClientProvider, {
+  root4.render(import_react43.default.createElement(import_react43.default.StrictMode, null, import_react43.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react41.default.createElement(BrowserRouter, null, import_react41.default.createElement(UiShellApp, {
+  }, import_react43.default.createElement(BrowserRouter, null, import_react43.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react41.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react43.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react41.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react41.default.useState(false);
-  const [changelogMode, setChangelogMode] = import_react41.default.useState(null);
-  const [response, setResponse] = import_react41.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react41.default.useState(initialLastRunRequest);
-  const [uiModel, setUiModel] = import_react41.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react41.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react41.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react41.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const [effectiveTheme, setEffectiveTheme] = import_react41.default.useState(() => resolveEffectiveTheme(themeMode));
-  const [liveSyncEnabled, setLiveSyncEnabled] = import_react41.default.useState(() => loadTimelineLiveSyncEnabledPreference());
-  const responseRef = import_react41.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react41.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
-  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react41.default.useState(0);
-  const [isRefreshing, setIsRefreshing] = import_react41.default.useState(false);
-  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react41.default.useState(false);
-  const [detailsPanelDirty, setDetailsPanelDirty] = import_react41.default.useState(false);
-  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react41.default.useState(0);
-  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react41.default.useState(false);
-  const isRefreshingRef = import_react41.default.useRef(isRefreshing);
-  const workItemSyncInFlightRef = import_react41.default.useRef(0);
-  const pendingWorkItemMutationsRef = import_react41.default.useRef([]);
-  const preOptimisticResponseSnapshotRef = import_react41.default.useRef(null);
-  const flushPendingWorkItemMutationsPromiseRef = import_react41.default.useRef(null);
-  const retryRefreshInFlightPromiseRef = import_react41.default.useRef(null);
-  const refreshGuardStateRef = import_react41.default.useRef({
+  const [activeTab, setActiveTab] = import_react43.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react43.default.useState(false);
+  const [headerDialogMode, setHeaderDialogMode] = import_react43.default.useState(null);
+  const [response, setResponse] = import_react43.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react43.default.useState(initialLastRunRequest);
+  const [uiModel, setUiModel] = import_react43.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react43.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react43.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react43.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [effectiveTheme, setEffectiveTheme] = import_react43.default.useState(() => resolveEffectiveTheme(themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react43.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react43.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react43.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react43.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react43.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react43.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react43.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react43.default.useState(0);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react43.default.useState(false);
+  const isRefreshingRef = import_react43.default.useRef(isRefreshing);
+  const workItemSyncInFlightRef = import_react43.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react43.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react43.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react43.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react43.default.useRef(null);
+  const refreshGuardStateRef = import_react43.default.useRef({
     detailsPanelDirty: false,
     hasOptimisticChanges: false,
     liveSyncEnabled,
     workItemSyncState
   });
-  const liveSyncEnabledRef = import_react41.default.useRef(liveSyncEnabled);
-  const timelineSelectionStoreRef = import_react41.default.useRef(createTimelineSelectionStore());
-  const changelogVersionButtonRef = import_react41.default.useRef(null);
-  const changelogUpdateButtonRef = import_react41.default.useRef(null);
-  const workItemStateOptionsCacheRef = import_react41.default.useRef(/* @__PURE__ */ new Map());
+  const liveSyncEnabledRef = import_react43.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react43.default.useRef(createTimelineSelectionStore());
+  const changelogVersionButtonRef = import_react43.default.useRef(null);
+  const keyboardShortcutsButtonRef = import_react43.default.useRef(null);
+  const changelogUpdateButtonRef = import_react43.default.useRef(null);
+  const workItemStateOptionsCacheRef = import_react43.default.useRef(/* @__PURE__ */ new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
     detailsPanelDirty,
@@ -54604,8 +55206,9 @@ function UiShellApp(props) {
   };
   const organization = readLocalStorageValue(ORG_KEY);
   const project = readLocalStorageValue(PROJECT_KEY);
-  const changelogOpen = changelogMode !== null;
-  const changelogReturnFocusRef = changelogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
+  const changelogOpen = headerDialogMode === "changelog" || headerDialogMode === "update_notice";
+  const keyboardShortcutsOpen = headerDialogMode === "keyboard_shortcuts";
+  const changelogReturnFocusRef = headerDialogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
   const { updateNotice, trigger: triggerAppUpdateCheck } = useAppUpdateCheck({
     checkAppUpdate: props.composition.controller.checkAppUpdate
   });
@@ -54615,28 +55218,28 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const updateRefreshGuardState = import_react41.default.useCallback((patch2) => {
+  const updateRefreshGuardState = import_react43.default.useCallback((patch2) => {
     refreshGuardStateRef.current = {
       ...refreshGuardStateRef.current,
       ...patch2
     };
   }, []);
-  const setGuardedHasOptimisticChanges = import_react41.default.useCallback((next) => {
+  const setGuardedHasOptimisticChanges = import_react43.default.useCallback((next) => {
     updateRefreshGuardState({ hasOptimisticChanges: next });
     setHasOptimisticChanges(next);
   }, [updateRefreshGuardState]);
-  const setGuardedWorkItemSyncState = import_react41.default.useCallback((next) => {
+  const setGuardedWorkItemSyncState = import_react43.default.useCallback((next) => {
     const current = refreshGuardStateRef.current.workItemSyncState;
     const resolved = typeof next === "function" ? next(current) : next;
     updateRefreshGuardState({ workItemSyncState: resolved });
     setWorkItemSyncState(resolved);
   }, [updateRefreshGuardState]);
-  const setGuardedLiveSyncEnabled = import_react41.default.useCallback((enabled) => {
+  const setGuardedLiveSyncEnabled = import_react43.default.useCallback((enabled) => {
     liveSyncEnabledRef.current = enabled;
     updateRefreshGuardState({ liveSyncEnabled: enabled });
     setLiveSyncEnabled(enabled);
   }, [updateRefreshGuardState]);
-  const fetchWorkItemStateOptionsCached = import_react41.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react43.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -54645,10 +55248,10 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react41.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react43.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react41.default.useCallback(async (request) => {
+  const runQuery = import_react43.default.useCallback(async (request) => {
     try {
       const result = await props.composition.runQuerySelectionFlow({
         queryId: request.queryId,
@@ -54689,11 +55292,11 @@ function UiShellApp(props) {
       throw error;
     }
   }, [enrichRuntimeStateColors, props.composition, triggerAppUpdateCheck]);
-  const handleNeedsFix = import_react41.default.useCallback((needsFixResponse) => {
+  const handleNeedsFix = import_react43.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react41.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react43.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -54713,20 +55316,20 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const readRefreshGuardInput = import_react41.default.useCallback((options) => createRefreshDiscardWarningInput({
+  const readRefreshGuardInput = import_react43.default.useCallback((options) => createRefreshDiscardWarningInput({
     state: refreshGuardStateRef.current,
     pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
     afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
   }), []);
-  const handleDetailsDirtyChange = import_react41.default.useCallback((dirty) => {
+  const handleDetailsDirtyChange = import_react43.default.useCallback((dirty) => {
     updateRefreshGuardState({ detailsPanelDirty: dirty });
     setDetailsPanelDirty(dirty);
   }, [updateRefreshGuardState]);
-  const handleSetLiveSyncEnabled = import_react41.default.useCallback((enabled) => {
+  const handleSetLiveSyncEnabled = import_react43.default.useCallback((enabled) => {
     setGuardedLiveSyncEnabled(enabled);
     saveTimelineLiveSyncEnabledPreference(enabled);
   }, [setGuardedLiveSyncEnabled]);
-  const executeRefresh = import_react41.default.useCallback(async (discardPendingChanges) => {
+  const executeRefresh = import_react43.default.useCallback(async (discardPendingChanges) => {
     isRefreshingRef.current = true;
     setIsRefreshing(true);
     if (discardPendingChanges) {
@@ -54783,14 +55386,14 @@ function UiShellApp(props) {
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
-  const runTrackedWorkItemUpdate = import_react41.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react43.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
       setWorkItemSyncState: setGuardedWorkItemSyncState
     });
   }, [setGuardedWorkItemSyncState]);
-  const flushQueuedWorkItemMutations = import_react41.default.useCallback(async () => {
+  const flushQueuedWorkItemMutations = import_react43.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
     }
@@ -54816,7 +55419,7 @@ function UiShellApp(props) {
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
   }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
-  const runRetryRefresh = import_react41.default.useCallback(async () => {
+  const runRetryRefresh = import_react43.default.useCallback(async () => {
     if (isRefreshingRef.current) {
       return;
     }
@@ -54837,8 +55440,8 @@ function UiShellApp(props) {
     }
     await executeRefresh(false);
   }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
-  const retryRefresh = import_react41.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
-  const enqueuePendingWorkItemMutation = import_react41.default.useCallback((mutation) => {
+  const retryRefresh = import_react43.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
+  const enqueuePendingWorkItemMutation = import_react43.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
@@ -54846,7 +55449,7 @@ function UiShellApp(props) {
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
     setGuardedHasOptimisticChanges(true);
   }, [setGuardedHasOptimisticChanges]);
-  const scheduleWorkItemMutation = import_react41.default.useCallback(async (params) => {
+  const scheduleWorkItemMutation = import_react43.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "work_item",
@@ -54862,7 +55465,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleDependencyMutation = import_react41.default.useCallback(async (params) => {
+  const scheduleDependencyMutation = import_react43.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "dependency",
@@ -54879,7 +55482,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleReparentMutation = import_react41.default.useCallback(async (params) => {
+  const scheduleReparentMutation = import_react43.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "reparent",
@@ -54896,20 +55499,20 @@ function UiShellApp(props) {
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     liveSyncEnabledRef.current = liveSyncEnabled;
   }, [liveSyncEnabled]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     const preferences = initialQueryOnboardingFlow.hydratedPreferences;
     if (!preferences) {
       return;
@@ -54920,13 +55523,13 @@ function UiShellApp(props) {
     const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
     headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
   }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
   }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
       return;
@@ -54936,7 +55539,7 @@ function UiShellApp(props) {
     }
     setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
@@ -54946,7 +55549,7 @@ function UiShellApp(props) {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -54972,7 +55575,7 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
-  import_react41.default.useEffect(() => {
+  import_react43.default.useEffect(() => {
     const onPointerDown = (event) => {
       const target = event.target;
       const trustBadgeElement = document.querySelector("details.trust-badge-details");
@@ -55024,7 +55627,7 @@ function UiShellApp(props) {
     headerQueryLoading: headerQueryFlow.headerQueryLoading,
     workItemSyncState
   });
-  const controlsContent = import_react41.default.createElement(import_react41.default.Fragment, null, import_react41.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react41.default.createElement(TopTabs, {
+  const controlsContent = import_react43.default.createElement(import_react43.default.Fragment, null, import_react43.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react43.default.createElement(TopTabs, {
     activeTab,
     model: uiModel,
     onTabChange: (tab2) => {
@@ -55034,10 +55637,10 @@ function UiShellApp(props) {
       setBlockerMessage(payload);
       setControlsOpen(true);
     }
-  }), blockerMessage ? import_react41.default.createElement("section", {
+  }), blockerMessage ? import_react43.default.createElement("section", {
     "aria-label": "tab-blocker-guidance",
     className: "tab-blocker-guidance"
-  }, import_react41.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react41.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react41.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react41.default.createElement(LocalConfigResetPanel, {
+  }, import_react43.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react43.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react43.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react43.default.createElement(LocalConfigResetPanel, {
     guard: localConfigResetGuard,
     onServerReset: props.composition.controller.resetLocalConfigs,
     onBrowserCleanup: () => clearBrowserLocalConfigs({
@@ -55047,20 +55650,26 @@ function UiShellApp(props) {
       window.location.reload();
     }
   }), mainPanel);
-  return import_react41.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react41.default.createElement("section", { className: "ui-shell-header" }, import_react41.default.createElement("div", { className: "ui-shell-brand-row" }, import_react41.default.createElement("div", { className: "ui-shell-brand" }, import_react41.default.createElement("h1", null, "AzureGanttOps")), import_react41.default.createElement(AppReleaseBadge, {
+  return import_react43.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react43.default.createElement("section", { className: "ui-shell-header" }, import_react43.default.createElement("div", { className: "ui-shell-brand-row" }, import_react43.default.createElement("div", { className: "ui-shell-brand" }, import_react43.default.createElement("h1", null, "AzureGanttOps")), import_react43.default.createElement(AppReleaseBadge, {
     open: changelogOpen,
+    shortcutsOpen: keyboardShortcutsOpen,
     updateAvailable: updateNotice !== null,
     versionButtonRef: changelogVersionButtonRef,
+    shortcutsButtonRef: keyboardShortcutsButtonRef,
     updateButtonRef: changelogUpdateButtonRef,
     onVersionClick: () => {
       setControlsOpen(false);
-      setChangelogMode("standard");
+      setHeaderDialogMode("changelog");
+    },
+    onShortcutsClick: () => {
+      setControlsOpen(false);
+      setHeaderDialogMode("keyboard_shortcuts");
     },
     onUpdateClick: () => {
       setControlsOpen(false);
-      setChangelogMode("update_notice");
+      setHeaderDialogMode("update_notice");
     }
-  })), import_react41.default.createElement("div", { className: "ui-shell-header-actions" }, import_react41.default.createElement("div", { className: "header-query-picker" }, import_react41.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react41.default.createElement("details", { className: "header-query-dropdown" }, import_react41.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react41.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react41.default.createElement("input", {
+  })), import_react43.default.createElement("div", { className: "ui-shell-header-actions" }, import_react43.default.createElement("div", { className: "header-query-picker" }, import_react43.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react43.default.createElement("details", { className: "header-query-dropdown" }, import_react43.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react43.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react43.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -55068,7 +55677,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react41.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react41.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react41.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react41.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react41.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react43.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react43.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react43.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react43.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react43.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -55078,7 +55687,7 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react41.default.createElement("button", {
+  }, "\xD7"), import_react43.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-open",
     "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
@@ -55093,7 +55702,7 @@ function UiShellApp(props) {
         window.open(queryUrl, "_blank", "noopener,noreferrer");
       }
     }
-  }, import_react41.default.createElement("svg", {
+  }, import_react43.default.createElement("svg", {
     width: "14",
     height: "14",
     viewBox: "0 0 24 24",
@@ -55102,21 +55711,21 @@ function UiShellApp(props) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }, import_react41.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react41.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react41.default.createElement("button", {
+  }, import_react43.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react43.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react43.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react41.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react43.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react41.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react43.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -55132,23 +55741,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react41.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react43.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react41.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react43.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react41.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react41.default.createElement("span", {
+  }, import_react43.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react43.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react41.default.createElement("div", { className: "theme-menu" }, import_react41.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react43.default.createElement("div", { className: "theme-menu" }, import_react43.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -55156,7 +55765,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react41.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react41.default.createElement(TrustBadge, {
+  }, import_react43.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react43.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
@@ -55164,7 +55773,7 @@ function UiShellApp(props) {
     controlsOpen,
     onControlsOpenChange: setControlsOpen,
     controlsContent
-  }))), import_react41.default.createElement("section", { className: "ui-shell-content" }, import_react41.default.createElement("section", { className: "gantt-primary-card" }, import_react41.default.createElement(WarningBanner, {
+  }))), import_react43.default.createElement("section", { className: "ui-shell-content" }, import_react43.default.createElement("section", { className: "gantt-primary-card" }, import_react43.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -55172,7 +55781,7 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react41.default.createElement(TimelinePane, {
+  }), import_react43.default.createElement(TimelinePane, {
     key: response?.activeQueryId ?? "timeline-no-query",
     activeQueryId: response?.activeQueryId ?? null,
     activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
@@ -55307,6 +55916,21 @@ function UiShellApp(props) {
         }
       });
     },
+    onUpdateWorkItemAssignedTo: async ({ targetWorkItemId, assignedTo }) => {
+      await scheduleWorkItemMutation({
+        workItemId: targetWorkItemId,
+        applyToTimeline: (timeline) => applyWorkItemAssignedToUpdate(timeline, targetWorkItemId, assignedTo),
+        executeDetails: async () => {
+          const writeResult = await props.composition.controller.updateWorkItemAssignedTo({
+            targetWorkItemId,
+            assignedTo
+          });
+          if (!writeResult.accepted) {
+            throw toWritebackError(writeResult.reasonCode);
+          }
+        }
+      });
+    },
     onDuplicateWorkItem: async ({ sourceWorkItemId, scheduleFieldRefs }) => {
       const writeResult = await runTrackedWorkItemUpdate(async () => {
         const writeResult2 = await props.composition.controller.duplicateWorkItem({
@@ -55388,44 +56012,48 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }))), import_react41.default.createElement("footer", { className: "ui-shell-footer" }, import_react41.default.createElement("span", null, "An "), import_react41.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react41.default.createElement("span", null, " by Christian Betz @ "), import_react41.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react41.default.createElement(import_react41.default.Suspense, { fallback: null }, import_react41.default.createElement(LazyAppChangelogDialog, {
+  }))), import_react43.default.createElement("footer", { className: "ui-shell-footer" }, import_react43.default.createElement("span", null, "An "), import_react43.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react43.default.createElement("span", null, " by Christian Betz @ "), import_react43.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react43.default.createElement(import_react43.default.Suspense, { fallback: null }, import_react43.default.createElement(LazyAppChangelogDialog, {
     open: true,
-    onClose: () => setChangelogMode(null),
+    onClose: () => setHeaderDialogMode(null),
     returnFocusRef: changelogReturnFocusRef,
-    updateNotice: changelogMode === "update_notice" ? updateNotice : null
-  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react41.default.createElement(InitialQueryOnboardingDialog, {
+    updateNotice: headerDialogMode === "update_notice" ? updateNotice : null
+  })) : null, keyboardShortcutsOpen ? import_react43.default.createElement(import_react43.default.Suspense, { fallback: null }, import_react43.default.createElement(LazyAppKeyboardShortcutsDialog, {
+    open: true,
+    onClose: () => setHeaderDialogMode(null),
+    returnFocusRef: keyboardShortcutsButtonRef
+  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react43.default.createElement(InitialQueryOnboardingDialog, {
     queryInput: initialQueryOnboardingFlow.queryInput,
     loading: initialQueryOnboardingFlow.loading,
     statusMessage: initialQueryOnboardingFlow.statusMessage,
     errorMessage: initialQueryOnboardingFlow.errorMessage,
     onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
     onSubmit: initialQueryOnboardingFlow.submit
-  }) : null, showRefreshDiscardWarning ? import_react41.default.createElement("div", {
+  }) : null, showRefreshDiscardWarning ? import_react43.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, import_react41.default.createElement("div", {
+  }, import_react43.default.createElement("div", {
     className: "refresh-discard-warning-dialog",
     role: "alertdialog",
     "aria-labelledby": "refresh-discard-warning-title",
     "aria-describedby": "refresh-discard-warning-desc",
     onClick: (e) => e.stopPropagation()
-  }, import_react41.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Achtung: Ungespeicherte \xC4nderungen"), import_react41.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "Es gibt ungespeicherte \xC4nderungen, die beim Aktualisieren verloren gehen."), import_react41.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react41.default.createElement("button", {
+  }, import_react43.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Warning: Unsaved changes"), import_react43.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "There are unsaved changes that will be lost when refreshing."), import_react43.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react43.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-cancel",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, "Abbrechen"), import_react41.default.createElement("button", {
+  }, "Cancel"), import_react43.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-confirm",
     onClick: () => {
       setShowRefreshDiscardWarning(false);
       void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
     }
-  }, "Verwerfen & Aktualisieren")))) : null);
+  }, "Discard & refresh")))) : null);
 }
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react41.default.createElement(QuerySelector, {
+    return import_react43.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react43.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
@@ -55435,19 +56063,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react41.default.createElement(MappingFixPanel, {
+    return import_react43.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react43.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react41.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react43.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react41.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react43.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react43.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react41.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react41.default.createElement(DiagnosticsTab, {
+  return import_react43.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react43.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
@@ -55525,7 +56153,11 @@ var state = {
   submitDelayMs: 0,
   callLog: [],
   adoEntries: [],
-  adoSeq: 0
+  adoSeq: 0,
+  fieldDefinitions: { fields: [] },
+  fieldDefinitionRequests: [],
+  detailsUpdates: [],
+  failNextDetailsUpdateMessage: null
 };
 var USER_PREFERENCES_ENDPOINT2 = "/phase2/user-preferences";
 var USER_PREFERENCES_SESSION_KEY = "azure-ganttops.e2e.user-preferences";
@@ -55628,6 +56260,13 @@ window.__phase6Configure = (responses) => {
   state.adoEntries = [];
   state.adoSeq = 0;
 };
+window.__phase6ConfigureFieldDefinitions = (config) => {
+  state.fieldDefinitions = config;
+  state.fieldDefinitionRequests = [];
+};
+window.__phase6FailNextDetailsUpdate = (message) => {
+  state.failNextDetailsUpdateMessage = message;
+};
 window.__phase6DelayNextSubmit = (delayMs) => {
   state.submitDelayMs = Math.max(0, delayMs);
 };
@@ -55703,13 +56342,29 @@ window.__phase6Mount = () => {
         operationCount: 2,
         reasonCode: "WRITE_ENABLED"
       }),
-      updateWorkItemDetails: async () => ({
-        accepted: true,
-        mode: "EXECUTED",
-        commandKind: "WORK_ITEM_PATCH",
-        operationCount: 2,
-        reasonCode: "WRITE_ENABLED"
-      }),
+      updateWorkItemDetails: async (request) => {
+        state.detailsUpdates.push(JSON.parse(JSON.stringify(request)));
+        const failureMessage = state.failNextDetailsUpdateMessage;
+        state.failNextDetailsUpdateMessage = null;
+        if (failureMessage) {
+          throw new Error(failureMessage);
+        }
+        return {
+          accepted: true,
+          mode: "EXECUTED",
+          commandKind: "WORK_ITEM_PATCH",
+          operationCount: 2,
+          reasonCode: "WRITE_ENABLED"
+        };
+      },
+      fetchWorkItemFieldDefinitions: async (request) => {
+        state.fieldDefinitionRequests.push(JSON.parse(JSON.stringify(request ?? null)));
+        const config = state.fieldDefinitions;
+        if ("error" in config) {
+          throw new Error(config.error);
+        }
+        return { fields: JSON.parse(JSON.stringify(config.fields)) };
+      },
       fetchWorkItemStateOptions: async () => ({
         states: [
           { name: "To Do", color: "b2b2b2" },
@@ -55736,7 +56391,9 @@ window.__phase6Read = () => ({
   callLog: [...state.callLog],
   density: window.localStorage.getItem("azure-ganttops.timeline-density"),
   liveSyncEnabled: window.localStorage.getItem("azure-ganttops.timeline-live-sync-enabled"),
-  adoEntries: [...state.adoEntries]
+  adoEntries: [...state.adoEntries],
+  fieldDefinitionRequests: [...state.fieldDefinitionRequests],
+  detailsUpdates: [...state.detailsUpdates]
 });
 /*! Bundled license information:
 
