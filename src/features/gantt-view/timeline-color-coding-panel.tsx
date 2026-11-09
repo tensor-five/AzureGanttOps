@@ -58,10 +58,12 @@ export function TimelineColorCodingPanel(props: TimelineColorCodingPanelProps): 
           "button",
           {
             type: "button",
-            className: "timeline-color-coding-settings-button",
+            className: "app-dialog-close timeline-color-coding-close",
+            "aria-label": "Close color coding settings",
+            title: "Close",
             onClick: props.onClose
           },
-          "Close"
+          "×"
         )
       ),
       React.createElement(

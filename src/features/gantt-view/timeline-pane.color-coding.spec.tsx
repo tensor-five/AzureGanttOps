@@ -31,6 +31,24 @@ describe("timeline-pane color coding", () => {
     expect((stateDot as SVGCircleElement).style.fill).toBe("rgb(47, 133, 90)");
   });
 
+  it("closes the color coding settings with the × button", async () => {
+    const user = userEvent.setup();
+    render(
+      React.createElement(TimelinePane, {
+        timeline: makeTimeline(),
+        showDependencies: true
+      })
+    );
+
+    await user.click(screen.getByLabelText("Open color coding settings"));
+    const closeButton = screen.getByRole("button", { name: "Close color coding settings" });
+    expect(closeButton.textContent).toBe("×");
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+
+    await user.click(closeButton);
+    expect(screen.queryByRole("button", { name: "Close color coding settings" })).toBeNull();
+  });
+
   it("uses the selected bar color as the sidebar row highlight base", async () => {
     const user = userEvent.setup();
     const { container } = render(

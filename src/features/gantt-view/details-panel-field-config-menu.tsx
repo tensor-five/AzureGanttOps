@@ -245,19 +245,9 @@ function renderBadges(field: DetailsFieldDescriptor | null): React.ReactElement[
     return [React.createElement("span", { key: "missing", className: "timeline-details-config-badge" }, "Not in current query")];
   }
 
-  const badges = [
+  return [
     React.createElement("span", { key: "width", className: "timeline-details-config-badge" }, field.width === "half" ? "½" : "Full")
   ];
-  if (field.editable) {
-    badges.push(
-      React.createElement(
-        "span",
-        { key: "edit", className: "timeline-details-config-badge timeline-details-config-badge-edit" },
-        "Edit"
-      )
-    );
-  }
-  return badges;
 }
 
 function iconButton(label: string, symbol: string, disabled: boolean, onClick: () => void): React.ReactElement {

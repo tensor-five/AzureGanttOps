@@ -39,7 +39,7 @@ describe("DetailsPanelFieldConfigMenu", () => {
     expect(items).toHaveLength(3);
     expect(items[0].textContent).toContain("Built-in");
     expect(items[0].textContent).toContain("Full");
-    expect(items[0].textContent).toContain("Edit");
+    expect(items[0].textContent).not.toContain("Edit");
     expect(items[1].textContent).toContain("½");
     expect(items[1].textContent).not.toContain("Edit");
     expect(items[2].textContent).toContain("Not in current query");
