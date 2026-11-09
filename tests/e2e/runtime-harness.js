@@ -44917,11 +44917,20 @@ function TimelineDetailsPanel(props) {
       if (!field) {
         return;
       }
-      fields[resolveWriteFieldRef(id, scheduleFieldRefs)] = toDetailsFieldSaveValue(field, currentDraft(id));
+      const writeRef = resolveWriteFieldRef(id, scheduleFieldRefs);
+      const value = toDetailsFieldSaveValue(field, currentDraft(id));
+      if (value === null && writeRef !== id && !hasStoredFieldValue(selected, writeRef)) {
+        return;
+      }
+      fields[writeRef] = value;
       if (field.kind === "html" && id !== DETAILS_FIELD_IDS.description) {
         htmlFields.push(id);
       }
     });
+    if (Object.keys(fields).length === 0) {
+      setDraftState({ workItemId: null, values: {} });
+      return;
+    }
     const nextState = typeof fields[DETAILS_FIELD_IDS.state] === "string" ? fields[DETAILS_FIELD_IDS.state] : null;
     const stateColor = nextState ? stateOptions.find((option) => option.name.toLowerCase() === nextState.toLowerCase())?.color ?? null : null;
     const confirmedBaseline = { ...baseline };
@@ -45207,6 +45216,10 @@ function resolveSelectOptions(field, value, stateOptionNames, assigneeNames) {
     options.unshift({ value: "", label: "\u2014" });
   }
   return options;
+}
+function hasStoredFieldValue(item, referenceName) {
+  const value = item.details.fieldValues?.[referenceName];
+  return value !== null && value !== void 0 && String(value).trim().length > 0;
 }
 function resolveWriteFieldRef(fieldId, scheduleFieldRefs) {
   if (fieldId === DETAILS_FIELD_IDS.start) {
@@ -54249,10 +54262,72 @@ function applyWorkItemFieldsUpdate(timeline, targetWorkItemId, fields, stateColo
       }
     };
   };
-  return {
+  const patched = {
     ...timeline,
     bars: timeline.bars.map(applyFields),
     unschedulable: timeline.unschedulable.map(applyFields)
+  };
+  return hasStart || hasEnd ? moveBetweenScheduledAndUnschedulable(patched, targetWorkItemId, {
+    startDate: hasStart ? toNullableString(fields[scheduleRefs.start]) : void 0,
+    endDate: hasEnd ? toNullableString(fields[scheduleRefs.endOrTarget]) : void 0
+  }) : patched;
+}
+function moveBetweenScheduledAndUnschedulable(timeline, workItemId, patch2) {
+  const touchesItem = (dependency) => dependency.predecessorWorkItemId === workItemId || dependency.successorWorkItemId === workItemId;
+  const unschedulable = timeline.unschedulable.find((item) => item.workItemId === workItemId);
+  if (unschedulable) {
+    const startDate = patch2.startDate ?? unschedulable.schedule?.startDate ?? null;
+    const endDate = patch2.endDate ?? unschedulable.schedule?.endDate ?? null;
+    if (!startDate && !endDate) {
+      return timeline;
+    }
+    const adopted = applyAdoptedSchedules(timeline, { [workItemId]: { startDate, endDate } });
+    if (!adopted) {
+      return timeline;
+    }
+    const scheduledIds = new Set(adopted.bars.map((bar2) => bar2.workItemId));
+    const reactivated = adopted.suppressedDependencies.filter((dependency) => touchesItem(dependency) && scheduledIds.has(dependency.predecessorWorkItemId) && scheduledIds.has(dependency.successorWorkItemId));
+    return {
+      ...adopted,
+      dependencies: [
+        ...adopted.dependencies,
+        ...reactivated.map((dependency) => ({
+          predecessorWorkItemId: dependency.predecessorWorkItemId,
+          successorWorkItemId: dependency.successorWorkItemId,
+          dependencyType: dependency.dependencyType,
+          label: `#${dependency.predecessorWorkItemId} [end] -> #${dependency.successorWorkItemId} [start]`
+        }))
+      ],
+      suppressedDependencies: adopted.suppressedDependencies.filter((dependency) => !reactivated.includes(dependency))
+    };
+  }
+  const bar = timeline.bars.find((item) => item.workItemId === workItemId);
+  if (!bar || bar.schedule.startDate || bar.schedule.endDate) {
+    return timeline;
+  }
+  return {
+    ...timeline,
+    bars: timeline.bars.filter((item) => item.workItemId !== workItemId),
+    unschedulable: [
+      ...timeline.unschedulable,
+      {
+        workItemId: bar.workItemId,
+        title: bar.title,
+        state: bar.state,
+        details: bar.details,
+        reason: "missing-both-dates"
+      }
+    ],
+    dependencies: timeline.dependencies.filter((dependency) => !touchesItem(dependency)),
+    suppressedDependencies: [
+      ...timeline.suppressedDependencies,
+      ...timeline.dependencies.filter(touchesItem).map((dependency) => ({
+        predecessorWorkItemId: dependency.predecessorWorkItemId,
+        successorWorkItemId: dependency.successorWorkItemId,
+        dependencyType: dependency.dependencyType,
+        reason: "unschedulable-endpoint"
+      }))
+    ]
   };
 }
 var DEFAULT_SCHEDULE_FIELD_REFS2 = {

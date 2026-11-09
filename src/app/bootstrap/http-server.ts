@@ -2131,8 +2131,15 @@ function toWorkItemPatchErrorMessage(error: unknown, fallback: string): string {
   return redactCredentials(sanitizeLogText(error.message).replace(WORK_ITEM_PATCH_FAILED_PREFIX, ""));
 }
 
+const SENSITIVE_BASIC_PATTERN = /\bBasic\s+[A-Za-z0-9+/=]{8,}/gi;
+const SENSITIVE_ADO_PAT_PATTERN = /\b[a-z2-7]{52}\b/g;
+const WORK_ITEM_PATCH_ERROR_MAX_LENGTH = 500;
+
 function redactCredentials(input: string): string {
   return input
+    .slice(0, WORK_ITEM_PATCH_ERROR_MAX_LENGTH)
+    .replace(SENSITIVE_BASIC_PATTERN, `Basic ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_ADO_PAT_PATTERN, ADO_COMM_REDACTED)
     .replace(SENSITIVE_BEARER_PATTERN, `Bearer ${ADO_COMM_REDACTED}`)
     .replace(SENSITIVE_JWT_PATTERN, ADO_COMM_REDACTED)
     .replace(SENSITIVE_KEY_VALUE_PATTERN, (_match, key: string, separator: string) => `${key}${separator}${ADO_COMM_REDACTED}`);

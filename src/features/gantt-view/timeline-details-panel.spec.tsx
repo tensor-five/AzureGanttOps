@@ -563,4 +563,27 @@ describe("timeline-details-panel configurable fields", () => {
     expect(errorId).toBeTruthy();
     expect(document.getElementById(errorId as string)?.textContent).toBe("Enter a number ≥ 0 with up to 2 decimals.");
   });
+
+  it("does not send a remove for a start date inherited from the iteration", async () => {
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
+    const timeline = makeStoryTimeline();
+    timeline.bars[0].schedule.iterationFallback = "start";
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    fireEvent.change(screen.getByLabelText("Start"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Renamed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith(
+        expect.objectContaining({ fields: { "System.Title": "Renamed" } })
+      );
+    });
+  });
 });

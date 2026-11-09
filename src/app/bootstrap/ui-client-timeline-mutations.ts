@@ -90,10 +90,93 @@ export function applyWorkItemFieldsUpdate(
     };
   };
 
-  return {
+  const patched = {
     ...timeline,
     bars: timeline.bars.map(applyFields),
     unschedulable: timeline.unschedulable.map(applyFields)
+  };
+
+  return hasStart || hasEnd
+    ? moveBetweenScheduledAndUnschedulable(patched, targetWorkItemId, {
+        startDate: hasStart ? toNullableString(fields[scheduleRefs.start]) : undefined,
+        endDate: hasEnd ? toNullableString(fields[scheduleRefs.endOrTarget]) : undefined
+      })
+    : patched;
+}
+
+/**
+ * Keeps the bar/unschedulable split consistent after a date edit: an unschedulable item that
+ * receives a date becomes a bar, and a bar whose dates are both cleared becomes unschedulable.
+ */
+function moveBetweenScheduledAndUnschedulable(
+  timeline: NonNullable<QueryIntakeResponse["timeline"]>,
+  workItemId: number,
+  patch: { startDate: string | null | undefined; endDate: string | null | undefined }
+): NonNullable<QueryIntakeResponse["timeline"]> {
+  const touchesItem = (dependency: { predecessorWorkItemId: number; successorWorkItemId: number }) =>
+    dependency.predecessorWorkItemId === workItemId || dependency.successorWorkItemId === workItemId;
+
+  const unschedulable = timeline.unschedulable.find((item) => item.workItemId === workItemId);
+  if (unschedulable) {
+    const startDate = patch.startDate ?? unschedulable.schedule?.startDate ?? null;
+    const endDate = patch.endDate ?? unschedulable.schedule?.endDate ?? null;
+    if (!startDate && !endDate) {
+      return timeline;
+    }
+    const adopted = applyAdoptedSchedules(timeline, { [workItemId]: { startDate, endDate } });
+    if (!adopted) {
+      return timeline;
+    }
+    const scheduledIds = new Set(adopted.bars.map((bar) => bar.workItemId));
+    const reactivated = adopted.suppressedDependencies.filter(
+      (dependency) =>
+        touchesItem(dependency) &&
+        scheduledIds.has(dependency.predecessorWorkItemId) &&
+        scheduledIds.has(dependency.successorWorkItemId)
+    );
+    return {
+      ...adopted,
+      dependencies: [
+        ...adopted.dependencies,
+        ...reactivated.map((dependency) => ({
+          predecessorWorkItemId: dependency.predecessorWorkItemId,
+          successorWorkItemId: dependency.successorWorkItemId,
+          dependencyType: dependency.dependencyType,
+          label: `#${dependency.predecessorWorkItemId} [end] -> #${dependency.successorWorkItemId} [start]`
+        }))
+      ],
+      suppressedDependencies: adopted.suppressedDependencies.filter((dependency) => !reactivated.includes(dependency))
+    };
+  }
+
+  const bar = timeline.bars.find((item) => item.workItemId === workItemId);
+  if (!bar || bar.schedule.startDate || bar.schedule.endDate) {
+    return timeline;
+  }
+
+  return {
+    ...timeline,
+    bars: timeline.bars.filter((item) => item.workItemId !== workItemId),
+    unschedulable: [
+      ...timeline.unschedulable,
+      {
+        workItemId: bar.workItemId,
+        title: bar.title,
+        state: bar.state,
+        details: bar.details,
+        reason: "missing-both-dates"
+      }
+    ],
+    dependencies: timeline.dependencies.filter((dependency) => !touchesItem(dependency)),
+    suppressedDependencies: [
+      ...timeline.suppressedDependencies,
+      ...timeline.dependencies.filter(touchesItem).map((dependency) => ({
+        predecessorWorkItemId: dependency.predecessorWorkItemId,
+        successorWorkItemId: dependency.successorWorkItemId,
+        dependencyType: dependency.dependencyType,
+        reason: "unschedulable-endpoint" as const
+      }))
+    ]
   };
 }
 

@@ -222,11 +222,21 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       if (!field) {
         return;
       }
-      fields[resolveWriteFieldRef(id, scheduleFieldRefs)] = toDetailsFieldSaveValue(field, currentDraft(id));
+      const writeRef = resolveWriteFieldRef(id, scheduleFieldRefs);
+      const value = toDetailsFieldSaveValue(field, currentDraft(id));
+      if (value === null && writeRef !== id && !hasStoredFieldValue(selected, writeRef)) {
+        // The date was inherited from the iteration and is not stored on the work item.
+        return;
+      }
+      fields[writeRef] = value;
       if (field.kind === "html" && id !== DETAILS_FIELD_IDS.description) {
         htmlFields.push(id);
       }
     });
+    if (Object.keys(fields).length === 0) {
+      setDraftState({ workItemId: null, values: {} });
+      return;
+    }
     const nextState = typeof fields[DETAILS_FIELD_IDS.state] === "string" ? (fields[DETAILS_FIELD_IDS.state] as string) : null;
     const stateColor = nextState
       ? stateOptions.find((option) => option.name.toLowerCase() === nextState.toLowerCase())?.color ?? null
@@ -662,6 +672,11 @@ function resolveSelectOptions(
     options.unshift({ value: "", label: "—" });
   }
   return options;
+}
+
+function hasStoredFieldValue(item: TimelineDetailsItem, referenceName: string): boolean {
+  const value = item.details.fieldValues?.[referenceName];
+  return value !== null && value !== undefined && String(value).trim().length > 0;
 }
 
 function resolveWriteFieldRef(fieldId: string, scheduleFieldRefs: { start: string; endOrTarget: string }): string {
