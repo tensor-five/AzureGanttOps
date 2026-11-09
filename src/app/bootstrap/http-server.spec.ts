@@ -1015,7 +1015,7 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(500);
       expect(body).toEqual({
         code: "WRITE_FAILED",
-        message: "WORK_ITEM_PATCH_FAILED"
+        message: "TF401320: The transition to Closed is not allowed."
       });
       expect(adoHttpFailureLogWriter).toHaveBeenCalledTimes(1);
       expect(adoHttpFailureLogWriter).toHaveBeenCalledWith(

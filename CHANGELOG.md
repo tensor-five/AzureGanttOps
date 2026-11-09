@@ -17,6 +17,8 @@ Note: Historical versions before `1.8.1` were reconstructed approximately from v
 ### Changed
 
 - The details panel shows all work item information in one field grid; the separate row list below the form was removed.
+- Every configured details field is shown for every work item, regardless of its work item type, and every field is editable except Azure DevOps system fields (ID, Rev, created/changed metadata, Work Item Type, Dependencies). Newly editable: Start/End and other date fields, Area/Iteration Path, Tags, multi-line text and all person fields. Saved Start/End changes move the bar immediately.
+- Rejected work item updates now show the Azure DevOps error message (with credentials redacted) instead of a generic failure code.
 
 ## [1.8.6] - 2026-07-10
 

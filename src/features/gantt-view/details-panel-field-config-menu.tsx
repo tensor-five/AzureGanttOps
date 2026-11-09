@@ -185,7 +185,7 @@ export function DetailsPanelFieldConfigMenu(props: DetailsPanelFieldConfigMenuPr
       ? React.createElement(
           "p",
           { className: "timeline-details-config-note timeline-details-config-warning", role: "status" },
-          "Field definitions unavailable – showing loaded fields read-only."
+          "Field definitions unavailable – loaded fields are edited as text."
         )
       : null,
     React.createElement("div", { className: "timeline-details-config-divider", "aria-hidden": "true" }),

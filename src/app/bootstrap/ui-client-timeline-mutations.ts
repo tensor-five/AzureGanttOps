@@ -56,16 +56,28 @@ export function applyWorkItemFieldsUpdate(
   const nextState = typeof fields["System.State"] === "string" ? toTimelineStateBadge(fields["System.State"], stateColor) : null;
   const hasDescription = "System.Description" in fields;
   const hasAssignedTo = "System.AssignedTo" in fields;
+  const scheduleRefs = timeline.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS;
+  const hasStart = scheduleRefs.start in fields;
+  const hasEnd = scheduleRefs.endOrTarget in fields;
 
   const applyFields = <T extends TimelineBar | TimelineUnschedulableItem>(item: T): T => {
     if (item.workItemId !== targetWorkItemId) {
       return item;
     }
 
+    const schedule =
+      (hasStart || hasEnd) && item.schedule
+        ? applyScheduleFields(item.schedule, {
+            startDate: hasStart ? toNullableString(fields[scheduleRefs.start]) : undefined,
+            endDate: hasEnd ? toNullableString(fields[scheduleRefs.endOrTarget]) : undefined
+          })
+        : null;
+
     return {
       ...item,
       ...(nextTitle !== null ? { title: nextTitle } : {}),
       ...(nextState ? { state: nextState } : {}),
+      ...(schedule ? { schedule } : {}),
       details: {
         ...item.details,
         ...(hasDescription ? { descriptionHtml: toNullableString(fields["System.Description"]) } : {}),
@@ -83,6 +95,36 @@ export function applyWorkItemFieldsUpdate(
     bars: timeline.bars.map(applyFields),
     unschedulable: timeline.unschedulable.map(applyFields)
   };
+}
+
+const DEFAULT_SCHEDULE_FIELD_REFS = {
+  start: "Microsoft.VSTS.Scheduling.StartDate",
+  endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+} as const;
+
+function applyScheduleFields<T extends { startDate: string | null; endDate: string | null; missingBoundary: "start" | "end" | null }>(
+  schedule: T,
+  patch: { startDate: string | null | undefined; endDate: string | null | undefined }
+): T {
+  const startDate = patch.startDate === undefined ? schedule.startDate : patch.startDate;
+  const endDate = patch.endDate === undefined ? schedule.endDate : patch.endDate;
+  const missingBoundary = startDate && endDate ? null : !startDate && endDate ? "start" : startDate && !endDate ? "end" : schedule.missingBoundary;
+  const next = { ...schedule, startDate, endDate, missingBoundary } as T & { iterationFallback?: "start" | "end" | "both" };
+  const fallback = next.iterationFallback;
+  if (fallback) {
+    const startInherited = (fallback === "start" || fallback === "both") && patch.startDate === undefined;
+    const endInherited = (fallback === "end" || fallback === "both") && patch.endDate === undefined;
+    if (startInherited && endInherited) {
+      next.iterationFallback = "both";
+    } else if (startInherited) {
+      next.iterationFallback = "start";
+    } else if (endInherited) {
+      next.iterationFallback = "end";
+    } else {
+      delete next.iterationFallback;
+    }
+  }
+  return next;
 }
 
 function toNullableString(value: string | number | boolean | null | undefined): string | null {

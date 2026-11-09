@@ -27,3 +27,10 @@ The details panel showed a fixed set of fields: Title, State and Description as 
 - Each new query (or set of work item types) triggers one definitions request per type and one project field request.
 - Azure boolean field values are now flattened to `"True"`/`"False"` during hydration, so they can be shown and filtered.
 - DateTime, path, multi-line text, tags and identities other than Assigned To stay read-only in the panel (out of contract scope).
+
+## Amendment (contract v2, 2026-11-09)
+
+- Fields are no longer hidden per work item type, and every field is editable except Azure DevOps system fields. The REST API decides on save whether a field fits the work item type; the UI shows no warning beforehand.
+- System fields are recognized by the Azure `readOnly` flag. When definitions are unavailable, the fixed list `SYSTEM_READ_ONLY_FIELD_REFS` is used instead.
+- Start/End are written to the mapped schedule fields. `applyWorkItemFieldsUpdate` moves the bar and keeps iteration-inherited boundaries that were not edited.
+- Work item patch failures carry the Azure error text (`buildAzureResponseErrorMessage`). The BFF strips the technical prefix and redacts bearer tokens, JWTs and key/value credentials before the text reaches the UI.

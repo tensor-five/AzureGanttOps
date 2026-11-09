@@ -503,7 +503,7 @@ describe("timeline-details-panel configurable fields", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Configure details fields" }));
-    expect(await screen.findByText("Field definitions unavailable – showing loaded fields read-only.")).toBeTruthy();
+    expect(await screen.findByText("Field definitions unavailable – loaded fields are edited as text.")).toBeTruthy();
   });
 
   it("keeps drafts bound to their work item when the selection changes", async () => {

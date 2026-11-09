@@ -162,6 +162,28 @@ describe("ui-client-timeline-mutations", () => {
     expect(applyWorkItemFieldsUpdate(null, 11, { "System.Title": "x" }, null)).toBeNull();
   });
 
+  it("moves the schedule when the mapped start or end field changes and keeps inherited iteration boundaries", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.iterationFallback = "both";
+
+    const startOnly = applyWorkItemFieldsUpdate(timeline, 11, { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z" }, null);
+    expect(startOnly?.bars[0]?.schedule.startDate).toBe("2026-05-01T00:00:00.000Z");
+    expect(startOnly?.bars[0]?.schedule.iterationFallback).toBe("end");
+
+    const both = applyWorkItemFieldsUpdate(
+      timeline,
+      11,
+      { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z", "Microsoft.VSTS.Scheduling.TargetDate": null },
+      null
+    );
+    expect(both?.bars[0]?.schedule).toMatchObject({ endDate: null, missingBoundary: "end" });
+    expect(both?.bars[0]?.schedule.iterationFallback).toBeUndefined();
+
+    timeline.scheduleFieldRefs = { start: "Custom.Begin", endOrTarget: "Custom.Finish" };
+    const custom = applyWorkItemFieldsUpdate(timeline, 11, { "Custom.Finish": "2026-06-01T00:00:00.000Z" }, null);
+    expect(custom?.bars[0]?.schedule.endDate).toBe("2026-06-01T00:00:00.000Z");
+  });
+
   it("applies state-only updates without changing title or description", () => {
     const updated = applyWorkItemStateUpdate(makeTimeline(), 11, "Closed", "abcdef");
     expect(updated?.bars[0]?.title).toBe("Item 11");
