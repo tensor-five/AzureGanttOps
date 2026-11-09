@@ -1,246 +1,262 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 import { buildAzureWorkItemUrl } from "../../shared/azure-devops/azure-work-item-url.js";
-import { sanitizeHtmlFragment } from "../../shared/security/sanitize-html-fragment.js";
+import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
+import {
+  DEFAULT_DETAILS_PANEL_FIELD_IDS,
+  DETAILS_FIELD_IDS,
+  buildDetailsFieldCatalog,
+  isFieldDefinedForItem,
+  layoutDetailsFields,
+  listWorkItemTypes,
+  type DetailsFieldDescriptor,
+  type TimelineDetailsItem
+} from "./details-panel-field-catalog.js";
+import { DetailsPanelFieldConfigMenu } from "./details-panel-field-config-menu.js";
+import {
+  hydrateDetailsPanelFieldsPreference,
+  loadDetailsPanelFields,
+  saveDetailsPanelFields
+} from "./details-panel-fields-preference.js";
+import {
+  BOOLEAN_OPTIONS,
+  UNASSIGNED_OPTION,
+  readDetailsFieldValue,
+  toDetailsFieldSaveValue,
+  validateDetailsFieldDraft,
+  type DetailsFieldSaveValue
+} from "./details-panel-field-values.js";
+import { DetailsPanelRichTextField } from "./details-panel-rich-text-field.js";
+import { buildTimelineAssigneeOptions } from "./timeline-assignee-options.js";
 import { resolveWorkItemStateOptions } from "./work-item-state-options.js";
+
+export type TimelineDetailsUpdateInput = {
+  targetWorkItemId: number;
+  fields: Record<string, DetailsFieldSaveValue>;
+  htmlFields: string[];
+  stateColor: string | null;
+};
 
 export type TimelineDetailsPanelProps = {
   timeline: TimelineReadModel | null;
+  /** Unfiltered timeline of the active query; source for the field catalog and option lists. */
+  catalogTimeline?: TimelineReadModel | null;
+  activeQueryId?: string | null;
   selectedWorkItemId: number | null;
   contentHidden?: boolean;
   draftResetKey?: number;
   organization?: string;
   project?: string;
-  onUpdateSelectedWorkItemDetails?: (input: {
-    targetWorkItemId: number;
-    title: string;
-    descriptionHtml: string;
-    state: string;
-    stateColor: string | null;
-  }) => Promise<void>;
+  onUpdateSelectedWorkItemDetails?: (input: TimelineDetailsUpdateInput) => Promise<void>;
   onFetchWorkItemStateOptions?: (input: { targetWorkItemId: number }) => Promise<Array<{ name: string; color: string | null }>>;
+  onFetchWorkItemFieldDefinitions?: (input: { workItemTypes: string[] }) => Promise<WorkItemFieldDefinition[]>;
   onDirtyChange?: (dirty: boolean) => void;
+  workItemSyncState?: WorkItemSyncState;
 };
 
-type TimelineDetailsDraft = {
-  title: string;
-  descriptionHtml: string;
-  state: string;
-};
+type FieldDefinitionsState =
+  | { key: string; status: "loading" }
+  | { key: string; status: "ready"; fields: WorkItemFieldDefinition[] }
+  | { key: string; status: "failed" };
 
 export const TIMELINE_DETAILS_KEYBOARD_SHORTCUT_CONTRACTS = ["details.save-or-sync"] as const;
 
 export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.ReactElement {
   const contentHidden = props.contentHidden ?? false;
+  const catalogTimeline = props.catalogTimeline ?? props.timeline;
   const selected = resolveSelectedWorkItem(props.timeline, props.selectedWorkItemId);
-  const [titleDraft, setTitleDraft] = React.useState("");
-  const [descriptionDraft, setDescriptionDraft] = React.useState("");
-  const [stateDraft, setStateDraft] = React.useState("");
-  const [serverStateOptions, setServerStateOptions] = React.useState<Array<{ name: string; color: string | null }>>([]);
-  const [isDescriptionEditing, setIsDescriptionEditing] = React.useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
-  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const shownIds = useDetailsPanelFieldIds();
+  const definitionsState = useFieldDefinitions(catalogTimeline, props.activeQueryId ?? null, props.onFetchWorkItemFieldDefinitions);
+  const serverStateOptions = useServerStateOptions(selected?.workItemId ?? null, props.onFetchWorkItemStateOptions);
+  const [configOpen, setConfigOpen] = React.useState(false);
+  const [draftState, setDraftState] = React.useState<{ workItemId: number | null; values: Record<string, string> }>({
+    workItemId: null,
+    values: {}
+  });
+  const [failedBaseline, setFailedBaseline] = React.useState<{ workItemId: number; values: Record<string, string> } | null>(
+    null
+  );
+  const [saveError, setSaveError] = React.useState<{ workItemId: number; message: string } | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
-  const descriptionFieldRef = React.useRef<HTMLDivElement | null>(null);
-  const descriptionRef = React.useRef<HTMLDivElement | null>(null);
-  const draftRef = React.useRef<TimelineDetailsDraft>({ title: "", descriptionHtml: "", state: "" });
-  const hasFetchedInitialStateOptionsRef = React.useRef(false);
-  const selectedBaselineKey = selected
-    ? `${selected.workItemId}\u0000${selected.title}\u0000${sanitizeHtmlFragment(selected.descriptionHtml)}\u0000${selected.state}`
-    : null;
+  const configAreaRef = React.useRef<HTMLDivElement | null>(null);
+  const configToggleRef = React.useRef<HTMLButtonElement | null>(null);
+  const selectedWorkItemId = selected?.workItemId ?? null;
+  const selectedWorkItemIdRef = React.useRef<number | null>(selectedWorkItemId);
+  selectedWorkItemIdRef.current = selectedWorkItemId;
 
+  const catalog = React.useMemo(
+    () =>
+      buildDetailsFieldCatalog({
+        definitions:
+          definitionsState.status === "ready" ? definitionsState.fields : definitionsState.status === "loading" ? [] : null,
+        timeline: catalogTimeline
+      }),
+    [catalogTimeline, definitionsState]
+  );
+
+  const visibleFields = React.useMemo(
+    () =>
+      selected
+        ? shownIds.value
+            .map((id) => catalog.byId.get(id))
+            .filter((field): field is DetailsFieldDescriptor => !!field && isFieldDefinedForItem(field, selected))
+        : [],
+    [catalog, selected, shownIds.value]
+  );
+
+  const computedBaseline = React.useMemo(() => {
+    const values: Record<string, string> = {};
+    if (selected) {
+      catalog.fields
+        .filter((field) => field.editable)
+        .forEach((field) => {
+          values[field.id] = readDetailsFieldValue(field, selected, catalogTimeline);
+        });
+    }
+    return values;
+  }, [catalog, catalogTimeline, selected]);
+  const activeFailedBaseline =
+    failedBaseline && failedBaseline.workItemId === selectedWorkItemId ? failedBaseline.values : null;
+  const baseline = activeFailedBaseline ?? computedBaseline;
+  const drafts = draftState.workItemId !== null && draftState.workItemId === selectedWorkItemId ? draftState.values : {};
+  const activeSaveError = saveError && saveError.workItemId === selectedWorkItemId ? saveError.message : null;
+
+  // Drafts are reset when the selection or the reset key changes, or when the server value of a
+  // field that has a draft changes. Fields that only join the catalog later never reset drafts.
+  const previousBaselineRef = React.useRef<{ workItemId: number | null; resetKey: number | undefined; values: Record<string, string> }>({
+    workItemId: selectedWorkItemId,
+    resetKey: props.draftResetKey,
+    values: computedBaseline
+  });
   React.useEffect(() => {
-    if (!selected) {
-      draftRef.current = { title: "", descriptionHtml: "", state: "" };
-      setTitleDraft("");
-      setDescriptionDraft("");
-      setStateDraft("");
-      setIsDescriptionEditing(false);
-      setIsDescriptionExpanded(false);
+    const previous = previousBaselineRef.current;
+    previousBaselineRef.current = { workItemId: selectedWorkItemId, resetKey: props.draftResetKey, values: computedBaseline };
+
+    if (previous.workItemId !== selectedWorkItemId || previous.resetKey !== props.draftResetKey) {
+      setDraftState({ workItemId: null, values: {} });
+      setFailedBaseline(null);
       setSaveError(null);
-      if (descriptionRef.current) {
-        descriptionRef.current.innerHTML = "";
-      }
-      props.onDirtyChange?.(false);
       return;
     }
 
-    const sanitizedDescription = sanitizeHtmlFragment(selected.descriptionHtml);
-    draftRef.current = {
-      title: selected.title,
-      descriptionHtml: sanitizedDescription,
-      state: selected.state
-    };
-    setTitleDraft(selected.title);
-    setDescriptionDraft(sanitizedDescription);
-    setStateDraft(selected.state);
-    setIsDescriptionEditing(false);
-    setIsDescriptionExpanded(false);
-    setSaveError(null);
-    if (descriptionRef.current) {
-      descriptionRef.current.innerHTML = sanitizedDescription;
+    if (isSaving) {
+      return;
     }
-    props.onDirtyChange?.(false);
-  }, [selectedBaselineKey, props.draftResetKey]);
+
+    const serverChangedDraftedField = Object.keys(drafts).some(
+      (id) => previous.values[id] !== undefined && previous.values[id] !== computedBaseline[id]
+    );
+    if (serverChangedDraftedField && !activeFailedBaseline) {
+      setDraftState({ workItemId: null, values: {} });
+      setSaveError(null);
+    }
+  }, [selectedWorkItemId, computedBaseline, props.draftResetKey]);
 
   React.useEffect(() => {
-    if (hasFetchedInitialStateOptionsRef.current || !selected || !props.onFetchWorkItemStateOptions) {
-      return;
-    }
-
-    let cancelled = false;
-    hasFetchedInitialStateOptionsRef.current = true;
-    void props
-      .onFetchWorkItemStateOptions({ targetWorkItemId: selected.workItemId })
-      .then((states) => {
-        if (cancelled) {
-          return;
-        }
-        setServerStateOptions(states.filter((state) => state.name.trim().length > 0));
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setServerStateOptions([]);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [props.onFetchWorkItemStateOptions, selected?.workItemId]);
-
-  const lines = buildTimelineDetailsLines(props);
-  const iterationFallback = selected?.iterationFallback ?? null;
-  const entries = lines
-    .map((line) => parseTimelineDetailLine(line))
-    .filter((entry): entry is { label: string; value: string } => entry !== null)
-    .filter((entry) => !["selected work item", "mapped id", "missing boundary", "title"].includes(entry.label.toLowerCase()))
-    .map((entry, index) => {
-      const normalizedLabel = entry.label.trim().toLowerCase();
-      const isStartRow = normalizedLabel === "start";
-      const isEndRow = normalizedLabel === "end";
-      const showIterationHint =
-        (isStartRow && (iterationFallback === "start" || iterationFallback === "both")) ||
-        (isEndRow && (iterationFallback === "end" || iterationFallback === "both"));
-      return React.createElement(
-        "div",
-        { key: `${index}-${entry.label}`, className: "timeline-details-row" },
-        React.createElement("span", { className: "timeline-details-row-label" }, `${entry.label}:`),
-        React.createElement("span", { className: "timeline-details-row-value" }, formatTimelineDetailValue(entry.label, entry.value)),
-        showIterationHint
-          ? React.createElement(
-              "span",
-              {
-                className: "timeline-details-row-hint timeline-details-row-hint-iteration",
-                title: "Date inherited from the iteration; not set on this work item"
-              },
-              "from iteration"
-            )
-          : null
+    if (props.workItemSyncState === "up_to_date" && failedBaseline) {
+      setFailedBaseline(null);
+      setSaveError(null);
+      setDraftState((current) =>
+        current.workItemId === failedBaseline.workItemId ? { workItemId: null, values: {} } : current
       );
-    });
+    }
+  }, [props.workItemSyncState]);
 
-  const baselineTitle = selected?.title ?? "";
-  const baselineDescription = sanitizeHtmlFragment(selected?.descriptionHtml ?? "");
-  const baselineState = selected?.state ?? "";
-  const isDraftDirty = React.useCallback(
-    (draft: { title: string; descriptionHtml: string; state: string }) =>
-      draft.title.trim() !== baselineTitle.trim() ||
-      draft.descriptionHtml !== baselineDescription ||
-      draft.state.trim() !== baselineState.trim(),
-    [baselineDescription, baselineState, baselineTitle]
-  );
-  const reportDraftDirty = React.useCallback(
-    (draft: { title: string; descriptionHtml: string; state: string }) => {
-      draftRef.current = draft;
-      props.onDirtyChange?.(isDraftDirty(draft));
-    },
-    [isDraftDirty, props.onDirtyChange]
-  );
-  const isDirty =
-    isDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: stateDraft });
+  const currentDraft = (id: string): string => drafts[id] ?? baseline[id] ?? "";
+  const dirtyFieldIds = Object.keys(drafts).filter((id) => {
+    const field = catalog.byId.get(id);
+    return !!field && field.editable && drafts[id] !== (baseline[id] ?? "");
+  });
+  const isDirty = dirtyFieldIds.length > 0;
+  const validationErrors = new Map<string, string>();
+  dirtyFieldIds.forEach((id) => {
+    const field = catalog.byId.get(id);
+    const error = field ? validateDetailsFieldDraft(field, currentDraft(id)) : null;
+    if (error) {
+      validationErrors.set(id, error);
+    }
+  });
+  const titleDraft = currentDraft(DETAILS_FIELD_IDS.title);
+  const stateDraft = currentDraft(DETAILS_FIELD_IDS.state);
+  const canSave =
+    !!selected &&
+    !!props.onUpdateSelectedWorkItemDetails &&
+    !isSaving &&
+    isDirty &&
+    validationErrors.size === 0 &&
+    titleDraft.trim().length > 0 &&
+    stateDraft.trim().length > 0;
 
   React.useEffect(() => {
     props.onDirtyChange?.(isDirty);
   }, [isDirty]);
 
-  const azureLink = selected
-    ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId)
-    : null;
-
   const stateOptions = React.useMemo(
     () =>
       resolveWorkItemStateOptions({
-        timeline: props.timeline,
-        selectedState: selected?.state ?? "",
+        timeline: catalogTimeline,
+        selectedState: selected?.state.code ?? "",
         serverStateOptions
       }),
-    [props.timeline, selected?.state, serverStateOptions]
+    [catalogTimeline, selected?.state.code, serverStateOptions]
   );
-  const selectedStateColor =
-    stateOptions.find((option) => option.name.toLowerCase() === stateDraft.trim().toLowerCase())?.color ?? null;
-  const hasDescriptionContent = stripHtmlToText(descriptionDraft).length > 0;
-
-  const applyDescriptionCommand = (command: string, value?: string) => {
-    if (!descriptionRef.current) {
-      return;
-    }
-    if (isSaving) {
-      return;
-    }
-
-    descriptionRef.current.focus();
-    document.execCommand(command, false, value);
-    const sanitizedDescription = sanitizeHtmlFragment(descriptionRef.current.innerHTML);
-    reportDraftDirty({ title: titleDraft, descriptionHtml: sanitizedDescription, state: stateDraft });
-    setDescriptionDraft(sanitizedDescription);
-  };
+  const assigneeNames = React.useMemo(
+    () => buildTimelineAssigneeOptions(catalogTimeline).map((option) => option.name),
+    [catalogTimeline]
+  );
 
   const saveDetails = async () => {
-    if (
-      !selected ||
-      !props.onUpdateSelectedWorkItemDetails ||
-      isSaving ||
-      titleDraft.trim().length === 0 ||
-      stateDraft.trim().length === 0 ||
-      !isDirty
-    ) {
+    if (!canSave || !selected || !props.onUpdateSelectedWorkItemDetails) {
       return;
     }
+
+    const savedWorkItemId = selected.workItemId;
+    const submittedDrafts = { ...drafts };
+    const fields: Record<string, DetailsFieldSaveValue> = {};
+    const htmlFields: string[] = [];
+    dirtyFieldIds.forEach((id) => {
+      const field = catalog.byId.get(id);
+      if (!field) {
+        return;
+      }
+      fields[id] = toDetailsFieldSaveValue(field, currentDraft(id));
+      if (field.kind === "html" && id !== DETAILS_FIELD_IDS.description) {
+        htmlFields.push(id);
+      }
+    });
+    const nextState = typeof fields[DETAILS_FIELD_IDS.state] === "string" ? (fields[DETAILS_FIELD_IDS.state] as string) : null;
+    const stateColor = nextState
+      ? stateOptions.find((option) => option.name.toLowerCase() === nextState.toLowerCase())?.color ?? null
+      : null;
+    const confirmedBaseline = { ...baseline };
 
     setSaveError(null);
     setIsSaving(true);
-    const submittedDraft: TimelineDetailsDraft = {
-      title: titleDraft.trim(),
-      descriptionHtml: sanitizeHtmlFragment(descriptionDraft),
-      state: stateDraft.trim()
-    };
-
     try {
       await props.onUpdateSelectedWorkItemDetails({
-        targetWorkItemId: selected.workItemId,
-        title: submittedDraft.title,
-        descriptionHtml: submittedDraft.descriptionHtml,
-        state: submittedDraft.state,
-        stateColor: selectedStateColor
+        targetWorkItemId: savedWorkItemId,
+        fields,
+        htmlFields,
+        stateColor
       });
-      const currentDraft = draftRef.current;
-      const savedDraftStillCurrent =
-        currentDraft.title.trim() === submittedDraft.title &&
-        currentDraft.descriptionHtml === submittedDraft.descriptionHtml &&
-        currentDraft.state.trim() === submittedDraft.state;
-      if (savedDraftStillCurrent) {
-        draftRef.current = submittedDraft;
-        props.onDirtyChange?.(false);
-        setTitleDraft(submittedDraft.title);
-        setDescriptionDraft(submittedDraft.descriptionHtml);
-        setStateDraft(submittedDraft.state);
-      } else {
-        props.onDirtyChange?.(isDraftDirty(currentDraft));
-      }
+      setFailedBaseline((current) => (current?.workItemId === savedWorkItemId ? null : current));
+      setDraftState((current) => {
+        if (current.workItemId !== savedWorkItemId) {
+          return current;
+        }
+        const remaining = Object.fromEntries(
+          Object.entries(current.values).filter(([id, value]) => submittedDrafts[id] !== value)
+        );
+        return { workItemId: savedWorkItemId, values: remaining };
+      });
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Saving details failed.");
+      setFailedBaseline({ workItemId: savedWorkItemId, values: confirmedBaseline });
+      setSaveError({
+        workItemId: savedWorkItemId,
+        message: error instanceof Error ? error.message : "Saving details failed."
+      });
     } finally {
       setIsSaving(false);
     }
@@ -248,38 +264,179 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
 
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() !== "s" || (!event.ctrlKey && !event.metaKey)) {
+      if (event.key.toLowerCase() !== "s" || (!event.ctrlKey && !event.metaKey) || !canSave) {
         return;
       }
-
-      if (
-        !selected ||
-        !props.onUpdateSelectedWorkItemDetails ||
-        isSaving ||
-        titleDraft.trim().length === 0 ||
-        stateDraft.trim().length === 0 ||
-        !isDirty
-      ) {
-        return;
-      }
-
       event.preventDefault();
       void saveDetails();
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
+
+  React.useEffect(() => {
+    if (!configOpen) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setConfigOpen(false);
+        configToggleRef.current?.focus();
+      }
     };
-  }, [isDirty, isSaving, props.onUpdateSelectedWorkItemDetails, saveDetails, selected, stateDraft, titleDraft]);
+    const onPointerDown = (event: MouseEvent) => {
+      if (configAreaRef.current && event.target instanceof Node && !configAreaRef.current.contains(event.target)) {
+        setConfigOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+    };
+  }, [configOpen]);
+
+  React.useEffect(() => {
+    if (contentHidden) {
+      setConfigOpen(false);
+    }
+  }, [contentHidden]);
+
+  const updateDraft = (fieldId: string, value: string) => {
+    const workItemId = selectedWorkItemIdRef.current;
+    if (workItemId === null) {
+      return;
+    }
+    setDraftState((current) =>
+      current.workItemId === workItemId
+        ? { workItemId, values: { ...current.values, [fieldId]: value } }
+        : { workItemId, values: { [fieldId]: value } }
+    );
+  };
+
+  const azureLink = selected ? buildAzureWorkItemUrl(props.organization, props.project, selected.workItemId) : null;
+  const lines = buildTimelineDetailsLines(props);
+
+  const renderField = (field: DetailsFieldDescriptor, width: "half" | "full") => {
+    const isFieldDirty = dirtyFieldIds.includes(field.id);
+    const error = validationErrors.get(field.id) ?? null;
+    const className = [
+      "timeline-details-field",
+      width === "half" ? "timeline-details-field-half" : "timeline-details-field-full",
+      isFieldDirty ? "timeline-details-field-dirty" : ""
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const hint =
+      selected && isIterationFallbackField(field.id, selected)
+        ? React.createElement(
+            "span",
+            {
+              className: "timeline-details-row-hint timeline-details-row-hint-iteration",
+              title: "Date inherited from the iteration; not set on this work item"
+            },
+            "from iteration"
+          )
+        : null;
+
+    return React.createElement(
+      "div",
+      { key: field.id, className },
+      React.createElement(
+        "div",
+        { className: "timeline-details-field-head" },
+        React.createElement("span", { className: "timeline-details-label" }, field.name),
+        hint
+      ),
+      selected ? renderFieldControl(field, selected, error) : null,
+      error
+        ? React.createElement("p", { id: toErrorId(field.id), className: "timeline-details-field-error", role: "status" }, error)
+        : null
+    );
+  };
+
+  const renderFieldControl = (field: DetailsFieldDescriptor, item: TimelineDetailsItem, error: string | null) => {
+    const value = currentDraft(field.id);
+    const disabled = isSaving;
+
+    if (field.kind === "html") {
+      return React.createElement(DetailsPanelRichTextField, {
+        label: field.name,
+        value: field.editable ? value : readDetailsFieldValue(field, item, catalogTimeline),
+        editable: field.editable,
+        disabled,
+        onChange: (nextHtml: string) => updateDraft(field.id, nextHtml)
+      });
+    }
+
+    if (!field.editable) {
+      const display = readDetailsFieldValue(field, item, catalogTimeline);
+      const numeric = field.kind === "date" || field.kind === "derived" || field.kind === "double" || field.kind === "integer";
+      return React.createElement(
+        "div",
+        {
+          className: ["timeline-details-readonly-value", numeric ? "timeline-details-number" : ""].filter(Boolean).join(" "),
+          title: display
+        },
+        display.length > 0 ? display : React.createElement("span", { className: "timeline-details-value-empty" }, "—")
+      );
+    }
+
+    const options = resolveSelectOptions(field, value, stateOptions.map((option) => option.name), assigneeNames);
+    if (options) {
+      const selectValue = field.kind === "identity" && value.trim().length === 0 ? UNASSIGNED_OPTION : value;
+      return React.createElement(
+        "select",
+        {
+          className: "timeline-details-input",
+          "aria-label": field.name,
+          disabled,
+          value: selectValue,
+          onChange: (event: React.ChangeEvent<HTMLSelectElement>) => {
+            const next = event.target.value;
+            updateDraft(field.id, field.kind === "identity" && next === UNASSIGNED_OPTION ? "" : next);
+          }
+        },
+        ...options.map((option) =>
+          React.createElement("option", { key: option.value, value: option.value }, option.label)
+        )
+      );
+    }
+
+    const numeric = field.kind === "double" || field.kind === "integer";
+    return React.createElement("input", {
+      type: "text",
+      className: [
+        "timeline-details-input",
+        numeric ? "timeline-details-number" : "",
+        error ? "timeline-details-input-invalid" : ""
+      ]
+        .filter(Boolean)
+        .join(" "),
+      "aria-label": field.name,
+      "aria-invalid": error ? "true" : "false",
+      "aria-describedby": error ? toErrorId(field.id) : undefined,
+      inputMode: field.kind === "double" ? "decimal" : field.kind === "integer" ? "numeric" : undefined,
+      placeholder: "—",
+      disabled,
+      value,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => updateDraft(field.id, event.target.value)
+    });
+  };
 
   return React.createElement(
     "aside",
     {
       "aria-label": "timeline-details-panel",
-      className: contentHidden
-        ? "timeline-details-panel-surface timeline-details-panel-surface-content-hidden"
-        : "timeline-details-panel-surface"
+      className: [
+        "timeline-details-panel-surface",
+        contentHidden ? "timeline-details-panel-surface-content-hidden" : "",
+        configOpen && !contentHidden ? "timeline-details-panel-surface-config-open" : ""
+      ]
+        .filter(Boolean)
+        .join(" ")
     },
     React.createElement(
       "div",
@@ -291,60 +448,48 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
           ? null
           : React.createElement(
               "button",
-                {
-                  type: "button",
-                  className: isDirty
-                    ? "timeline-action-button timeline-details-save-button timeline-details-save-button-dirty"
-                    : "timeline-action-button timeline-details-save-button",
-                  onClick: () => {
-                    void saveDetails();
-                  },
-                disabled:
-                  isSaving ||
-                  !isDirty ||
-                  titleDraft.trim().length === 0 ||
-                  stateDraft.trim().length === 0 ||
-                  !props.onUpdateSelectedWorkItemDetails
+              {
+                type: "button",
+                className: isDirty
+                  ? "timeline-action-button timeline-details-save-button timeline-details-save-button-dirty"
+                  : "timeline-action-button timeline-details-save-button",
+                onClick: () => {
+                  void saveDetails();
+                },
+                disabled: !canSave
               },
               isSaving ? "Saving..." : "Save"
             )
       ),
       contentHidden
         ? null
-        : selected
-          ? React.createElement(
-              "div",
-              { className: "timeline-details-head-actions" },
-              azureLink
-                ? React.createElement(
-                    "a",
-                    {
-                      className: "timeline-details-work-item-id timeline-details-work-item-link",
-                      href: azureLink,
-                      target: "_blank",
-                      rel: "noreferrer"
-                    },
-                    `#${selected.workItemId}`,
-                    React.createElement(
-                      "svg",
-                      {
-                        className: "timeline-details-work-item-link-icon",
-                        viewBox: "0 0 16 16",
-                        "aria-hidden": "true"
-                      },
-                      React.createElement("path", {
-                        d: "M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2",
-                        fill: "none",
-                        stroke: "currentColor",
-                        strokeWidth: "1.6",
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round"
-                      })
-                    )
-                  )
-                : React.createElement("span", { className: "timeline-details-work-item-id" }, `#${selected.workItemId}`)
-            )
-          : null
+        : React.createElement(
+            "div",
+            { className: "timeline-details-head-actions", ref: configAreaRef },
+            selected ? renderWorkItemPill(selected.workItemId, azureLink) : null,
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                ref: configToggleRef,
+                className: "timeline-details-config-toggle",
+                "aria-label": "Configure details fields",
+                title: "Configure fields",
+                "aria-expanded": configOpen,
+                "aria-haspopup": "dialog",
+                onClick: () => setConfigOpen((current) => !current)
+              },
+              gearIcon()
+            ),
+            configOpen
+              ? React.createElement(DetailsPanelFieldConfigMenu, {
+                  catalog,
+                  shownIds: shownIds.value,
+                  onChangeShownIds: shownIds.update,
+                  onReset: () => shownIds.update([...DEFAULT_DETAILS_PANEL_FIELD_IDS])
+                })
+              : null
+          )
     ),
     contentHidden
       ? React.createElement(
@@ -357,202 +502,210 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
             "div",
             { className: "timeline-details-edit-form" },
             React.createElement(
-              "label",
-              { className: "timeline-details-field" },
-              React.createElement("span", { className: "timeline-details-label" }, "Title"),
-              React.createElement("input", {
-                type: "text",
-                className: "timeline-details-input",
-                disabled: isSaving,
-                value: titleDraft,
-                onChange: (event) => {
-                  const nextTitle = (event.target as HTMLInputElement).value;
-                  reportDraftDirty({ title: nextTitle, descriptionHtml: descriptionDraft, state: stateDraft });
-                  setTitleDraft(nextTitle);
-                }
-              })
-            ),
-            React.createElement(
-              "label",
-              { className: "timeline-details-field" },
-              React.createElement("span", { className: "timeline-details-label" }, "State"),
-              React.createElement(
-                "select",
-                {
-                  className: "timeline-details-input",
-                  disabled: isSaving,
-                  value: stateDraft,
-                  onChange: (event) => {
-                    const nextState = (event.target as HTMLSelectElement).value;
-                    reportDraftDirty({ title: titleDraft, descriptionHtml: descriptionDraft, state: nextState });
-                    setStateDraft(nextState);
-                  }
-                },
-                ...stateOptions.map((option) => React.createElement("option", { key: option.name, value: option.name }, option.name))
-              )
-            ),
-            React.createElement(
               "div",
-              { className: "timeline-details-field", ref: descriptionFieldRef },
-              React.createElement("span", { className: "timeline-details-label" }, "Description"),
-              isDescriptionEditing
-                ? React.createElement(
-                    "div",
-                    { className: "timeline-richtext-toolbar", role: "group", "aria-label": "Rich text controls" },
-                    React.createElement(
-                      "button",
-                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("bold") },
-                      "B"
-                    ),
-                    React.createElement(
-                      "button",
-                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("italic") },
-                      "I"
-                    ),
-                    React.createElement(
-                      "button",
-                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("underline") },
-                      "U"
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-richtext-button",
-                        onClick: () => applyDescriptionCommand("insertOrderedList")
-                      },
-                      "1."
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-richtext-button",
-                        onClick: () => applyDescriptionCommand("insertUnorderedList")
-                      },
-                      "•"
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-richtext-button",
-                        onClick: () => applyDescriptionCommand("formatBlock", "<h2>")
-                      },
-                      "H2"
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-richtext-button",
-                        onClick: () => applyDescriptionCommand("formatBlock", "<blockquote>")
-                      },
-                      "Quote"
-                    ),
-                    React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        className: "timeline-richtext-button",
-                        onClick: () => {
-                          const url = window.prompt("Link URL", "https://");
-                          if (url && url.trim().length > 0) {
-                            applyDescriptionCommand("createLink", url.trim());
-                          }
-                        }
-                      },
-                      "Link"
-                    ),
-                    React.createElement(
-                      "button",
-                      { type: "button", className: "timeline-richtext-button", onClick: () => applyDescriptionCommand("removeFormat") },
-                      "Clear"
-                    )
-                  )
-                : React.createElement(
-                    "div",
-                    { className: "timeline-description-readonly-head" },
-                    React.createElement(
-                      "p",
-                      { className: "timeline-details-muted timeline-description-edit-hint" },
-                      "Click description to edit"
-                    ),
-                    hasDescriptionContent
-                      ? React.createElement(
-                          "button",
-                          {
-                            type: "button",
-                            className: "timeline-description-toggle",
-                            "aria-expanded": isDescriptionExpanded,
-                            onClick: (event) => {
-                              event.stopPropagation();
-                              setIsDescriptionExpanded((current) => !current);
-                            }
-                          },
-                          isDescriptionExpanded ? "Show less" : "Show more"
-                        )
-                      : null
-                  ),
-              React.createElement("div", {
-                ref: descriptionRef,
-                className: [
-                  "timeline-details-richtext",
-                  isDescriptionEditing ? "timeline-details-richtext-editing" : "timeline-details-richtext-readonly",
-                  !isDescriptionEditing && !isDescriptionExpanded ? "timeline-details-richtext-collapsed" : null
-                ]
-                  .filter(Boolean)
-                  .join(" "),
-                contentEditable: isDescriptionEditing && !isSaving,
-                suppressContentEditableWarning: true,
-                onClick: () => {
-                  if (isSaving) {
-                    return;
-                  }
-                  if (!isDescriptionEditing) {
-                    setIsDescriptionEditing(true);
-                    requestAnimationFrame(() => {
-                      descriptionRef.current?.focus();
-                    });
-                  }
-                },
-                onInput: (event) => {
-                  if (isSaving) {
-                    return;
-                  }
-                  const target = event.target as HTMLDivElement;
-                  const sanitized = sanitizeHtmlFragment(target.innerHTML);
-                  if (sanitized !== target.innerHTML) {
-                    target.innerHTML = sanitized;
-                  }
-                  reportDraftDirty({ title: titleDraft, descriptionHtml: sanitized, state: stateDraft });
-                  setDescriptionDraft(sanitized);
-                },
-                onBlur: () => {
-                  requestAnimationFrame(() => {
-                    const activeElement = document.activeElement;
-                    if (descriptionFieldRef.current && activeElement && descriptionFieldRef.current.contains(activeElement)) {
-                      return;
-                    }
-                    setIsDescriptionEditing(false);
-                  });
-                }
-              })
+              { className: "timeline-details-field-grid" },
+              ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))
             ),
-            saveError
-              ? React.createElement(
-                  "p",
-                  {
-                    className: "timeline-update-error",
-                    role: "status"
-                  },
-                  `Save failed: ${saveError}`
-                )
+            activeSaveError
+              ? React.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${activeSaveError}`)
               : null
           )
-        : React.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit title and description."),
-    contentHidden ? null : React.createElement("div", { className: "timeline-details-list", role: "list" }, ...entries),
+        : React.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."),
     contentHidden ? null : React.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n"))
+  );
+}
+
+function useDetailsPanelFieldIds(): { value: string[]; update: (next: string[]) => void } {
+  const [value, setValue] = React.useState<string[]>(() => loadDetailsPanelFields() ?? [...DEFAULT_DETAILS_PANEL_FIELD_IDS]);
+
+  React.useEffect(() => {
+    hydrateDetailsPanelFieldsPreference((fieldIds) => setValue(fieldIds));
+  }, []);
+
+  const update = React.useCallback((next: string[]) => {
+    const unique = [...new Set(next)];
+    setValue(unique);
+    saveDetailsPanelFields(unique);
+  }, []);
+
+  return { value, update };
+}
+
+function useFieldDefinitions(
+  timeline: TimelineReadModel | null,
+  activeQueryId: string | null,
+  fetchDefinitions: TimelineDetailsPanelProps["onFetchWorkItemFieldDefinitions"]
+): FieldDefinitionsState {
+  const workItemTypes = React.useMemo(() => listWorkItemTypes(timeline), [timeline]);
+  const key = `${activeQueryId ?? ""}\u0000${workItemTypes.join("\u0000")}`;
+  const [state, setState] = React.useState<FieldDefinitionsState>({ key: "", status: "loading" });
+
+  React.useEffect(() => {
+    if (workItemTypes.length === 0) {
+      setState({ key, status: "ready", fields: [] });
+      return;
+    }
+    if (!fetchDefinitions) {
+      setState({ key, status: "failed" });
+      return;
+    }
+
+    let cancelled = false;
+    setState({ key, status: "loading" });
+    fetchDefinitions({ workItemTypes })
+      .then((fields) => {
+        if (!cancelled) {
+          setState({ key, status: "ready", fields });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setState({ key, status: "failed" });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key, fetchDefinitions]);
+
+  return state.key === key ? state : { key, status: "loading" };
+}
+
+function useServerStateOptions(
+  workItemId: number | null,
+  fetchStateOptions: TimelineDetailsPanelProps["onFetchWorkItemStateOptions"]
+): Array<{ name: string; color: string | null }> {
+  const [options, setOptions] = React.useState<Array<{ name: string; color: string | null }>>([]);
+  const fetchedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (fetchedRef.current || workItemId === null || !fetchStateOptions) {
+      return;
+    }
+
+    let cancelled = false;
+    fetchedRef.current = true;
+    fetchStateOptions({ targetWorkItemId: workItemId })
+      .then((states) => {
+        if (!cancelled) {
+          setOptions(states.filter((state) => state.name.trim().length > 0));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOptions([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchStateOptions, workItemId]);
+
+  return options;
+}
+
+function resolveSelectOptions(
+  field: DetailsFieldDescriptor,
+  value: string,
+  stateOptionNames: string[],
+  assigneeNames: string[]
+): Array<{ value: string; label: string }> | null {
+  let names: string[] | null = null;
+  let allowEmpty = true;
+  if (field.id === DETAILS_FIELD_IDS.state) {
+    names = stateOptionNames;
+    allowEmpty = false;
+  } else if (field.kind === "identity") {
+    names = [UNASSIGNED_OPTION, ...assigneeNames];
+    allowEmpty = false;
+  } else if (field.kind === "boolean") {
+    names = [...BOOLEAN_OPTIONS];
+  } else if (field.kind === "picklist") {
+    names = field.allowedValues;
+  }
+
+  if (!names) {
+    return null;
+  }
+
+  const options = names.map((name) => ({ value: name, label: name }));
+  if (value.trim().length > 0 && !names.includes(value)) {
+    options.unshift({ value, label: value });
+  }
+  if (allowEmpty && value.trim().length === 0) {
+    options.unshift({ value: "", label: "—" });
+  }
+  return options;
+}
+
+function toErrorId(fieldId: string): string {
+  return `timeline-details-field-error-${fieldId.replace(/[^A-Za-z0-9_-]/g, "-")}`;
+}
+
+function isIterationFallbackField(fieldId: string, item: TimelineDetailsItem): boolean {
+  const fallback = "iterationFallback" in (item.schedule ?? {}) ? (item.schedule as { iterationFallback?: string }).iterationFallback : undefined;
+  if (!fallback) {
+    return false;
+  }
+  if (fieldId === DETAILS_FIELD_IDS.start) {
+    return fallback === "start" || fallback === "both";
+  }
+  if (fieldId === DETAILS_FIELD_IDS.end) {
+    return fallback === "end" || fallback === "both";
+  }
+  return false;
+}
+
+function renderWorkItemPill(workItemId: number, azureLink: string | null): React.ReactElement {
+  if (!azureLink) {
+    return React.createElement("span", { className: "timeline-details-work-item-id" }, `#${workItemId}`);
+  }
+
+  return React.createElement(
+    "a",
+    {
+      className: "timeline-details-work-item-id timeline-details-work-item-link",
+      href: azureLink,
+      target: "_blank",
+      rel: "noreferrer"
+    },
+    `#${workItemId}`,
+    React.createElement(
+      "svg",
+      { className: "timeline-details-work-item-link-icon", viewBox: "0 0 16 16", "aria-hidden": "true" },
+      React.createElement("path", {
+        d: "M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "1.6",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      })
+    )
+  );
+}
+
+function gearIcon(): React.ReactElement {
+  return React.createElement(
+    "svg",
+    { viewBox: "0 0 16 16", "aria-hidden": "true" },
+    React.createElement("path", {
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "1.4",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      d: "M8 10.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"
+    }),
+    React.createElement("path", {
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "1.4",
+      strokeLinejoin: "round",
+      d: "M6.9 1.8h2.2l.35 1.6 1.2.7 1.55-.5 1.1 1.9-1.2 1.1v1.4l1.2 1.1-1.1 1.9-1.55-.5-1.2.7-.35 1.6H6.9l-.35-1.6-1.2-.7-1.55.5-1.1-1.9 1.2-1.1V7.3l-1.2-1.1 1.1-1.9 1.55.5 1.2-.7z"
+    })
   );
 }
 
@@ -598,84 +751,14 @@ export function buildTimelineDetailsLines(input: TimelineDetailsPanelProps): str
   return [];
 }
 
-function resolveSelectedWorkItem(
-  timeline: TimelineReadModel | null,
-  selectedWorkItemId: number | null
-): {
-  workItemId: number;
-  title: string;
-  descriptionHtml: string;
-  state: string;
-  iterationFallback: "start" | "end" | "both" | null;
-} | null {
+function resolveSelectedWorkItem(timeline: TimelineReadModel | null, selectedWorkItemId: number | null): TimelineDetailsItem | null {
   if (!timeline || selectedWorkItemId === null) {
     return null;
   }
 
-  const selectedBar = timeline.bars.find((bar) => bar.workItemId === selectedWorkItemId);
-  if (selectedBar) {
-    return {
-      workItemId: selectedBar.workItemId,
-      title: selectedBar.title,
-      descriptionHtml: selectedBar.details.descriptionHtml ?? "",
-      state: selectedBar.state.code,
-      iterationFallback: selectedBar.schedule.iterationFallback ?? null
-    };
-  }
-
-  const selectedUnschedulable = timeline.unschedulable.find((item) => item.workItemId === selectedWorkItemId);
-  if (selectedUnschedulable) {
-    return {
-      workItemId: selectedUnschedulable.workItemId,
-      title: selectedUnschedulable.title,
-      descriptionHtml: selectedUnschedulable.details.descriptionHtml ?? "",
-      state: selectedUnschedulable.state.code,
-      iterationFallback: null
-    };
-  }
-
-  return null;
-}
-
-function parseTimelineDetailLine(line: string): { label: string; value: string } | null {
-  const match = /^- ([^:]+):\s?(.*)$/.exec(line);
-  if (!match) {
-    return null;
-  }
-
-  return {
-    label: match[1],
-    value: match[2]
-  };
-}
-
-function stripHtmlToText(value: string): string {
-  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function formatTimelineDetailValue(label: string, value: string): string {
-  const normalizedLabel = label.trim().toLowerCase();
-  if (normalizedLabel === "start" || normalizedLabel === "end") {
-    return formatDateForDisplay(value);
-  }
-
-  return value;
-}
-
-function formatDateForDisplay(raw: string): string {
-  if (raw === "none") {
-    return raw;
-  }
-
-  const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) {
-    return raw;
-  }
-
-  const day = String(parsed.getDate()).padStart(2, "0");
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const year = parsed.getFullYear();
-  const hours = String(parsed.getHours()).padStart(2, "0");
-  const minutes = String(parsed.getMinutes()).padStart(2, "0");
-  return `${day}.${month}.${year} ${hours}:${minutes}`;
+  return (
+    timeline.bars.find((bar) => bar.workItemId === selectedWorkItemId) ??
+    timeline.unschedulable.find((item) => item.workItemId === selectedWorkItemId) ??
+    null
+  );
 }

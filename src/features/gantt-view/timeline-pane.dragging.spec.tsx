@@ -142,7 +142,7 @@ describe("timeline-pane dragging", () => {
     await user.click(bar);
     expect(bar.getAttribute("aria-current")).toBeNull();
     expect(screen.getByLabelText("timeline-details-panel").textContent).toContain(
-      "Select a work item to edit title and description."
+      "Select a work item to edit its fields."
     );
   });
 

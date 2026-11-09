@@ -16,6 +16,8 @@ import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cl
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { AzureFieldDefinitionsAdapter } from "../../adapters/azure-devops/work-items/field-definitions.azure.adapter.js";
+import type { WorkItemFieldDefinitionsPort } from "../../application/ports/work-item-field-definitions.port.js";
 import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
@@ -193,6 +195,7 @@ const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
 const CHILD_WORK_ITEM_CREATE_ROUTE_PATH = "/phase2/work-item-child-create";
 const WORK_ITEM_TYPES_ROUTE_PATH = "/phase2/work-item-types";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
+const WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH = "/phase2/work-item-field-definitions";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
@@ -559,6 +562,71 @@ function isWorkItemTypesRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_TYPES_ROUTE_PATH;
 }
 
+const MAX_FIELD_DEFINITION_TYPES = 50;
+const MAX_WORK_ITEM_TYPE_NAME_LENGTH = 128;
+const BUILT_IN_TEXT_FIELD_REFS = new Set(["System.Title", "System.State", "System.Description"]);
+
+function parseWorkItemTypesQuery(url: URL): string[] | null {
+  const types = [...new Set(url.searchParams.getAll("workItemTypes").map((value) => value.trim()))].filter(
+    (value) => value.length > 0
+  );
+  if (
+    types.length === 0 ||
+    types.length > MAX_FIELD_DEFINITION_TYPES ||
+    types.some((type) => type.length > MAX_WORK_ITEM_TYPE_NAME_LENGTH)
+  ) {
+    return null;
+  }
+  return types;
+}
+
+function classifyFieldDefinitionsFailure(error: unknown): { status: number; code: string; message: string } {
+  const message = error instanceof Error ? error.message : "";
+  if (message === "ADO_CONTEXT_MISSING") {
+    return { status: 409, code: "CONTEXT_REQUIRED", message: "Set the Azure DevOps organization and project first." };
+  }
+  if (/:(401|403)$/.test(message)) {
+    return { status: 401, code: "AUTH_REQUIRED", message: "Azure DevOps rejected the request. Sign in with the Azure CLI." };
+  }
+  return { status: 502, code: "FIELD_DEFINITIONS_FAILED", message: "Unable to load work item field definitions." };
+}
+
+/**
+ * Determines server-side which submitted string fields are HTML fields and must be sanitized.
+ * If the field types cannot be loaded, every submitted string that contains markup is treated as HTML.
+ */
+async function resolveHtmlFieldRefs(
+  payload: Record<string, unknown> | null,
+  fieldDefinitions: WorkItemFieldDefinitionsPort
+): Promise<Set<string>> {
+  const fields = payload?.fields;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) {
+    return new Set();
+  }
+
+  const candidates = Object.entries(fields as Record<string, unknown>).filter(
+    ([referenceName, value]) => typeof value === "string" && !BUILT_IN_TEXT_FIELD_REFS.has(referenceName)
+  );
+  if (candidates.length === 0) {
+    return new Set();
+  }
+
+  try {
+    const types = await fieldDefinitions.getFieldTypes();
+    return new Set(
+      candidates
+        .filter(([referenceName]) => (types.get(referenceName) ?? "").toLowerCase() === "html")
+        .map(([referenceName]) => referenceName)
+    );
+  } catch {
+    return new Set(candidates.filter(([, value]) => (value as string).includes("<")).map(([referenceName]) => referenceName));
+  }
+}
+
+function isWorkItemFieldDefinitionsRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH;
+}
+
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_STATE_OPTIONS_ROUTE_PATH;
 }
@@ -719,6 +787,9 @@ export function createHttpServer(params: {
   const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
   const workItemTypeCacheById = new Map<string, Promise<string | null>>();
   const workItemTypesCacheByProject = new Map<string, Promise<WorkItemTypeOption[]>>();
+  const fieldDefinitions: WorkItemFieldDefinitionsPort = new AzureFieldDefinitionsAdapter(instrumentedHttpClient, () =>
+    contextStore.getActiveContext()
+  );
   const localConfigReset = new ClearLocalUserConfigsUseCase(
     createLocalConfigResetPort({
       userPreferences,
@@ -754,6 +825,7 @@ export function createHttpServer(params: {
       stateOptionsCacheByType,
       workItemTypeCacheById,
       workItemTypesCacheByProject,
+      fieldDefinitions,
       userPreferences,
       localConfigReset,
       azLoginRunner,
@@ -857,6 +929,7 @@ async function route(
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>,
   workItemTypeCacheById: Map<string, Promise<string | null>>,
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>,
+  fieldDefinitions: WorkItemFieldDefinitionsPort,
   userPreferences: LowdbUserPreferencesAdapter,
   localConfigReset: ClearLocalUserConfigsUseCase,
   azLoginRunner: AzLoginRunner,
@@ -882,6 +955,7 @@ async function route(
       stateOptionsCacheByType,
       workItemTypeCacheById,
       workItemTypesCacheByProject,
+      fieldDefinitions,
       verboseLogs
     })
   ) {
@@ -894,7 +968,8 @@ async function route(
       writeEnabled,
       contextStore,
       httpClient,
-      workItemTypesCacheByProject
+      workItemTypesCacheByProject,
+      fieldDefinitions
     })
   ) {
     return;
@@ -933,6 +1008,7 @@ type QueryDomainDeps = {
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
   workItemTypeCacheById: Map<string, Promise<string | null>>;
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+  fieldDefinitions: WorkItemFieldDefinitionsPort;
   verboseLogs: boolean;
 };
 
@@ -1004,6 +1080,27 @@ async function handleQueryDomainRoute(
         code: "WORK_ITEM_TYPES_FAILED",
         message: error instanceof Error ? error.message : "Unable to fetch work item types."
       });
+      return true;
+    }
+  }
+
+  if (isWorkItemFieldDefinitionsRoute(method, url.pathname)) {
+    const workItemTypes = parseWorkItemTypesQuery(url);
+    if (!workItemTypes) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: `Provide 1-${MAX_FIELD_DEFINITION_TYPES} workItemTypes query params with up to ${MAX_WORK_ITEM_TYPE_NAME_LENGTH} characters each.`
+      });
+      return true;
+    }
+
+    try {
+      const fields = await deps.fieldDefinitions.listFieldDefinitions(workItemTypes);
+      writeJson(res, 200, { fields });
+      return true;
+    } catch (error) {
+      const failure = classifyFieldDefinitionsFailure(error);
+      writeJson(res, failure.status, { code: failure.code, message: failure.message });
       return true;
     }
   }
@@ -1130,6 +1227,7 @@ type TimelineWritesDeps = {
   contextStore: AdoContextStore;
   httpClient: HttpClient;
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+  fieldDefinitions: WorkItemFieldDefinitionsPort;
 };
 
 function writeRejectedWriteResult(res: ServerResponse, writeResult: WriteCommandResult): void {
@@ -1291,12 +1389,13 @@ async function handleTimelineWritesRoute(
   if (isUpdateDetailsRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
-    const update = parseUpdateDetailsPayload(payload);
+    const htmlFieldRefs = await resolveHtmlFieldRefs(payload, deps.fieldDefinitions);
+    const update = parseUpdateDetailsPayload(payload, { htmlFieldRefs });
 
     if (!update) {
       writeJson(res, 400, {
         code: "INVALID_INPUT",
-        message: "Provide targetWorkItemId/title/descriptionHtml/state."
+        message: "Provide targetWorkItemId and fields with valid field reference names."
       });
       return true;
     }
@@ -1307,11 +1406,7 @@ async function handleTimelineWritesRoute(
         command: {
           kind: "WORK_ITEM_PATCH",
           workItemId: update.targetWorkItemId,
-          operations: [
-            { op: "add", path: "/fields/System.Title", value: update.title },
-            { op: "add", path: "/fields/System.Description", value: update.descriptionHtml },
-            { op: "add", path: "/fields/System.State", value: update.state }
-          ]
+          operations: update.operations
         }
       });
 

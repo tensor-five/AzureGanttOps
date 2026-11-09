@@ -9,7 +9,7 @@ import {
   applyDuplicateWorkItemUpdate,
   applyScheduleUpdate,
   applyWorkItemAssignedToUpdate,
-  applyWorkItemMetadataUpdate,
+  applyWorkItemFieldsUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
@@ -122,12 +122,44 @@ describe("ui-client-timeline-mutations", () => {
     expect(updated?.bars[0]?.schedule.endDate).toBe("2026-04-05T00:00:00.000Z");
   });
 
-  it("applies metadata updates to bars and unschedulable items", () => {
-    const updated = applyWorkItemMetadataUpdate(makeTimeline(), 22, "New title", "<p>updated</p>", "Done", "#abcdef");
+  it("applies built-in field updates to bars and unschedulable items", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      22,
+      {
+        "System.Title": "New title",
+        "System.Description": "<p>updated</p>",
+        "System.State": "Done",
+        "System.AssignedTo": null
+      },
+      "#abcdef"
+    );
     expect(updated?.unschedulable[0]?.title).toBe("New title");
     expect(updated?.unschedulable[0]?.details.descriptionHtml).toBe("<p>updated</p>");
     expect(updated?.unschedulable[0]?.state.code).toBe("Done");
     expect(updated?.unschedulable[0]?.state.color).toBe("#abcdef");
+    expect(updated?.unschedulable[0]?.details.assignedTo).toBeNull();
+    expect(updated?.bars[0]?.title).toBe("Item 11");
+  });
+
+  it("stores generic field values, converts booleans and clears removed values", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      11,
+      {
+        "Microsoft.VSTS.Scheduling.StoryPoints": 8,
+        "Custom.Blocked": true,
+        "Microsoft.VSTS.Scheduling.RemainingWork": null
+      },
+      null
+    );
+    expect(updated?.bars[0]?.details.fieldValues).toMatchObject({
+      "Microsoft.VSTS.Scheduling.StoryPoints": 8,
+      "Custom.Blocked": "True",
+      "Microsoft.VSTS.Scheduling.RemainingWork": null
+    });
+    expect(updated?.bars[0]?.title).toBe("Item 11");
+    expect(applyWorkItemFieldsUpdate(null, 11, { "System.Title": "x" }, null)).toBeNull();
   });
 
   it("applies state-only updates without changing title or description", () => {

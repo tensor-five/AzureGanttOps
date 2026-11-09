@@ -22,8 +22,9 @@
     "secrets:scan:staged": "node ./scripts/secret-scan.mjs --staged",
     "quality:ui": "npm run lint && npm run typecheck && npm run check:cycles && npm test && npm run test:e2e",
     "quality:gate:phase6": "npm run lint && npm run typecheck && npm run check:cycles && npm test && npm run test:e2e",
-    "quality:gate": "npm run typecheck && npm run check:cycles && npm test",
-    "typecheck": "tsc --noEmit"
+    "quality:gate": "npm run typecheck && npm run check:cycles && npm run check:frozen && npm test",
+    "typecheck": "tsc --noEmit",
+    "check:frozen": "node ./scripts/verify-frozen-artifacts.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

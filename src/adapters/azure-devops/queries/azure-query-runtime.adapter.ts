@@ -597,6 +597,11 @@ function normalizeHydratedPayload(payload: unknown): {
             return;
           }
 
+          if (typeof value === "boolean") {
+            flattenedFields[fieldRef] = value ? "True" : "False";
+            return;
+          }
+
           if (fieldRef === "System.AssignedTo" && value && typeof value === "object") {
             const assignedTo = value as Record<string, unknown>;
             const displayName = assignedTo.displayName;

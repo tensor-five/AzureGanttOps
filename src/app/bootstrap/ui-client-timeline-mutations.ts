@@ -38,49 +38,55 @@ export function applyScheduleUpdate(
   };
 }
 
-export function applyWorkItemMetadataUpdate(
+export function applyWorkItemFieldsUpdate(
   timeline: QueryIntakeResponse["timeline"],
   targetWorkItemId: number,
-  title: string,
-  descriptionHtml: string,
-  stateCode: string,
+  fields: Record<string, string | number | boolean | null>,
   stateColor: string | null
 ): QueryIntakeResponse["timeline"] {
   if (!timeline) {
     return timeline;
   }
 
-  const nextState = toTimelineStateBadge(stateCode, stateColor);
+  const fieldValuePatch: Record<string, string | number | null> = {};
+  Object.entries(fields).forEach(([referenceName, value]) => {
+    fieldValuePatch[referenceName] = typeof value === "boolean" ? (value ? "True" : "False") : value;
+  });
+  const nextTitle = typeof fields["System.Title"] === "string" ? fields["System.Title"] : null;
+  const nextState = typeof fields["System.State"] === "string" ? toTimelineStateBadge(fields["System.State"], stateColor) : null;
+  const hasDescription = "System.Description" in fields;
+  const hasAssignedTo = "System.AssignedTo" in fields;
+
+  const applyFields = <T extends TimelineBar | TimelineUnschedulableItem>(item: T): T => {
+    if (item.workItemId !== targetWorkItemId) {
+      return item;
+    }
+
+    return {
+      ...item,
+      ...(nextTitle !== null ? { title: nextTitle } : {}),
+      ...(nextState ? { state: nextState } : {}),
+      details: {
+        ...item.details,
+        ...(hasDescription ? { descriptionHtml: toNullableString(fields["System.Description"]) } : {}),
+        ...(hasAssignedTo ? { assignedTo: toNullableString(fields["System.AssignedTo"]) } : {}),
+        fieldValues: {
+          ...(item.details.fieldValues ?? {}),
+          ...fieldValuePatch
+        }
+      }
+    };
+  };
 
   return {
     ...timeline,
-    bars: timeline.bars.map((bar) =>
-      bar.workItemId === targetWorkItemId
-        ? {
-            ...bar,
-            title,
-            state: nextState,
-            details: {
-              ...bar.details,
-              descriptionHtml
-            }
-          }
-        : bar
-    ),
-    unschedulable: timeline.unschedulable.map((item) =>
-      item.workItemId === targetWorkItemId
-        ? {
-            ...item,
-            title,
-            state: nextState,
-            details: {
-              ...item.details,
-              descriptionHtml
-            }
-          }
-        : item
-    )
+    bars: timeline.bars.map(applyFields),
+    unschedulable: timeline.unschedulable.map(applyFields)
   };
+}
+
+function toNullableString(value: string | number | boolean | null | undefined): string | null {
+  return typeof value === "string" ? value : value === null || value === undefined ? null : String(value);
 }
 
 export function applyWorkItemStateUpdate(

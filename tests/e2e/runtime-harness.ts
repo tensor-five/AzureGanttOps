@@ -19,7 +19,13 @@ type HarnessState = {
   callLog: Array<{ queryInput: string }>;
   adoEntries: AdoLogEntry[];
   adoSeq: number;
+  fieldDefinitions: HarnessFieldDefinitionsConfig;
+  fieldDefinitionRequests: unknown[];
+  detailsUpdates: unknown[];
+  failNextDetailsUpdateMessage: string | null;
 };
+
+type HarnessFieldDefinitionsConfig = { fields: unknown[] } | { error: string };
 
 type UserPreferences = Record<string, unknown>;
 
@@ -27,11 +33,15 @@ type HarnessApi = {
   __phase6Configure: (responses: unknown[]) => void;
   __phase6DelayNextSubmit: (delayMs: number) => void;
   __phase6Mount: () => void;
+  __phase6ConfigureFieldDefinitions: (config: HarnessFieldDefinitionsConfig) => void;
+  __phase6FailNextDetailsUpdate: (message: string) => void;
   __phase6Read: () => {
     callLog: Array<{ queryInput: string }>;
     density: string | null;
     liveSyncEnabled: string | null;
     adoEntries: AdoLogEntry[];
+    fieldDefinitionRequests: unknown[];
+    detailsUpdates: unknown[];
   };
 };
 
@@ -45,7 +55,11 @@ const state: HarnessState = {
   submitDelayMs: 0,
   callLog: [],
   adoEntries: [],
-  adoSeq: 0
+  adoSeq: 0,
+  fieldDefinitions: { fields: [] },
+  fieldDefinitionRequests: [],
+  detailsUpdates: [],
+  failNextDetailsUpdateMessage: null
 };
 
 const USER_PREFERENCES_ENDPOINT = "/phase2/user-preferences";
@@ -182,6 +196,15 @@ window.__phase6Configure = (responses) => {
   state.adoSeq = 0;
 };
 
+window.__phase6ConfigureFieldDefinitions = (config) => {
+  state.fieldDefinitions = config;
+  state.fieldDefinitionRequests = [];
+};
+
+window.__phase6FailNextDetailsUpdate = (message) => {
+  state.failNextDetailsUpdateMessage = message;
+};
+
 window.__phase6DelayNextSubmit = (delayMs) => {
   state.submitDelayMs = Math.max(0, delayMs);
 };
@@ -266,13 +289,31 @@ window.__phase6Mount = () => {
         operationCount: 2,
         reasonCode: "WRITE_ENABLED"
       }),
-      updateWorkItemDetails: async () => ({
-        accepted: true,
-        mode: "EXECUTED",
-        commandKind: "WORK_ITEM_PATCH",
-        operationCount: 2,
-        reasonCode: "WRITE_ENABLED"
-      }),
+      updateWorkItemDetails: async (request: unknown) => {
+        state.detailsUpdates.push(JSON.parse(JSON.stringify(request)));
+        const failureMessage = state.failNextDetailsUpdateMessage;
+        state.failNextDetailsUpdateMessage = null;
+        if (failureMessage) {
+          throw new Error(failureMessage);
+        }
+
+        return {
+          accepted: true,
+          mode: "EXECUTED",
+          commandKind: "WORK_ITEM_PATCH",
+          operationCount: 2,
+          reasonCode: "WRITE_ENABLED"
+        };
+      },
+      fetchWorkItemFieldDefinitions: async (request: unknown) => {
+        state.fieldDefinitionRequests.push(JSON.parse(JSON.stringify(request ?? null)));
+        const config = state.fieldDefinitions;
+        if ("error" in config) {
+          throw new Error(config.error);
+        }
+
+        return { fields: JSON.parse(JSON.stringify(config.fields)) };
+      },
       fetchWorkItemStateOptions: async () => ({
         states: [
           { name: "To Do", color: "b2b2b2" },
@@ -301,5 +342,7 @@ window.__phase6Read = () => ({
   callLog: [...state.callLog],
   density: window.localStorage.getItem("azure-ganttops.timeline-density"),
   liveSyncEnabled: window.localStorage.getItem("azure-ganttops.timeline-live-sync-enabled"),
-  adoEntries: [...state.adoEntries]
+  adoEntries: [...state.adoEntries],
+  fieldDefinitionRequests: [...state.fieldDefinitionRequests],
+  detailsUpdates: [...state.detailsUpdates]
 });

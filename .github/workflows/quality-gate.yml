@@ -6,11 +6,57 @@ on:
       - main
       - master
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: quality-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Frozen contract and test checksums
+        env:
+          FROZEN_CHANGE_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'approved-frozen-change') }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run check:frozen -- --base "origin/${{ github.base_ref }}"
+          else
+            npm run check:frozen
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit and component tests
+        run: npm test
+
+      - name: Dependency cycle check
+        run: npm run check:cycles
+
+  contract-e2e:
+    # Frozen E2E tests of approved contracts. Runs only the contract suites, because
+    # other E2E suites are not yet part of the CI gate.
+    # Pinned to 24.04: the installed Playwright version has no Chromium build for ubuntu-latest (26.04).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,11 +71,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Unit and component tests
-        run: npm test
-
-      - name: Dependency cycle check
-        run: npm run check:cycles
+      - name: Contract E2E tests (details panel field configuration)
+        env:
+          CI: "true"
+        run: npm run test:e2e -- tests/e2e/details-panel-field-configuration.spec.ts

@@ -126,7 +126,7 @@ export function upsertPendingWorkItemMutation(
       ...existing,
       applyToTimeline: composeTimelineMutations(existing.applyToTimeline, mutation.applyToTimeline),
       executeSchedule: mutation.executeSchedule ?? existing.executeSchedule,
-      executeDetails: mutation.executeDetails ?? existing.executeDetails
+      executeDetails: composeDetailExecutors(existing.executeDetails, mutation.executeDetails)
     };
     return next;
   }
@@ -178,6 +178,24 @@ export async function flushPendingWorkItemMutations(params: {
     params.queueRef.current = params.queueRef.current.slice(1);
     params.onPendingCountChange(params.queueRef.current.length);
   }
+}
+
+/**
+ * Details updates may carry only the changed fields, so queued updates for the same work item
+ * must all reach the server. They run in order; later values win field by field.
+ */
+function composeDetailExecutors(
+  first: (() => Promise<void>) | undefined,
+  second: (() => Promise<void>) | undefined
+): (() => Promise<void>) | undefined {
+  if (!first || !second) {
+    return second ?? first;
+  }
+
+  return async () => {
+    await first();
+    await second();
+  };
 }
 
 function composeTimelineMutations(first: TimelineMutation, second: TimelineMutation): TimelineMutation {

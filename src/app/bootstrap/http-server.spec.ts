@@ -2159,6 +2159,142 @@ describe("createHttpServer", () => {
       await server.close();
     }
   });
+
+  describe("details field hardening", () => {
+    async function withWriteServer(
+      get: (url: string) => Promise<{ status: number; json: unknown; headers: Record<string, string | undefined> }>,
+      run: (baseUrl: string, calls: Array<{ url: string; body: unknown }>) => Promise<void>
+    ): Promise<void> {
+      const fixture = await createFixtureDir(tempDirs);
+      const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+      process.env.ADO_WRITE_ENABLED = "1";
+      const calls: Array<{ url: string; body: unknown }> = [];
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: {
+          get,
+          patch: async (url, body) => {
+            calls.push({ url, body });
+            return { status: 200, json: {}, headers: {} };
+          }
+        }
+      });
+      try {
+        await run(server.baseUrl, calls);
+      } finally {
+        if (previousWriteEnabled === undefined) {
+          delete process.env.ADO_WRITE_ENABLED;
+        } else {
+          process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+        }
+        await server.close();
+      }
+    }
+
+    async function postDetails(baseUrl: string, body: unknown): Promise<Response> {
+      const csrfToken = await fetchCsrfToken(baseUrl);
+      return fetch(`${baseUrl}/phase2/work-item-details-update`, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json", "x-ado-csrf-token": csrfToken },
+        body: JSON.stringify(body)
+      });
+    }
+
+    it("sanitizes HTML fields identified by the Azure DevOps field types, even without client hints", async () => {
+      await withWriteServer(
+        async (url) =>
+          url.includes("/_apis/wit/fields")
+            ? {
+                status: 200,
+                json: { value: [{ referenceName: "Custom.Html", type: "html" }, { referenceName: "Custom.Text", type: "string" }] },
+                headers: {}
+              }
+            : { status: 200, json: { value: [] }, headers: {} },
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, {
+            targetWorkItemId: 42,
+            fields: { "Custom.Html": "<p>ok</p><script>x()</script>", "Custom.Text": "a < b" }
+          });
+          expect(response.status).toBe(200);
+          expect(calls[0]?.body).toEqual([
+            { op: "add", path: "/fields/Custom.Html", value: "<p>ok</p>" },
+            { op: "add", path: "/fields/Custom.Text", value: "a < b" }
+          ]);
+        }
+      );
+    });
+
+    it("sanitizes markup in string fields when field types cannot be loaded", async () => {
+      await withWriteServer(
+        async () => ({ status: 500, json: {}, headers: {} }),
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, {
+            targetWorkItemId: 42,
+            fields: { "Custom.Unknown": "<img src=x onerror=alert(1)>Hi" }
+          });
+          expect(response.status).toBe(200);
+          expect(JSON.stringify(calls[0]?.body)).not.toContain("onerror");
+        }
+      );
+    });
+
+    it("rejects invalid field reference names", async () => {
+      await withWriteServer(
+        async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, { targetWorkItemId: 42, fields: { "../System.Title": "x" } });
+          expect(response.status).toBe(400);
+          expect(calls).toHaveLength(0);
+        }
+      );
+    });
+
+    it("bounds the field definitions query and maps context failures", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const server = startServer({ distRootPath: fixture.distRootPath, contextFilePath: fixture.contextFilePath });
+      try {
+        const tooMany = Array.from({ length: 51 }, (_, index) => `workItemTypes=Type${index}`).join("&");
+        expect((await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?${tooMany}`)).status).toBe(400);
+        expect((await fetch(`${server.baseUrl}/phase2/work-item-field-definitions`)).status).toBe(400);
+        expect(
+          (await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?workItemTypes=${"x".repeat(129)}`)).status
+        ).toBe(400);
+      } finally {
+        await server.close();
+      }
+
+      const noContextFixture = await createFixtureDir(tempDirs);
+      await rm(noContextFixture.contextFilePath, { force: true });
+      const noContextServer = startServer({
+        distRootPath: noContextFixture.distRootPath,
+        contextFilePath: noContextFixture.contextFilePath
+      });
+      try {
+        const response = await fetch(`${noContextServer.baseUrl}/phase2/work-item-field-definitions?workItemTypes=Bug`);
+        expect(response.status).toBe(409);
+        expect(((await response.json()) as { code: string }).code).toBe("CONTEXT_REQUIRED");
+      } finally {
+        await noContextServer.close();
+      }
+    });
+
+    it("maps Azure DevOps auth failures to AUTH_REQUIRED", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: { get: async () => ({ status: 401, json: {}, headers: {} }) }
+      });
+      try {
+        const response = await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?workItemTypes=Bug`);
+        expect(response.status).toBe(401);
+        expect(((await response.json()) as { code: string }).code).toBe("AUTH_REQUIRED");
+      } finally {
+        await server.close();
+      }
+    });
+  });
 });
 
 function startServer(params: {

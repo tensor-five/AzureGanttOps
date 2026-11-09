@@ -3,6 +3,7 @@ import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.
 import { registerServiceWorker } from "./register-service-worker.js";
 import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import { parseWorkItemFieldDefinitions } from "./work-item-field-definitions-parsing.js";
 import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
 import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
 
@@ -181,7 +182,7 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
-    updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
+    updateWorkItemDetails: async ({ targetWorkItemId, fields, htmlFields }) => {
       const response = await fetch("/phase2/work-item-details-update", {
         method: "POST",
         headers: withCsrf({
@@ -190,9 +191,8 @@ const composition = createDefaultUiShellComposition({
         }),
         body: JSON.stringify({
           targetWorkItemId,
-          title,
-          descriptionHtml,
-          state
+          fields,
+          ...(htmlFields && htmlFields.length > 0 ? { htmlFields } : {})
         })
       });
 
@@ -390,6 +390,25 @@ const composition = createDefaultUiShellComposition({
         operationCount: number;
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
+    },
+    fetchWorkItemFieldDefinitions: async ({ workItemTypes }) => {
+      const params = new URLSearchParams();
+      workItemTypes.forEach((type) => params.append("workItemTypes", type));
+      const response = await fetch(`/phase2/work-item-field-definitions?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as { fields?: unknown; message?: string };
+      if (!response.ok) {
+        throw new Error(
+          typeof payload?.message === "string" ? payload.message : `Field definitions request failed (${response.status})`
+        );
+      }
+
+      return { fields: parseWorkItemFieldDefinitions(payload.fields) };
     },
     fetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
       const response = await fetch(`/phase2/work-item-state-options?targetWorkItemId=${encodeURIComponent(String(targetWorkItemId))}`, {
