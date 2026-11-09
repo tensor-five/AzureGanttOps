@@ -4000,6 +4000,12 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.timeline-details-textarea {
+  min-height: 64px;
+  resize: vertical;
+  font-family: inherit;
+}
+
 .timeline-details-input.timeline-details-input-invalid,
 .timeline-details-input.timeline-details-input-invalid:focus {
   border-color: var(--color-danger);

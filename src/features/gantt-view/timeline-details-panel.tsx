@@ -7,8 +7,8 @@ import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-sta
 import {
   DEFAULT_DETAILS_PANEL_FIELD_IDS,
   DETAILS_FIELD_IDS,
+  DEFAULT_SCHEDULE_FIELD_REFS,
   buildDetailsFieldCatalog,
-  isFieldDefinedForItem,
   layoutDetailsFields,
   listWorkItemTypes,
   type DetailsFieldDescriptor,
@@ -101,7 +101,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       selected
         ? shownIds.value
             .map((id) => catalog.byId.get(id))
-            .filter((field): field is DetailsFieldDescriptor => !!field && isFieldDefinedForItem(field, selected))
+            .filter((field): field is DetailsFieldDescriptor => !!field)
         : [],
     [catalog, selected, shownIds.value]
   );
@@ -202,6 +202,7 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       }),
     [catalogTimeline, selected?.state.code, serverStateOptions]
   );
+  const scheduleFieldRefs = catalogTimeline?.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS;
   const assigneeNames = React.useMemo(
     () => buildTimelineAssigneeOptions(catalogTimeline).map((option) => option.name),
     [catalogTimeline]
@@ -221,11 +222,21 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
       if (!field) {
         return;
       }
-      fields[id] = toDetailsFieldSaveValue(field, currentDraft(id));
+      const writeRef = resolveWriteFieldRef(id, scheduleFieldRefs);
+      const value = toDetailsFieldSaveValue(field, currentDraft(id));
+      if (value === null && writeRef !== id && !hasStoredFieldValue(selected, writeRef)) {
+        // The date was inherited from the iteration and is not stored on the work item.
+        return;
+      }
+      fields[writeRef] = value;
       if (field.kind === "html" && id !== DETAILS_FIELD_IDS.description) {
         htmlFields.push(id);
       }
     });
+    if (Object.keys(fields).length === 0) {
+      setDraftState({ workItemId: null, values: {} });
+      return;
+    }
     const nextState = typeof fields[DETAILS_FIELD_IDS.state] === "string" ? (fields[DETAILS_FIELD_IDS.state] as string) : null;
     const stateColor = nextState
       ? stateOptions.find((option) => option.name.toLowerCase() === nextState.toLowerCase())?.color ?? null
@@ -403,6 +414,29 @@ export function TimelineDetailsPanel(props: TimelineDetailsPanelProps): React.Re
           React.createElement("option", { key: option.value, value: option.value }, option.label)
         )
       );
+    }
+
+    if (field.kind === "multiline") {
+      return React.createElement("textarea", {
+        className: "timeline-details-input timeline-details-textarea",
+        "aria-label": field.name,
+        rows: 3,
+        placeholder: "—",
+        disabled,
+        value,
+        onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => updateDraft(field.id, event.target.value)
+      });
+    }
+
+    if (field.kind === "date") {
+      return React.createElement("input", {
+        type: "datetime-local",
+        className: "timeline-details-input timeline-details-number",
+        "aria-label": field.name,
+        disabled,
+        value,
+        onChange: (event: React.ChangeEvent<HTMLInputElement>) => updateDraft(field.id, event.target.value)
+      });
     }
 
     const numeric = field.kind === "double" || field.kind === "integer";
@@ -638,6 +672,21 @@ function resolveSelectOptions(
     options.unshift({ value: "", label: "—" });
   }
   return options;
+}
+
+function hasStoredFieldValue(item: TimelineDetailsItem, referenceName: string): boolean {
+  const value = item.details.fieldValues?.[referenceName];
+  return value !== null && value !== undefined && String(value).trim().length > 0;
+}
+
+function resolveWriteFieldRef(fieldId: string, scheduleFieldRefs: { start: string; endOrTarget: string }): string {
+  if (fieldId === DETAILS_FIELD_IDS.start) {
+    return scheduleFieldRefs.start;
+  }
+  if (fieldId === DETAILS_FIELD_IDS.end) {
+    return scheduleFieldRefs.endOrTarget;
+  }
+  return fieldId;
 }
 
 function toErrorId(fieldId: string): string {

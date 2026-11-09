@@ -42622,14 +42622,42 @@ var DEFAULT_SCHEDULE_FIELD_REFS = {
   start: "Microsoft.VSTS.Scheduling.StartDate",
   endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
 };
+var SYSTEM_READ_ONLY_FIELD_REFS = /* @__PURE__ */ new Set([
+  "System.Id",
+  "System.Rev",
+  "System.WorkItemType",
+  "System.CreatedDate",
+  "System.CreatedBy",
+  "System.ChangedDate",
+  "System.ChangedBy",
+  "System.AuthorizedDate",
+  "System.AuthorizedAs",
+  "System.RevisedDate",
+  "System.Watermark",
+  "System.TeamProject",
+  "System.NodeName",
+  "System.AreaId",
+  "System.IterationId",
+  "System.PersonId",
+  "System.CommentCount",
+  "System.BoardColumn",
+  "System.BoardColumnDone",
+  "System.BoardLane",
+  "System.ExternalLinkCount",
+  "System.HyperLinkCount",
+  "System.AttachedFileCount",
+  "System.RelatedLinkCount",
+  "System.RemoteLinkCount",
+  "System.Parent"
+]);
 var HALF_WIDTH_KINDS = /* @__PURE__ */ new Set(["double", "integer", "date", "boolean", "picklist", "identity", "derived"]);
 var BUILT_IN_FIELDS = [
   builtIn(DETAILS_FIELD_IDS.title, "Title", "text", true),
   builtIn(DETAILS_FIELD_IDS.state, "State", "picklist", true),
   builtIn(DETAILS_FIELD_IDS.description, "Description", "html", true),
   builtIn(DETAILS_FIELD_IDS.assignedTo, "Assigned To", "identity", true),
-  builtIn(DETAILS_FIELD_IDS.start, "Start", "date", false),
-  builtIn(DETAILS_FIELD_IDS.end, "End", "date", false),
+  builtIn(DETAILS_FIELD_IDS.start, "Start", "date", true),
+  builtIn(DETAILS_FIELD_IDS.end, "End", "date", true),
   builtIn(DETAILS_FIELD_IDS.id, "ID", "derived", false),
   builtIn(DETAILS_FIELD_IDS.workItemType, "Work Item Type", "picklist", false),
   builtIn(DETAILS_FIELD_IDS.dependencies, "Dependencies", "derived", false)
@@ -42642,10 +42670,10 @@ function classifyFieldDefinition(definition3) {
   const hasAllowedValues = definition3.allowedValues.length > 0;
   const numericType = type === "integer" || type === "picklistinteger" ? "integer" : type === "double" || type === "picklistdouble" ? "double" : "string";
   let kind;
-  let editableKind = true;
-  if (definition3.isIdentity || type === "identity") {
+  if (definition3.referenceName === "System.Tags") {
+    kind = "tags";
+  } else if (definition3.isIdentity || type === "identity") {
     kind = "identity";
-    editableKind = false;
   } else if (numericType !== "string") {
     kind = hasAllowedValues ? "picklist" : numericType;
   } else if (type === "string" || type === "pickliststring") {
@@ -42656,18 +42684,15 @@ function classifyFieldDefinition(definition3) {
     kind = "boolean";
   } else if (type === "datetime") {
     kind = "date";
-    editableKind = false;
   } else if (type === "plaintext" || type === "history") {
     kind = "multiline";
-    editableKind = false;
   } else if (type === "treepath") {
     kind = "path";
-    editableKind = false;
   } else {
     kind = "unknown";
-    editableKind = false;
   }
-  return { kind, valueType: numericType, editable: editableKind && !definition3.readOnly };
+  const editable = !definition3.readOnly && !SYSTEM_READ_ONLY_FIELD_REFS.has(definition3.referenceName);
+  return { kind, valueType: numericType, editable };
 }
 function buildDetailsFieldCatalog(input) {
   const scheduleRefs = input.timeline?.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS;
@@ -42706,7 +42731,7 @@ function buildDetailsFieldCatalog(input) {
         kind: "unknown",
         valueType: "string",
         width: "full",
-        editable: false,
+        editable: !SYSTEM_READ_ONLY_FIELD_REFS.has(referenceName),
         allowedValues: [],
         workItemTypes: null
       });
@@ -42717,13 +42742,6 @@ function buildDetailsFieldCatalog(input) {
     byId: new Map(fields.map((field) => [field.id, field])),
     definitionsUnavailable: input.definitions === null
   };
-}
-function isFieldDefinedForItem(field, item) {
-  if (!field.workItemTypes) {
-    return true;
-  }
-  const itemType = item.details.workItemType ?? readString(item.details.fieldValues?.["System.WorkItemType"]);
-  return itemType ? field.workItemTypes.includes(itemType) : true;
 }
 function layoutDetailsFields(fields) {
   const result = [];
@@ -42890,7 +42908,7 @@ function DetailsPanelFieldConfigMenu(props) {
       pendingFocusIdRef.current = neighbor;
       props.onChangeShownIds(props.shownIds.filter((entry) => entry !== fieldId));
     })));
-  })), import_react5.default.createElement("p", { className: "timeline-details-config-note" }, "Drag, use \u2191 \u2193 or Alt+\u2191/\u2193 to reorder. Width is chosen automatically."), props.catalog.definitionsUnavailable ? import_react5.default.createElement("p", { className: "timeline-details-config-note timeline-details-config-warning", role: "status" }, "Field definitions unavailable \u2013 showing loaded fields read-only.") : null, import_react5.default.createElement("div", { className: "timeline-details-config-divider", "aria-hidden": "true" }), import_react5.default.createElement("p", { className: "timeline-details-config-section-title" }, import_react5.default.createElement("span", null, "Available")), import_react5.default.createElement("input", {
+  })), import_react5.default.createElement("p", { className: "timeline-details-config-note" }, "Drag, use \u2191 \u2193 or Alt+\u2191/\u2193 to reorder. Width is chosen automatically."), props.catalog.definitionsUnavailable ? import_react5.default.createElement("p", { className: "timeline-details-config-note timeline-details-config-warning", role: "status" }, "Field definitions unavailable \u2013 loaded fields are edited as text.") : null, import_react5.default.createElement("div", { className: "timeline-details-config-divider", "aria-hidden": "true" }), import_react5.default.createElement("p", { className: "timeline-details-config-section-title" }, import_react5.default.createElement("span", null, "Available")), import_react5.default.createElement("input", {
     type: "search",
     className: "timeline-details-config-search",
     placeholder: "Search field",
@@ -44479,9 +44497,9 @@ function readDetailsFieldValue(field, item, timeline) {
     case DETAILS_FIELD_IDS.assignedTo:
       return item.details.assignedTo ?? toText(item.details.fieldValues?.[DETAILS_FIELD_IDS.assignedTo]);
     case DETAILS_FIELD_IDS.start:
-      return formatDateTime(item.schedule?.startDate ?? null);
+      return formatDateField(field, item.schedule?.startDate ?? null);
     case DETAILS_FIELD_IDS.end:
-      return formatDateTime(item.schedule?.endDate ?? null);
+      return formatDateField(field, item.schedule?.endDate ?? null);
     case DETAILS_FIELD_IDS.id:
       return String(item.workItemId);
     case DETAILS_FIELD_IDS.workItemType:
@@ -44496,7 +44514,7 @@ function readDetailsFieldValue(field, item, timeline) {
     return toBooleanOption(raw);
   }
   if (field.kind === "date") {
-    return formatDateTime(typeof raw === "string" ? raw : null);
+    return formatDateField(field, typeof raw === "string" ? raw : null);
   }
   if (field.kind === "html") {
     return sanitizeHtmlFragment(toText(raw));
@@ -44528,6 +44546,13 @@ function toDetailsFieldSaveValue(field, draft) {
   if (field.kind === "boolean") {
     return trimmed.length === 0 ? null : trimmed === "Yes";
   }
+  if (field.kind === "date") {
+    if (trimmed.length === 0) {
+      return null;
+    }
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? trimmed : parsed.toISOString();
+  }
   if (trimmed.length === 0) {
     return null;
   }
@@ -44536,6 +44561,20 @@ function toDetailsFieldSaveValue(field, draft) {
     return Number.isFinite(numeric) ? numeric : trimmed;
   }
   return field.id === DETAILS_FIELD_IDS.title ? trimmed : draft;
+}
+function formatDateField(field, raw) {
+  return field.editable ? toLocalDateTimeInputValue(raw) : formatDateTime(raw);
+}
+function toLocalDateTimeInputValue(raw) {
+  if (!raw) {
+    return "";
+  }
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
 }
 function formatDateTime(raw) {
   if (!raw) {
@@ -44794,7 +44833,7 @@ function TimelineDetailsPanel(props) {
     definitions: definitionsState.status === "ready" ? definitionsState.fields : definitionsState.status === "loading" ? [] : null,
     timeline: catalogTimeline
   }), [catalogTimeline, definitionsState]);
-  const visibleFields = import_react7.default.useMemo(() => selected ? shownIds.value.map((id) => catalog.byId.get(id)).filter((field) => !!field && isFieldDefinedForItem(field, selected)) : [], [catalog, selected, shownIds.value]);
+  const visibleFields = import_react7.default.useMemo(() => selected ? shownIds.value.map((id) => catalog.byId.get(id)).filter((field) => !!field) : [], [catalog, selected, shownIds.value]);
   const computedBaseline = import_react7.default.useMemo(() => {
     const values = {};
     if (selected) {
@@ -44863,6 +44902,7 @@ function TimelineDetailsPanel(props) {
     selectedState: selected?.state.code ?? "",
     serverStateOptions
   }), [catalogTimeline, selected?.state.code, serverStateOptions]);
+  const scheduleFieldRefs = catalogTimeline?.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS;
   const assigneeNames = import_react7.default.useMemo(() => buildTimelineAssigneeOptions(catalogTimeline).map((option) => option.name), [catalogTimeline]);
   const saveDetails = async () => {
     if (!canSave || !selected || !props.onUpdateSelectedWorkItemDetails) {
@@ -44877,11 +44917,20 @@ function TimelineDetailsPanel(props) {
       if (!field) {
         return;
       }
-      fields[id] = toDetailsFieldSaveValue(field, currentDraft(id));
+      const writeRef = resolveWriteFieldRef(id, scheduleFieldRefs);
+      const value = toDetailsFieldSaveValue(field, currentDraft(id));
+      if (value === null && writeRef !== id && !hasStoredFieldValue(selected, writeRef)) {
+        return;
+      }
+      fields[writeRef] = value;
       if (field.kind === "html" && id !== DETAILS_FIELD_IDS.description) {
         htmlFields.push(id);
       }
     });
+    if (Object.keys(fields).length === 0) {
+      setDraftState({ workItemId: null, values: {} });
+      return;
+    }
     const nextState = typeof fields[DETAILS_FIELD_IDS.state] === "string" ? fields[DETAILS_FIELD_IDS.state] : null;
     const stateColor = nextState ? stateOptions.find((option) => option.name.toLowerCase() === nextState.toLowerCase())?.color ?? null : null;
     const confirmedBaseline = { ...baseline };
@@ -45006,6 +45055,27 @@ function TimelineDetailsPanel(props) {
           updateDraft(field.id, field.kind === "identity" && next === UNASSIGNED_OPTION ? "" : next);
         }
       }, ...options.map((option) => import_react7.default.createElement("option", { key: option.value, value: option.value }, option.label)));
+    }
+    if (field.kind === "multiline") {
+      return import_react7.default.createElement("textarea", {
+        className: "timeline-details-input timeline-details-textarea",
+        "aria-label": field.name,
+        rows: 3,
+        placeholder: "\u2014",
+        disabled,
+        value,
+        onChange: (event) => updateDraft(field.id, event.target.value)
+      });
+    }
+    if (field.kind === "date") {
+      return import_react7.default.createElement("input", {
+        type: "datetime-local",
+        className: "timeline-details-input timeline-details-number",
+        "aria-label": field.name,
+        disabled,
+        value,
+        onChange: (event) => updateDraft(field.id, event.target.value)
+      });
     }
     const numeric = field.kind === "double" || field.kind === "integer";
     return import_react7.default.createElement("input", {
@@ -45146,6 +45216,19 @@ function resolveSelectOptions(field, value, stateOptionNames, assigneeNames) {
     options.unshift({ value: "", label: "\u2014" });
   }
   return options;
+}
+function hasStoredFieldValue(item, referenceName) {
+  const value = item.details.fieldValues?.[referenceName];
+  return value !== null && value !== void 0 && String(value).trim().length > 0;
+}
+function resolveWriteFieldRef(fieldId, scheduleFieldRefs) {
+  if (fieldId === DETAILS_FIELD_IDS.start) {
+    return scheduleFieldRefs.start;
+  }
+  if (fieldId === DETAILS_FIELD_IDS.end) {
+    return scheduleFieldRefs.endOrTarget;
+  }
+  return fieldId;
 }
 function toErrorId(fieldId) {
   return `timeline-details-field-error-${fieldId.replace(/[^A-Za-z0-9_-]/g, "-")}`;
@@ -54152,14 +54235,22 @@ function applyWorkItemFieldsUpdate(timeline, targetWorkItemId, fields, stateColo
   const nextState = typeof fields["System.State"] === "string" ? toTimelineStateBadge(fields["System.State"], stateColor) : null;
   const hasDescription = "System.Description" in fields;
   const hasAssignedTo = "System.AssignedTo" in fields;
+  const scheduleRefs = timeline.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS2;
+  const hasStart = scheduleRefs.start in fields;
+  const hasEnd = scheduleRefs.endOrTarget in fields;
   const applyFields = (item) => {
     if (item.workItemId !== targetWorkItemId) {
       return item;
     }
+    const schedule = (hasStart || hasEnd) && item.schedule ? applyScheduleFields(item.schedule, {
+      startDate: hasStart ? toNullableString(fields[scheduleRefs.start]) : void 0,
+      endDate: hasEnd ? toNullableString(fields[scheduleRefs.endOrTarget]) : void 0
+    }) : null;
     return {
       ...item,
       ...nextTitle !== null ? { title: nextTitle } : {},
       ...nextState ? { state: nextState } : {},
+      ...schedule ? { schedule } : {},
       details: {
         ...item.details,
         ...hasDescription ? { descriptionHtml: toNullableString(fields["System.Description"]) } : {},
@@ -54171,11 +54262,98 @@ function applyWorkItemFieldsUpdate(timeline, targetWorkItemId, fields, stateColo
       }
     };
   };
-  return {
+  const patched = {
     ...timeline,
     bars: timeline.bars.map(applyFields),
     unschedulable: timeline.unschedulable.map(applyFields)
   };
+  return hasStart || hasEnd ? moveBetweenScheduledAndUnschedulable(patched, targetWorkItemId, {
+    startDate: hasStart ? toNullableString(fields[scheduleRefs.start]) : void 0,
+    endDate: hasEnd ? toNullableString(fields[scheduleRefs.endOrTarget]) : void 0
+  }) : patched;
+}
+function moveBetweenScheduledAndUnschedulable(timeline, workItemId, patch2) {
+  const touchesItem = (dependency) => dependency.predecessorWorkItemId === workItemId || dependency.successorWorkItemId === workItemId;
+  const unschedulable = timeline.unschedulable.find((item) => item.workItemId === workItemId);
+  if (unschedulable) {
+    const startDate = patch2.startDate ?? unschedulable.schedule?.startDate ?? null;
+    const endDate = patch2.endDate ?? unschedulable.schedule?.endDate ?? null;
+    if (!startDate && !endDate) {
+      return timeline;
+    }
+    const adopted = applyAdoptedSchedules(timeline, { [workItemId]: { startDate, endDate } });
+    if (!adopted) {
+      return timeline;
+    }
+    const scheduledIds = new Set(adopted.bars.map((bar2) => bar2.workItemId));
+    const reactivated = adopted.suppressedDependencies.filter((dependency) => touchesItem(dependency) && scheduledIds.has(dependency.predecessorWorkItemId) && scheduledIds.has(dependency.successorWorkItemId));
+    return {
+      ...adopted,
+      dependencies: [
+        ...adopted.dependencies,
+        ...reactivated.map((dependency) => ({
+          predecessorWorkItemId: dependency.predecessorWorkItemId,
+          successorWorkItemId: dependency.successorWorkItemId,
+          dependencyType: dependency.dependencyType,
+          label: `#${dependency.predecessorWorkItemId} [end] -> #${dependency.successorWorkItemId} [start]`
+        }))
+      ],
+      suppressedDependencies: adopted.suppressedDependencies.filter((dependency) => !reactivated.includes(dependency))
+    };
+  }
+  const bar = timeline.bars.find((item) => item.workItemId === workItemId);
+  if (!bar || bar.schedule.startDate || bar.schedule.endDate) {
+    return timeline;
+  }
+  return {
+    ...timeline,
+    bars: timeline.bars.filter((item) => item.workItemId !== workItemId),
+    unschedulable: [
+      ...timeline.unschedulable,
+      {
+        workItemId: bar.workItemId,
+        title: bar.title,
+        state: bar.state,
+        details: bar.details,
+        reason: "missing-both-dates"
+      }
+    ],
+    dependencies: timeline.dependencies.filter((dependency) => !touchesItem(dependency)),
+    suppressedDependencies: [
+      ...timeline.suppressedDependencies,
+      ...timeline.dependencies.filter(touchesItem).map((dependency) => ({
+        predecessorWorkItemId: dependency.predecessorWorkItemId,
+        successorWorkItemId: dependency.successorWorkItemId,
+        dependencyType: dependency.dependencyType,
+        reason: "unschedulable-endpoint"
+      }))
+    ]
+  };
+}
+var DEFAULT_SCHEDULE_FIELD_REFS2 = {
+  start: "Microsoft.VSTS.Scheduling.StartDate",
+  endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+};
+function applyScheduleFields(schedule, patch2) {
+  const startDate = patch2.startDate === void 0 ? schedule.startDate : patch2.startDate;
+  const endDate = patch2.endDate === void 0 ? schedule.endDate : patch2.endDate;
+  const missingBoundary = startDate && endDate ? null : !startDate && endDate ? "start" : startDate && !endDate ? "end" : schedule.missingBoundary;
+  const next = { ...schedule, startDate, endDate, missingBoundary };
+  const fallback = next.iterationFallback;
+  if (fallback) {
+    const startInherited = (fallback === "start" || fallback === "both") && patch2.startDate === void 0;
+    const endInherited = (fallback === "end" || fallback === "both") && patch2.endDate === void 0;
+    if (startInherited && endInherited) {
+      next.iterationFallback = "both";
+    } else if (startInherited) {
+      next.iterationFallback = "start";
+    } else if (endInherited) {
+      next.iterationFallback = "end";
+    } else {
+      delete next.iterationFallback;
+    }
+  }
+  return next;
 }
 function toNullableString(value) {
   return typeof value === "string" ? value : value === null || value === void 0 ? null : String(value);

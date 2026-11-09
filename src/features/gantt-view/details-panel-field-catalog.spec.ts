@@ -6,7 +6,6 @@ import {
   DEFAULT_DETAILS_PANEL_FIELD_IDS,
   buildDetailsFieldCatalog,
   classifyFieldDefinition,
-  isFieldDefinedForItem,
   layoutDetailsFields,
   listWorkItemTypes,
   resolveDetailsFieldWidth
@@ -66,11 +65,14 @@ describe("classifyFieldDefinition", () => {
     [{ referenceName: "A.Notes", type: "string", readOnly: true }, "text", false],
     [{ referenceName: "A.Html", type: "html" }, "html", true],
     [{ referenceName: "A.Flag", type: "boolean" }, "boolean", true],
-    [{ referenceName: "A.Date", type: "dateTime" }, "date", false],
-    [{ referenceName: "A.Tags", type: "plainText" }, "multiline", false],
-    [{ referenceName: "A.Path", type: "treePath" }, "path", false],
-    [{ referenceName: "A.Who", type: "string", isIdentity: true }, "identity", false],
-    [{ referenceName: "A.Guid", type: "guid" }, "unknown", false]
+    [{ referenceName: "A.Date", type: "dateTime" }, "date", true],
+    [{ referenceName: "A.Comments", type: "plainText" }, "multiline", true],
+    [{ referenceName: "System.Tags", type: "plainText" }, "tags", true],
+    [{ referenceName: "A.Path", type: "treePath" }, "path", true],
+    [{ referenceName: "A.Who", type: "string", isIdentity: true }, "identity", true],
+    [{ referenceName: "A.Guid", type: "guid" }, "unknown", true],
+    [{ referenceName: "System.ChangedBy", type: "string", isIdentity: true }, "identity", false],
+    [{ referenceName: "System.CreatedDate", type: "dateTime" }, "date", false]
   ])("classifies %o", (input, kind, editable) => {
     const result = classifyFieldDefinition(definition(input as Partial<WorkItemFieldDefinition> & { referenceName: string; type: string }));
     expect(result.kind).toBe(kind);
@@ -109,29 +111,17 @@ describe("buildDetailsFieldCatalog", () => {
     DEFAULT_DETAILS_PANEL_FIELD_IDS.forEach((id) => expect(catalog.byId.has(id)).toBe(true));
   });
 
-  it("falls back to loaded read-only fields when definitions are unavailable", () => {
-    const catalog = buildDetailsFieldCatalog({ timeline: makeTimeline(), definitions: null });
+  it("falls back to loaded fields edited as text, except known system fields, when definitions are unavailable", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].details.fieldValues = { ...timeline.bars[0].details.fieldValues, "System.CreatedDate": "2026-01-01" };
+    const catalog = buildDetailsFieldCatalog({ timeline, definitions: null });
 
     expect(catalog.definitionsUnavailable).toBe(true);
-    expect(catalog.byId.get("Microsoft.VSTS.Common.Priority")).toMatchObject({ editable: false, width: "full" });
+    expect(catalog.byId.get("Microsoft.VSTS.Common.Priority")).toMatchObject({ editable: true, width: "full", kind: "unknown" });
+    expect(catalog.byId.get("System.CreatedDate")).toMatchObject({ editable: false });
     expect(catalog.byId.get("Custom.Only")).toBeDefined();
     expect(catalog.fields.filter((field) => field.id === "System.AssignedTo")).toHaveLength(1);
     expect(catalog.fields.filter((field) => field.id === "System.WorkItemType")).toHaveLength(1);
-  });
-});
-
-describe("isFieldDefinedForItem", () => {
-  it("hides fields that the item's work item type does not define", () => {
-    const timeline = makeTimeline();
-    const catalog = buildDetailsFieldCatalog({
-      timeline,
-      definitions: [definition({ referenceName: "Custom.Points", type: "double", workItemTypes: ["User Story"] })]
-    });
-    const field = catalog.byId.get("Custom.Points")!;
-
-    expect(isFieldDefinedForItem(field, timeline.bars[0])).toBe(true);
-    expect(isFieldDefinedForItem(field, timeline.unschedulable[0])).toBe(false);
-    expect(isFieldDefinedForItem(catalog.byId.get("System.Title")!, timeline.unschedulable[0])).toBe(true);
   });
 });
 

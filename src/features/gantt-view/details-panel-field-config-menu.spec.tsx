@@ -32,7 +32,7 @@ function renderMenu(shownIds: string[], onChangeShownIds = vi.fn(), onReset = vi
 
 describe("DetailsPanelFieldConfigMenu", () => {
   it("lists shown fields with count, badges and disabled edge buttons", () => {
-    renderMenu(["System.Title", "builtin.start", "Custom.Missing"]);
+    renderMenu(["System.Title", "builtin.dependencies", "Custom.Missing"]);
 
     const shown = screen.getByRole("list", { name: "Shown fields" });
     const items = within(shown).getAllByRole("listitem");
@@ -109,6 +109,6 @@ describe("DetailsPanelFieldConfigMenu", () => {
       })
     );
 
-    expect(screen.getByText("Field definitions unavailable – showing loaded fields read-only.")).toBeTruthy();
+    expect(screen.getByText("Field definitions unavailable – loaded fields are edited as text.")).toBeTruthy();
   });
 });

@@ -7,6 +7,7 @@ import {
   INTEGER_VALIDATION_MESSAGE,
   formatDateTime,
   readDetailsFieldValue,
+  toLocalDateTimeInputValue,
   toDetailsFieldSaveValue,
   validateDetailsFieldDraft
 } from "./details-panel-field-values.js";
@@ -55,11 +56,23 @@ describe("readDetailsFieldValue", () => {
     expect(read("System.Id")).toBe("7");
     expect(read("System.WorkItemType")).toBe("Bug");
     expect(read("builtin.dependencies")).toBe("1 pred · 0 succ");
-    expect(read("builtin.start")).toBe(formatDateTime("2026-03-02T08:00:00.000Z"));
+    expect(read("builtin.start")).toBe(toLocalDateTimeInputValue("2026-03-02T08:00:00.000Z"));
     expect(read("builtin.end")).toBe("");
     expect(readDetailsFieldValue(field("boolean", "Custom.Flag"), item, timeline)).toBe("Yes");
     expect(readDetailsFieldValue(field("double", "Custom.Points"), item, timeline)).toBe("3");
     expect(readDetailsFieldValue(field("text", "Custom.Missing"), item, timeline)).toBe("");
+  });
+});
+
+describe("date formatting", () => {
+  it("formats read-only dates for display and editable dates for datetime-local inputs", () => {
+    const readOnlyDate = { ...field("date", "System.CreatedDate"), editable: false };
+    const timeline = makeTimeline();
+    timeline.bars[0].details.fieldValues = { "System.CreatedDate": "2026-02-20T09:30:00.000Z" };
+    expect(readDetailsFieldValue(readOnlyDate, timeline.bars[0], timeline)).toBe(formatDateTime("2026-02-20T09:30:00.000Z"));
+    expect(toLocalDateTimeInputValue(null)).toBe("");
+    expect(toLocalDateTimeInputValue("not a date")).toBe("");
+    expect(formatDateTime("not a date")).toBe("not a date");
   });
 });
 
@@ -94,5 +107,9 @@ describe("toDetailsFieldSaveValue", () => {
     expect(toDetailsFieldSaveValue(field("html"), "")).toBeNull();
     expect(toDetailsFieldSaveValue(field("html", "System.Description"), "")).toBe("");
     expect(toDetailsFieldSaveValue(field("text", "System.Title"), "  Title  ")).toBe("Title");
+    expect(toDetailsFieldSaveValue(field("date"), toLocalDateTimeInputValue("2026-03-04T08:00:00.000Z"))).toBe("2026-03-04T08:00:00.000Z");
+    expect(toDetailsFieldSaveValue(field("date"), "")).toBeNull();
+    expect(toDetailsFieldSaveValue(field("tags"), "a; b")).toBe("a; b");
+    expect(toDetailsFieldSaveValue(field("multiline"), "x\ny")).toBe("x\ny");
   });
 });

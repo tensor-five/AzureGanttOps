@@ -63,7 +63,7 @@ export class WriteCommandAzureAdapter implements WriteCommandPort {
       });
 
       if (response.status < 200 || response.status >= 300) {
-        throw new Error("WORK_ITEM_PATCH_FAILED");
+        throw new Error(buildAzureResponseErrorMessage("WORK_ITEM_PATCH_FAILED", response.json));
       }
 
       return {

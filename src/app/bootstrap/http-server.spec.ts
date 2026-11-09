@@ -1015,7 +1015,7 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(500);
       expect(body).toEqual({
         code: "WRITE_FAILED",
-        message: "WORK_ITEM_PATCH_FAILED"
+        message: "TF401320: The transition to Closed is not allowed."
       });
       expect(adoHttpFailureLogWriter).toHaveBeenCalledTimes(1);
       expect(adoHttpFailureLogWriter).toHaveBeenCalledWith(
@@ -2237,6 +2237,40 @@ describe("createHttpServer", () => {
           expect(JSON.stringify(calls[0]?.body)).not.toContain("onerror");
         }
       );
+    });
+
+    it("redacts basic auth headers and bare PATs from Azure DevOps patch errors", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+      process.env.ADO_WRITE_ENABLED = "1";
+      const pat = "a".repeat(26) + "b".repeat(26);
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: {
+          get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+          patch: async () => ({
+            status: 400,
+            json: { message: `TF400898: Denied. Authorization: Basic dXNlcjpzZWNyZXQ= ${pat} ${"x".repeat(800)}` },
+            headers: {}
+          })
+        }
+      });
+      try {
+        const response = await postDetails(server.baseUrl, { targetWorkItemId: 42, fields: { "System.Title": "x" } });
+        const body = (await response.json()) as { message: string };
+        expect(body.message).toContain("TF400898: Denied.");
+        expect(body.message).not.toContain("dXNlcjpzZWNyZXQ=");
+        expect(body.message).not.toContain(pat);
+        expect(body.message.length).toBeLessThanOrEqual(520);
+      } finally {
+        if (previousWriteEnabled === undefined) {
+          delete process.env.ADO_WRITE_ENABLED;
+        } else {
+          process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+        }
+        await server.close();
+      }
     });
 
     it("rejects invalid field reference names", async () => {

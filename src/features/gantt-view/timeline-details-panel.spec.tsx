@@ -503,7 +503,7 @@ describe("timeline-details-panel configurable fields", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Configure details fields" }));
-    expect(await screen.findByText("Field definitions unavailable – showing loaded fields read-only.")).toBeTruthy();
+    expect(await screen.findByText("Field definitions unavailable – loaded fields are edited as text.")).toBeTruthy();
   });
 
   it("keeps drafts bound to their work item when the selection changes", async () => {
@@ -562,5 +562,28 @@ describe("timeline-details-panel configurable fields", () => {
     const errorId = storyPoints.getAttribute("aria-describedby");
     expect(errorId).toBeTruthy();
     expect(document.getElementById(errorId as string)?.textContent).toBe("Enter a number ≥ 0 with up to 2 decimals.");
+  });
+
+  it("does not send a remove for a start date inherited from the iteration", async () => {
+    const onUpdateSelectedWorkItemDetails = vi.fn(async () => undefined);
+    const timeline = makeStoryTimeline();
+    timeline.bars[0].schedule.iterationFallback = "start";
+    render(
+      React.createElement(TimelineDetailsPanel, {
+        timeline,
+        selectedWorkItemId: 11,
+        onUpdateSelectedWorkItemDetails
+      })
+    );
+
+    fireEvent.change(screen.getByLabelText("Start"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Renamed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(onUpdateSelectedWorkItemDetails).toHaveBeenCalledWith(
+        expect.objectContaining({ fields: { "System.Title": "Renamed" } })
+      );
+    });
   });
 });

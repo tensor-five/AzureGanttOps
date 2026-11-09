@@ -32,9 +32,9 @@ export function readDetailsFieldValue(
     case DETAILS_FIELD_IDS.assignedTo:
       return item.details.assignedTo ?? toText(item.details.fieldValues?.[DETAILS_FIELD_IDS.assignedTo]);
     case DETAILS_FIELD_IDS.start:
-      return formatDateTime(item.schedule?.startDate ?? null);
+      return formatDateField(field, item.schedule?.startDate ?? null);
     case DETAILS_FIELD_IDS.end:
-      return formatDateTime(item.schedule?.endDate ?? null);
+      return formatDateField(field, item.schedule?.endDate ?? null);
     case DETAILS_FIELD_IDS.id:
       return String(item.workItemId);
     case DETAILS_FIELD_IDS.workItemType:
@@ -50,7 +50,7 @@ export function readDetailsFieldValue(
     return toBooleanOption(raw);
   }
   if (field.kind === "date") {
-    return formatDateTime(typeof raw === "string" ? raw : null);
+    return formatDateField(field, typeof raw === "string" ? raw : null);
   }
   if (field.kind === "html") {
     return sanitizeHtmlFragment(toText(raw));
@@ -85,6 +85,13 @@ export function toDetailsFieldSaveValue(field: DetailsFieldDescriptor, draft: st
   if (field.kind === "boolean") {
     return trimmed.length === 0 ? null : trimmed === "Yes";
   }
+  if (field.kind === "date") {
+    if (trimmed.length === 0) {
+      return null;
+    }
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? trimmed : parsed.toISOString();
+  }
   if (trimmed.length === 0) {
     return null;
   }
@@ -93,6 +100,25 @@ export function toDetailsFieldSaveValue(field: DetailsFieldDescriptor, draft: st
     return Number.isFinite(numeric) ? numeric : trimmed;
   }
   return field.id === DETAILS_FIELD_IDS.title ? trimmed : draft;
+}
+
+/** Editable dates use the `datetime-local` input format in local time; read-only dates the display format. */
+function formatDateField(field: DetailsFieldDescriptor, raw: string | null): string {
+  return field.editable ? toLocalDateTimeInputValue(raw) : formatDateTime(raw);
+}
+
+export function toLocalDateTimeInputValue(raw: string | null): string {
+  if (!raw) {
+    return "";
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
 }
 
 export function formatDateTime(raw: string | null): string {

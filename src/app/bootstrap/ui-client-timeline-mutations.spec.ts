@@ -162,6 +162,60 @@ describe("ui-client-timeline-mutations", () => {
     expect(applyWorkItemFieldsUpdate(null, 11, { "System.Title": "x" }, null)).toBeNull();
   });
 
+  it("turns an unschedulable item into a bar when a date is set", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      22,
+      { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z" },
+      null
+    );
+    expect(updated?.unschedulable.some((item) => item.workItemId === 22)).toBe(false);
+    expect(updated?.bars.find((bar) => bar.workItemId === 22)?.schedule).toMatchObject({
+      startDate: "2026-05-01T00:00:00.000Z",
+      endDate: null,
+      missingBoundary: "end"
+    });
+  });
+
+  it("turns a bar into an unschedulable item when both dates are cleared and suppresses its dependencies", () => {
+    const timeline = makeTimeline();
+    timeline.dependencies = [{ predecessorWorkItemId: 11, successorWorkItemId: 33, dependencyType: "FS", label: "x" }];
+    const updated = applyWorkItemFieldsUpdate(
+      timeline,
+      11,
+      { "Microsoft.VSTS.Scheduling.StartDate": null, "Microsoft.VSTS.Scheduling.TargetDate": null },
+      null
+    );
+    expect(updated?.bars.some((bar) => bar.workItemId === 11)).toBe(false);
+    expect(updated?.unschedulable.find((item) => item.workItemId === 11)?.reason).toBe("missing-both-dates");
+    expect(updated?.dependencies).toEqual([]);
+    expect(updated?.suppressedDependencies).toEqual([
+      { predecessorWorkItemId: 11, successorWorkItemId: 33, dependencyType: "FS", reason: "unschedulable-endpoint" }
+    ]);
+  });
+
+  it("moves the schedule when the mapped start or end field changes and keeps inherited iteration boundaries", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.iterationFallback = "both";
+
+    const startOnly = applyWorkItemFieldsUpdate(timeline, 11, { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z" }, null);
+    expect(startOnly?.bars[0]?.schedule.startDate).toBe("2026-05-01T00:00:00.000Z");
+    expect(startOnly?.bars[0]?.schedule.iterationFallback).toBe("end");
+
+    const both = applyWorkItemFieldsUpdate(
+      timeline,
+      11,
+      { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z", "Microsoft.VSTS.Scheduling.TargetDate": null },
+      null
+    );
+    expect(both?.bars[0]?.schedule).toMatchObject({ endDate: null, missingBoundary: "end" });
+    expect(both?.bars[0]?.schedule.iterationFallback).toBeUndefined();
+
+    timeline.scheduleFieldRefs = { start: "Custom.Begin", endOrTarget: "Custom.Finish" };
+    const custom = applyWorkItemFieldsUpdate(timeline, 11, { "Custom.Finish": "2026-06-01T00:00:00.000Z" }, null);
+    expect(custom?.bars[0]?.schedule.endDate).toBe("2026-06-01T00:00:00.000Z");
+  });
+
   it("applies state-only updates without changing title or description", () => {
     const updated = applyWorkItemStateUpdate(makeTimeline(), 11, "Closed", "abcdef");
     expect(updated?.bars[0]?.title).toBe("Item 11");

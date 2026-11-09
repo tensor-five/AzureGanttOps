@@ -1299,7 +1299,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to patch work item."
+        message: toWorkItemPatchErrorMessage(error, "Unable to patch work item.")
       });
       return true;
     }
@@ -1420,7 +1420,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to patch work item."
+        message: toWorkItemPatchErrorMessage(error, "Unable to patch work item.")
       });
       return true;
     }
@@ -1461,7 +1461,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to update work item state."
+        message: toWorkItemPatchErrorMessage(error, "Unable to update work item state.")
       });
       return true;
     }
@@ -1502,7 +1502,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to update work item assignment."
+        message: toWorkItemPatchErrorMessage(error, "Unable to update work item assignment.")
       });
       return true;
     }
@@ -2118,6 +2118,31 @@ function applySecurityHeaders(res: ServerResponse): void {
   res.setHeader("x-content-type-options", "nosniff");
   res.setHeader("referrer-policy", "no-referrer");
   res.setHeader("permissions-policy", "camera=(), microphone=(), geolocation=()");
+}
+
+const WORK_ITEM_PATCH_FAILED_PREFIX = /^WORK_ITEM_PATCH_FAILED:\s*/;
+
+/** Azure DevOps error text for the user: the technical prefix is removed and credentials are redacted. */
+function toWorkItemPatchErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  return redactCredentials(sanitizeLogText(error.message).replace(WORK_ITEM_PATCH_FAILED_PREFIX, ""));
+}
+
+const SENSITIVE_BASIC_PATTERN = /\bBasic\s+[A-Za-z0-9+/=]{8,}/gi;
+const SENSITIVE_ADO_PAT_PATTERN = /\b[a-z2-7]{52}\b/g;
+const WORK_ITEM_PATCH_ERROR_MAX_LENGTH = 500;
+
+function redactCredentials(input: string): string {
+  return input
+    .slice(0, WORK_ITEM_PATCH_ERROR_MAX_LENGTH)
+    .replace(SENSITIVE_BASIC_PATTERN, `Basic ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_ADO_PAT_PATTERN, ADO_COMM_REDACTED)
+    .replace(SENSITIVE_BEARER_PATTERN, `Bearer ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_JWT_PATTERN, ADO_COMM_REDACTED)
+    .replace(SENSITIVE_KEY_VALUE_PATTERN, (_match, key: string, separator: string) => `${key}${separator}${ADO_COMM_REDACTED}`);
 }
 
 function sanitizeLogText(input: string): string {

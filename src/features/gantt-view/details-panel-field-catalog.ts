@@ -11,6 +11,7 @@ export type DetailsFieldKind =
   | "picklist"
   | "identity"
   | "multiline"
+  | "tags"
   | "path"
   | "derived"
   | "unknown";
@@ -67,6 +68,39 @@ export const DEFAULT_SCHEDULE_FIELD_REFS = {
   endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
 } as const;
 
+/**
+ * System fields that Azure DevOps never lets a client write. Used when field definitions
+ * (with their read-only flag) are unavailable.
+ */
+export const SYSTEM_READ_ONLY_FIELD_REFS: ReadonlySet<string> = new Set([
+  "System.Id",
+  "System.Rev",
+  "System.WorkItemType",
+  "System.CreatedDate",
+  "System.CreatedBy",
+  "System.ChangedDate",
+  "System.ChangedBy",
+  "System.AuthorizedDate",
+  "System.AuthorizedAs",
+  "System.RevisedDate",
+  "System.Watermark",
+  "System.TeamProject",
+  "System.NodeName",
+  "System.AreaId",
+  "System.IterationId",
+  "System.PersonId",
+  "System.CommentCount",
+  "System.BoardColumn",
+  "System.BoardColumnDone",
+  "System.BoardLane",
+  "System.ExternalLinkCount",
+  "System.HyperLinkCount",
+  "System.AttachedFileCount",
+  "System.RelatedLinkCount",
+  "System.RemoteLinkCount",
+  "System.Parent"
+]);
+
 const HALF_WIDTH_KINDS = new Set<DetailsFieldKind>(["double", "integer", "date", "boolean", "picklist", "identity", "derived"]);
 
 const BUILT_IN_FIELDS: DetailsFieldDescriptor[] = [
@@ -74,8 +108,8 @@ const BUILT_IN_FIELDS: DetailsFieldDescriptor[] = [
   builtIn(DETAILS_FIELD_IDS.state, "State", "picklist", true),
   builtIn(DETAILS_FIELD_IDS.description, "Description", "html", true),
   builtIn(DETAILS_FIELD_IDS.assignedTo, "Assigned To", "identity", true),
-  builtIn(DETAILS_FIELD_IDS.start, "Start", "date", false),
-  builtIn(DETAILS_FIELD_IDS.end, "End", "date", false),
+  builtIn(DETAILS_FIELD_IDS.start, "Start", "date", true),
+  builtIn(DETAILS_FIELD_IDS.end, "End", "date", true),
   builtIn(DETAILS_FIELD_IDS.id, "ID", "derived", false),
   builtIn(DETAILS_FIELD_IDS.workItemType, "Work Item Type", "picklist", false),
   builtIn(DETAILS_FIELD_IDS.dependencies, "Dependencies", "derived", false)
@@ -100,10 +134,10 @@ export function classifyFieldDefinition(definition: WorkItemFieldDefinition): {
     type === "integer" || type === "picklistinteger" ? "integer" : type === "double" || type === "picklistdouble" ? "double" : "string";
 
   let kind: DetailsFieldKind;
-  let editableKind = true;
-  if (definition.isIdentity || type === "identity") {
+  if (definition.referenceName === "System.Tags") {
+    kind = "tags";
+  } else if (definition.isIdentity || type === "identity") {
     kind = "identity";
-    editableKind = false;
   } else if (numericType !== "string") {
     kind = hasAllowedValues ? "picklist" : numericType;
   } else if (type === "string" || type === "pickliststring") {
@@ -114,19 +148,16 @@ export function classifyFieldDefinition(definition: WorkItemFieldDefinition): {
     kind = "boolean";
   } else if (type === "datetime") {
     kind = "date";
-    editableKind = false;
   } else if (type === "plaintext" || type === "history") {
     kind = "multiline";
-    editableKind = false;
   } else if (type === "treepath") {
     kind = "path";
-    editableKind = false;
   } else {
     kind = "unknown";
-    editableKind = false;
   }
 
-  return { kind, valueType: numericType, editable: editableKind && !definition.readOnly };
+  const editable = !definition.readOnly && !SYSTEM_READ_ONLY_FIELD_REFS.has(definition.referenceName);
+  return { kind, valueType: numericType, editable };
 }
 
 export function buildDetailsFieldCatalog(input: {
@@ -170,7 +201,7 @@ export function buildDetailsFieldCatalog(input: {
         kind: "unknown",
         valueType: "string",
         width: "full",
-        editable: false,
+        editable: !SYSTEM_READ_ONLY_FIELD_REFS.has(referenceName),
         allowedValues: [],
         workItemTypes: null
       });
@@ -182,15 +213,6 @@ export function buildDetailsFieldCatalog(input: {
     byId: new Map(fields.map((field) => [field.id, field])),
     definitionsUnavailable: input.definitions === null
   };
-}
-
-export function isFieldDefinedForItem(field: DetailsFieldDescriptor, item: TimelineDetailsItem): boolean {
-  if (!field.workItemTypes) {
-    return true;
-  }
-
-  const itemType = item.details.workItemType ?? readString(item.details.fieldValues?.["System.WorkItemType"]);
-  return itemType ? field.workItemTypes.includes(itemType) : true;
 }
 
 /**
