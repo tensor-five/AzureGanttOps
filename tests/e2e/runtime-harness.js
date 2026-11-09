@@ -1238,18 +1238,18 @@ var require_react_jsx_runtime_development = __commonJS({
       function isValidElement2(object) {
         return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
       }
-      var React59 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React59.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
+      var React60 = require_react(), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity"), REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = React60.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, hasOwnProperty2 = Object.prototype.hasOwnProperty, isArrayImpl = Array.isArray, createTask = console.createTask ? console.createTask : function() {
         return null;
       };
-      React59 = {
+      React60 = {
         react_stack_bottom_frame: function(callStackForError) {
           return callStackForError();
         }
       };
       var specialPropKeyWarningShown;
       var didWarnAboutElementRef = {};
-      var unknownOwnerDebugStack = React59.react_stack_bottom_frame.bind(
-        React59,
+      var unknownOwnerDebugStack = React60.react_stack_bottom_frame.bind(
+        React60,
         UnknownOwner
       )();
       var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
@@ -1625,7 +1625,7 @@ var require_react_dom_development = __commonJS({
         return dispatcher;
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var React59 = require_react(), Internals = {
+      var React60 = require_react(), Internals = {
         d: {
           f: noop2,
           r: function() {
@@ -1643,7 +1643,7 @@ var require_react_dom_development = __commonJS({
         },
         p: 0,
         findDOMNode: null
-      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React59.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      }, REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), ReactSharedInternals = React60.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
         "React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
@@ -3178,7 +3178,7 @@ var require_react_dom_client_development = __commonJS({
         "number" === type && getActiveElement(node2.ownerDocument) === node2 || node2.defaultValue === "" + value || (node2.defaultValue = "" + value);
       }
       function validateOptionProps(element3, props) {
-        null == props.value && ("object" === typeof props.children && null !== props.children ? React59.Children.forEach(props.children, function(child) {
+        null == props.value && ("object" === typeof props.children && null !== props.children ? React60.Children.forEach(props.children, function(child) {
           null == child || "string" === typeof child || "number" === typeof child || "bigint" === typeof child || didWarnInvalidChild || (didWarnInvalidChild = true, console.error(
             "Cannot infer the option value of complex children. Pass a `value` prop or use a plain string as children to <option>."
           ));
@@ -18810,14 +18810,14 @@ var require_react_dom_client_development = __commonJS({
         ));
       }
       "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-      var Scheduler = require_scheduler(), React59 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
+      var Scheduler = require_scheduler(), React60 = require_react(), ReactDOM = require_react_dom(), assign = Object.assign, REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element"), REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = /* @__PURE__ */ Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = /* @__PURE__ */ Symbol.for("react.profiler"), REACT_CONSUMER_TYPE = /* @__PURE__ */ Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = /* @__PURE__ */ Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = /* @__PURE__ */ Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for("react.memo"), REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for("react.lazy");
       /* @__PURE__ */ Symbol.for("react.scope");
       var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for("react.activity");
       /* @__PURE__ */ Symbol.for("react.legacy_hidden");
       /* @__PURE__ */ Symbol.for("react.tracing_marker");
       var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
       /* @__PURE__ */ Symbol.for("react.view_transition");
-      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React59.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
+      var MAYBE_ITERATOR_SYMBOL = Symbol.iterator, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), isArrayImpl = Array.isArray, ReactSharedInternals = React60.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, NotPending = Object.freeze({
         pending: false,
         data: null,
         method: null,
@@ -21605,7 +21605,7 @@ var require_react_dom_client_development = __commonJS({
         }
       };
       (function() {
-        var isomorphicReactPackageVersion = React59.version;
+        var isomorphicReactPackageVersion = React60.version;
         if ("19.2.4" !== isomorphicReactPackageVersion)
           throw Error(
             'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.4\nLearn more: https://react.dev/warnings/version-mismatch")
@@ -21747,9 +21747,9 @@ var require_client = __commonJS({
 
 // dist/src/app/bootstrap/app-dialog-shell.js
 function AppDialogShell(props) {
-  const dialogRef = import_react39.default.useRef(null);
-  const closeButtonRef = import_react39.default.useRef(null);
-  import_react39.default.useEffect(() => {
+  const dialogRef = import_react40.default.useRef(null);
+  const closeButtonRef = import_react40.default.useRef(null);
+  import_react40.default.useEffect(() => {
     if (!props.open) {
       return;
     }
@@ -21761,7 +21761,7 @@ function AppDialogShell(props) {
       }
     };
   }, [props.open, props.returnFocusRef]);
-  import_react39.default.useEffect(() => {
+  import_react40.default.useEffect(() => {
     if (!props.open) {
       return;
     }
@@ -21779,11 +21779,11 @@ function AppDialogShell(props) {
   if (!props.open) {
     return null;
   }
-  return import_react39.default.createElement("div", {
+  return import_react40.default.createElement("div", {
     className: joinClassNames("app-dialog-backdrop", props.backdropClassName),
     "data-testid": "app-dialog-backdrop",
     onClick: props.onClose
-  }, import_react39.default.createElement("div", {
+  }, import_react40.default.createElement("div", {
     ref: dialogRef,
     className: joinClassNames("app-dialog", props.dialogClassName),
     role: "dialog",
@@ -21795,13 +21795,13 @@ function AppDialogShell(props) {
     onKeyDown: (event) => {
       trapAppDialogFocus(event, dialogRef.current);
     }
-  }, import_react39.default.createElement("header", { className: joinClassNames("app-dialog-header", props.headerClassName) }, import_react39.default.createElement("h2", { id: props.titleId }, props.title), import_react39.default.createElement("button", {
+  }, import_react40.default.createElement("header", { className: joinClassNames("app-dialog-header", props.headerClassName) }, import_react40.default.createElement("h2", { id: props.titleId }, props.title), import_react40.default.createElement("button", {
     ref: closeButtonRef,
     type: "button",
     className: joinClassNames("app-dialog-close", props.closeButtonClassName),
     "aria-label": props.closeLabel,
     onClick: props.onClose
-  }, "\xD7")), import_react39.default.createElement("div", { className: joinClassNames("app-dialog-content", props.contentClassName) }, props.children)));
+  }, "\xD7")), import_react40.default.createElement("div", { className: joinClassNames("app-dialog-content", props.contentClassName) }, props.children)));
 }
 function joinClassNames(...classNames) {
   return classNames.filter((className) => className && className.trim().length > 0).join(" ");
@@ -21838,11 +21838,11 @@ function findFocusableElements2(dialogElement) {
     "[tabindex]:not([tabindex='-1'])"
   ].join(","))).filter((element3) => element3.getAttribute("aria-hidden") !== "true");
 }
-var import_react39;
+var import_react40;
 var init_app_dialog_shell = __esm({
   "dist/src/app/bootstrap/app-dialog-shell.js"() {
     "use strict";
-    import_react39 = __toESM(require_react(), 1);
+    import_react40 = __toESM(require_react(), 1);
   }
 });
 
@@ -21861,13 +21861,13 @@ async function loadAppChangelogMarkdown(signal) {
   return response.text();
 }
 function useAppChangelogLoader(open) {
-  const requestIdRef = import_react40.default.useRef(0);
-  const [loadState, setLoadState] = import_react40.default.useState({
+  const requestIdRef = import_react41.default.useRef(0);
+  const [loadState, setLoadState] = import_react41.default.useState({
     status: "idle",
     content: "",
     error: null
   });
-  import_react40.default.useEffect(() => {
+  import_react41.default.useEffect(() => {
     if (!open) {
       return;
     }
@@ -21897,11 +21897,11 @@ function useAppChangelogLoader(open) {
 function isAbortError(error) {
   return error instanceof DOMException && error.name === "AbortError";
 }
-var import_react40;
+var import_react41;
 var init_use_app_changelog_loader = __esm({
   "dist/src/app/bootstrap/use-app-changelog-loader.js"() {
     "use strict";
-    import_react40 = __toESM(require_react(), 1);
+    import_react41 = __toESM(require_react(), 1);
     init_project_meta();
   }
 });
@@ -32739,14 +32739,14 @@ function defaultUrlTransform(value) {
   }
   return "";
 }
-var import_jsx_runtime2, import_react41, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
+var import_jsx_runtime2, import_react42, changelog, emptyPlugins, emptyRemarkRehypeOptions, safeProtocol, deprecations;
 var init_lib19 = __esm({
   "node_modules/react-markdown/lib/index.js"() {
     init_default();
     init_hast_util_to_jsx_runtime();
     init_html_url_attributes();
     import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-    import_react41 = __toESM(require_react(), 1);
+    import_react42 = __toESM(require_react(), 1);
     init_remark_parse();
     init_remark_rehype();
     init_unified();
@@ -36287,7 +36287,7 @@ __export(app_changelog_markdown_exports, {
   AppChangelogMarkdown: () => AppChangelogMarkdown
 });
 function AppChangelogMarkdown(props) {
-  return import_react42.default.createElement("div", { className: "app-changelog-markdown" }, import_react42.default.createElement(Markdown, {
+  return import_react43.default.createElement("div", { className: "app-changelog-markdown" }, import_react43.default.createElement(Markdown, {
     remarkPlugins: [remarkGfm],
     skipHtml: true,
     urlTransform: transformChangelogUrl,
@@ -36318,26 +36318,26 @@ function toAllowedChangelogHref(url) {
 function isExternalChangelogHref(href) {
   return href.startsWith("http://") || href.startsWith("https://");
 }
-var import_react42, changelogMarkdownComponents, transformChangelogUrl;
+var import_react43, changelogMarkdownComponents, transformChangelogUrl;
 var init_app_changelog_markdown = __esm({
   "dist/src/app/bootstrap/app-changelog-markdown.js"() {
     "use strict";
-    import_react42 = __toESM(require_react(), 1);
+    import_react43 = __toESM(require_react(), 1);
     init_react_markdown();
     init_remark_gfm();
     changelogMarkdownComponents = {
       a: ({ node: _node, href, children, ...rest }) => {
         const safeHref = typeof href === "string" ? toAllowedChangelogHref(href) : null;
         if (!safeHref) {
-          return import_react42.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
+          return import_react43.default.createElement("span", { className: "app-changelog-unsafe-link" }, children);
         }
-        return import_react42.default.createElement("a", {
+        return import_react43.default.createElement("a", {
           ...rest,
           href: safeHref,
           ...isExternalChangelogHref(safeHref) ? { target: "_blank", rel: "noreferrer" } : {}
         }, children);
       },
-      img: ({ node: _node, alt }) => import_react42.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Image removed: ${alt}` : "Image removed")
+      img: ({ node: _node, alt }) => import_react43.default.createElement("span", { className: "app-changelog-image-fallback" }, alt ? `Image removed: ${alt}` : "Image removed")
     };
     transformChangelogUrl = (url) => toAllowedChangelogHref(url);
   }
@@ -36350,7 +36350,7 @@ __export(app_changelog_dialog_exports, {
 });
 function AppChangelogDialog(props) {
   const loadState = useAppChangelogLoader(props.open);
-  return import_react43.default.createElement(AppDialogShell, {
+  return import_react44.default.createElement(AppDialogShell, {
     open: props.open,
     title: `Changelog v${APP_VERSION}`,
     titleId: "app-changelog-title",
@@ -36366,35 +36366,35 @@ function AppChangelogDialog(props) {
   }, props.updateNotice ? renderAppUpdateNotice(props.updateNotice) : null, renderChangelogContent(loadState));
 }
 function renderAppUpdateNotice(updateNotice) {
-  return import_react43.default.createElement("section", {
+  return import_react44.default.createElement("section", {
     className: "app-update-notice",
     role: "note",
     "aria-label": "New version available"
-  }, import_react43.default.createElement("strong", null, "New version available"), import_react43.default.createElement("p", null, `Installed v${updateNotice.currentVersion}; latest is v${updateNotice.latestVersion}. `, "Run ", import_react43.default.createElement("code", null, "git pull"), ", restart the app using the ", import_react43.default.createElement("code", null, ".cmd"), " or ", import_react43.default.createElement("code", null, ".command"), " script, and perform a hard refresh with ", import_react43.default.createElement("kbd", null, "Ctrl+Shift+R"), " if needed."));
+  }, import_react44.default.createElement("strong", null, "New version available"), import_react44.default.createElement("p", null, `Installed v${updateNotice.currentVersion}; latest is v${updateNotice.latestVersion}. `, "Run ", import_react44.default.createElement("code", null, "git pull"), ", restart the app using the ", import_react44.default.createElement("code", null, ".cmd"), " or ", import_react44.default.createElement("code", null, ".command"), " script, and perform a hard refresh with ", import_react44.default.createElement("kbd", null, "Ctrl+Shift+R"), " if needed."));
 }
 function renderChangelogContent(loadState) {
   if (loadState.status === "loading" || loadState.status === "idle") {
     return renderChangelogLoadingState();
   }
   if (loadState.status === "error") {
-    return import_react43.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Could not load changelog. ${loadState.error}`);
+    return import_react44.default.createElement("div", { className: "app-changelog-error", role: "alert" }, `Could not load changelog. ${loadState.error}`);
   }
-  return import_react43.default.createElement(import_react43.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react43.default.createElement(LazyAppChangelogMarkdown, {
+  return import_react44.default.createElement(import_react44.default.Suspense, { fallback: renderChangelogLoadingState() }, import_react44.default.createElement(LazyAppChangelogMarkdown, {
     content: loadState.content
   }));
 }
 function renderChangelogLoadingState() {
-  return import_react43.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Loading changelog...");
+  return import_react44.default.createElement("div", { className: "app-changelog-state", role: "status", "aria-live": "polite" }, "Loading changelog...");
 }
-var import_react43, LazyAppChangelogMarkdown;
+var import_react44, LazyAppChangelogMarkdown;
 var init_app_changelog_dialog = __esm({
   "dist/src/app/bootstrap/app-changelog-dialog.js"() {
     "use strict";
-    import_react43 = __toESM(require_react(), 1);
+    import_react44 = __toESM(require_react(), 1);
     init_project_meta();
     init_app_dialog_shell();
     init_use_app_changelog_loader();
-    LazyAppChangelogMarkdown = import_react43.default.lazy(async () => {
+    LazyAppChangelogMarkdown = import_react44.default.lazy(async () => {
       const module = await Promise.resolve().then(() => (init_app_changelog_markdown(), app_changelog_markdown_exports));
       return { default: module.AppChangelogMarkdown };
     });
@@ -36512,7 +36512,7 @@ __export(app_keyboard_shortcuts_dialog_exports, {
   AppKeyboardShortcutsDialog: () => AppKeyboardShortcutsDialog
 });
 function AppKeyboardShortcutsDialog(props) {
-  return import_react44.default.createElement(AppDialogShell, {
+  return import_react45.default.createElement(AppDialogShell, {
     open: props.open,
     title: "Keyboard shortcuts",
     titleId: "app-keyboard-shortcuts-title",
@@ -36520,22 +36520,22 @@ function AppKeyboardShortcutsDialog(props) {
     onClose: props.onClose,
     returnFocusRef: props.returnFocusRef,
     contentClassName: "app-keyboard-shortcuts-content"
-  }, import_react44.default.createElement("div", { className: "app-keyboard-shortcuts" }, APP_KEYBOARD_SHORTCUT_SECTIONS.map((section) => renderKeyboardShortcutSection(section))));
+  }, import_react45.default.createElement("div", { className: "app-keyboard-shortcuts" }, APP_KEYBOARD_SHORTCUT_SECTIONS.map((section) => renderKeyboardShortcutSection(section))));
 }
 function renderKeyboardShortcutSection(section) {
-  return import_react44.default.createElement("section", { key: section.title, className: "app-keyboard-shortcuts-section", "aria-labelledby": shortcutSectionId(section.title) }, import_react44.default.createElement("h3", { id: shortcutSectionId(section.title) }, section.title), import_react44.default.createElement("dl", { className: "app-keyboard-shortcuts-list" }, section.shortcuts.map((shortcut) => renderKeyboardShortcut(shortcut))));
+  return import_react45.default.createElement("section", { key: section.title, className: "app-keyboard-shortcuts-section", "aria-labelledby": shortcutSectionId(section.title) }, import_react45.default.createElement("h3", { id: shortcutSectionId(section.title) }, section.title), import_react45.default.createElement("dl", { className: "app-keyboard-shortcuts-list" }, section.shortcuts.map((shortcut) => renderKeyboardShortcut(shortcut))));
 }
 function renderKeyboardShortcut(shortcut) {
-  return import_react44.default.createElement("div", { key: `${shortcut.keys.join("|")}:${shortcut.description}`, className: "app-keyboard-shortcut-item" }, import_react44.default.createElement("dt", { className: "app-keyboard-shortcut-keys" }, shortcut.keys.map((key) => import_react44.default.createElement("kbd", { key }, key))), import_react44.default.createElement("dd", { className: "app-keyboard-shortcut-description" }, shortcut.description));
+  return import_react45.default.createElement("div", { key: `${shortcut.keys.join("|")}:${shortcut.description}`, className: "app-keyboard-shortcut-item" }, import_react45.default.createElement("dt", { className: "app-keyboard-shortcut-keys" }, shortcut.keys.map((key) => import_react45.default.createElement("kbd", { key }, key))), import_react45.default.createElement("dd", { className: "app-keyboard-shortcut-description" }, shortcut.description));
 }
 function shortcutSectionId(title) {
   return `app-keyboard-shortcuts-${title.toLowerCase().replaceAll(" ", "-")}`;
 }
-var import_react44;
+var import_react45;
 var init_app_keyboard_shortcuts_dialog = __esm({
   "dist/src/app/bootstrap/app-keyboard-shortcuts-dialog.js"() {
     "use strict";
-    import_react44 = __toESM(require_react(), 1);
+    import_react45 = __toESM(require_react(), 1);
     init_app_dialog_shell();
     init_app_keyboard_shortcuts_catalog();
   }
@@ -38622,7 +38622,7 @@ function createUiShellComposition(params) {
 }
 
 // dist/src/app/bootstrap/ui-client.js
-var import_react45 = __toESM(require_react(), 1);
+var import_react46 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // node_modules/react-router/dist/development/chunk-4ZMWKKQ3.mjs
@@ -41964,7 +41964,7 @@ function MappingFixPanel(props) {
 }
 
 // dist/src/features/gantt-view/timeline-pane.js
-var import_react29 = __toESM(require_react(), 1);
+var import_react30 = __toESM(require_react(), 1);
 
 // dist/src/shared/user-preferences/user-preferences.schema.js
 function sanitizeUserPreferences(value) {
@@ -42584,7 +42584,7 @@ function sanitizeOverdueExcludedStateCodes(value) {
 }
 
 // dist/src/features/gantt-view/timeline-details-panel.js
-var import_react7 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 
 // dist/src/shared/azure-devops/azure-work-item-url.js
 function buildAzureWorkItemUrl(organization, project, workItemId) {
@@ -44716,6 +44716,13 @@ function stripHtmlToText(value) {
   return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// dist/src/features/gantt-view/gear-icon.js
+var import_react7 = __toESM(require_react(), 1);
+var GEAR_ICON_PATH = "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z";
+function GearIcon(props) {
+  return import_react7.default.createElement("svg", { viewBox: "0 0 24 24", className: props.className, "aria-hidden": "true" }, import_react7.default.createElement("path", { d: GEAR_ICON_PATH }));
+}
+
 // dist/src/features/gantt-view/timeline-assignee-options.js
 function buildTimelineAssigneeOptions(timeline) {
   if (!timeline) {
@@ -44812,25 +44819,25 @@ function TimelineDetailsPanel(props) {
   const shownIds = useDetailsPanelFieldIds();
   const definitionsState = useFieldDefinitions(catalogTimeline, props.activeQueryId ?? null, props.onFetchWorkItemFieldDefinitions);
   const serverStateOptions = useServerStateOptions(selected?.workItemId ?? null, props.onFetchWorkItemStateOptions);
-  const [configOpen, setConfigOpen] = import_react7.default.useState(false);
-  const [draftState, setDraftState] = import_react7.default.useState({
+  const [configOpen, setConfigOpen] = import_react8.default.useState(false);
+  const [draftState, setDraftState] = import_react8.default.useState({
     workItemId: null,
     values: {}
   });
-  const [failedBaseline, setFailedBaseline] = import_react7.default.useState(null);
-  const [saveError, setSaveError] = import_react7.default.useState(null);
-  const [isSaving, setIsSaving] = import_react7.default.useState(false);
-  const configAreaRef = import_react7.default.useRef(null);
-  const configToggleRef = import_react7.default.useRef(null);
+  const [failedBaseline, setFailedBaseline] = import_react8.default.useState(null);
+  const [saveError, setSaveError] = import_react8.default.useState(null);
+  const [isSaving, setIsSaving] = import_react8.default.useState(false);
+  const configAreaRef = import_react8.default.useRef(null);
+  const configToggleRef = import_react8.default.useRef(null);
   const selectedWorkItemId = selected?.workItemId ?? null;
-  const selectedWorkItemIdRef = import_react7.default.useRef(selectedWorkItemId);
+  const selectedWorkItemIdRef = import_react8.default.useRef(selectedWorkItemId);
   selectedWorkItemIdRef.current = selectedWorkItemId;
-  const catalog = import_react7.default.useMemo(() => buildDetailsFieldCatalog({
+  const catalog = import_react8.default.useMemo(() => buildDetailsFieldCatalog({
     definitions: definitionsState.status === "ready" ? definitionsState.fields : definitionsState.status === "loading" ? [] : null,
     timeline: catalogTimeline
   }), [catalogTimeline, definitionsState]);
-  const visibleFields = import_react7.default.useMemo(() => selected ? shownIds.value.map((id) => catalog.byId.get(id)).filter((field) => !!field) : [], [catalog, selected, shownIds.value]);
-  const computedBaseline = import_react7.default.useMemo(() => {
+  const visibleFields = import_react8.default.useMemo(() => selected ? shownIds.value.map((id) => catalog.byId.get(id)).filter((field) => !!field) : [], [catalog, selected, shownIds.value]);
+  const computedBaseline = import_react8.default.useMemo(() => {
     const values = {};
     if (selected) {
       catalog.fields.filter((field) => field.editable).forEach((field) => {
@@ -44843,12 +44850,12 @@ function TimelineDetailsPanel(props) {
   const baseline = activeFailedBaseline ?? computedBaseline;
   const drafts = draftState.workItemId !== null && draftState.workItemId === selectedWorkItemId ? draftState.values : {};
   const activeSaveError = saveError && saveError.workItemId === selectedWorkItemId ? saveError.message : null;
-  const previousBaselineRef = import_react7.default.useRef({
+  const previousBaselineRef = import_react8.default.useRef({
     workItemId: selectedWorkItemId,
     resetKey: props.draftResetKey,
     values: computedBaseline
   });
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     const previous3 = previousBaselineRef.current;
     previousBaselineRef.current = { workItemId: selectedWorkItemId, resetKey: props.draftResetKey, values: computedBaseline };
     if (previous3.workItemId !== selectedWorkItemId || previous3.resetKey !== props.draftResetKey) {
@@ -44866,7 +44873,7 @@ function TimelineDetailsPanel(props) {
       setSaveError(null);
     }
   }, [selectedWorkItemId, computedBaseline, props.draftResetKey]);
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     if (props.workItemSyncState === "up_to_date" && failedBaseline) {
       setFailedBaseline(null);
       setSaveError(null);
@@ -44890,16 +44897,16 @@ function TimelineDetailsPanel(props) {
   const titleDraft = currentDraft(DETAILS_FIELD_IDS.title);
   const stateDraft = currentDraft(DETAILS_FIELD_IDS.state);
   const canSave = !!selected && !!props.onUpdateSelectedWorkItemDetails && !isSaving && isDirty && validationErrors.size === 0 && titleDraft.trim().length > 0 && stateDraft.trim().length > 0;
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     props.onDirtyChange?.(isDirty);
   }, [isDirty]);
-  const stateOptions = import_react7.default.useMemo(() => resolveWorkItemStateOptions({
+  const stateOptions = import_react8.default.useMemo(() => resolveWorkItemStateOptions({
     timeline: catalogTimeline,
     selectedState: selected?.state.code ?? "",
     serverStateOptions
   }), [catalogTimeline, selected?.state.code, serverStateOptions]);
   const scheduleFieldRefs = catalogTimeline?.scheduleFieldRefs ?? DEFAULT_SCHEDULE_FIELD_REFS;
-  const assigneeNames = import_react7.default.useMemo(() => buildTimelineAssigneeOptions(catalogTimeline).map((option) => option.name), [catalogTimeline]);
+  const assigneeNames = import_react8.default.useMemo(() => buildTimelineAssigneeOptions(catalogTimeline).map((option) => option.name), [catalogTimeline]);
   const saveDetails = async () => {
     if (!canSave || !selected || !props.onUpdateSelectedWorkItemDetails) {
       return;
@@ -44957,7 +44964,7 @@ function TimelineDetailsPanel(props) {
       setIsSaving(false);
     }
   };
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key.toLowerCase() !== "s" || !event.ctrlKey && !event.metaKey || !canSave) {
         return;
@@ -44968,7 +44975,7 @@ function TimelineDetailsPanel(props) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   });
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     if (!configOpen) {
       return;
     }
@@ -44990,7 +44997,7 @@ function TimelineDetailsPanel(props) {
       document.removeEventListener("mousedown", onPointerDown);
     };
   }, [configOpen]);
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     if (contentHidden) {
       setConfigOpen(false);
     }
@@ -45012,17 +45019,17 @@ function TimelineDetailsPanel(props) {
       width === "half" ? "timeline-details-field-half" : "timeline-details-field-full",
       isFieldDirty ? "timeline-details-field-dirty" : ""
     ].filter(Boolean).join(" ");
-    const hint = selected && isIterationFallbackField(field.id, selected) ? import_react7.default.createElement("span", {
+    const hint = selected && isIterationFallbackField(field.id, selected) ? import_react8.default.createElement("span", {
       className: "timeline-details-row-hint timeline-details-row-hint-iteration",
       title: "Date inherited from the iteration; not set on this work item"
     }, "from iteration") : null;
-    return import_react7.default.createElement("div", { key: field.id, className }, import_react7.default.createElement("div", { className: "timeline-details-field-head" }, import_react7.default.createElement("span", { className: "timeline-details-label" }, field.name), hint), selected ? renderFieldControl(field, selected, error) : null, error ? import_react7.default.createElement("p", { id: toErrorId(field.id), className: "timeline-details-field-error", role: "status" }, error) : null);
+    return import_react8.default.createElement("div", { key: field.id, className }, import_react8.default.createElement("div", { className: "timeline-details-field-head" }, import_react8.default.createElement("span", { className: "timeline-details-label" }, field.name), hint), selected ? renderFieldControl(field, selected, error) : null, error ? import_react8.default.createElement("p", { id: toErrorId(field.id), className: "timeline-details-field-error", role: "status" }, error) : null);
   };
   const renderFieldControl = (field, item, error) => {
     const value = currentDraft(field.id);
     const disabled = isSaving;
     if (field.kind === "html") {
-      return import_react7.default.createElement(DetailsPanelRichTextField, {
+      return import_react8.default.createElement(DetailsPanelRichTextField, {
         label: field.name,
         value: field.editable ? value : readDetailsFieldValue(field, item, catalogTimeline),
         editable: field.editable,
@@ -45033,15 +45040,15 @@ function TimelineDetailsPanel(props) {
     if (!field.editable) {
       const display = readDetailsFieldValue(field, item, catalogTimeline);
       const numeric2 = field.kind === "date" || field.kind === "derived" || field.kind === "double" || field.kind === "integer";
-      return import_react7.default.createElement("div", {
+      return import_react8.default.createElement("div", {
         className: ["timeline-details-readonly-value", numeric2 ? "timeline-details-number" : ""].filter(Boolean).join(" "),
         title: display
-      }, display.length > 0 ? display : import_react7.default.createElement("span", { className: "timeline-details-value-empty" }, "\u2014"));
+      }, display.length > 0 ? display : import_react8.default.createElement("span", { className: "timeline-details-value-empty" }, "\u2014"));
     }
     const options = resolveSelectOptions(field, value, stateOptions.map((option) => option.name), assigneeNames);
     if (options) {
       const selectValue = field.kind === "identity" && value.trim().length === 0 ? UNASSIGNED_OPTION : value;
-      return import_react7.default.createElement("select", {
+      return import_react8.default.createElement("select", {
         className: "timeline-details-input",
         "aria-label": field.name,
         disabled,
@@ -45050,10 +45057,10 @@ function TimelineDetailsPanel(props) {
           const next = event.target.value;
           updateDraft(field.id, field.kind === "identity" && next === UNASSIGNED_OPTION ? "" : next);
         }
-      }, ...options.map((option) => import_react7.default.createElement("option", { key: option.value, value: option.value }, option.label)));
+      }, ...options.map((option) => import_react8.default.createElement("option", { key: option.value, value: option.value }, option.label)));
     }
     if (field.kind === "multiline") {
-      return import_react7.default.createElement("textarea", {
+      return import_react8.default.createElement("textarea", {
         className: "timeline-details-input timeline-details-textarea",
         "aria-label": field.name,
         rows: 3,
@@ -45064,7 +45071,7 @@ function TimelineDetailsPanel(props) {
       });
     }
     if (field.kind === "date") {
-      return import_react7.default.createElement("input", {
+      return import_react8.default.createElement("input", {
         type: "datetime-local",
         className: "timeline-details-input timeline-details-number",
         "aria-label": field.name,
@@ -45074,7 +45081,7 @@ function TimelineDetailsPanel(props) {
       });
     }
     const numeric = field.kind === "double" || field.kind === "integer";
-    return import_react7.default.createElement("input", {
+    return import_react8.default.createElement("input", {
       type: "text",
       className: [
         "timeline-details-input",
@@ -45091,21 +45098,21 @@ function TimelineDetailsPanel(props) {
       onChange: (event) => updateDraft(field.id, event.target.value)
     });
   };
-  return import_react7.default.createElement("aside", {
+  return import_react8.default.createElement("aside", {
     "aria-label": "timeline-details-panel",
     className: [
       "timeline-details-panel-surface",
       contentHidden ? "timeline-details-panel-surface-content-hidden" : "",
       configOpen && !contentHidden ? "timeline-details-panel-surface-config-open" : ""
     ].filter(Boolean).join(" ")
-  }, import_react7.default.createElement("div", { className: "timeline-details-panel-head" }, import_react7.default.createElement("div", { className: "timeline-details-panel-head-main" }, !selected || contentHidden ? null : import_react7.default.createElement("button", {
+  }, import_react8.default.createElement("div", { className: "timeline-details-panel-head" }, import_react8.default.createElement("div", { className: "timeline-details-panel-head-main" }, !selected || contentHidden ? null : import_react8.default.createElement("button", {
     type: "button",
     className: isDirty ? "timeline-action-button timeline-details-save-button timeline-details-save-button-dirty" : "timeline-action-button timeline-details-save-button",
     onClick: () => {
       void saveDetails();
     },
     disabled: !canSave
-  }, isSaving ? "Saving..." : "Save")), contentHidden ? null : import_react7.default.createElement("div", { className: "timeline-details-head-actions", ref: configAreaRef }, selected ? renderWorkItemPill(selected.workItemId, azureLink) : null, import_react7.default.createElement("button", {
+  }, isSaving ? "Saving..." : "Save")), contentHidden ? null : import_react8.default.createElement("div", { className: "timeline-details-head-actions", ref: configAreaRef }, selected ? renderWorkItemPill(selected.workItemId, azureLink) : null, import_react8.default.createElement("button", {
     type: "button",
     ref: configToggleRef,
     className: "timeline-details-config-toggle",
@@ -45114,19 +45121,19 @@ function TimelineDetailsPanel(props) {
     "aria-expanded": configOpen,
     "aria-haspopup": "dialog",
     onClick: () => setConfigOpen((current) => !current)
-  }, gearIcon()), configOpen ? import_react7.default.createElement(DetailsPanelFieldConfigMenu, {
+  }, import_react8.default.createElement(GearIcon, { className: "timeline-details-config-toggle-icon" })), configOpen ? import_react8.default.createElement(DetailsPanelFieldConfigMenu, {
     catalog,
     shownIds: shownIds.value,
     onChangeShownIds: shownIds.update,
     onReset: () => shownIds.update([...DEFAULT_DETAILS_PANEL_FIELD_IDS])
-  }) : null)), contentHidden ? import_react7.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react7.default.createElement("div", { className: "timeline-details-edit-form" }, import_react7.default.createElement("div", { className: "timeline-details-field-grid" }, ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))), activeSaveError ? import_react7.default.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${activeSaveError}`) : null) : import_react7.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."), contentHidden ? null : import_react7.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
+  }) : null)), contentHidden ? import_react8.default.createElement("p", { className: "timeline-details-hidden-hint" }, "Details hidden. Drag the panel wider to show details.") : selected ? import_react8.default.createElement("div", { className: "timeline-details-edit-form" }, import_react8.default.createElement("div", { className: "timeline-details-field-grid" }, ...layoutDetailsFields(visibleFields).map(({ field, width }) => renderField(field, width))), activeSaveError ? import_react8.default.createElement("p", { className: "timeline-update-error", role: "status" }, `Save failed: ${activeSaveError}`) : null) : import_react8.default.createElement("p", { className: "timeline-details-muted" }, "Select a work item to edit its fields."), contentHidden ? null : import_react8.default.createElement("pre", { className: "timeline-details-raw", "aria-hidden": "true" }, lines.join("\n")));
 }
 function useDetailsPanelFieldIds() {
-  const [value, setValue] = import_react7.default.useState(() => loadDetailsPanelFields() ?? [...DEFAULT_DETAILS_PANEL_FIELD_IDS]);
-  import_react7.default.useEffect(() => {
+  const [value, setValue] = import_react8.default.useState(() => loadDetailsPanelFields() ?? [...DEFAULT_DETAILS_PANEL_FIELD_IDS]);
+  import_react8.default.useEffect(() => {
     hydrateDetailsPanelFieldsPreference((fieldIds) => setValue(fieldIds));
   }, []);
-  const update = import_react7.default.useCallback((next) => {
+  const update = import_react8.default.useCallback((next) => {
     const unique = [...new Set(next)];
     setValue(unique);
     saveDetailsPanelFields(unique);
@@ -45134,10 +45141,10 @@ function useDetailsPanelFieldIds() {
   return { value, update };
 }
 function useFieldDefinitions(timeline, activeQueryId, fetchDefinitions) {
-  const workItemTypes = import_react7.default.useMemo(() => listWorkItemTypes(timeline), [timeline]);
+  const workItemTypes = import_react8.default.useMemo(() => listWorkItemTypes(timeline), [timeline]);
   const key = `${activeQueryId ?? ""}\0${workItemTypes.join("\0")}`;
-  const [state2, setState] = import_react7.default.useState({ key: "", status: "loading" });
-  import_react7.default.useEffect(() => {
+  const [state2, setState] = import_react8.default.useState({ key: "", status: "loading" });
+  import_react8.default.useEffect(() => {
     if (workItemTypes.length === 0) {
       setState({ key, status: "ready", fields: [] });
       return;
@@ -45164,9 +45171,9 @@ function useFieldDefinitions(timeline, activeQueryId, fetchDefinitions) {
   return state2.key === key ? state2 : { key, status: "loading" };
 }
 function useServerStateOptions(workItemId, fetchStateOptions) {
-  const [options, setOptions] = import_react7.default.useState([]);
-  const fetchedRef = import_react7.default.useRef(false);
-  import_react7.default.useEffect(() => {
+  const [options, setOptions] = import_react8.default.useState([]);
+  const fetchedRef = import_react8.default.useRef(false);
+  import_react8.default.useEffect(() => {
     if (fetchedRef.current || workItemId === null || !fetchStateOptions) {
       return;
     }
@@ -45244,14 +45251,14 @@ function isIterationFallbackField(fieldId, item) {
 }
 function renderWorkItemPill(workItemId, azureLink) {
   if (!azureLink) {
-    return import_react7.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${workItemId}`);
+    return import_react8.default.createElement("span", { className: "timeline-details-work-item-id" }, `#${workItemId}`);
   }
-  return import_react7.default.createElement("a", {
+  return import_react8.default.createElement("a", {
     className: "timeline-details-work-item-id timeline-details-work-item-link",
     href: azureLink,
     target: "_blank",
     rel: "noreferrer"
-  }, `#${workItemId}`, import_react7.default.createElement("svg", { className: "timeline-details-work-item-link-icon", viewBox: "0 0 16 16", "aria-hidden": "true" }, import_react7.default.createElement("path", {
+  }, `#${workItemId}`, import_react8.default.createElement("svg", { className: "timeline-details-work-item-link-icon", viewBox: "0 0 16 16", "aria-hidden": "true" }, import_react8.default.createElement("path", {
     d: "M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2",
     fill: "none",
     stroke: "currentColor",
@@ -45259,22 +45266,6 @@ function renderWorkItemPill(workItemId, azureLink) {
     strokeLinecap: "round",
     strokeLinejoin: "round"
   })));
-}
-function gearIcon() {
-  return import_react7.default.createElement("svg", { viewBox: "0 0 16 16", "aria-hidden": "true" }, import_react7.default.createElement("path", {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1.4",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    d: "M8 10.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"
-  }), import_react7.default.createElement("path", {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1.4",
-    strokeLinejoin: "round",
-    d: "M6.9 1.8h2.2l.35 1.6 1.2.7 1.55-.5 1.1 1.9-1.2 1.1v1.4l1.2 1.1-1.1 1.9-1.55-.5-1.2.7-.35 1.6H6.9l-.35-1.6-1.2-.7-1.55.5-1.1-1.9 1.2-1.1V7.3l-1.2-1.1 1.1-1.9 1.55.5 1.2-.7z"
-  }));
 }
 function buildTimelineDetailsLines(input) {
   if (!input.timeline || input.selectedWorkItemId === null) {
@@ -45547,14 +45538,14 @@ function createTimelineSelectionStore(initialSelectedWorkItemId = null) {
 }
 
 // dist/src/features/gantt-view/timeline-main-splitter.js
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 function TimelineMainSplitter(props) {
   const className = [
     "timeline-main-splitter",
     props.active ? "timeline-main-splitter-active" : "",
     props.embedded ? "timeline-main-splitter-embedded" : ""
   ].filter(Boolean).join(" ");
-  return import_react8.default.createElement("button", {
+  return import_react9.default.createElement("button", {
     type: "button",
     className,
     "aria-label": props.ariaLabel,
@@ -45570,7 +45561,7 @@ function TimelineMainSplitter(props) {
 }
 
 // dist/src/features/gantt-view/use-dependency-editing.js
-var import_react9 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 var DEPENDENCY_VIEW_MODE_OPTIONS = [
   { value: "show", label: "Show all" },
   { value: "edit", label: "Edit links" },
@@ -45578,9 +45569,9 @@ var DEPENDENCY_VIEW_MODE_OPTIONS = [
   { value: "none", label: "Hide all" }
 ];
 function useDependencyEditing() {
-  const [activeDependencyDrag, setActiveDependencyDrag] = import_react9.default.useState(null);
-  const [dependencyViewMode, setDependencyViewMode] = import_react9.default.useState("show");
-  const [selectedDependency, setSelectedDependency] = import_react9.default.useState(null);
+  const [activeDependencyDrag, setActiveDependencyDrag] = import_react10.default.useState(null);
+  const [dependencyViewMode, setDependencyViewMode] = import_react10.default.useState("show");
+  const [selectedDependency, setSelectedDependency] = import_react10.default.useState(null);
   return {
     activeDependencyDrag,
     setActiveDependencyDrag,
@@ -45592,14 +45583,14 @@ function useDependencyEditing() {
 }
 
 // dist/src/features/gantt-view/use-schedule-dragging.js
-var import_react10 = __toESM(require_react(), 1);
+var import_react11 = __toESM(require_react(), 1);
 function useScheduleDragging() {
-  const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = import_react10.default.useState({});
-  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = import_react10.default.useState({});
-  const [adoptScheduleError, setAdoptScheduleError] = import_react10.default.useState(null);
-  const [activeScheduleDrag, setActiveScheduleDrag] = import_react10.default.useState(null);
-  const [activeUnschedulableDrag, setActiveUnschedulableDrag] = import_react10.default.useState(null);
-  const [unscheduledDropPreview, setUnscheduledDropPreview] = import_react10.default.useState(null);
+  const [adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId] = import_react11.default.useState({});
+  const [editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId] = import_react11.default.useState({});
+  const [adoptScheduleError, setAdoptScheduleError] = import_react11.default.useState(null);
+  const [activeScheduleDrag, setActiveScheduleDrag] = import_react11.default.useState(null);
+  const [activeUnschedulableDrag, setActiveUnschedulableDrag] = import_react11.default.useState(null);
+  const [unscheduledDropPreview, setUnscheduledDropPreview] = import_react11.default.useState(null);
   return {
     adoptedSchedulesByWorkItemId,
     setAdoptedSchedulesByWorkItemId,
@@ -45617,7 +45608,7 @@ function useScheduleDragging() {
 }
 
 // dist/src/features/gantt-view/use-timeline-filters.js
-var import_react11 = __toESM(require_react(), 1);
+var import_react12 = __toESM(require_react(), 1);
 
 // dist/src/features/gantt-view/timeline-filter-model.js
 var MAX_TIMELINE_FILTER_SLOTS = 5;
@@ -46326,7 +46317,7 @@ function addDescendantWorkItemIds(input) {
 
 // dist/src/features/gantt-view/use-timeline-filters.js
 function useTimelineFilters(initialState) {
-  const [resolvedInitialState] = import_react11.default.useState(() => {
+  const [resolvedInitialState] = import_react12.default.useState(() => {
     const groups = resolveInitialTimelineFilterGroups(initialState);
     return {
       groups,
@@ -46334,16 +46325,16 @@ function useTimelineFilters(initialState) {
       hierarchyExpansion: normalizeTimelineFilterHierarchyExpansionOptions(initialState.hierarchyExpansion ?? DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS)
     };
   });
-  const [timelineFiltersOpen, setTimelineFiltersOpen] = import_react11.default.useState(false);
-  const [timelineFilterGroups, setTimelineFilterGroups] = import_react11.default.useState(() => resolvedInitialState.groups);
-  const [timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion] = import_react11.default.useState(() => resolvedInitialState.hierarchyExpansion);
-  const [nextFilterSlotId, setNextFilterSlotId] = import_react11.default.useState(() => initialState.nextSlotId);
-  const [nextFilterGroupId, setNextFilterGroupId] = import_react11.default.useState(() => resolvedInitialState.nextGroupId);
-  const [openFilterDropdown, setOpenFilterDropdown] = import_react11.default.useState(null);
-  const [filterFieldSearchDraft, setFilterFieldSearchDraft] = import_react11.default.useState("");
-  const [filterValueSearchDraft, setFilterValueSearchDraft] = import_react11.default.useState("");
-  const timelineFieldFilters = import_react11.default.useMemo(() => flattenTimelineFilterGroups(timelineFilterGroups), [timelineFilterGroups]);
-  const setTimelineFieldFilters = import_react11.default.useCallback((next) => {
+  const [timelineFiltersOpen, setTimelineFiltersOpen] = import_react12.default.useState(false);
+  const [timelineFilterGroups, setTimelineFilterGroups] = import_react12.default.useState(() => resolvedInitialState.groups);
+  const [timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion] = import_react12.default.useState(() => resolvedInitialState.hierarchyExpansion);
+  const [nextFilterSlotId, setNextFilterSlotId] = import_react12.default.useState(() => initialState.nextSlotId);
+  const [nextFilterGroupId, setNextFilterGroupId] = import_react12.default.useState(() => resolvedInitialState.nextGroupId);
+  const [openFilterDropdown, setOpenFilterDropdown] = import_react12.default.useState(null);
+  const [filterFieldSearchDraft, setFilterFieldSearchDraft] = import_react12.default.useState("");
+  const [filterValueSearchDraft, setFilterValueSearchDraft] = import_react12.default.useState("");
+  const timelineFieldFilters = import_react12.default.useMemo(() => flattenTimelineFilterGroups(timelineFilterGroups), [timelineFilterGroups]);
+  const setTimelineFieldFilters = import_react12.default.useCallback((next) => {
     setTimelineFilterGroups((currentGroups) => {
       const currentFilters = flattenTimelineFilterGroups(currentGroups);
       const nextFilters = typeof next === "function" ? next(currentFilters) : next;
@@ -46351,13 +46342,13 @@ function useTimelineFilters(initialState) {
       return nextGroups.length > 0 ? nextGroups : createInitialTimelineFilterGroups();
     });
   }, []);
-  const setIncludeTimelineFilterParents = import_react11.default.useCallback((next) => {
+  const setIncludeTimelineFilterParents = import_react12.default.useCallback((next) => {
     setTimelineFilterHierarchyExpansion((current) => {
       const includeParents = typeof next === "function" ? next(current.includeParents) : next;
       return current.includeParents === includeParents ? current : { ...current, includeParents };
     });
   }, []);
-  const setIncludeTimelineFilterChildItems = import_react11.default.useCallback((next) => {
+  const setIncludeTimelineFilterChildItems = import_react12.default.useCallback((next) => {
     setTimelineFilterHierarchyExpansion((current) => {
       const includeChildItems = typeof next === "function" ? next(current.includeChildItems) : next;
       return current.includeChildItems === includeChildItems ? current : { ...current, includeChildItems };
@@ -46397,9 +46388,9 @@ function resolveInitialTimelineFilterGroups(initialState) {
 }
 
 // dist/src/features/gantt-view/use-timeline-overlay-dismiss.js
-var import_react12 = __toESM(require_react(), 1);
+var import_react13 = __toESM(require_react(), 1);
 function useTimelineOverlayDismiss(params) {
-  import_react12.default.useEffect(() => {
+  import_react13.default.useEffect(() => {
     if (!params.colorCodingDropdownOpen && !params.openFilterDropdown && !params.sortSettingsOpen && !params.labelSettingsOpen) {
       return;
     }
@@ -46482,9 +46473,9 @@ function useTimelineOverlayDismiss(params) {
 }
 
 // dist/src/features/gantt-view/use-timeline-keyboard-shortcuts.js
-var import_react13 = __toESM(require_react(), 1);
+var import_react14 = __toESM(require_react(), 1);
 function useTimelineKeyboardShortcuts(params) {
-  import_react13.default.useEffect(() => {
+  import_react14.default.useEffect(() => {
     const onKeyDown = (event) => {
       if (event.defaultPrevented) {
         return;
@@ -46626,7 +46617,7 @@ function isEditableTarget(target) {
 }
 
 // dist/src/features/gantt-view/use-print-current-view.js
-var import_react14 = __toESM(require_react(), 1);
+var import_react15 = __toESM(require_react(), 1);
 
 // dist/src/features/gantt-view/print-snapshot.js
 var PRINT_CSS_VARS = {
@@ -46663,12 +46654,12 @@ function computePrintSnapshot(input) {
 
 // dist/src/features/gantt-view/use-print-current-view.js
 function usePrintCurrentView(params) {
-  const [isPrintMode, setIsPrintMode] = import_react14.default.useState(false);
-  const ownsPrintRequestRef = import_react14.default.useRef(false);
-  const pendingFrameRef = import_react14.default.useRef(null);
-  const activeSnapshotRef = import_react14.default.useRef(null);
+  const [isPrintMode, setIsPrintMode] = import_react15.default.useState(false);
+  const ownsPrintRequestRef = import_react15.default.useRef(false);
+  const pendingFrameRef = import_react15.default.useRef(null);
+  const activeSnapshotRef = import_react15.default.useRef(null);
   const chartScrollRef = params.chartScrollRef;
-  const resetPrintLayout = import_react14.default.useCallback(() => {
+  const resetPrintLayout = import_react15.default.useCallback(() => {
     const root4 = document.documentElement;
     Object.values(PRINT_CSS_VARS).forEach((cssVar) => root4.style.removeProperty(cssVar));
     delete document.body.dataset.printMode;
@@ -46676,7 +46667,7 @@ function usePrintCurrentView(params) {
     ownsPrintRequestRef.current = false;
     setIsPrintMode(false);
   }, []);
-  const triggerPrint = import_react14.default.useCallback(() => {
+  const triggerPrint = import_react15.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       window.print();
@@ -46704,7 +46695,7 @@ function usePrintCurrentView(params) {
     ownsPrintRequestRef.current = true;
     setIsPrintMode(true);
   }, [chartScrollRef]);
-  import_react14.default.useEffect(() => {
+  import_react15.default.useEffect(() => {
     if (!isPrintMode) {
       return;
     }
@@ -46733,7 +46724,7 @@ function usePrintCurrentView(params) {
       }
     };
   }, [isPrintMode, chartScrollRef]);
-  import_react14.default.useEffect(() => {
+  import_react15.default.useEffect(() => {
     const onAfterPrint = () => {
       if (ownsPrintRequestRef.current) {
         resetPrintLayout();
@@ -46748,25 +46739,25 @@ function usePrintCurrentView(params) {
 }
 
 // dist/src/features/gantt-view/timeline-print-header.js
-var import_react15 = __toESM(require_react(), 1);
+var import_react16 = __toESM(require_react(), 1);
 function TimelinePrintHeader(props) {
   const trimmedName = props.queryName?.trim() ?? "";
   const titleText = trimmedName.length > 0 ? `AzureGanttOps \u2013 ${trimmedName}` : "AzureGanttOps";
-  return import_react15.default.createElement("div", { className: "timeline-print-header", "aria-hidden": !props.isPrintMode }, import_react15.default.createElement("div", { className: "timeline-print-header-title-block" }, import_react15.default.createElement("span", { className: "timeline-print-header-title" }, titleText), props.queryUrl ? renderQueryLinkIcon(props.queryUrl) : null), import_react15.default.createElement("div", { className: "timeline-print-header-meta" }, `${props.workItemCount} work items \xB7 ${formatPrintTimestamp(props.printedAt)}`));
+  return import_react16.default.createElement("div", { className: "timeline-print-header", "aria-hidden": !props.isPrintMode }, import_react16.default.createElement("div", { className: "timeline-print-header-title-block" }, import_react16.default.createElement("span", { className: "timeline-print-header-title" }, titleText), props.queryUrl ? renderQueryLinkIcon(props.queryUrl) : null), import_react16.default.createElement("div", { className: "timeline-print-header-meta" }, `${props.workItemCount} work items \xB7 ${formatPrintTimestamp(props.printedAt)}`));
 }
 function renderQueryLinkIcon(href) {
-  return import_react15.default.createElement("a", {
+  return import_react16.default.createElement("a", {
     className: "timeline-print-header-link",
     href,
     target: "_blank",
     rel: "noopener noreferrer",
     "aria-label": "Open query in Azure DevOps",
     title: "Open query in Azure DevOps"
-  }, import_react15.default.createElement("svg", {
+  }, import_react16.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-print-header-link-icon",
     "aria-hidden": "true"
-  }, import_react15.default.createElement("path", {
+  }, import_react16.default.createElement("path", {
     d: "M14 3h7v7M21 3l-9 9M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6",
     fill: "none",
     stroke: "currentColor",
@@ -46786,15 +46777,15 @@ function formatPrintTimestamp(when) {
 }
 
 // dist/src/features/gantt-view/timeline-print-footer.js
-var import_react16 = __toESM(require_react(), 1);
+var import_react17 = __toESM(require_react(), 1);
 init_project_meta();
 function TimelinePrintFooter(props) {
-  return import_react16.default.createElement("div", { className: "timeline-print-footer", "aria-hidden": !props.isPrintMode }, "An ", import_react16.default.createElement("a", {
+  return import_react17.default.createElement("div", { className: "timeline-print-footer", "aria-hidden": !props.isPrintMode }, "An ", import_react17.default.createElement("a", {
     className: "timeline-print-footer-link",
     href: GITHUB_REPO_URL,
     target: "_blank",
     rel: "noopener noreferrer"
-  }, "Open Source Project"), " by Christian Betz @ ", import_react16.default.createElement("a", {
+  }, "Open Source Project"), " by Christian Betz @ ", import_react17.default.createElement("a", {
     className: "timeline-print-footer-link",
     href: TENSORFIVE_WEBSITE_URL,
     target: "_blank",
@@ -46803,7 +46794,7 @@ function TimelinePrintFooter(props) {
 }
 
 // dist/src/features/gantt-view/timeline-sort-control.js
-var import_react17 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
 // dist/src/domain/planning-model/tree-level-sorting.js
 function applyTreeLevelSorting(items, treeLayout, comparator) {
@@ -47104,26 +47095,26 @@ function getFieldDisplayName(fieldRef) {
 
 // dist/src/features/gantt-view/timeline-sort-control.js
 function TimelineSortControl(props) {
-  const options = import_react17.default.useMemo(() => buildTimelineSortOptions(props.availableFieldRefs), [props.availableFieldRefs]);
-  const [openDropdown, setOpenDropdown] = import_react17.default.useState(null);
-  const [searchDraft, setSearchDraft] = import_react17.default.useState("");
-  const secondaryOptions = import_react17.default.useMemo(() => options.filter((option) => option.value !== props.timelineSortPreference.primary), [options, props.timelineSortPreference.primary]);
-  const selectedSummary = import_react17.default.useMemo(() => {
+  const options = import_react18.default.useMemo(() => buildTimelineSortOptions(props.availableFieldRefs), [props.availableFieldRefs]);
+  const [openDropdown, setOpenDropdown] = import_react18.default.useState(null);
+  const [searchDraft, setSearchDraft] = import_react18.default.useState("");
+  const secondaryOptions = import_react18.default.useMemo(() => options.filter((option) => option.value !== props.timelineSortPreference.primary), [options, props.timelineSortPreference.primary]);
+  const selectedSummary = import_react18.default.useMemo(() => {
     const primaryLabel2 = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
     const secondaryLabel2 = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
     return `${primaryLabel2} / ${secondaryLabel2}`;
   }, [props.timelineSortPreference.primary, props.timelineSortPreference.secondary]);
-  const filteredPrimaryOptions = import_react17.default.useMemo(() => filterSortOptionsBySearch(options, searchDraft), [options, searchDraft]);
-  const filteredSecondaryOptions = import_react17.default.useMemo(() => filterSortOptionsBySearch(secondaryOptions, searchDraft), [secondaryOptions, searchDraft]);
+  const filteredPrimaryOptions = import_react18.default.useMemo(() => filterSortOptionsBySearch(options, searchDraft), [options, searchDraft]);
+  const filteredSecondaryOptions = import_react18.default.useMemo(() => filterSortOptionsBySearch(secondaryOptions, searchDraft), [secondaryOptions, searchDraft]);
   const primaryLabel = resolveTimelineSortFieldLabel(props.timelineSortPreference.primary);
   const secondaryLabel = props.timelineSortPreference.secondary ? resolveTimelineSortFieldLabel(props.timelineSortPreference.secondary) : "None";
-  import_react17.default.useEffect(() => {
+  import_react18.default.useEffect(() => {
     if (!props.sortSettingsOpen) {
       setOpenDropdown(null);
       setSearchDraft("");
     }
   }, [props.sortSettingsOpen]);
-  return import_react17.default.createElement("div", { className: "timeline-sort-control", ref: props.controlRef }, import_react17.default.createElement("button", {
+  return import_react18.default.createElement("div", { className: "timeline-sort-control", ref: props.controlRef }, import_react18.default.createElement("button", {
     type: "button",
     className: props.sortSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
     "aria-label": "Toggle timeline sorting",
@@ -47131,29 +47122,29 @@ function TimelineSortControl(props) {
     "aria-expanded": props.sortSettingsOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleSortSettings
-  }, import_react17.default.createElement("svg", {
+  }, import_react18.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react17.default.createElement("path", {
+  }, import_react18.default.createElement("path", {
     d: "M7 4h14v2H7V4Zm4 7h10v2H11v-2Zm4 7h6v2h-6v-2ZM3 6l2.5 3L8 6H6v12H5V6H3Z"
-  })), import_react17.default.createElement("span", { className: "timeline-label-toggle-count" }, "2")), props.sortSettingsOpen ? import_react17.default.createElement("div", {
+  })), import_react18.default.createElement("span", { className: "timeline-label-toggle-count" }, "2")), props.sortSettingsOpen ? import_react18.default.createElement("div", {
     className: "timeline-label-menu timeline-sort-menu",
     role: "group",
     "aria-label": "Timeline sorting",
     ref: props.panelRef
-  }, import_react17.default.createElement("h4", { className: "timeline-label-menu-title" }, "Sort work items"), import_react17.default.createElement("p", { className: "timeline-details-muted" }, `Current: ${selectedSummary}`), import_react17.default.createElement("div", { className: "timeline-sort-menu-grid" }, import_react17.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react17.default.createElement("span", null, "Primary"), import_react17.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react17.default.createElement("button", {
+  }, import_react18.default.createElement("h4", { className: "timeline-label-menu-title" }, "Sort work items"), import_react18.default.createElement("p", { className: "timeline-details-muted" }, `Current: ${selectedSummary}`), import_react18.default.createElement("div", { className: "timeline-sort-menu-grid" }, import_react18.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react18.default.createElement("span", null, "Primary"), import_react18.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-sort-direction-toggle",
     "aria-label": `Toggle primary sort direction (${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"})`,
     title: `Primary sort ${props.timelineSortPreference.primaryDirection === "asc" ? "ascending" : "descending"}`,
     "aria-pressed": props.timelineSortPreference.primaryDirection === "desc" ? "true" : "false",
     onClick: props.onTogglePrimarySortDirection
-  }, import_react17.default.createElement("svg", {
+  }, import_react18.default.createElement("svg", {
     viewBox: "0 0 16 16",
     className: "timeline-sort-direction-toggle-icon",
     "aria-hidden": "true"
-  }, props.timelineSortPreference.primaryDirection === "asc" ? import_react17.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react17.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react17.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react17.default.createElement("button", {
+  }, props.timelineSortPreference.primaryDirection === "asc" ? import_react18.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react18.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react18.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
     "aria-label": "Timeline sort primary",
@@ -47163,11 +47154,11 @@ function TimelineSortControl(props) {
       setOpenDropdown((current) => current === "primary" ? null : "primary");
       setSearchDraft("");
     }
-  }, primaryLabel), openDropdown === "primary" ? import_react17.default.createElement("div", {
+  }, primaryLabel), openDropdown === "primary" ? import_react18.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     role: "listbox",
     "aria-label": "Timeline sort primary options"
-  }, import_react17.default.createElement("input", {
+  }, import_react18.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sort primary",
@@ -47176,7 +47167,7 @@ function TimelineSortControl(props) {
     onChange: (event) => {
       setSearchDraft(event.target.value);
     }
-  }), import_react17.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filteredPrimaryOptions.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredPrimaryOptions.map((option) => import_react17.default.createElement("button", {
+  }), import_react18.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, filteredPrimaryOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredPrimaryOptions.map((option) => import_react18.default.createElement("button", {
     key: `timeline-sort-primary-${option.value}`,
     type: "button",
     className: option.value === props.timelineSortPreference.primary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -47184,7 +47175,7 @@ function TimelineSortControl(props) {
       props.onSelectPrimarySortField(option.value);
       setOpenDropdown(null);
     }
-  }, import_react17.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react17.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))), import_react17.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react17.default.createElement("span", null, "Secondary"), import_react17.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react17.default.createElement("button", {
+  }, import_react18.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react18.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))), import_react18.default.createElement("div", { className: "timeline-sort-menu-field" }, import_react18.default.createElement("span", null, "Secondary"), import_react18.default.createElement("div", { className: "timeline-sort-field-controls" }, import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-sort-direction-toggle",
     "aria-label": `Toggle secondary sort direction (${props.timelineSortPreference.secondaryDirection === "asc" ? "ascending" : "descending"})`,
@@ -47192,11 +47183,11 @@ function TimelineSortControl(props) {
     "aria-pressed": props.timelineSortPreference.secondaryDirection === "desc" ? "true" : "false",
     disabled: props.timelineSortPreference.secondary === null,
     onClick: props.onToggleSecondarySortDirection
-  }, import_react17.default.createElement("svg", {
+  }, import_react18.default.createElement("svg", {
     viewBox: "0 0 16 16",
     className: "timeline-sort-direction-toggle-icon",
     "aria-hidden": "true"
-  }, props.timelineSortPreference.secondaryDirection === "asc" ? import_react17.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react17.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react17.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react17.default.createElement("button", {
+  }, props.timelineSortPreference.secondaryDirection === "asc" ? import_react18.default.createElement("path", { d: "M8 3 4.5 6.5h2.25V13h2.5V6.5H11.5L8 3Z" }) : import_react18.default.createElement("path", { d: "M8 13 11.5 9.5H9.25V3h-2.5v6.5H4.5L8 13Z" }))), import_react18.default.createElement("div", { className: "timeline-filter-dropdown-anchor" }, import_react18.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger timeline-sort-select",
     "aria-label": "Timeline sort secondary",
@@ -47206,11 +47197,11 @@ function TimelineSortControl(props) {
       setOpenDropdown((current) => current === "secondary" ? null : "secondary");
       setSearchDraft("");
     }
-  }, secondaryLabel), openDropdown === "secondary" ? import_react17.default.createElement("div", {
+  }, secondaryLabel), openDropdown === "secondary" ? import_react18.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     role: "listbox",
     "aria-label": "Timeline sort secondary options"
-  }, import_react17.default.createElement("input", {
+  }, import_react18.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sort secondary",
@@ -47219,14 +47210,14 @@ function TimelineSortControl(props) {
     onChange: (event) => {
       setSearchDraft(event.target.value);
     }
-  }), import_react17.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, import_react17.default.createElement("button", {
+  }), import_react18.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, import_react18.default.createElement("button", {
     type: "button",
     className: props.timelineSortPreference.secondary === null ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
     onClick: () => {
       props.onSelectSecondarySortField(null);
       setOpenDropdown(null);
     }
-  }, import_react17.default.createElement("span", { className: "timeline-color-coding-option-label" }, "None"), import_react17.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")), filteredSecondaryOptions.length === 0 ? import_react17.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredSecondaryOptions.map((option) => import_react17.default.createElement("button", {
+  }, import_react18.default.createElement("span", { className: "timeline-color-coding-option-label" }, "None"), import_react18.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, "Disabled")), filteredSecondaryOptions.length === 0 ? import_react18.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : filteredSecondaryOptions.map((option) => import_react18.default.createElement("button", {
     key: `timeline-sort-secondary-${option.value}`,
     type: "button",
     className: option.value === props.timelineSortPreference.secondary ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -47234,7 +47225,7 @@ function TimelineSortControl(props) {
       props.onSelectSecondarySortField(option.value);
       setOpenDropdown(null);
     }
-  }, import_react17.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react17.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))))) : null);
+  }, import_react18.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), import_react18.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle))))) : null))))) : null);
 }
 function filterSortOptionsBySearch(options, searchDraft) {
   const normalizedSearch = searchDraft.trim().toLowerCase();
@@ -47245,7 +47236,7 @@ function filterSortOptionsBySearch(options, searchDraft) {
 }
 
 // dist/src/features/gantt-view/use-timeline-sorting.js
-var import_react18 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 
 // dist/src/features/gantt-view/timeline-sort-preference.js
 var DEFAULT_TIMELINE_SORT_PREFERENCE = {
@@ -47336,18 +47327,18 @@ function sanitizeTimelineSortDirection2(value) {
 
 // dist/src/features/gantt-view/use-timeline-sorting.js
 function useTimelineSorting(queryId) {
-  const [sortSettingsOpen, setSortSettingsOpen] = import_react18.default.useState(false);
-  const [timelineSortPreference, setTimelineSortPreference] = import_react18.default.useState(() => loadLastTimelineSortPreference(queryId) ?? DEFAULT_TIMELINE_SORT_PREFERENCE);
-  import_react18.default.useEffect(() => {
+  const [sortSettingsOpen, setSortSettingsOpen] = import_react19.default.useState(false);
+  const [timelineSortPreference, setTimelineSortPreference] = import_react19.default.useState(() => loadLastTimelineSortPreference(queryId) ?? DEFAULT_TIMELINE_SORT_PREFERENCE);
+  import_react19.default.useEffect(() => {
     hydrateTimelineSortPreference((preference) => {
       setTimelineSortPreference(preference);
     }, queryId);
   }, [queryId]);
-  const setAndPersist = import_react18.default.useCallback((preference) => {
+  const setAndPersist = import_react19.default.useCallback((preference) => {
     setTimelineSortPreference(preference);
     saveTimelineSortPreference(preference, queryId);
   }, [queryId]);
-  const selectPrimarySortField = import_react18.default.useCallback((field) => {
+  const selectPrimarySortField = import_react19.default.useCallback((field) => {
     setAndPersist({
       primary: field,
       primaryDirection: timelineSortPreference.primaryDirection,
@@ -47355,7 +47346,7 @@ function useTimelineSorting(queryId) {
       secondaryDirection: timelineSortPreference.secondaryDirection
     });
   }, [setAndPersist, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]);
-  const selectSecondarySortField = import_react18.default.useCallback((field) => {
+  const selectSecondarySortField = import_react19.default.useCallback((field) => {
     setAndPersist({
       primary: timelineSortPreference.primary,
       primaryDirection: timelineSortPreference.primaryDirection,
@@ -47363,7 +47354,7 @@ function useTimelineSorting(queryId) {
       secondaryDirection: timelineSortPreference.secondaryDirection
     });
   }, [setAndPersist, timelineSortPreference.primary, timelineSortPreference.primaryDirection, timelineSortPreference.secondaryDirection]);
-  const toggleSortDirection = import_react18.default.useCallback((key) => {
+  const toggleSortDirection = import_react19.default.useCallback((key) => {
     const nextDirection = timelineSortPreference[key] === "asc" ? "desc" : "asc";
     setAndPersist({
       ...timelineSortPreference,
@@ -47382,7 +47373,7 @@ function useTimelineSorting(queryId) {
 }
 
 // dist/src/features/gantt-view/use-tree-expand-collapse.js
-var React31 = __toESM(require_react(), 1);
+var React32 = __toESM(require_react(), 1);
 
 // dist/src/features/gantt-view/timeline-tree-levels.js
 function listTimelineTreeWorkItemIds(timeline) {
@@ -47454,8 +47445,8 @@ function resolveTimelineTreeLevelState(collapsibleCount, collapsedCount) {
 
 // dist/src/features/gantt-view/use-tree-expand-collapse.js
 function useTreeExpandCollapse(treeLayout, includedWorkItemIds = null) {
-  const [collapsedIds, setCollapsedIds] = React31.useState(/* @__PURE__ */ new Set());
-  const toggle = React31.useCallback((workItemId) => {
+  const [collapsedIds, setCollapsedIds] = React32.useState(/* @__PURE__ */ new Set());
+  const toggle = React32.useCallback((workItemId) => {
     setCollapsedIds((previous3) => {
       const next = new Set(previous3);
       if (next.has(workItemId)) {
@@ -47466,13 +47457,13 @@ function useTreeExpandCollapse(treeLayout, includedWorkItemIds = null) {
       return next;
     });
   }, []);
-  const collapseAll = React31.useCallback(() => {
+  const collapseAll = React32.useCallback(() => {
     if (!treeLayout) {
       return;
     }
     setCollapsedIds(new Set(listCollapsibleTreeIds(treeLayout, includedWorkItemIds)));
   }, [includedWorkItemIds, treeLayout]);
-  const toggleLevel = React31.useCallback((depth) => {
+  const toggleLevel = React32.useCallback((depth) => {
     const levelIds = listCollapsibleTreeIds(treeLayout, includedWorkItemIds, depth);
     if (levelIds.length === 0) {
       return;
@@ -47490,10 +47481,10 @@ function useTreeExpandCollapse(treeLayout, includedWorkItemIds = null) {
       return next;
     });
   }, [includedWorkItemIds, treeLayout]);
-  const expandAll = React31.useCallback(() => {
+  const expandAll = React32.useCallback(() => {
     setCollapsedIds(/* @__PURE__ */ new Set());
   }, []);
-  const isCollapsed = React31.useCallback((workItemId) => collapsedIds.has(workItemId), [collapsedIds]);
+  const isCollapsed = React32.useCallback((workItemId) => collapsedIds.has(workItemId), [collapsedIds]);
   return {
     collapsedIds,
     toggle,
@@ -47537,19 +47528,19 @@ function applyTreeVisibility(timeline, collapsedIds) {
 }
 
 // dist/src/features/gantt-view/use-reparent-dragging.js
-var React32 = __toESM(require_react(), 1);
+var React33 = __toESM(require_react(), 1);
 function useReparentDragging(treeLayout) {
-  const [dragState, setDragState] = React32.useState({
+  const [dragState, setDragState] = React33.useState({
     sourceWorkItemId: null,
     dropTargetWorkItemId: null,
     isValid: false
   });
-  const treeLayoutRef = React32.useRef(treeLayout);
+  const treeLayoutRef = React33.useRef(treeLayout);
   treeLayoutRef.current = treeLayout;
-  const startDrag = React32.useCallback((workItemId) => {
+  const startDrag = React33.useCallback((workItemId) => {
     setDragState({ sourceWorkItemId: workItemId, dropTargetWorkItemId: null, isValid: false });
   }, []);
-  const updateDropTarget = React32.useCallback((workItemId) => {
+  const updateDropTarget = React33.useCallback((workItemId) => {
     setDragState((previous3) => {
       if (!previous3.sourceWorkItemId) {
         return previous3;
@@ -47572,7 +47563,7 @@ function useReparentDragging(treeLayout) {
       };
     });
   }, []);
-  const executeDrop = React32.useCallback(() => {
+  const executeDrop = React33.useCallback(() => {
     const current = dragState;
     if (!current.sourceWorkItemId || !current.isValid || current.dropTargetWorkItemId === null) {
       return null;
@@ -47582,7 +47573,7 @@ function useReparentDragging(treeLayout) {
       newParentId: current.dropTargetWorkItemId
     };
   }, [dragState]);
-  const clearDrag = React32.useCallback(() => {
+  const clearDrag = React33.useCallback(() => {
     setDragState({ sourceWorkItemId: null, dropTargetWorkItemId: null, isValid: false });
   }, []);
   return { dragState, startDrag, updateDropTarget, executeDrop, clearDrag };
@@ -47608,30 +47599,30 @@ function isDescendantOf(candidateId, ancestorId, treeLayout) {
 }
 
 // dist/src/features/gantt-view/use-timeline-resizing.js
-var import_react19 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 function useTimelineResizing(input) {
-  const [activeDetailsResize, setActiveDetailsResize] = import_react19.default.useState(null);
-  const [activeSidebarResize, setActiveSidebarResize] = import_react19.default.useState(null);
-  const detailsWidthLiveRef = import_react19.default.useRef(input.detailsWidthPx);
-  const sidebarWidthLiveRef = import_react19.default.useRef(input.sidebarWidthPx);
-  const detailsResizeMovedRef = import_react19.default.useRef(false);
-  const sidebarResizeMovedRef = import_react19.default.useRef(false);
-  const lastExpandedDetailsWidthRef = import_react19.default.useRef(Math.max(input.detailsWidthPx, input.detailsPanelContentMinWidthPx));
+  const [activeDetailsResize, setActiveDetailsResize] = import_react20.default.useState(null);
+  const [activeSidebarResize, setActiveSidebarResize] = import_react20.default.useState(null);
+  const detailsWidthLiveRef = import_react20.default.useRef(input.detailsWidthPx);
+  const sidebarWidthLiveRef = import_react20.default.useRef(input.sidebarWidthPx);
+  const detailsResizeMovedRef = import_react20.default.useRef(false);
+  const sidebarResizeMovedRef = import_react20.default.useRef(false);
+  const lastExpandedDetailsWidthRef = import_react20.default.useRef(Math.max(input.detailsWidthPx, input.detailsPanelContentMinWidthPx));
   const sidebarCollapsed = input.sidebarFieldsCount === 0;
   const effectiveSidebarWidthPx = sidebarCollapsed ? input.timelineSidebarCollapsedWidthPx : input.sidebarWidthPx;
   const detailsContentHidden = input.detailsWidthPx < input.detailsPanelContentMinWidthPx;
-  const sidebarEffectiveWidthLiveRef = import_react19.default.useRef(effectiveSidebarWidthPx);
-  import_react19.default.useEffect(() => {
+  const sidebarEffectiveWidthLiveRef = import_react20.default.useRef(effectiveSidebarWidthPx);
+  import_react20.default.useEffect(() => {
     detailsWidthLiveRef.current = input.detailsWidthPx;
     if (input.detailsWidthPx >= input.detailsPanelContentMinWidthPx) {
       lastExpandedDetailsWidthRef.current = input.detailsWidthPx;
     }
   }, [input.detailsPanelContentMinWidthPx, input.detailsWidthPx]);
-  import_react19.default.useEffect(() => {
+  import_react20.default.useEffect(() => {
     sidebarWidthLiveRef.current = input.sidebarWidthPx;
     sidebarEffectiveWidthLiveRef.current = effectiveSidebarWidthPx;
   }, [effectiveSidebarWidthPx, input.sidebarWidthPx]);
-  import_react19.default.useEffect(() => {
+  import_react20.default.useEffect(() => {
     const clampWidthToAvailableSpace = () => {
       input.setSidebarWidthPx((current) => {
         const maxWidth = input.resolveTimelineSidebarMaxWidthPx(input.timelineMainGridRef.current, detailsWidthLiveRef.current);
@@ -47659,7 +47650,7 @@ function useTimelineResizing(input) {
     input.timelineMainGridRef,
     input.timelineSidebarMinWidthPx
   ]);
-  import_react19.default.useEffect(() => {
+  import_react20.default.useEffect(() => {
     if (!activeDetailsResize) {
       return;
     }
@@ -47700,7 +47691,7 @@ function useTimelineResizing(input) {
     input.setDetailsWidthPx,
     input.timelineMainGridRef
   ]);
-  import_react19.default.useEffect(() => {
+  import_react20.default.useEffect(() => {
     if (!activeSidebarResize) {
       return;
     }
@@ -47741,7 +47732,7 @@ function useTimelineResizing(input) {
     input.timelineMainGridRef,
     input.timelineSidebarMinWidthPx
   ]);
-  const beginSidebarResize = import_react19.default.useCallback((event) => {
+  const beginSidebarResize = import_react20.default.useCallback((event) => {
     if (event.button !== 0) {
       return;
     }
@@ -47756,7 +47747,7 @@ function useTimelineResizing(input) {
       originWidthPx: input.sidebarWidthPx
     });
   }, [input.sidebarWidthPx]);
-  const beginDetailsResize = import_react19.default.useCallback((event) => {
+  const beginDetailsResize = import_react20.default.useCallback((event) => {
     if (event.button !== 0) {
       return;
     }
@@ -47771,7 +47762,7 @@ function useTimelineResizing(input) {
       originWidthPx: input.detailsWidthPx
     });
   }, [input.detailsWidthPx]);
-  const toggleDetailsPanelFromSplitter = import_react19.default.useCallback(() => {
+  const toggleDetailsPanelFromSplitter = import_react20.default.useCallback(() => {
     if (detailsResizeMovedRef.current) {
       return;
     }
@@ -47810,15 +47801,15 @@ function useTimelineResizing(input) {
 }
 
 // dist/src/features/gantt-view/use-drag-auto-scroll.js
-var import_react20 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 var EDGE_ZONE_PX = 40;
 var MAX_SCROLL_SPEED_PX = 15;
 function useDragAutoScroll(scrollRef, isActive, onAutoScroll) {
-  const pointerRef = import_react20.default.useRef(null);
-  const rafRef = import_react20.default.useRef(null);
-  const onAutoScrollRef = import_react20.default.useRef(onAutoScroll);
+  const pointerRef = import_react21.default.useRef(null);
+  const rafRef = import_react21.default.useRef(null);
+  const onAutoScrollRef = import_react21.default.useRef(onAutoScroll);
   onAutoScrollRef.current = onAutoScroll;
-  import_react20.default.useEffect(() => {
+  import_react21.default.useEffect(() => {
     if (!isActive) {
       pointerRef.current = null;
       if (rafRef.current !== null) {
@@ -47870,47 +47861,47 @@ function useDragAutoScroll(scrollRef, isActive, onAutoScroll) {
       }
     };
   }, [isActive, scrollRef]);
-  return import_react20.default.useCallback((clientX, clientY) => {
+  return import_react21.default.useCallback((clientX, clientY) => {
     pointerRef.current = { clientX, clientY };
   }, []);
 }
 
 // dist/src/features/gantt-view/timeline-left-sidebar-header.js
-var import_react21 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 function TimelineLeftSidebarHeader(props) {
-  return import_react21.default.createElement("div", {
+  return import_react22.default.createElement("div", {
     className: "timeline-left-sidebar-header",
     style: { height: `${props.heightPx}px` }
-  }, props.treeLevels.length > 0 ? import_react21.default.createElement("div", {
+  }, props.treeLevels.length > 0 ? import_react22.default.createElement("div", {
     className: "timeline-tree-level-controls",
     role: "group",
     "aria-label": "Timeline tree levels"
-  }, import_react21.default.createElement("div", {
+  }, import_react22.default.createElement("div", {
     className: "timeline-tree-level-list"
-  }, props.treeLevels.map((level) => buildTreeLevelControl(level, props.onToggleTreeLevel)))) : null, import_react21.default.createElement("button", {
+  }, props.treeLevels.map((level) => buildTreeLevelControl(level, props.onToggleTreeLevel)))) : null, import_react22.default.createElement("button", {
     type: "button",
     className: "timeline-left-sidebar-align-toggle",
     "aria-label": "Toggle timeline sidebar row alignment",
     title: props.rowJustify === "flex-end" ? "Align sidebar rows left" : "Align sidebar rows right",
     "aria-pressed": props.rowJustify === "flex-end",
     onClick: props.onToggleRowJustify
-  }, import_react21.default.createElement("svg", {
+  }, import_react22.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-left-sidebar-align-icon",
     "aria-hidden": "true"
   }, props.rowJustify === "flex-end" ? [
-    import_react21.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-    import_react21.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
-    import_react21.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
+    import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+    import_react22.default.createElement("line", { key: "middle", x1: "5", y1: "12", x2: "17", y2: "12" }),
+    import_react22.default.createElement("line", { key: "bottom", x1: "9", y1: "17", x2: "17", y2: "17" })
   ] : [
-    import_react21.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
-    import_react21.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
-    import_react21.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
+    import_react22.default.createElement("line", { key: "top", x1: "7", y1: "7", x2: "17", y2: "7" }),
+    import_react22.default.createElement("line", { key: "middle", x1: "7", y1: "12", x2: "19", y2: "12" }),
+    import_react22.default.createElement("line", { key: "bottom", x1: "7", y1: "17", x2: "15", y2: "17" })
   ])));
 }
 function buildTreeLevelControl(level, onToggleTreeLevel) {
   const label = level.depth + 1;
-  return import_react21.default.createElement("button", {
+  return import_react22.default.createElement("button", {
     key: level.depth,
     type: "button",
     className: "timeline-tree-level-control",
@@ -47920,10 +47911,10 @@ function buildTreeLevelControl(level, onToggleTreeLevel) {
     title: buildTreeLevelControlTitle(level),
     "data-state": level.state,
     onClick: level.disabled ? void 0 : () => onToggleTreeLevel(level.depth)
-  }, import_react21.default.createElement("span", {
+  }, import_react22.default.createElement("span", {
     className: "timeline-tree-level-state-icon",
     "aria-hidden": "true"
-  }), import_react21.default.createElement("span", {
+  }), import_react22.default.createElement("span", {
     className: "timeline-tree-level-label"
   }, `L${label}`));
 }
@@ -47956,25 +47947,25 @@ function formatTreeLevelItemCount(itemCount) {
 }
 
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
-var import_react23 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 var import_react_dom = __toESM(require_react_dom(), 1);
 
 // dist/src/features/gantt-view/timeline-label-settings-panel.js
-var import_react22 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 function TimelineLabelSettingsPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react22.default.createElement("div", {
+  return import_react23.default.createElement("div", {
     className: "timeline-label-menu",
     role: "group",
     "aria-label": "Timeline label fields",
     ref: props.panelRef
-  }, import_react22.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react22.default.createElement("section", { className: "timeline-label-menu-column" }, import_react22.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react22.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react22.default.createElement("button", {
+  }, import_react23.default.createElement("div", { className: "timeline-label-menu-grid" }, import_react23.default.createElement("section", { className: "timeline-label-menu-column" }, import_react23.default.createElement("h4", { className: "timeline-label-menu-title" }, "Left sidebar fields"), import_react23.default.createElement("p", { className: "timeline-details-muted" }, "Selected fields are shown per row in the sticky sidebar."), import_react23.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineSidebarFields
-  }, "Nothing in sidebar"), import_react22.default.createElement("input", {
+  }, "Nothing in sidebar"), import_react23.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline sidebar fields",
@@ -47983,25 +47974,25 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeSidebarFieldSearchDraft(event.target.value);
     }
-  }), import_react22.default.createElement("div", {
+  }), import_react23.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuSidebarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromSidebar
-  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react22.default.createElement("label", {
+  }, props.filteredTimelineSidebarFieldOptions.length === 0 ? import_react23.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineSidebarFieldOptions.map((option) => import_react23.default.createElement("label", {
     key: `timeline-sidebar-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react22.default.createElement("input", {
+  }, import_react23.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineSidebarFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline sidebar`,
     onChange: () => {
       props.onToggleTimelineSidebarField(option.fieldRef);
     }
-  }), import_react22.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react22.default.createElement("strong", null, option.label), import_react22.default.createElement("span", null, option.subtitle)))))), import_react22.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react22.default.createElement("section", { className: "timeline-label-menu-column" }, import_react22.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react22.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react22.default.createElement("button", {
+  }), import_react23.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react23.default.createElement("strong", null, option.label), import_react23.default.createElement("span", null, option.subtitle)))))), import_react23.default.createElement("div", { className: "timeline-label-menu-divider", "aria-hidden": "true" }), import_react23.default.createElement("section", { className: "timeline-label-menu-column" }, import_react23.default.createElement("h4", { className: "timeline-label-menu-title" }, "Bar label fields"), import_react23.default.createElement("p", { className: "timeline-details-muted" }, 'Selected fields are shown as " - " joined text.'), import_react23.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-value-reset",
     onClick: props.onClearTimelineLabelFields
-  }, "Nothing in bars"), import_react22.default.createElement("input", {
+  }, "Nothing in bars"), import_react23.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search timeline label fields",
@@ -48010,28 +48001,28 @@ function TimelineLabelSettingsPanel(props) {
     onChange: (event) => {
       props.onChangeLabelFieldSearchDraft(event.target.value);
     }
-  }), import_react22.default.createElement("div", {
+  }), import_react23.default.createElement("div", {
     className: "timeline-label-menu-options",
     ref: props.labelMenuBarOptionsRef,
     onScroll: props.onSyncLabelMenuScrollFromBar
-  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react22.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react22.default.createElement("label", {
+  }, props.filteredTimelineLabelFieldOptions.length === 0 ? import_react23.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.filteredTimelineLabelFieldOptions.map((option) => import_react23.default.createElement("label", {
     key: `timeline-label-field-${option.fieldRef}`,
     className: "timeline-label-menu-option"
-  }, import_react22.default.createElement("input", {
+  }, import_react23.default.createElement("input", {
     type: "checkbox",
     checked: props.timelineLabelFields.includes(option.fieldRef),
     "aria-label": `Show ${option.label} in timeline bars`,
     onChange: () => {
       props.onToggleTimelineLabelField(option.fieldRef);
     }
-  }), import_react22.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react22.default.createElement("strong", null, option.label), import_react22.default.createElement("span", null, option.subtitle))))))));
+  }), import_react23.default.createElement("span", { className: "timeline-label-menu-option-meta" }, import_react23.default.createElement("strong", null, option.label), import_react23.default.createElement("span", null, option.subtitle))))))));
 }
 
 // dist/src/features/gantt-view/timeline-pane-actions-toolbar.js
 function TimelinePaneActionsToolbar(props) {
-  const colorCodingTriggerRef = import_react23.default.useRef(null);
-  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = import_react23.default.useState(null);
-  import_react23.default.useLayoutEffect(() => {
+  const colorCodingTriggerRef = import_react24.default.useRef(null);
+  const [colorCodingDropdownStyle, setColorCodingDropdownStyle] = import_react24.default.useState(null);
+  import_react24.default.useLayoutEffect(() => {
     if (!props.colorCodingDropdownOpen) {
       setColorCodingDropdownStyle(null);
       return;
@@ -48066,55 +48057,55 @@ function TimelinePaneActionsToolbar(props) {
   }, [props.colorCodingDropdownOpen]);
   const pushButtonLabel = props.pendingWorkItemSyncCount > 0 ? `Push changes (${props.pendingWorkItemSyncCount})` : "Push changes";
   const shouldShowPushButton = !props.liveSyncEnabled && props.pendingWorkItemSyncCount > 0;
-  return import_react23.default.createElement(import_react23.default.Fragment, null, import_react23.default.createElement("div", {
+  return import_react24.default.createElement(import_react24.default.Fragment, null, import_react24.default.createElement("div", {
     className: "timeline-pane-actions"
-  }, import_react23.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react23.default.createElement("button", {
+  }, import_react24.default.createElement("div", { className: "timeline-pane-actions-group" }, import_react24.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     disabled: props.isRefreshing,
     "aria-busy": props.isRefreshing ? "true" : void 0,
     onClick: props.onRetryRefresh
-  }, props.isRefreshing ? import_react23.default.createElement("span", { className: "timeline-action-button-content" }, import_react23.default.createElement("span", {
+  }, props.isRefreshing ? import_react24.default.createElement("span", { className: "timeline-action-button-content" }, import_react24.default.createElement("span", {
     className: "timeline-action-button-spinner",
     "aria-hidden": "true"
-  }), import_react23.default.createElement("span", null, "Updating...")) : "Refresh"), import_react23.default.createElement("div", {
+  }), import_react24.default.createElement("span", null, "Updating...")) : "Refresh"), import_react24.default.createElement("div", {
     className: "timeline-density-controls timeline-density-controls-harmonized timeline-density-controls-zoom timeline-control-cluster",
     role: "group",
     "aria-label": "Timeline zoom"
-  }, import_react23.default.createElement("button", {
+  }, import_react24.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "week" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "week",
     "aria-label": "Zoom in to week view",
     onClick: props.onSelectWeekZoom
-  }, "Week"), import_react23.default.createElement("button", {
+  }, "Week"), import_react24.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "month" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "month",
     "aria-label": "Zoom out to month view",
     onClick: props.onSelectMonthZoom
-  }, "Month"), import_react23.default.createElement("button", {
+  }, "Month"), import_react24.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "quarter" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "quarter",
     "aria-label": "Zoom out to quarter view",
     onClick: props.onSelectQuarterZoom
-  }, "Quarter"), import_react23.default.createElement("button", {
+  }, "Quarter"), import_react24.default.createElement("button", {
     type: "button",
     className: props.zoomLevel === "year" ? "timeline-density-button timeline-density-button-active" : "timeline-density-button",
     "aria-pressed": props.zoomLevel === "year",
     "aria-label": "Zoom out to year view",
     onClick: props.onSelectYearZoom
-  }, "Year")), import_react23.default.createElement("div", {
+  }, "Year")), import_react24.default.createElement("div", {
     className: "timeline-dependency-control timeline-control-cluster"
-  }, import_react23.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react23.default.createElement("select", {
+  }, import_react24.default.createElement("span", { className: "timeline-dependency-label" }, "Dependencies"), import_react24.default.createElement("select", {
     className: "timeline-dependency-select",
     "aria-label": "Dependency mode",
     value: props.dependencyViewMode,
     onChange: (event) => {
       props.onChangeDependencyMode(event.target.value);
     }
-  }, props.dependencyModeOptions.map((option) => import_react23.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react23.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react23.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react23.default.createElement("button", {
+  }, props.dependencyModeOptions.map((option) => import_react24.default.createElement("option", { key: option.value, value: option.value }, option.label)))), import_react24.default.createElement("div", { className: "timeline-color-coding-control timeline-control-cluster", ref: props.colorCodingControlRef }, import_react24.default.createElement("span", { className: "timeline-color-coding-label" }, "Color coding"), import_react24.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
     ref: colorCodingTriggerRef,
@@ -48123,13 +48114,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-haspopup": "listbox",
     "aria-expanded": props.colorCodingDropdownOpen ? "true" : "false",
     onClick: props.onToggleColorCodingDropdown
-  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? (0, import_react_dom.createPortal)(import_react23.default.createElement("div", {
+  }, props.selectedColorCodingLabel), props.colorCodingDropdownOpen ? (0, import_react_dom.createPortal)(import_react24.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     "data-timeline-color-coding-overlay": "true",
     style: colorCodingDropdownStyle ?? void 0,
     role: "listbox",
     "aria-label": "Color coding options"
-  }, import_react23.default.createElement("input", {
+  }, import_react24.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": "Search color coding",
@@ -48145,26 +48136,20 @@ function TimelinePaneActionsToolbar(props) {
       event.preventDefault();
       props.onApplyFirstFilteredColorCodingOption();
     }
-  }), import_react23.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react23.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react23.default.createElement("button", {
+  }), import_react24.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.filteredColorCodingOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-details-muted" }, "No matching option.") : props.filteredColorCodingOptions.map((option) => import_react24.default.createElement("button", {
     key: option.key,
     type: "button",
     className: option.mode === props.colorCoding && (option.mode !== "field" && props.colorCoding !== "field" || option.fieldRef === props.fieldColorCoding.fieldRef) ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
     onClick: () => {
       props.onSelectColorCodingOption(option);
     }
-  }, import_react23.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react23.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))), document.body) : null, import_react23.default.createElement("button", {
+  }, import_react24.default.createElement("span", { className: "timeline-color-coding-option-label" }, option.label), option.subtitle ? import_react24.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, option.subtitle) : null)))), document.body) : null, import_react24.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-settings-button",
     "aria-label": "Open color coding settings",
     title: "Open color-coding settings and set colors per value.",
     onClick: props.onOpenColorSettings
-  }, import_react23.default.createElement("svg", {
-    viewBox: "0 0 24 24",
-    className: "timeline-color-coding-settings-icon",
-    "aria-hidden": "true"
-  }, import_react23.default.createElement("path", {
-    d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
-  })))), import_react23.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react23.default.createElement("button", {
+  }, import_react24.default.createElement(GearIcon, { className: "timeline-color-coding-settings-icon" }))), import_react24.default.createElement("div", { className: "timeline-filter-control", ref: props.filterToggleControlRef }, import_react24.default.createElement("button", {
     type: "button",
     className: props.timelineFiltersOpen ? "timeline-filter-toggle timeline-filter-toggle-active" : "timeline-filter-toggle",
     "aria-label": "Toggle timeline filters",
@@ -48172,13 +48157,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.timelineFiltersOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleTimelineFilters
-  }, import_react23.default.createElement("svg", {
+  }, import_react24.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-filter-toggle-icon",
     "aria-hidden": "true"
-  }, import_react23.default.createElement("path", {
+  }, import_react24.default.createElement("path", {
     d: "M3 5h18l-7 8v5l-4 2v-7L3 5z"
-  })), props.activeTimelineFiltersCount > 0 ? import_react23.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react23.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react23.default.createElement("button", {
+  })), props.activeTimelineFiltersCount > 0 ? import_react24.default.createElement("span", { className: "timeline-filter-toggle-count" }, props.activeTimelineFiltersCount) : null)), props.sortControl, import_react24.default.createElement("div", { className: "timeline-label-control", ref: props.labelToggleControlRef }, import_react24.default.createElement("button", {
     type: "button",
     className: props.labelSettingsOpen ? "timeline-label-toggle timeline-label-toggle-active" : "timeline-label-toggle",
     "aria-label": "Toggle timeline label fields",
@@ -48186,13 +48171,13 @@ function TimelinePaneActionsToolbar(props) {
     "aria-expanded": props.labelSettingsOpen ? "true" : "false",
     "aria-haspopup": "dialog",
     onClick: props.onToggleLabelSettings
-  }, import_react23.default.createElement("svg", {
+  }, import_react24.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react23.default.createElement("path", {
+  }, import_react24.default.createElement("path", {
     d: "M3 8.25A2.25 2.25 0 0 1 5.25 6h6.69c.6 0 1.17.24 1.59.66l6.8 6.8a2.25 2.25 0 0 1 0 3.18l-3.69 3.69a2.25 2.25 0 0 1-3.18 0l-6.8-6.8A2.25 2.25 0 0 1 6 11.94V8.25Zm4.5.75a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
-  })), import_react23.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react23.default.createElement(TimelineLabelSettingsPanel, {
+  })), import_react24.default.createElement("span", { className: "timeline-label-toggle-count" }, `${props.timelineLabelFields.length}/${props.timelineSidebarFields.length}`)), import_react24.default.createElement(TimelineLabelSettingsPanel, {
     open: props.labelSettingsOpen,
     panelRef: props.labelPanelRef,
     sidebarFieldSearchDraft: props.sidebarFieldSearchDraft,
@@ -48211,22 +48196,22 @@ function TimelinePaneActionsToolbar(props) {
     onSyncLabelMenuScrollFromBar: props.onSyncLabelMenuScrollFromBar,
     onToggleTimelineSidebarField: props.onToggleTimelineSidebarField,
     onToggleTimelineLabelField: props.onToggleTimelineLabelField
-  }))), import_react23.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react23.default.createElement("label", {
+  }))), import_react24.default.createElement("div", { className: "timeline-pane-actions-status" }, import_react24.default.createElement("label", {
     className: "timeline-live-sync-toggle",
     title: props.liveSyncEnabled ? "Pause automatic work item sync" : "Resume automatic work item sync and flush queued changes"
-  }, import_react23.default.createElement("input", {
+  }, import_react24.default.createElement("input", {
     type: "checkbox",
     className: "timeline-live-sync-toggle-input",
     checked: props.liveSyncEnabled,
     onChange: (event) => {
       props.onSetLiveSyncEnabled(event.target.checked);
     }
-  }), import_react23.default.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }), import_react23.default.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")), shouldShowPushButton ? import_react23.default.createElement("button", {
+  }), import_react24.default.createElement("span", { className: "timeline-live-sync-toggle-track", "aria-hidden": "true" }), import_react24.default.createElement("span", { className: "timeline-live-sync-toggle-label" }, "Live sync")), shouldShowPushButton ? import_react24.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     disabled: props.workItemSyncState === "syncing",
     onClick: props.onPushPendingWorkItemChanges
-  }, pushButtonLabel) : null, shouldShowPushButton ? import_react23.default.createElement("button", {
+  }, pushButtonLabel) : null, shouldShowPushButton ? import_react24.default.createElement("button", {
     type: "button",
     className: "timeline-action-button",
     disabled: props.workItemSyncState === "syncing",
@@ -48236,12 +48221,12 @@ function TimelinePaneActionsToolbar(props) {
 }
 
 // dist/src/features/gantt-view/timeline-filter-panel.js
-var import_react24 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 var import_react_dom2 = __toESM(require_react_dom(), 1);
 function TimelineFilterPanel(props) {
-  const filterDropdownTriggerRefs = import_react24.default.useRef({});
-  const [filterDropdownStyle, setFilterDropdownStyle] = import_react24.default.useState(null);
-  import_react24.default.useLayoutEffect(() => {
+  const filterDropdownTriggerRefs = import_react25.default.useRef({});
+  const [filterDropdownStyle, setFilterDropdownStyle] = import_react25.default.useState(null);
+  import_react25.default.useLayoutEffect(() => {
     if (!props.openFilterDropdown) {
       setFilterDropdownStyle(null);
       return;
@@ -48280,14 +48265,14 @@ function TimelineFilterPanel(props) {
     return null;
   }
   const filterGroupNodes = renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdownTriggerRefs, filterDropdownStyle);
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: "timeline-filter-panel-motion"
-  }, import_react24.default.createElement("div", {
+  }, import_react25.default.createElement("div", {
     className: "timeline-filter-panel",
     role: "group",
     "aria-label": "Timeline filters",
     ref: props.panelRef
-  }, props.availableFieldRefs.length === 0 ? import_react24.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react24.default.createElement("div", { className: "timeline-filter-grid" }, ...filterGroupNodes, renderTimelineFilterHierarchyExpansionOptions(props), import_react24.default.createElement("button", {
+  }, props.availableFieldRefs.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No fields available for filtering.") : import_react25.default.createElement("div", { className: "timeline-filter-grid" }, ...filterGroupNodes, renderTimelineFilterHierarchyExpansionOptions(props), import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-filter-add timeline-filter-add-group",
     "aria-label": "Add OR filter group",
@@ -48296,29 +48281,29 @@ function TimelineFilterPanel(props) {
   }, "+ OR Group"))));
 }
 function renderTimelineFilterHierarchyExpansionOptions(props) {
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: "timeline-filter-hierarchy-options",
     role: "group",
     "aria-label": "Timeline hierarchy filter expansion"
-  }, import_react24.default.createElement("label", {
+  }, import_react25.default.createElement("label", {
     className: props.includeParents ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active" : "timeline-filter-hierarchy-option"
-  }, import_react24.default.createElement("input", {
+  }, import_react25.default.createElement("input", {
     type: "checkbox",
     "aria-label": "Include parents",
     checked: props.includeParents,
     onChange: (event) => {
       props.onSetIncludeParents(event.target.checked);
     }
-  }), import_react24.default.createElement("span", null, "Include parents")), import_react24.default.createElement("label", {
+  }), import_react25.default.createElement("span", null, "Include parents")), import_react25.default.createElement("label", {
     className: props.includeChildItems ? "timeline-filter-hierarchy-option timeline-filter-hierarchy-option-active" : "timeline-filter-hierarchy-option"
-  }, import_react24.default.createElement("input", {
+  }, import_react25.default.createElement("input", {
     type: "checkbox",
     "aria-label": "Include child items",
     checked: props.includeChildItems,
     onChange: (event) => {
       props.onSetIncludeChildItems(event.target.checked);
     }
-  }), import_react24.default.createElement("span", null, "Include child items")));
+  }), import_react25.default.createElement("span", null, "Include child items")));
 }
 function renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdownTriggerRefs, filterDropdownStyle) {
   const nodes = [];
@@ -48326,12 +48311,12 @@ function renderTimelineFilterGroupSections(props, totalFilterSlots, filterDropdo
   props.timelineFilterGroups.forEach((group, groupIndex) => {
     const isOrGrouped = props.timelineFilterGroups.length > 1;
     if (groupIndex > 0) {
-      nodes.push(import_react24.default.createElement("span", {
+      nodes.push(import_react25.default.createElement("span", {
         key: `timeline-filter-group-or-${group.groupId}`,
         className: "timeline-filter-joiner timeline-filter-joiner-or"
       }, "OR"));
     }
-    nodes.push(import_react24.default.createElement(TimelineFilterGroupSection, {
+    nodes.push(import_react25.default.createElement(TimelineFilterGroupSection, {
       key: `timeline-filter-group-${group.groupId}`,
       group,
       groupIndex,
@@ -48366,12 +48351,12 @@ function TimelineFilterGroupSection(props) {
   const conditionNodes = [];
   props.group.filters.forEach((filter, conditionIndex) => {
     if (conditionIndex > 0) {
-      conditionNodes.push(import_react24.default.createElement("span", {
+      conditionNodes.push(import_react25.default.createElement("span", {
         key: `timeline-filter-group-${props.group.groupId}-and-${filter.slotId}`,
         className: "timeline-filter-joiner timeline-filter-joiner-and"
       }, "AND"));
     }
-    conditionNodes.push(import_react24.default.createElement(TimelineFilterRow, {
+    conditionNodes.push(import_react25.default.createElement(TimelineFilterRow, {
       key: `timeline-filter-slot-${filter.slotId}`,
       filter,
       filterIndex: props.firstFilterIndex + conditionIndex,
@@ -48394,7 +48379,7 @@ function TimelineFilterGroupSection(props) {
       onRemoveTimelineFilterSlot: props.onRemoveTimelineFilterSlot
     }));
   });
-  conditionNodes.push(import_react24.default.createElement("button", {
+  conditionNodes.push(import_react25.default.createElement("button", {
     key: `timeline-filter-group-${props.group.groupId}-add-condition`,
     type: "button",
     className: "timeline-filter-add timeline-filter-add-condition",
@@ -48405,7 +48390,7 @@ function TimelineFilterGroupSection(props) {
     }
   }, "+ Condition"));
   if (props.isOrGrouped) {
-    conditionNodes.push(import_react24.default.createElement("button", {
+    conditionNodes.push(import_react25.default.createElement("button", {
       key: `timeline-filter-group-${props.group.groupId}-remove`,
       type: "button",
       className: "timeline-filter-row-clear timeline-filter-group-remove",
@@ -48415,7 +48400,7 @@ function TimelineFilterGroupSection(props) {
       }
     }, "Remove group"));
   }
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: props.isOrGrouped ? "timeline-filter-group timeline-filter-group-or-branch" : "timeline-filter-group",
     role: "group",
     "aria-label": `Timeline filter group ${props.groupIndex + 1}`
@@ -48445,16 +48430,16 @@ function TimelineFilterRow(props) {
     hasVisibleValueOptions,
     areAllVisibleValuesSelected
   };
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: isFieldDropdownOpen || isValueDropdownOpen ? "timeline-filter-row timeline-filter-row-open timeline-control-cluster" : "timeline-filter-row timeline-control-cluster"
   }, renderTimelineFilterFieldControl(props, selectedFieldDisplay, isFieldDropdownOpen), renderTimelineFilterValueControl(props, valueControlState), renderTimelineFilterRemoveButton(props));
 }
 function renderTimelineFilterFieldControl(props, selectedFieldDisplay, isFieldDropdownOpen) {
-  return import_react24.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-field-anchor" }, renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen), isFieldDropdownOpen ? renderTimelineFilterFieldDropdown(props) : null);
+  return import_react25.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-field-anchor" }, renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen), isFieldDropdownOpen ? renderTimelineFilterFieldDropdown(props) : null);
 }
 function renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDropdownOpen) {
   const { filter, filterIndex } = props;
-  return import_react24.default.createElement("button", {
+  return import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
     ref: (element3) => {
@@ -48472,13 +48457,13 @@ function renderTimelineFilterFieldTrigger(props, selectedFieldDisplay, isFieldDr
 }
 function renderTimelineFilterFieldDropdown(props) {
   const { filter, filterIndex } = props;
-  return (0, import_react_dom2.createPortal)(import_react24.default.createElement("div", {
+  return (0, import_react_dom2.createPortal)(import_react25.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     "data-timeline-filter-overlay": "true",
     style: props.filterDropdownStyle ?? void 0,
     role: "listbox",
     "aria-label": `Filter field options ${filterIndex + 1}`
-  }, import_react24.default.createElement("input", {
+  }, import_react25.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": `Search filter fields ${filterIndex + 1}`,
@@ -48499,7 +48484,7 @@ function renderTimelineFilterFieldDropdown(props) {
       props.onApplyFieldFilterSelection(filter.slotId, firstField);
       props.onSetOpenFilterDropdown(null);
     }
-  }), import_react24.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react24.default.createElement("button", {
+  }), import_react25.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, props.openFilterFieldOptions.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No matching field.") : props.openFilterFieldOptions.map((fieldRef) => import_react25.default.createElement("button", {
     key: `${filter.slotId}-${fieldRef}`,
     type: "button",
     className: filter.fieldRef === fieldRef ? "timeline-color-coding-option timeline-color-coding-option-active" : "timeline-color-coding-option",
@@ -48507,14 +48492,14 @@ function renderTimelineFilterFieldDropdown(props) {
       props.onApplyFieldFilterSelection(filter.slotId, fieldRef);
       props.onSetOpenFilterDropdown(null);
     }
-  }, import_react24.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react24.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))), document.body);
+  }, import_react25.default.createElement("span", { className: "timeline-color-coding-option-label" }, props.getFieldDisplayName(fieldRef)), import_react25.default.createElement("span", { className: "timeline-color-coding-option-subtitle" }, fieldRef))))), document.body);
 }
 function renderTimelineFilterValueControl(props, state2) {
-  return import_react24.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-value-anchor" }, renderTimelineFilterValueTrigger(props, state2), state2.isValueDropdownOpen ? renderTimelineFilterValueDropdown(props, state2) : null);
+  return import_react25.default.createElement("div", { className: "timeline-filter-dropdown-anchor timeline-filter-value-anchor" }, renderTimelineFilterValueTrigger(props, state2), state2.isValueDropdownOpen ? renderTimelineFilterValueDropdown(props, state2) : null);
 }
 function renderTimelineFilterValueTrigger(props, state2) {
   const { filter, filterIndex } = props;
-  return import_react24.default.createElement("button", {
+  return import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-color-coding-select timeline-color-coding-select-trigger",
     ref: (element3) => {
@@ -48539,13 +48524,13 @@ function renderTimelineFilterValueDropdown(props, state2) {
 }
 function renderTimelineFilterDateDropdown(props, dateRange) {
   const { filter, filterIndex } = props;
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: "timeline-color-coding-dropdown timeline-filter-date-dropdown",
     "data-timeline-filter-overlay": "true",
     style: props.filterDropdownStyle ?? void 0,
     role: "group",
     "aria-label": `Filter value options ${filterIndex + 1}`
-  }, import_react24.default.createElement("div", { className: "timeline-filter-date-range" }, import_react24.default.createElement("input", {
+  }, import_react25.default.createElement("div", { className: "timeline-filter-date-range" }, import_react25.default.createElement("input", {
     type: "datetime-local",
     className: "timeline-details-input timeline-filter-date-input",
     "aria-label": `Filter ${filterIndex + 1} date range start`,
@@ -48556,7 +48541,7 @@ function renderTimelineFilterDateDropdown(props, dateRange) {
         startIso: fromTimelineDateTimeLocalInputValue(event.target.value)
       });
     }
-  }), import_react24.default.createElement("input", {
+  }), import_react25.default.createElement("input", {
     type: "datetime-local",
     className: "timeline-details-input timeline-filter-date-input",
     "aria-label": `Filter ${filterIndex + 1} date range end`,
@@ -48567,23 +48552,23 @@ function renderTimelineFilterDateDropdown(props, dateRange) {
         endIso: fromTimelineDateTimeLocalInputValue(event.target.value)
       });
     }
-  }), dateRange.startIso || dateRange.endIso ? import_react24.default.createElement("button", {
+  }), dateRange.startIso || dateRange.endIso ? import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-filter-date-clear",
     onClick: () => {
       props.onUpdateTimelineDateRangeFilter(filter.slotId, EMPTY_TIMELINE_DATE_RANGE);
     }
-  }, "Clear") : null), isTimelineDateRangeInvalid(dateRange) ? import_react24.default.createElement("p", { className: "timeline-filter-date-note", role: "status" }, "Start must be before end.") : null);
+  }, "Clear") : null), isTimelineDateRangeInvalid(dateRange) ? import_react25.default.createElement("p", { className: "timeline-filter-date-note", role: "status" }, "Start must be before end.") : null);
 }
 function renderTimelineFilterValueMultiSelectDropdown(props, state2) {
   const { filter, filterIndex } = props;
-  return import_react24.default.createElement("div", {
+  return import_react25.default.createElement("div", {
     className: "timeline-color-coding-dropdown",
     "data-timeline-filter-overlay": "true",
     style: props.filterDropdownStyle ?? void 0,
     role: "listbox",
     "aria-label": `Filter value options ${filterIndex + 1}`
-  }, import_react24.default.createElement("div", { className: "timeline-filter-value-search-row" }, import_react24.default.createElement("button", {
+  }, import_react25.default.createElement("div", { className: "timeline-filter-value-search-row" }, import_react25.default.createElement("button", {
     type: "button",
     className: state2.areAllVisibleValuesSelected ? "timeline-filter-bulk-toggle timeline-filter-bulk-toggle-active" : "timeline-filter-bulk-toggle",
     "aria-label": state2.areAllVisibleValuesSelected ? `Deselect all visible filter values ${filterIndex + 1}` : `Select all visible filter values ${filterIndex + 1}`,
@@ -48592,13 +48577,13 @@ function renderTimelineFilterValueMultiSelectDropdown(props, state2) {
     onClick: () => {
       props.onToggleVisibleTimelineFieldValueSelections(filter.slotId, state2.visibleValueKeys);
     }
-  }, import_react24.default.createElement("svg", {
+  }, import_react25.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-label-toggle-icon",
     "aria-hidden": "true"
-  }, import_react24.default.createElement("path", {
+  }, import_react25.default.createElement("path", {
     d: "M9.55 17.45 4.8 12.7l1.4-1.4 3.35 3.35 8.25-8.25 1.4 1.4-9.65 9.65Z"
-  }))), import_react24.default.createElement("input", {
+  }))), import_react25.default.createElement("input", {
     type: "search",
     className: "timeline-color-coding-dropdown-search",
     "aria-label": `Search filter values ${filterIndex + 1}`,
@@ -48607,21 +48592,21 @@ function renderTimelineFilterValueMultiSelectDropdown(props, state2) {
     onChange: (event) => {
       props.onSetFilterValueSearchDraft(event.target.value);
     }
-  })), import_react24.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, state2.filterValueOptions.length === 0 ? import_react24.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : state2.filterValueOptions.map((entry) => import_react24.default.createElement("label", {
+  })), import_react25.default.createElement("div", { className: "timeline-color-coding-dropdown-options" }, state2.filterValueOptions.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No matching value.") : state2.filterValueOptions.map((entry) => import_react25.default.createElement("label", {
     key: `${filter.slotId}-value-${entry.key}`,
     className: "timeline-filter-value-option"
-  }, import_react24.default.createElement("input", {
+  }, import_react25.default.createElement("input", {
     type: "checkbox",
     checked: state2.selectedValueKeys.includes(entry.key),
     "aria-label": `Include ${entry.label} in filter ${filterIndex + 1}`,
     onChange: () => {
       props.onToggleTimelineFieldValueSelection(filter.slotId, entry.key);
     }
-  }), import_react24.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react24.default.createElement("strong", null, entry.label), import_react24.default.createElement("span", null, `${entry.count} item(s)`))))));
+  }), import_react25.default.createElement("span", { className: "timeline-filter-value-option-meta" }, import_react25.default.createElement("strong", null, entry.label), import_react25.default.createElement("span", null, `${entry.count} item(s)`))))));
 }
 function renderTimelineFilterRemoveButton(props) {
   const { filter, filterIndex } = props;
-  return import_react24.default.createElement("button", {
+  return import_react25.default.createElement("button", {
     type: "button",
     className: "timeline-filter-row-clear",
     "aria-label": props.totalFilterSlots > 1 ? `Remove filter ${filterIndex + 1}` : `Clear filter ${filterIndex + 1}`,
@@ -48632,16 +48617,16 @@ function renderTimelineFilterRemoveButton(props) {
 }
 
 // dist/src/features/gantt-view/timeline-color-coding-panel.js
-var import_react25 = __toESM(require_react(), 1);
+var import_react26 = __toESM(require_react(), 1);
 function TimelineColorCodingPanel(props) {
   if (!props.open) {
     return null;
   }
-  return import_react25.default.createElement("div", {
+  return import_react26.default.createElement("div", {
     className: "timeline-color-coding-modal-backdrop",
     role: "presentation",
     onClick: props.onClose
-  }, import_react25.default.createElement("section", {
+  }, import_react26.default.createElement("section", {
     className: "timeline-color-coding-modal",
     role: "dialog",
     "aria-modal": "true",
@@ -48649,57 +48634,57 @@ function TimelineColorCodingPanel(props) {
     onClick: (event) => {
       event.stopPropagation();
     }
-  }, import_react25.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react25.default.createElement("h4", null, "Color coding settings"), import_react25.default.createElement("button", {
+  }, import_react26.default.createElement("header", { className: "timeline-color-coding-modal-header" }, import_react26.default.createElement("h4", null, "Color coding settings"), import_react26.default.createElement("button", {
     type: "button",
     className: "app-dialog-close timeline-color-coding-close",
     "aria-label": "Close color coding settings",
     title: "Close",
     onClick: props.onClose
-  }, import_react25.default.createElement("svg", { className: "timeline-color-coding-close-icon", viewBox: "0 0 16 16", "aria-hidden": "true" }, import_react25.default.createElement("path", {
+  }, import_react26.default.createElement("svg", { className: "timeline-color-coding-close-icon", viewBox: "0 0 16 16", "aria-hidden": "true" }, import_react26.default.createElement("path", {
     d: "M4 4l8 8M12 4l-8 8",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "1.8",
     strokeLinecap: "round"
-  })))), import_react25.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react25.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react25.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
+  })))), import_react26.default.createElement("p", { className: "timeline-color-coding-active-selection" }, `Active selection: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), import_react26.default.createElement("p", { className: "timeline-color-coding-modal-field" }, props.isFieldColorCodingMode ? props.selectedFieldRef ? `Field: ${props.selectedFieldRef}` : "Field: Select a field from the Color coding dropdown first." : `Mode: ${props.resolveSelectedColorCodingLabel(props.colorCoding, props.selectedFieldRef)}`), props.isFieldColorCodingMode && props.selectedFieldRef ? import_react26.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `field-values-${props.selectedFieldRef}` }, props.selectedFieldValueStats.length === 0 ? import_react26.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected field.") : props.selectedFieldValueStats.map((entry) => {
     const scopedKey = props.toScopedFieldValueColorKey(props.selectedFieldRef, entry.key);
     const customColor = (scopedKey ? props.fieldColorCoding.valueColors[scopedKey] : null) ?? props.fieldColorCoding.valueColors[entry.key] ?? null;
     const effectiveColor = customColor ?? entry.defaultColor;
-    return import_react25.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react25.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react25.default.createElement("strong", null, entry.label), import_react25.default.createElement("span", null, `${entry.count} item(s)`)), import_react25.default.createElement("input", {
+    return import_react26.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react26.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react26.default.createElement("strong", null, entry.label), import_react26.default.createElement("span", null, `${entry.count} item(s)`)), import_react26.default.createElement("input", {
       type: "color",
       value: effectiveColor,
       "aria-label": `Color for ${entry.label}`,
       onChange: (event) => {
         props.onUpdateFieldValueColor(entry.key, event.target.value);
       }
-    }), import_react25.default.createElement("button", {
+    }), import_react26.default.createElement("button", {
       type: "button",
       className: "timeline-color-coding-value-reset",
       onClick: () => {
         props.onUpdateFieldValueColor(entry.key, null);
       }
     }, "Auto"));
-  })) : props.isOverdueColorCodingMode ? import_react25.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react25.default.createElement("p", { className: "timeline-details-muted" }, "Select statuses that should be treated as completed (not overdue/red)."), props.selectedModeValueStats.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.") : props.selectedModeValueStats.map((entry) => {
+  })) : props.isOverdueColorCodingMode ? import_react26.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react26.default.createElement("p", { className: "timeline-details-muted" }, "Select statuses that should be treated as completed (not overdue/red)."), props.selectedModeValueStats.length === 0 ? import_react26.default.createElement("p", { className: "timeline-details-muted" }, "No status values found in timeline.") : props.selectedModeValueStats.map((entry) => {
     const checked = props.overdueExcludedStateCodes.includes(entry.key.trim().toLowerCase());
-    return import_react25.default.createElement("label", { key: entry.key, className: "timeline-filter-value-option" }, import_react25.default.createElement("input", {
+    return import_react26.default.createElement("label", { key: entry.key, className: "timeline-filter-value-option" }, import_react26.default.createElement("input", {
       type: "checkbox",
       checked,
       "aria-label": `Treat ${entry.label} as completed`,
       onChange: (event) => {
         props.onToggleOverdueExcludedState(entry.label, event.target.checked);
       }
-    }), import_react25.default.createElement("div", { className: "timeline-filter-value-option-meta" }, import_react25.default.createElement("strong", null, entry.label), import_react25.default.createElement("span", null, `${entry.count} item(s)`)));
-  })) : props.isReadOnlyStatusColorCodingMode ? import_react25.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react25.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react25.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
-    return import_react25.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react25.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react25.default.createElement("strong", null, entry.label), import_react25.default.createElement("span", null, `${entry.count} item(s)`)));
-  })) : import_react25.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
+    }), import_react26.default.createElement("div", { className: "timeline-filter-value-option-meta" }, import_react26.default.createElement("strong", null, entry.label), import_react26.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : props.isReadOnlyStatusColorCodingMode ? import_react26.default.createElement("div", { className: "timeline-color-coding-value-grid", key: `mode-values-${props.colorCoding}` }, import_react26.default.createElement("p", { className: "timeline-details-muted" }, "Status colors are read from the system and cannot be changed here."), props.selectedModeValueStats.length === 0 ? import_react26.default.createElement("p", { className: "timeline-details-muted" }, "No values found for selected mode.") : props.selectedModeValueStats.map((entry) => {
+    return import_react26.default.createElement("div", { key: entry.key, className: "timeline-color-coding-value-row" }, import_react26.default.createElement("div", { className: "timeline-color-coding-value-meta" }, import_react26.default.createElement("strong", null, entry.label), import_react26.default.createElement("span", null, `${entry.count} item(s)`)));
+  })) : import_react26.default.createElement("p", { className: "timeline-details-muted" }, props.isFieldColorCodingMode ? "Select a field to configure value-to-color mapping." : "This mode does not require field selection.")));
 }
 
 // dist/src/features/gantt-view/timeline-work-item-context-menu.js
-var import_react27 = __toESM(require_react(), 1);
+var import_react28 = __toESM(require_react(), 1);
 var import_react_dom3 = __toESM(require_react_dom(), 1);
 
 // dist/src/features/gantt-view/use-child-work-item-type-menu.js
-var import_react26 = __toESM(require_react(), 1);
+var import_react27 = __toESM(require_react(), 1);
 
 // dist/src/domain/work-items/child-work-item-type.js
 function resolvePreferredChildWorkItemType(parentType) {
@@ -48760,18 +48745,18 @@ function compareWorkItemTypeNames(a, b) {
 
 // dist/src/features/gantt-view/use-child-work-item-type-menu.js
 function useChildWorkItemTypeMenu(input) {
-  const [isOpen, setIsOpen] = import_react26.default.useState(false);
-  const [loadState, setLoadState] = import_react26.default.useState({
+  const [isOpen, setIsOpen] = import_react27.default.useState(false);
+  const [loadState, setLoadState] = import_react27.default.useState({
     status: "idle",
     options: [],
     error: null
   });
-  const [activeWorkItemType, setActiveWorkItemType] = import_react26.default.useState(null);
-  const fetchWorkItemTypesRef = import_react26.default.useRef(input.onFetchWorkItemTypes);
-  import_react26.default.useEffect(() => {
+  const [activeWorkItemType, setActiveWorkItemType] = import_react27.default.useState(null);
+  const fetchWorkItemTypesRef = import_react27.default.useRef(input.onFetchWorkItemTypes);
+  import_react27.default.useEffect(() => {
     fetchWorkItemTypesRef.current = input.onFetchWorkItemTypes;
   }, [input.onFetchWorkItemTypes]);
-  import_react26.default.useEffect(() => {
+  import_react27.default.useEffect(() => {
     setIsOpen(false);
     setLoadState({
       status: "idle",
@@ -48780,7 +48765,7 @@ function useChildWorkItemTypeMenu(input) {
     });
     setActiveWorkItemType(null);
   }, [input.menuKey]);
-  import_react26.default.useEffect(() => {
+  import_react27.default.useEffect(() => {
     if (!isOpen) {
       return;
     }
@@ -48828,7 +48813,7 @@ function useChildWorkItemTypeMenu(input) {
   }, [input.parentWorkItemType, isOpen]);
   const options = loadState.status === "loaded" ? loadState.options : [];
   const activeIndex = options.findIndex((option) => option.name === activeWorkItemType);
-  const setActiveByIndex = import_react26.default.useCallback((index2) => {
+  const setActiveByIndex = import_react27.default.useCallback((index2) => {
     if (options.length === 0) {
       setActiveWorkItemType(null);
       return;
@@ -48836,7 +48821,7 @@ function useChildWorkItemTypeMenu(input) {
     const normalizedIndex = Math.max(0, Math.min(options.length - 1, index2));
     setActiveWorkItemType(options[normalizedIndex]?.name ?? null);
   }, [options]);
-  const moveActive = import_react26.default.useCallback((delta) => {
+  const moveActive = import_react27.default.useCallback((delta) => {
     if (options.length === 0) {
       return;
     }
@@ -48885,24 +48870,24 @@ function clamp4(value, min, max) {
 
 // dist/src/features/gantt-view/timeline-work-item-context-menu.js
 function TimelineWorkItemContextMenu(props) {
-  const firstActionRef = import_react27.default.useRef(null);
-  const rootMenuItemRefs = import_react27.default.useRef([]);
-  const childMenuButtonRef = import_react27.default.useRef(null);
-  const childTypeOptionRefs = import_react27.default.useRef([]);
-  const statusMenuButtonRef = import_react27.default.useRef(null);
-  const statusOptionRefs = import_react27.default.useRef([]);
-  const assigneeMenuButtonRef = import_react27.default.useRef(null);
-  const assigneeOptionRefs = import_react27.default.useRef([]);
-  const [statusMenuOpen, setStatusMenuOpen] = import_react27.default.useState(false);
-  const [assigneeMenuOpen, setAssigneeMenuOpen] = import_react27.default.useState(false);
-  const [statusLoadState, setStatusLoadState] = import_react27.default.useState({
+  const firstActionRef = import_react28.default.useRef(null);
+  const rootMenuItemRefs = import_react28.default.useRef([]);
+  const childMenuButtonRef = import_react28.default.useRef(null);
+  const childTypeOptionRefs = import_react28.default.useRef([]);
+  const statusMenuButtonRef = import_react28.default.useRef(null);
+  const statusOptionRefs = import_react28.default.useRef([]);
+  const assigneeMenuButtonRef = import_react28.default.useRef(null);
+  const assigneeOptionRefs = import_react28.default.useRef([]);
+  const [statusMenuOpen, setStatusMenuOpen] = import_react28.default.useState(false);
+  const [assigneeMenuOpen, setAssigneeMenuOpen] = import_react28.default.useState(false);
+  const [statusLoadState, setStatusLoadState] = import_react28.default.useState({
     status: "idle",
     options: [],
     error: null
   });
-  const [actionError, setActionError] = import_react27.default.useState(null);
-  const [busyAction, setBusyAction] = import_react27.default.useState(null);
-  const [constrainedMenuStyle, setConstrainedMenuStyle] = import_react27.default.useState(null);
+  const [actionError, setActionError] = import_react28.default.useState(null);
+  const [busyAction, setBusyAction] = import_react28.default.useState(null);
+  const [constrainedMenuStyle, setConstrainedMenuStyle] = import_react28.default.useState(null);
   const menuState = props.menuState;
   const workItemId = menuState?.item.workItemId ?? null;
   const menuPositionKey = menuState ? `${menuState.item.workItemId}:${menuState.position.x}:${menuState.position.y}` : null;
@@ -48915,8 +48900,8 @@ function TimelineWorkItemContextMenu(props) {
     onFetchWorkItemTypes: props.onFetchWorkItemTypes
   });
   const stateOptions = props.onFetchWorkItemStateOptions && statusLoadState.status === "loaded" ? normalizeWorkItemStateOptions(statusLoadState.options) : [];
-  const assigneeOptions = import_react27.default.useMemo(() => buildTimelineAssigneeOptions(props.timeline), [props.timeline]);
-  import_react27.default.useEffect(() => {
+  const assigneeOptions = import_react28.default.useMemo(() => buildTimelineAssigneeOptions(props.timeline), [props.timeline]);
+  import_react28.default.useEffect(() => {
     setStatusMenuOpen(false);
     setAssigneeMenuOpen(false);
     setStatusLoadState({
@@ -48927,7 +48912,7 @@ function TimelineWorkItemContextMenu(props) {
     setActionError(null);
     setBusyAction(null);
   }, [workItemId]);
-  import_react27.default.useLayoutEffect(() => {
+  import_react28.default.useLayoutEffect(() => {
     if (!menuState || !menuPositionKey) {
       setConstrainedMenuStyle(null);
       return;
@@ -48965,7 +48950,7 @@ function TimelineWorkItemContextMenu(props) {
     statusLoadState.status,
     statusMenuOpen
   ]);
-  import_react27.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     if (!menuState) {
       return;
     }
@@ -48978,7 +48963,7 @@ function TimelineWorkItemContextMenu(props) {
       window.setTimeout(focusFirstAction, 0);
     }
   }, [menuState]);
-  import_react27.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     if (!statusMenuOpen || !menuState) {
       return;
     }
@@ -49019,7 +49004,7 @@ function TimelineWorkItemContextMenu(props) {
       cancelled = true;
     };
   }, [menuState, props.onFetchWorkItemStateOptions, statusMenuOpen]);
-  import_react27.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     if (!childTypeMenu.isOpen || childTypeMenu.loadState.status !== "loaded" || childTypeMenu.activeIndex < 0) {
       return;
     }
@@ -49032,7 +49017,7 @@ function TimelineWorkItemContextMenu(props) {
       window.setTimeout(focusActiveChildType, 0);
     }
   }, [childTypeMenu.activeIndex, childTypeMenu.isOpen, childTypeMenu.loadState.status]);
-  import_react27.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     if (!statusMenuOpen || statusLoadState.status !== "loaded" || stateOptions.length === 0) {
       return;
     }
@@ -49046,7 +49031,7 @@ function TimelineWorkItemContextMenu(props) {
       window.setTimeout(focusStatusOption2, 0);
     }
   }, [currentState, stateOptions.length, statusLoadState.status, statusMenuOpen]);
-  import_react27.default.useEffect(() => {
+  import_react28.default.useEffect(() => {
     if (!assigneeMenuOpen || assigneeOptions.length === 0) {
       return;
     }
@@ -49409,7 +49394,7 @@ function TimelineWorkItemContextMenu(props) {
     topPx: menuState.position.y,
     maxHeightPx: getViewportMaxMenuHeightPx()
   };
-  return (0, import_react_dom3.createPortal)(import_react27.default.createElement("div", {
+  return (0, import_react_dom3.createPortal)(import_react28.default.createElement("div", {
     ref: props.menuRef,
     className: "timeline-work-item-context-menu",
     role: "menu",
@@ -49423,7 +49408,7 @@ function TimelineWorkItemContextMenu(props) {
     onContextMenu: (event) => {
       event.preventDefault();
     }
-  }, import_react27.default.createElement("div", { className: "timeline-work-item-context-menu-title" }, import_react27.default.createElement("span", null, `#${menuState.item.workItemId}`), import_react27.default.createElement("strong", null, menuState.item.title)), import_react27.default.createElement("button", {
+  }, import_react28.default.createElement("div", { className: "timeline-work-item-context-menu-title" }, import_react28.default.createElement("span", null, `#${menuState.item.workItemId}`), import_react28.default.createElement("strong", null, menuState.item.title)), import_react28.default.createElement("button", {
     ref: (element3) => {
       firstActionRef.current = element3;
       setRootMenuItemRef(0, element3);
@@ -49438,7 +49423,7 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void performDuplicate();
     }
-  }, "Duplicate"), canCreateChild ? import_react27.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react27.default.createElement("button", {
+  }, "Duplicate"), canCreateChild ? import_react28.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react28.default.createElement("button", {
     ref: (element3) => {
       childMenuButtonRef.current = element3;
       setRootMenuItemRef(1, element3);
@@ -49453,11 +49438,11 @@ function TimelineWorkItemContextMenu(props) {
       childTypeMenu.toggleMenu();
     },
     onKeyDown: handleChildMenuButtonKeyDown
-  }, "Add child"), childTypeMenu.isOpen ? import_react27.default.createElement("div", {
+  }, "Add child"), childTypeMenu.isOpen ? import_react28.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
     "aria-label": "Select child work item type"
-  }, childTypeMenu.loadState.status === "loading" ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading work item types...") : null, childTypeMenu.loadState.status === "error" ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, childTypeMenu.loadState.error) : null, childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0 ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No work item types available.") : null, ...childTypeMenu.options.map((option, index2) => import_react27.default.createElement("button", {
+  }, childTypeMenu.loadState.status === "loading" ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading work item types...") : null, childTypeMenu.loadState.status === "error" ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, childTypeMenu.loadState.error) : null, childTypeMenu.loadState.status === "loaded" && childTypeMenu.options.length === 0 ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No work item types available.") : null, ...childTypeMenu.options.map((option, index2) => import_react28.default.createElement("button", {
     key: option.name,
     ref: (element3) => {
       childTypeOptionRefs.current[index2] = element3;
@@ -49478,7 +49463,7 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void performCreateChild(option.name);
     }
-  }, option.name))) : null) : null, import_react27.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react27.default.createElement("button", {
+  }, option.name))) : null) : null, import_react28.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react28.default.createElement("button", {
     ref: (element3) => {
       statusMenuButtonRef.current = element3;
       setRootMenuItemRef(2, element3);
@@ -49493,11 +49478,11 @@ function TimelineWorkItemContextMenu(props) {
       setStatusMenuOpen((current) => !current);
     },
     onKeyDown: handleStatusMenuButtonKeyDown
-  }, "Change status"), statusMenuOpen ? import_react27.default.createElement("div", {
+  }, "Change status"), statusMenuOpen ? import_react28.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
     "aria-label": "Change status"
-  }, statusLoadState.status === "loading" ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading statuses...") : null, statusLoadState.status === "error" ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react27.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No status options available.") : null, ...stateOptions.map((option, index2) => import_react27.default.createElement("button", {
+  }, statusLoadState.status === "loading" ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "Loading statuses...") : null, statusLoadState.status === "error" ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error" }, statusLoadState.error) : null, statusLoadState.status === "loaded" && stateOptions.length === 0 ? import_react28.default.createElement("p", { className: "timeline-work-item-context-menu-note" }, "No status options available.") : null, ...stateOptions.map((option, index2) => import_react28.default.createElement("button", {
     key: option.name,
     ref: (element3) => {
       statusOptionRefs.current[index2] = element3;
@@ -49512,11 +49497,11 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void performStateUpdate(option);
     }
-  }, import_react27.default.createElement("span", {
+  }, import_react28.default.createElement("span", {
     className: "timeline-work-item-context-menu-swatch",
     style: option.color ? { backgroundColor: normalizeStateColor(option.color) } : void 0,
     "aria-hidden": "true"
-  }), option.name))) : null), import_react27.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react27.default.createElement("button", {
+  }), option.name))) : null), import_react28.default.createElement("div", { className: "timeline-work-item-context-menu-status" }, import_react28.default.createElement("button", {
     ref: (element3) => {
       assigneeMenuButtonRef.current = element3;
       setRootMenuItemRef(3, element3);
@@ -49531,11 +49516,11 @@ function TimelineWorkItemContextMenu(props) {
       setAssigneeMenuOpen((current) => !current);
     },
     onKeyDown: handleAssigneeMenuButtonKeyDown
-  }, "Assigned to"), assigneeMenuOpen ? import_react27.default.createElement("div", {
+  }, "Assigned to"), assigneeMenuOpen ? import_react28.default.createElement("div", {
     className: "timeline-work-item-context-submenu",
     role: "menu",
     "aria-label": "Assigned to"
-  }, ...assigneeOptions.map((option, index2) => import_react27.default.createElement("button", {
+  }, ...assigneeOptions.map((option, index2) => import_react28.default.createElement("button", {
     key: option.name,
     ref: (element3) => {
       assigneeOptionRefs.current[index2] = element3;
@@ -49551,10 +49536,10 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void performAssignedToUpdate(option.name);
     }
-  }, import_react27.default.createElement("span", null, option.name), import_react27.default.createElement("span", {
+  }, import_react28.default.createElement("span", null, option.name), import_react28.default.createElement("span", {
     className: "timeline-work-item-context-menu-count",
     "aria-hidden": "true"
-  }, `${option.taskCount} ${option.taskCount === 1 ? "Task" : "Tasks"}`)))) : null), import_react27.default.createElement("button", {
+  }, `${option.taskCount} ${option.taskCount === 1 ? "Task" : "Tasks"}`)))) : null), import_react28.default.createElement("button", {
     ref: (element3) => {
       setRootMenuItemRef(4, element3);
     },
@@ -49566,7 +49551,7 @@ function TimelineWorkItemContextMenu(props) {
       handleRootMenuItemKeyDown(event, 4);
     },
     onClick: openInAzureDevOps
-  }, "Open in Azure DevOps"), import_react27.default.createElement("button", {
+  }, "Open in Azure DevOps"), import_react28.default.createElement("button", {
     ref: (element3) => {
       setRootMenuItemRef(5, element3);
     },
@@ -49580,7 +49565,7 @@ function TimelineWorkItemContextMenu(props) {
     onClick: () => {
       void copyLink();
     }
-  }, "Copy link"), actionError ? import_react27.default.createElement("p", {
+  }, "Copy link"), actionError ? import_react28.default.createElement("p", {
     className: "timeline-work-item-context-menu-note timeline-work-item-context-menu-error",
     role: "status"
   }, actionError) : null), document.body);
@@ -49621,25 +49606,25 @@ function getViewportMaxMenuHeightPx() {
 }
 
 // dist/src/features/gantt-view/use-work-item-context-menu.js
-var import_react28 = __toESM(require_react(), 1);
+var import_react29 = __toESM(require_react(), 1);
 function useWorkItemContextMenu() {
-  const [menuState, setMenuState] = import_react28.default.useState(null);
-  const menuRef = import_react28.default.useRef(null);
-  const closeMenu = import_react28.default.useCallback(() => {
+  const [menuState, setMenuState] = import_react29.default.useState(null);
+  const menuRef = import_react29.default.useRef(null);
+  const closeMenu = import_react29.default.useCallback(() => {
     setMenuState(null);
   }, []);
-  const openAt = import_react28.default.useCallback((item, x, y) => {
+  const openAt = import_react29.default.useCallback((item, x, y) => {
     setMenuState({
       item,
       position: resolveMenuPosition(x, y)
     });
   }, []);
-  const openMenuFromContextMenu = import_react28.default.useCallback((event, item) => {
+  const openMenuFromContextMenu = import_react29.default.useCallback((event, item) => {
     event.preventDefault();
     event.stopPropagation();
     openAt(item, event.clientX, event.clientY);
   }, [openAt]);
-  const openMenuFromKeyboard = import_react28.default.useCallback((event, item) => {
+  const openMenuFromKeyboard = import_react29.default.useCallback((event, item) => {
     if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) {
       return;
     }
@@ -49648,7 +49633,7 @@ function useWorkItemContextMenu() {
     const rect = event.currentTarget.getBoundingClientRect();
     openAt(item, rect.left + 8, rect.bottom + 4);
   }, [openAt]);
-  import_react28.default.useEffect(() => {
+  import_react29.default.useEffect(() => {
     if (!menuState) {
       return;
     }
@@ -50291,32 +50276,32 @@ function encodeTimelineFilterToken(token) {
 
 // dist/src/features/gantt-view/timeline-pane.js
 function useTimelineViewport(initialViewportPreference) {
-  const [dayWidthPx, setDayWidthPx] = import_react29.default.useState(() => {
+  const [dayWidthPx, setDayWidthPx] = import_react30.default.useState(() => {
     if (!initialViewportPreference) {
       return DAY_WIDTH_WEEK_PX;
     }
     return clamp5(quantizeDayWidth(initialViewportPreference.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX);
   });
-  const [activePanDrag, setActivePanDrag] = import_react29.default.useState(null);
-  const [spacePanPressed, setSpacePanPressed] = import_react29.default.useState(false);
-  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react29.default.useState(0);
-  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react29.default.useState(0);
-  const chartScrollRef = import_react29.default.useRef(null);
-  const chartSvgRef = import_react29.default.useRef(null);
-  const mainLaneRef = import_react29.default.useRef(null);
-  const zoomAnchorRef = import_react29.default.useRef(null);
-  const wheelZoomFrameRef = import_react29.default.useRef(null);
-  const pendingWheelDayWidthRef = import_react29.default.useRef(null);
-  const liveDayWidthRef = import_react29.default.useRef(dayWidthPx);
-  const committedDayWidthRef = import_react29.default.useRef(dayWidthPx);
-  const zoomCommitTimerRef = import_react29.default.useRef(null);
-  const pendingFitRangeRef = import_react29.default.useRef(null);
-  const pendingViewportRestoreRef = import_react29.default.useRef(initialViewportPreference);
-  const viewportPersistDebounceRef = import_react29.default.useRef(null);
-  const spacePanPressedRef = import_react29.default.useRef(false);
-  const initialViewportAppliedRef = import_react29.default.useRef(false);
-  const lastZoomLevelRef = import_react29.default.useRef(resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX));
-  const zoomLevel = import_react29.default.useMemo(() => {
+  const [activePanDrag, setActivePanDrag] = import_react30.default.useState(null);
+  const [spacePanPressed, setSpacePanPressed] = import_react30.default.useState(false);
+  const [chartViewportWidthPx, setChartViewportWidthPx] = import_react30.default.useState(0);
+  const [chartViewportHeightPx, setChartViewportHeightPx] = import_react30.default.useState(0);
+  const chartScrollRef = import_react30.default.useRef(null);
+  const chartSvgRef = import_react30.default.useRef(null);
+  const mainLaneRef = import_react30.default.useRef(null);
+  const zoomAnchorRef = import_react30.default.useRef(null);
+  const wheelZoomFrameRef = import_react30.default.useRef(null);
+  const pendingWheelDayWidthRef = import_react30.default.useRef(null);
+  const liveDayWidthRef = import_react30.default.useRef(dayWidthPx);
+  const committedDayWidthRef = import_react30.default.useRef(dayWidthPx);
+  const zoomCommitTimerRef = import_react30.default.useRef(null);
+  const pendingFitRangeRef = import_react30.default.useRef(null);
+  const pendingViewportRestoreRef = import_react30.default.useRef(initialViewportPreference);
+  const viewportPersistDebounceRef = import_react30.default.useRef(null);
+  const spacePanPressedRef = import_react30.default.useRef(false);
+  const initialViewportAppliedRef = import_react30.default.useRef(false);
+  const lastZoomLevelRef = import_react30.default.useRef(resolveZoomLevelWithoutHysteresis(initialViewportPreference?.dayWidthPx ?? DAY_WIDTH_WEEK_PX));
+  const zoomLevel = import_react30.default.useMemo(() => {
     const prev = lastZoomLevelRef.current;
     const next = resolveZoomLevelWithHysteresis(dayWidthPx, prev);
     lastZoomLevelRef.current = next;
@@ -50351,12 +50336,12 @@ function useTimelineViewport(initialViewportPreference) {
   };
 }
 function useTimelineColorCoding(queryId) {
-  const [colorCoding, setColorCoding] = import_react29.default.useState(() => loadLastTimelineColorCoding(queryId) ?? "none");
-  const [fieldColorCoding, setFieldColorCoding] = import_react29.default.useState(() => loadTimelineFieldColorCodingConfig(queryId));
-  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react29.default.useState(() => loadTimelineFieldColorCodingConfig(queryId).fieldRef);
-  const [colorSettingsOpen, setColorSettingsOpen] = import_react29.default.useState(false);
-  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react29.default.useState(false);
-  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react29.default.useState("");
+  const [colorCoding, setColorCoding] = import_react30.default.useState(() => loadLastTimelineColorCoding(queryId) ?? "none");
+  const [fieldColorCoding, setFieldColorCoding] = import_react30.default.useState(() => loadTimelineFieldColorCodingConfig(queryId));
+  const [lastSelectedFieldRef, setLastSelectedFieldRef] = import_react30.default.useState(() => loadTimelineFieldColorCodingConfig(queryId).fieldRef);
+  const [colorSettingsOpen, setColorSettingsOpen] = import_react30.default.useState(false);
+  const [colorCodingDropdownOpen, setColorCodingDropdownOpen] = import_react30.default.useState(false);
+  const [colorCodingSearchDraft, setColorCodingSearchDraft] = import_react30.default.useState("");
   return {
     colorCoding,
     setColorCoding,
@@ -50373,27 +50358,27 @@ function useTimelineColorCoding(queryId) {
   };
 }
 function TimelinePane(props) {
-  const initialTimelineFilterState = import_react29.default.useMemo(() => resolveInitialTimelineFilterState(props.timeline), []);
+  const initialTimelineFilterState = import_react30.default.useMemo(() => resolveInitialTimelineFilterState(props.timeline), []);
   const activeQueryId = props.activeQueryId ?? null;
-  const initialViewportPreference = import_react29.default.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
+  const initialViewportPreference = import_react30.default.useMemo(() => loadLastTimelineViewportPreference(activeQueryId), [activeQueryId]);
   const scheduleDragging = useScheduleDragging();
   const dependencyEditing = useDependencyEditing();
   const workItemContextMenu = useWorkItemContextMenu();
   const timelineFilters = useTimelineFilters(initialTimelineFilterState);
   const timelineSorting = useTimelineSorting(activeQueryId);
-  const pendingTimelineFilterUrlHydrationRef = import_react29.default.useRef(props.timeline === null && hasCurrentTimelineFilterUrlSearchParams());
-  const timelineFiltersUserEditedRef = import_react29.default.useRef(false);
-  const skipNextTimelineFilterUrlSyncRef = import_react29.default.useRef(false);
-  const internalSelectionStoreRef = import_react29.default.useRef(null);
+  const pendingTimelineFilterUrlHydrationRef = import_react30.default.useRef(props.timeline === null && hasCurrentTimelineFilterUrlSearchParams());
+  const timelineFiltersUserEditedRef = import_react30.default.useRef(false);
+  const skipNextTimelineFilterUrlSyncRef = import_react30.default.useRef(false);
+  const internalSelectionStoreRef = import_react30.default.useRef(null);
   if (internalSelectionStoreRef.current === null) {
     internalSelectionStoreRef.current = createTimelineSelectionStore();
   }
   const selectionStore = props.selectionStore ?? internalSelectionStoreRef.current;
   const { adoptedSchedulesByWorkItemId, setAdoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId, setEditedBarSchedulesByWorkItemId, adoptScheduleError, setAdoptScheduleError, activeScheduleDrag, setActiveScheduleDrag, activeUnschedulableDrag, setActiveUnschedulableDrag, unscheduledDropPreview, setUnscheduledDropPreview } = scheduleDragging;
-  const [editMode, setEditMode] = import_react29.default.useState(false);
-  const [editInfoOpen, setEditInfoOpen] = import_react29.default.useState(false);
-  const editInfoRef = import_react29.default.useRef(null);
-  import_react29.default.useEffect(() => {
+  const [editMode, setEditMode] = import_react30.default.useState(false);
+  const [editInfoOpen, setEditInfoOpen] = import_react30.default.useState(false);
+  const editInfoRef = import_react30.default.useRef(null);
+  import_react30.default.useEffect(() => {
     if (!editInfoOpen) {
       return;
     }
@@ -50417,51 +50402,51 @@ function TimelinePane(props) {
   const { activeDependencyDrag, setActiveDependencyDrag, dependencyViewMode, setDependencyViewMode, selectedDependency, setSelectedDependency } = dependencyEditing;
   const { timelineFiltersOpen, setTimelineFiltersOpen, timelineFilterGroups, setTimelineFilterGroups, timelineFieldFilters, timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion, setIncludeTimelineFilterParents, setIncludeTimelineFilterChildItems, nextFilterSlotId, setNextFilterSlotId, nextFilterGroupId, setNextFilterGroupId, openFilterDropdown, setOpenFilterDropdown, filterFieldSearchDraft, setFilterFieldSearchDraft, filterValueSearchDraft, setFilterValueSearchDraft } = timelineFilters;
   const { sortSettingsOpen, setSortSettingsOpen, timelineSortPreference, selectPrimarySortField, selectSecondarySortField, togglePrimarySortDirection, toggleSecondarySortDirection } = timelineSorting;
-  const sortedBaseTimeline = import_react29.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
-  const effectiveTimeline = import_react29.default.useMemo(() => {
+  const sortedBaseTimeline = import_react30.default.useMemo(() => applyTimelineSorting(props.timeline, timelineSortPreference), [props.timeline, timelineSortPreference]);
+  const effectiveTimeline = import_react30.default.useMemo(() => {
     const withAdopted = applyAdoptedSchedules(sortedBaseTimeline, adoptedSchedulesByWorkItemId);
     return applyEditedBarSchedules(withAdopted, editedBarSchedulesByWorkItemId);
   }, [sortedBaseTimeline, adoptedSchedulesByWorkItemId, editedBarSchedulesByWorkItemId]);
-  const timelineDateFilterContext = import_react29.default.useMemo(() => buildTimelineDateFilterContext(effectiveTimeline), [effectiveTimeline]);
-  const [selectedWorkItemId, setSelectedWorkItemId] = import_react29.default.useState(() => selectionStore.getSelectedWorkItemId());
-  const [hoveredDependencyKey, setHoveredDependencyKey] = import_react29.default.useState(null);
+  const timelineDateFilterContext = import_react30.default.useMemo(() => buildTimelineDateFilterContext(effectiveTimeline), [effectiveTimeline]);
+  const [selectedWorkItemId, setSelectedWorkItemId] = import_react30.default.useState(() => selectionStore.getSelectedWorkItemId());
+  const [hoveredDependencyKey, setHoveredDependencyKey] = import_react30.default.useState(null);
   const { dayWidthPx, setDayWidthPx, activePanDrag, setActivePanDrag, spacePanPressed, setSpacePanPressed, chartViewportWidthPx, setChartViewportWidthPx, chartViewportHeightPx, setChartViewportHeightPx, chartScrollRef, chartSvgRef, mainLaneRef, zoomAnchorRef, wheelZoomFrameRef, pendingWheelDayWidthRef, liveDayWidthRef, committedDayWidthRef, zoomCommitTimerRef, pendingFitRangeRef, pendingViewportRestoreRef, viewportPersistDebounceRef, spacePanPressedRef, initialViewportAppliedRef, zoomLevel } = useTimelineViewport(initialViewportPreference);
-  const autoScrollCallbackRef = import_react29.default.useRef(() => {
+  const autoScrollCallbackRef = import_react30.default.useRef(() => {
   });
-  const stableAutoScrollCallback = import_react29.default.useCallback(() => autoScrollCallbackRef.current(), []);
+  const stableAutoScrollCallback = import_react30.default.useCallback(() => autoScrollCallbackRef.current(), []);
   const updateDragAutoScroll = useDragAutoScroll(chartScrollRef, activeScheduleDrag !== null, stableAutoScrollCallback);
-  const [detailsWidthPx, setDetailsWidthPx] = import_react29.default.useState(() => {
+  const [detailsWidthPx, setDetailsWidthPx] = import_react30.default.useState(() => {
     const preferredWidth = loadLastTimelineDetailsWidthPx(activeQueryId);
     return preferredWidth === null ? DETAILS_PANEL_DEFAULT_WIDTH_PX : preferredWidth;
   });
-  const [sidebarWidthPx, setSidebarWidthPx] = import_react29.default.useState(() => {
+  const [sidebarWidthPx, setSidebarWidthPx] = import_react30.default.useState(() => {
     const preferredWidth = loadLastTimelineSidebarWidthPx(activeQueryId);
     return preferredWidth === null ? TIMELINE_SIDEBAR_DEFAULT_WIDTH_PX : preferredWidth;
   });
   const { colorCoding, setColorCoding, fieldColorCoding, setFieldColorCoding, lastSelectedFieldRef, setLastSelectedFieldRef, colorSettingsOpen, setColorSettingsOpen, colorCodingDropdownOpen, setColorCodingDropdownOpen, colorCodingSearchDraft, setColorCodingSearchDraft } = useTimelineColorCoding(activeQueryId);
-  const [labelSettingsOpen, setLabelSettingsOpen] = import_react29.default.useState(false);
-  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react29.default.useState("");
-  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react29.default.useState("");
-  const [timelineLabelFields, setTimelineLabelFields] = import_react29.default.useState(() => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
-  const [timelineSidebarFields, setTimelineSidebarFields] = import_react29.default.useState(() => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
-  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react29.default.useState(() => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start");
-  const timelineMainGridRef = import_react29.default.useRef(null);
-  const colorCodingControlRef = import_react29.default.useRef(null);
-  const filterToggleControlRef = import_react29.default.useRef(null);
-  const filterPanelRef = import_react29.default.useRef(null);
-  const sortToggleControlRef = import_react29.default.useRef(null);
-  const sortPanelRef = import_react29.default.useRef(null);
-  const labelToggleControlRef = import_react29.default.useRef(null);
-  const labelPanelRef = import_react29.default.useRef(null);
-  const labelMenuSidebarOptionsRef = import_react29.default.useRef(null);
-  const labelMenuBarOptionsRef = import_react29.default.useRef(null);
-  const labelMenuScrollSyncSourceRef = import_react29.default.useRef(null);
-  const barPointerSelectionIntentRef = import_react29.default.useRef(null);
-  const suppressNextBarClickRef = import_react29.default.useRef(false);
-  const lastDragClientXRef = import_react29.default.useRef(0);
-  const dependencyMarkerReactId = import_react29.default.useId();
-  const dependencyMarkerId = import_react29.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
-  const dependencyAlertMarkerId = import_react29.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const [labelSettingsOpen, setLabelSettingsOpen] = import_react30.default.useState(false);
+  const [labelFieldSearchDraft, setLabelFieldSearchDraft] = import_react30.default.useState("");
+  const [sidebarFieldSearchDraft, setSidebarFieldSearchDraft] = import_react30.default.useState("");
+  const [timelineLabelFields, setTimelineLabelFields] = import_react30.default.useState(() => loadLastTimelineLabelFields(activeQueryId) ?? [...DEFAULT_TIMELINE_LABEL_FIELDS]);
+  const [timelineSidebarFields, setTimelineSidebarFields] = import_react30.default.useState(() => loadLastTimelineSidebarFields(activeQueryId) ?? [...DEFAULT_TIMELINE_SIDEBAR_FIELDS]);
+  const [timelineSidebarRowJustify, setTimelineSidebarRowJustify] = import_react30.default.useState(() => loadLastTimelineSidebarRowJustify(activeQueryId) ?? "flex-start");
+  const timelineMainGridRef = import_react30.default.useRef(null);
+  const colorCodingControlRef = import_react30.default.useRef(null);
+  const filterToggleControlRef = import_react30.default.useRef(null);
+  const filterPanelRef = import_react30.default.useRef(null);
+  const sortToggleControlRef = import_react30.default.useRef(null);
+  const sortPanelRef = import_react30.default.useRef(null);
+  const labelToggleControlRef = import_react30.default.useRef(null);
+  const labelPanelRef = import_react30.default.useRef(null);
+  const labelMenuSidebarOptionsRef = import_react30.default.useRef(null);
+  const labelMenuBarOptionsRef = import_react30.default.useRef(null);
+  const labelMenuScrollSyncSourceRef = import_react30.default.useRef(null);
+  const barPointerSelectionIntentRef = import_react30.default.useRef(null);
+  const suppressNextBarClickRef = import_react30.default.useRef(false);
+  const lastDragClientXRef = import_react30.default.useRef(0);
+  const dependencyMarkerReactId = import_react30.default.useId();
+  const dependencyMarkerId = import_react30.default.useMemo(() => `timeline-dependency-arrowhead-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
+  const dependencyAlertMarkerId = import_react30.default.useMemo(() => `timeline-dependency-arrowhead-alert-${dependencyMarkerReactId.replace(/:/g, "")}`, [dependencyMarkerReactId]);
   const dependencyMode = dependencyViewMode === "edit";
   const dependencyVisible = props.showDependencies && dependencyViewMode !== "none";
   const canEditSchedule = Boolean(props.onUpdateWorkItemSchedule) && !dependencyMode;
@@ -50487,14 +50472,14 @@ function TimelinePane(props) {
     }
   });
   const { isSidebarResizing, isDetailsResizing, detailsContentHidden, sidebarCollapsed, effectiveSidebarWidthPx, detailsResizeMovedRef, sidebarEffectiveWidthLiveRef, beginSidebarResize, beginDetailsResize, toggleDetailsPanelFromSplitter } = timelineResizing;
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineViewportPreference((viewport) => {
       pendingViewportRestoreRef.current = viewport;
       setDayWidthPx(clamp5(quantizeDayWidth(viewport.dayWidthPx), DAY_WIDTH_MIN_PX, DAY_WIDTH_MAX_PX));
       initialViewportAppliedRef.current = false;
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineColorCodingPreference((mode) => {
       setColorCoding(mode);
       const config = loadTimelineFieldColorCodingConfig(activeQueryId);
@@ -50504,27 +50489,27 @@ function TimelinePane(props) {
       }
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineLabelFieldsPreference((fieldRefs) => {
       setTimelineLabelFields(sanitizeTimelineFieldRefList(fieldRefs));
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineSidebarFieldsPreference((fieldRefs) => {
       setTimelineSidebarFields(sanitizeTimelineFieldRefList(fieldRefs));
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineSidebarRowJustifyPreference((justify) => {
       setTimelineSidebarRowJustify(justify);
     }, activeQueryId);
   }, [activeQueryId]);
-  const toggleTimelineSidebarRowJustify = import_react29.default.useCallback(() => {
+  const toggleTimelineSidebarRowJustify = import_react30.default.useCallback(() => {
     const next = timelineSidebarRowJustify === "flex-end" ? "flex-start" : "flex-end";
     setTimelineSidebarRowJustify(next);
     saveTimelineSidebarRowJustify(next, activeQueryId);
   }, [activeQueryId, timelineSidebarRowJustify]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineSidebarWidthPreference((widthPx) => {
       setSidebarWidthPx((current) => {
         const next = clamp5(widthPx, TIMELINE_SIDEBAR_MIN_WIDTH_PX, TIMELINE_SIDEBAR_MAX_WIDTH_PX);
@@ -50532,7 +50517,7 @@ function TimelinePane(props) {
       });
     }, activeQueryId);
   }, [activeQueryId]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     hydrateTimelineDetailsWidthPreference((widthPx) => {
       setDetailsWidthPx((current) => {
         const maxWidth = resolveTimelineDetailsMaxWidthPx(timelineMainGridRef.current, sidebarEffectiveWidthLiveRef.current);
@@ -50566,7 +50551,7 @@ function TimelinePane(props) {
       setLabelSettingsOpen(false);
     }
   });
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     setAdoptedSchedulesByWorkItemId({});
     setEditedBarSchedulesByWorkItemId({});
     setActiveScheduleDrag(null);
@@ -50577,12 +50562,12 @@ function TimelinePane(props) {
     setSelectedDependency(null);
     initialViewportAppliedRef.current = false;
   }, [props.timeline]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     if (dependencyViewMode === "none") {
       setSelectedDependency(null);
     }
   }, [dependencyViewMode]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     if (!pendingTimelineFilterUrlHydrationRef.current || timelineFiltersUserEditedRef.current || props.timeline === null) {
       return;
     }
@@ -50600,7 +50585,7 @@ function TimelinePane(props) {
     setTimelineFilterGroups,
     setTimelineFilterHierarchyExpansion
   ]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     if (skipNextTimelineFilterUrlSyncRef.current) {
       skipNextTimelineFilterUrlSyncRef.current = false;
       return;
@@ -50610,36 +50595,36 @@ function TimelinePane(props) {
     }
     syncTimelineFilterGroupsToUrl(timelineFilterGroups, timelineFilterHierarchyExpansion);
   }, [props.timeline, timelineFilterGroups, timelineFilterHierarchyExpansion]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     initialViewportAppliedRef.current = false;
     const scrollElement = chartScrollRef.current;
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
   }, [timelineFilterGroups, timelineFilterHierarchyExpansion]);
-  const availableFieldRefs = import_react29.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
-  const availableTimelineLabelFieldOptions = import_react29.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
-  const hardFilteredTimeline = import_react29.default.useMemo(() => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups), [effectiveTimeline, timelineFilterGroups]);
-  const filteredTimeline = import_react29.default.useMemo(() => applyTimelineFilterHierarchyExpansion({
+  const availableFieldRefs = import_react30.default.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
+  const availableTimelineLabelFieldOptions = import_react30.default.useMemo(() => buildTimelineLabelFieldOptions(availableFieldRefs), [availableFieldRefs]);
+  const hardFilteredTimeline = import_react30.default.useMemo(() => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups), [effectiveTimeline, timelineFilterGroups]);
+  const filteredTimeline = import_react30.default.useMemo(() => applyTimelineFilterHierarchyExpansion({
     sourceTimeline: effectiveTimeline,
     seedTimeline: hardFilteredTimeline,
     options: timelineFilterHierarchyExpansion
   }), [effectiveTimeline, hardFilteredTimeline, timelineFilterHierarchyExpansion]);
-  const activeTimelineFiltersCount = import_react29.default.useMemo(() => countActiveTimelineFieldFilters(timelineFieldFilters), [timelineFieldFilters]);
-  const colorCodingOptions = import_react29.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
-  const filteredColorCodingOptions = import_react29.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
+  const activeTimelineFiltersCount = import_react30.default.useMemo(() => countActiveTimelineFieldFilters(timelineFieldFilters), [timelineFieldFilters]);
+  const colorCodingOptions = import_react30.default.useMemo(() => buildColorCodingOptions(availableFieldRefs), [availableFieldRefs]);
+  const filteredColorCodingOptions = import_react30.default.useMemo(() => filterColorCodingOptions(colorCodingOptions, colorCodingSearchDraft), [colorCodingOptions, colorCodingSearchDraft]);
   const selectedFieldRef = colorCoding === "field" ? fieldColorCoding.fieldRef ?? lastSelectedFieldRef : null;
-  const selectedFieldValueStats = import_react29.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
-  const selectedModeValueStats = import_react29.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
-  const filteredTimelineTreeWorkItemIds = import_react29.default.useMemo(() => listTimelineTreeWorkItemIds(filteredTimeline), [filteredTimeline]);
+  const selectedFieldValueStats = import_react30.default.useMemo(() => listFieldValueStats(effectiveTimeline, selectedFieldRef), [effectiveTimeline, selectedFieldRef]);
+  const selectedModeValueStats = import_react30.default.useMemo(() => listModeValueStats(effectiveTimeline, colorCoding), [effectiveTimeline, colorCoding]);
+  const filteredTimelineTreeWorkItemIds = import_react30.default.useMemo(() => listTimelineTreeWorkItemIds(filteredTimeline), [filteredTimeline]);
   const treeState = useTreeExpandCollapse(filteredTimeline?.treeLayout ?? null, filteredTimelineTreeWorkItemIds);
   const reparentDrag = useReparentDragging(filteredTimeline?.treeLayout ?? null);
   const isTreeQuery = filteredTimeline?.queryType !== "flat" && filteredTimeline?.treeLayout !== null;
-  const treeLevelSummaries = import_react29.default.useMemo(() => isTreeQuery ? summarizeTimelineTreeLevels(filteredTimeline, treeState.collapsedIds) : [], [filteredTimeline, isTreeQuery, treeState.collapsedIds]);
-  const visibleTimeline = import_react29.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
+  const treeLevelSummaries = import_react30.default.useMemo(() => isTreeQuery ? summarizeTimelineTreeLevels(filteredTimeline, treeState.collapsedIds) : [], [filteredTimeline, isTreeQuery, treeState.collapsedIds]);
+  const visibleTimeline = import_react30.default.useMemo(() => applyTreeVisibility(filteredTimeline, treeState.collapsedIds), [filteredTimeline, treeState.collapsedIds]);
   const includeUnscheduledDropLane = Boolean(activeUnschedulableDrag && unscheduledDropPreview);
-  const colorByWorkItemId = import_react29.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
-  const chartModel = import_react29.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds, editedBarSchedulesByWorkItemId), [
+  const colorByWorkItemId = import_react30.default.useMemo(() => buildColorByWorkItemId(effectiveTimeline, colorCoding, fieldColorCoding), [effectiveTimeline, colorCoding, fieldColorCoding]);
+  const chartModel = import_react30.default.useMemo(() => buildVisualChartModel(visibleTimeline, dayWidthPx, zoomLevel, colorByWorkItemId, chartViewportWidthPx, timelineLabelFields, includeUnscheduledDropLane, treeState.collapsedIds, editedBarSchedulesByWorkItemId), [
     visibleTimeline,
     dayWidthPx,
     zoomLevel,
@@ -50650,9 +50635,9 @@ function TimelinePane(props) {
     treeState.collapsedIds,
     editedBarSchedulesByWorkItemId
   ]);
-  const filteredTimelineLabelFieldOptions = import_react29.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
-  const filteredTimelineSidebarFieldOptions = import_react29.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
-  import_react29.default.useEffect(() => {
+  const filteredTimelineLabelFieldOptions = import_react30.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, labelFieldSearchDraft), [availableTimelineLabelFieldOptions, labelFieldSearchDraft]);
+  const filteredTimelineSidebarFieldOptions = import_react30.default.useMemo(() => filterTimelineLabelFieldOptions(availableTimelineLabelFieldOptions, sidebarFieldSearchDraft), [availableTimelineLabelFieldOptions, sidebarFieldSearchDraft]);
+  import_react30.default.useEffect(() => {
     const selectableItems = [
       ...visibleTimeline?.bars.map((bar) => ({ workItemId: bar.workItemId })) ?? [],
       ...visibleTimeline?.unschedulable.map((item) => ({ workItemId: item.workItemId })) ?? []
@@ -50660,16 +50645,16 @@ function TimelinePane(props) {
     const reconciled = selectionStore.reconcile(selectableItems);
     setSelectedWorkItemId(reconciled);
   }, [visibleTimeline, selectionStore]);
-  const selectWorkItem = import_react29.default.useCallback((workItemId) => {
+  const selectWorkItem = import_react30.default.useCallback((workItemId) => {
     selectionStore.select(workItemId);
     setSelectedWorkItemId(workItemId);
   }, [selectionStore]);
-  const toggleWorkItemSelection = import_react29.default.useCallback((workItemId) => {
+  const toggleWorkItemSelection = import_react30.default.useCallback((workItemId) => {
     const nextWorkItemId = selectionStore.getSelectedWorkItemId() === workItemId ? null : workItemId;
     selectionStore.select(nextWorkItemId);
     setSelectedWorkItemId(nextWorkItemId);
   }, [selectionStore]);
-  const adoptUnschedulableSchedule = import_react29.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
+  const adoptUnschedulableSchedule = import_react30.default.useCallback(async (targetWorkItemId, sourceWorkItemId) => {
     const sourceBar = filteredTimeline?.bars.find((bar) => bar.workItemId === sourceWorkItemId) ?? null;
     if (!sourceBar || !sourceBar.schedule.startDate || !sourceBar.schedule.endDate) {
       return;
@@ -50689,7 +50674,7 @@ function TimelinePane(props) {
       }
     }));
   }, [filteredTimeline, props]);
-  const persistTimelineViewportSoon = import_react29.default.useCallback(() => {
+  const persistTimelineViewportSoon = import_react30.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -50706,7 +50691,7 @@ function TimelinePane(props) {
       }, activeQueryId);
     }, VIEWPORT_PERSIST_DEBOUNCE_MS);
   }, [activeQueryId]);
-  const resolveFitLayoutLeftOffsets = import_react29.default.useCallback((scrollElement) => {
+  const resolveFitLayoutLeftOffsets = import_react30.default.useCallback((scrollElement) => {
     const mainLaneElement = scrollElement.querySelector(".timeline-chart-main-lane");
     const splitterElement = scrollElement.querySelector(".timeline-main-splitter-embedded");
     const measuredSplitterWidthPx = splitterElement?.getBoundingClientRect().width ?? 0;
@@ -50720,7 +50705,7 @@ function TimelinePane(props) {
       obscuredLeftPx: sidebarWidthPx2 + splitterWidthPx
     };
   }, [effectiveSidebarWidthPx]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || initialViewportAppliedRef.current || chartModel.bars.length === 0) {
       return;
@@ -50760,7 +50745,7 @@ function TimelinePane(props) {
       window.cancelAnimationFrame(frame);
     };
   }, [chartModel.bars.length, chartModel.todayX, chartModel.width, effectiveSidebarWidthPx]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement || chartModel.bars.length === 0) {
       setChartViewportWidthPx(0);
@@ -50786,26 +50771,26 @@ function TimelinePane(props) {
       window.removeEventListener("resize", updateViewportSize);
     };
   }, [chartModel.bars.length]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     liveDayWidthRef.current = dayWidthPx;
     committedDayWidthRef.current = dayWidthPx;
     persistTimelineViewportSoon();
   }, [dayWidthPx, persistTimelineViewportSoon]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     return () => {
       if (viewportPersistDebounceRef.current !== null) {
         window.clearTimeout(viewportPersistDebounceRef.current);
       }
     };
   }, []);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     return () => {
       if (wheelZoomFrameRef.current !== null) {
         window.cancelAnimationFrame(wheelZoomFrameRef.current);
       }
     };
   }, []);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const anchor = zoomAnchorRef.current;
     const scrollElement = chartScrollRef.current;
     if (!anchor || !scrollElement) {
@@ -50817,7 +50802,7 @@ function TimelinePane(props) {
     zoomAnchorRef.current = null;
     persistTimelineViewportSoon();
   }, [chartModel.dayWidthPx, effectiveSidebarWidthPx, persistTimelineViewportSoon]);
-  const applyFitRangeToViewport = import_react29.default.useCallback((fitRange, dayWidth) => {
+  const applyFitRangeToViewport = import_react30.default.useCallback((fitRange, dayWidth) => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -50831,7 +50816,7 @@ function TimelinePane(props) {
     scrollElement.scrollLeft = clamp5(desiredStartX - viewportTargetX, 0, maxScrollLeft);
     persistTimelineViewportSoon();
   }, [chartModel.domainStart, persistTimelineViewportSoon, resolveFitLayoutLeftOffsets]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const fitRange = pendingFitRangeRef.current;
     if (!fitRange) {
       return;
@@ -50839,19 +50824,19 @@ function TimelinePane(props) {
     applyFitRangeToViewport(fitRange, chartModel.dayWidthPx);
     pendingFitRangeRef.current = null;
   }, [applyFitRangeToViewport, chartModel.dayWidthPx]);
-  const selectWeekZoom = import_react29.default.useCallback(() => {
+  const selectWeekZoom = import_react30.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_WEEK_PX);
   }, [setDayWidthPx]);
-  const selectMonthZoom = import_react29.default.useCallback(() => {
+  const selectMonthZoom = import_react30.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_MONTH_PX);
   }, [setDayWidthPx]);
-  const selectQuarterZoom = import_react29.default.useCallback(() => {
+  const selectQuarterZoom = import_react30.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_QUARTER_PX);
   }, [setDayWidthPx]);
-  const selectYearZoom = import_react29.default.useCallback(() => {
+  const selectYearZoom = import_react30.default.useCallback(() => {
     setDayWidthPx(DAY_WIDTH_YEAR_PX);
   }, [setDayWidthPx]);
-  const applyDependencyViewModeChange = import_react29.default.useCallback((mode) => {
+  const applyDependencyViewModeChange = import_react30.default.useCallback((mode) => {
     setDependencyViewMode(mode);
     setActiveDependencyDrag(null);
     setActiveScheduleDrag(null);
@@ -50866,7 +50851,7 @@ function TimelinePane(props) {
     setSelectedDependency,
     setUnscheduledDropPreview
   ]);
-  const rotateDependencyViewMode = import_react29.default.useCallback(() => {
+  const rotateDependencyViewMode = import_react30.default.useCallback(() => {
     const modes = DEPENDENCY_VIEW_MODE_OPTIONS.map((option) => option.value);
     const currentIndex = modes.indexOf(dependencyViewMode);
     const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % modes.length;
@@ -50876,7 +50861,7 @@ function TimelinePane(props) {
     }
     applyDependencyViewModeChange(nextMode);
   }, [applyDependencyViewModeChange, dependencyViewMode]);
-  const toggleTimelineFilters = import_react29.default.useCallback(() => {
+  const toggleTimelineFilters = import_react30.default.useCallback(() => {
     setTimelineFiltersOpen((current) => {
       if (current) {
         setOpenFilterDropdown(null);
@@ -50884,10 +50869,10 @@ function TimelinePane(props) {
       return !current;
     });
   }, [setOpenFilterDropdown, setTimelineFiltersOpen]);
-  const toggleSortSettings = import_react29.default.useCallback(() => {
+  const toggleSortSettings = import_react30.default.useCallback(() => {
     setSortSettingsOpen((current) => !current);
   }, [setSortSettingsOpen]);
-  const toggleLabelSettings = import_react29.default.useCallback(() => {
+  const toggleLabelSettings = import_react30.default.useCallback(() => {
     setLabelSettingsOpen((current) => !current);
     setLabelFieldSearchDraft("");
     setSidebarFieldSearchDraft("");
@@ -50914,7 +50899,7 @@ function TimelinePane(props) {
     setAdoptScheduleError,
     spacePanPressedRef
   });
-  const handleChartWheel = import_react29.default.useCallback((event) => {
+  const handleChartWheel = import_react30.default.useCallback((event) => {
     if (!event.ctrlKey && !event.metaKey) {
       return;
     }
@@ -50965,7 +50950,7 @@ function TimelinePane(props) {
       setDayWidthPx((current) => current === pendingDayWidth ? current : pendingDayWidth);
     }, ZOOM_COMMIT_DELAY_MS);
   }, [chartModel.dayWidthPx, dayWidthPx]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -50978,7 +50963,7 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("wheel", onWheel);
     };
   }, [handleChartWheel]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     const scrollElement = chartScrollRef.current;
     if (!scrollElement) {
       return;
@@ -50991,7 +50976,7 @@ function TimelinePane(props) {
       scrollElement.removeEventListener("scroll", onScroll);
     };
   }, [persistTimelineViewportSoon]);
-  const zoomToFitTimeline = import_react29.default.useCallback(() => {
+  const zoomToFitTimeline = import_react30.default.useCallback(() => {
     const scrollElement = chartScrollRef.current;
     const visibleTimelineRange = resolveTimelineVisibleRange(filteredTimeline);
     if (!scrollElement || !visibleTimelineRange) {
@@ -51012,7 +50997,7 @@ function TimelinePane(props) {
     }
     setDayWidthPx(fittedDayWidthPx);
   }, [applyFitRangeToViewport, chartModel.dayWidthPx, filteredTimeline, resolveFitLayoutLeftOffsets]);
-  const beginPanDrag = import_react29.default.useCallback((event) => {
+  const beginPanDrag = import_react30.default.useCallback((event) => {
     if (!spacePanPressedRef.current || event.button !== 0) {
       return;
     }
@@ -51032,7 +51017,7 @@ function TimelinePane(props) {
       originScrollTop: scrollElement.scrollTop
     });
   }, []);
-  const updatePanDrag = import_react29.default.useCallback((event) => {
+  const updatePanDrag = import_react30.default.useCallback((event) => {
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== event.pointerId) {
         return current;
@@ -51048,7 +51033,7 @@ function TimelinePane(props) {
       return current;
     });
   }, []);
-  const finishPanDrag = import_react29.default.useCallback((event) => {
+  const finishPanDrag = import_react30.default.useCallback((event) => {
     const pointerId = event.pointerId;
     setActivePanDrag((current) => {
       if (!current || current.pointerId !== pointerId) {
@@ -51058,7 +51043,7 @@ function TimelinePane(props) {
       return null;
     });
   }, [persistTimelineViewportSoon]);
-  const geometryByWorkItemId = import_react29.default.useMemo(() => {
+  const geometryByWorkItemId = import_react30.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar, index2) => {
       const y = resolveTimelineBarTopY(index2);
@@ -51067,14 +51052,14 @@ function TimelinePane(props) {
     });
     return byId;
   }, [chartModel.bars]);
-  const chartBarByWorkItemId = import_react29.default.useMemo(() => {
+  const chartBarByWorkItemId = import_react30.default.useMemo(() => {
     const byId = /* @__PURE__ */ new Map();
     chartModel.bars.forEach((bar) => {
       byId.set(bar.workItemId, bar);
     });
     return byId;
   }, [chartModel.bars]);
-  const visibleDependencies = import_react29.default.useMemo(() => {
+  const visibleDependencies = import_react30.default.useMemo(() => {
     if (!filteredTimeline) {
       return [];
     }
@@ -51087,7 +51072,7 @@ function TimelinePane(props) {
       return isDependencyViolated(predecessorBar, successorBar);
     });
   }, [chartBarByWorkItemId, dependencyViewMode, filteredTimeline]);
-  const dependencyConnectors = import_react29.default.useMemo(() => {
+  const dependencyConnectors = import_react30.default.useMemo(() => {
     if (!dependencyVisible || !filteredTimeline) {
       return [];
     }
@@ -51144,7 +51129,7 @@ function TimelinePane(props) {
     visibleDependencies,
     geometryByWorkItemId
   ]);
-  import_react29.default.useEffect(() => {
+  import_react30.default.useEffect(() => {
     if (!selectedDependency) {
       return;
     }
@@ -51153,7 +51138,7 @@ function TimelinePane(props) {
       setSelectedDependency(null);
     }
   }, [dependencyConnectors, selectedDependency]);
-  const hoveredDependencyWorkItemIds = import_react29.default.useMemo(() => {
+  const hoveredDependencyWorkItemIds = import_react30.default.useMemo(() => {
     if (!hoveredDependencyKey) {
       return null;
     }
@@ -51163,7 +51148,7 @@ function TimelinePane(props) {
     }
     return /* @__PURE__ */ new Set([connector.predecessorWorkItemId, connector.successorWorkItemId]);
   }, [hoveredDependencyKey, dependencyConnectors]);
-  const activeDependencyDragPreview = import_react29.default.useMemo(() => {
+  const activeDependencyDragPreview = import_react30.default.useMemo(() => {
     if (!activeDependencyDrag) {
       return null;
     }
@@ -51180,13 +51165,13 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: hoveredTargetIsValid ? activeDependencyDrag.hoveredTargetWorkItemId : null
     };
   }, [activeDependencyDrag, geometryByWorkItemId]);
-  const updateEditedScheduleOverride = import_react29.default.useCallback((workItemId, schedule) => {
+  const updateEditedScheduleOverride = import_react30.default.useCallback((workItemId, schedule) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
       [workItemId]: schedule
     }));
   }, []);
-  const beginBarDrag = import_react29.default.useCallback((input) => {
+  const beginBarDrag = import_react30.default.useCallback((input) => {
     if (!canEditSchedule) {
       return;
     }
@@ -51213,7 +51198,7 @@ function TimelinePane(props) {
       lastDayDelta: 0
     });
   }, [canEditSchedule, chartScrollRef, selectWorkItem]);
-  const beginDependencyDrag = import_react29.default.useCallback((input) => {
+  const beginDependencyDrag = import_react30.default.useCallback((input) => {
     if (!dependencyMode || input.event.button !== 0) {
       return;
     }
@@ -51237,7 +51222,7 @@ function TimelinePane(props) {
       hoveredTargetWorkItemId: null
     });
   }, [dependencyMode, geometryByWorkItemId, selectWorkItem]);
-  const applyDragDelta = import_react29.default.useCallback((active, clientX) => {
+  const applyDragDelta = import_react30.default.useCallback((active, clientX) => {
     const scrollDelta = (chartScrollRef.current?.scrollLeft ?? 0) - active.originScrollLeft;
     const effectiveClientDelta = clientX - active.originClientX + scrollDelta;
     const deltaDays = clientDeltaToDays(effectiveClientDelta, chartSvgRef.current, chartModel.dayWidthPx);
@@ -51248,7 +51233,7 @@ function TimelinePane(props) {
     setActiveScheduleDrag((current) => current ? { ...current, lastDayDelta: deltaDays } : current);
     updateEditedScheduleOverride(active.workItemId, resolveDraggedScheduleOverride(active, next));
   }, [chartModel.dayWidthPx, chartScrollRef, updateEditedScheduleOverride]);
-  const handleAutoScroll = import_react29.default.useCallback(() => {
+  const handleAutoScroll = import_react30.default.useCallback(() => {
     const active = activeScheduleDrag;
     if (!active) {
       return;
@@ -51256,7 +51241,7 @@ function TimelinePane(props) {
     applyDragDelta(active, lastDragClientXRef.current);
   }, [activeScheduleDrag, applyDragDelta]);
   autoScrollCallbackRef.current = handleAutoScroll;
-  const handleChartPointerMove = import_react29.default.useCallback((event) => {
+  const handleChartPointerMove = import_react30.default.useCallback((event) => {
     const activeDependency = activeDependencyDrag;
     if (activeDependency && event.pointerId === activeDependency.pointerId) {
       const svgPoint = clientPointToSvg(event.clientX, event.clientY, chartSvgRef.current);
@@ -51283,7 +51268,7 @@ function TimelinePane(props) {
     updateDragAutoScroll(event.clientX, event.clientY);
     applyDragDelta(active, event.clientX);
   }, [activeDependencyDrag, activeScheduleDrag, applyDragDelta, geometryByWorkItemId, updateDragAutoScroll]);
-  const persistDraggedSchedule = import_react29.default.useCallback(async (drag) => {
+  const persistDraggedSchedule = import_react30.default.useCallback(async (drag) => {
     const override = editedBarSchedulesByWorkItemId[drag.workItemId];
     if (!override || !props.onUpdateWorkItemSchedule) {
       return;
@@ -51318,7 +51303,7 @@ function TimelinePane(props) {
       });
     }
   }, [editedBarSchedulesByWorkItemId, props, props.timeline]);
-  const finishActiveDrag = import_react29.default.useCallback((event) => {
+  const finishActiveDrag = import_react30.default.useCallback((event) => {
     const dependencyDrag = activeDependencyDrag;
     if (dependencyDrag && event.pointerId === dependencyDrag.pointerId) {
       setActiveDependencyDrag(null);
@@ -51341,7 +51326,7 @@ function TimelinePane(props) {
     setActiveScheduleDrag(null);
     void persistDraggedSchedule(active);
   }, [activeDependencyDrag, activeScheduleDrag, persistDraggedSchedule, props]);
-  const persistWorkItemSchedule = import_react29.default.useCallback(async (input) => {
+  const persistWorkItemSchedule = import_react30.default.useCallback(async (input) => {
     if (props.onUpdateWorkItemSchedule) {
       await props.onUpdateWorkItemSchedule(input);
       return;
@@ -51350,7 +51335,7 @@ function TimelinePane(props) {
       await props.onAdoptUnschedulableSchedule(input);
     }
   }, [props]);
-  const scheduleUnscheduledFromDrop = import_react29.default.useCallback(async (input) => {
+  const scheduleUnscheduledFromDrop = import_react30.default.useCallback(async (input) => {
     const schedule = resolveUnscheduledDropSchedule(input);
     await persistWorkItemSchedule({
       targetWorkItemId: input.workItemId,
@@ -51363,7 +51348,7 @@ function TimelinePane(props) {
     }));
     selectWorkItem(input.workItemId);
   }, [persistWorkItemSchedule, selectWorkItem]);
-  const startUnscheduledDrag = import_react29.default.useCallback((event, workItemId, fixedEndDateIso, fixedEndTimelineDate) => {
+  const startUnscheduledDrag = import_react30.default.useCallback((event, workItemId, fixedEndDateIso, fixedEndTimelineDate) => {
     if (dependencyMode) {
       return;
     }
@@ -51371,11 +51356,11 @@ function TimelinePane(props) {
     event.dataTransfer.effectAllowed = "move";
     setActiveUnschedulableDrag({ workItemId, fixedEndDateIso, fixedEndTimelineDate });
   }, [dependencyMode]);
-  const clearUnscheduledDrag = import_react29.default.useCallback(() => {
+  const clearUnscheduledDrag = import_react30.default.useCallback(() => {
     setActiveUnschedulableDrag(null);
     setUnscheduledDropPreview(null);
   }, []);
-  const handleChartDragOver = import_react29.default.useCallback((event) => {
+  const handleChartDragOver = import_react30.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -51384,7 +51369,7 @@ function TimelinePane(props) {
     const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
     setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndTimelineDate));
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]);
-  const handleChartDrop = import_react29.default.useCallback((event) => {
+  const handleChartDrop = import_react30.default.useCallback((event) => {
     if (!activeUnschedulableDrag) {
       return;
     }
@@ -51404,11 +51389,11 @@ function TimelinePane(props) {
       setAdoptScheduleError(message);
     });
   }, [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart, scheduleUnscheduledFromDrop]);
-  const updateFieldColorCoding = import_react29.default.useCallback((next) => {
+  const updateFieldColorCoding = import_react30.default.useCallback((next) => {
     setFieldColorCoding(next);
     saveTimelineFieldColorCodingConfig(next, activeQueryId);
   }, []);
-  const selectFieldForColorCoding = import_react29.default.useCallback((fieldRef) => {
+  const selectFieldForColorCoding = import_react30.default.useCallback((fieldRef) => {
     const normalizedFieldRef = fieldRef && fieldRef.trim().length > 0 ? fieldRef.trim() : null;
     if (normalizedFieldRef) {
       setLastSelectedFieldRef(normalizedFieldRef);
@@ -51419,7 +51404,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
   }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const updateFieldValueColor = import_react29.default.useCallback((valueKey, color2) => {
+  const updateFieldValueColor = import_react30.default.useCallback((valueKey, color2) => {
     const nextValueColors = { ...fieldColorCoding.valueColors };
     const scopedKey = toScopedFieldValueColorKey(fieldColorCoding.fieldRef, valueKey);
     if (scopedKey) {
@@ -51440,7 +51425,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: fieldColorCoding.overdueExcludedStateCodes
     });
   }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const toggleOverdueExcludedState = import_react29.default.useCallback((stateCode, excluded) => {
+  const toggleOverdueExcludedState = import_react30.default.useCallback((stateCode, excluded) => {
     const normalizedStateCode = normalizeStateCodeForComparison(stateCode);
     if (normalizedStateCode.length === 0) {
       return;
@@ -51457,7 +51442,7 @@ function TimelinePane(props) {
       overdueExcludedStateCodes: [...next].sort((left, right) => left.localeCompare(right))
     });
   }, [fieldColorCoding.fieldRef, fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, updateFieldColorCoding]);
-  const selectColorCodingOption = import_react29.default.useCallback((option) => {
+  const selectColorCodingOption = import_react30.default.useCallback((option) => {
     setColorCoding(option.mode);
     saveLastTimelineColorCoding(option.mode, activeQueryId);
     if (option.mode === "field") {
@@ -51472,7 +51457,7 @@ function TimelinePane(props) {
     setColorCodingDropdownOpen(false);
     setColorCodingSearchDraft("");
   }, [fieldColorCoding.overdueExcludedStateCodes, fieldColorCoding.valueColors, selectFieldForColorCoding, updateFieldColorCoding]);
-  const applyFirstFilteredColorCodingOption = import_react29.default.useCallback(() => {
+  const applyFirstFilteredColorCodingOption = import_react30.default.useCallback(() => {
     const preferredOption = pickPreferredColorCodingOption(filteredColorCodingOptions, colorCodingSearchDraft);
     if (!preferredOption) {
       return false;
@@ -51480,34 +51465,34 @@ function TimelinePane(props) {
     selectColorCodingOption(preferredOption);
     return true;
   }, [colorCodingSearchDraft, filteredColorCodingOptions, selectColorCodingOption]);
-  const markTimelineFiltersUserEdited = import_react29.default.useCallback(() => {
+  const markTimelineFiltersUserEdited = import_react30.default.useCallback(() => {
     timelineFiltersUserEditedRef.current = true;
     pendingTimelineFilterUrlHydrationRef.current = false;
   }, []);
-  const applyFieldFilterSelection = import_react29.default.useCallback((slotId, fieldRef) => {
+  const applyFieldFilterSelection = import_react30.default.useCallback((slotId, fieldRef) => {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => updateTimelineFilterFieldSelection(current, slotId, fieldRef, timelineDateFilterContext));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups, timelineDateFilterContext]);
-  const toggleTimelineFieldValueSelection = import_react29.default.useCallback((slotId, valueKey) => {
+  const toggleTimelineFieldValueSelection = import_react30.default.useCallback((slotId, valueKey) => {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => toggleTimelineFilterValueSelection(current, slotId, valueKey));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
-  const setIncludeParentsInTimelineFilters = import_react29.default.useCallback((includeParents) => {
+  const setIncludeParentsInTimelineFilters = import_react30.default.useCallback((includeParents) => {
     markTimelineFiltersUserEdited();
     setIncludeTimelineFilterParents(includeParents);
   }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterParents]);
-  const setIncludeChildItemsInTimelineFilters = import_react29.default.useCallback((includeChildItems) => {
+  const setIncludeChildItemsInTimelineFilters = import_react30.default.useCallback((includeChildItems) => {
     markTimelineFiltersUserEdited();
     setIncludeTimelineFilterChildItems(includeChildItems);
   }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterChildItems]);
-  const toggleVisibleTimelineFieldValueSelections = import_react29.default.useCallback((slotId, valueKeys) => {
+  const toggleVisibleTimelineFieldValueSelections = import_react30.default.useCallback((slotId, valueKeys) => {
     if (valueKeys.length === 0) {
       return;
     }
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => toggleVisibleTimelineFilterValueSelections(current, slotId, valueKeys));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
-  const addTimelineFilterCondition = import_react29.default.useCallback((groupId) => {
+  const addTimelineFilterCondition = import_react30.default.useCallback((groupId) => {
     if (countTimelineFilterSlots(timelineFilterGroups) >= MAX_TIMELINE_FILTER_SLOTS) {
       return;
     }
@@ -51521,7 +51506,7 @@ function TimelinePane(props) {
     setTimelineFilterGroups,
     timelineFilterGroups
   ]);
-  const addTimelineFilterOrGroup = import_react29.default.useCallback(() => {
+  const addTimelineFilterOrGroup = import_react30.default.useCallback(() => {
     if (countTimelineFilterSlots(timelineFilterGroups) >= MAX_TIMELINE_FILTER_SLOTS) {
       return;
     }
@@ -51538,14 +51523,14 @@ function TimelinePane(props) {
     setTimelineFilterGroups,
     timelineFilterGroups
   ]);
-  const removeTimelineFilterSlot = import_react29.default.useCallback((slotId) => {
+  const removeTimelineFilterSlot = import_react30.default.useCallback((slotId) => {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => removeTimelineFilterCondition(current, slotId));
     if (openFilterDropdown?.slotId === slotId) {
       setOpenFilterDropdown(null);
     }
   }, [markTimelineFiltersUserEdited, openFilterDropdown?.slotId, setOpenFilterDropdown, setTimelineFilterGroups]);
-  const removeTimelineFilterGroupById = import_react29.default.useCallback((groupId) => {
+  const removeTimelineFilterGroupById = import_react30.default.useCallback((groupId) => {
     markTimelineFiltersUserEdited();
     const openSlotGroupId = openFilterDropdown === null ? null : findTimelineFilterGroupIdBySlotId(timelineFilterGroups, openFilterDropdown.slotId);
     setTimelineFilterGroups((current) => removeTimelineFilterGroup(current, groupId));
@@ -51559,11 +51544,11 @@ function TimelinePane(props) {
     setTimelineFilterGroups,
     timelineFilterGroups
   ]);
-  const updateTimelineDateRangeFilter = import_react29.default.useCallback((slotId, dateRange) => {
+  const updateTimelineDateRangeFilter = import_react30.default.useCallback((slotId, dateRange) => {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => updateTimelineFilterDateRange(current, slotId, dateRange));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
-  const toggleTimelineLabelField = import_react29.default.useCallback((fieldRef) => {
+  const toggleTimelineLabelField = import_react30.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -51576,13 +51561,13 @@ function TimelinePane(props) {
       return sanitized;
     });
   }, []);
-  const clearTimelineLabelFields = import_react29.default.useCallback(() => {
+  const clearTimelineLabelFields = import_react30.default.useCallback(() => {
     setTimelineLabelFields(() => {
       saveTimelineLabelFields([], activeQueryId);
       return [];
     });
   }, []);
-  const toggleTimelineSidebarField = import_react29.default.useCallback((fieldRef) => {
+  const toggleTimelineSidebarField = import_react30.default.useCallback((fieldRef) => {
     const normalized = fieldRef.trim();
     if (!normalized) {
       return;
@@ -51595,18 +51580,18 @@ function TimelinePane(props) {
       return sanitized;
     });
   }, []);
-  const clearTimelineSidebarFields = import_react29.default.useCallback(() => {
+  const clearTimelineSidebarFields = import_react30.default.useCallback(() => {
     setTimelineSidebarFields(() => {
       saveTimelineSidebarFields([], activeQueryId);
       return [];
     });
   }, []);
-  const openTimelineLabelSettingsFromSidebar = import_react29.default.useCallback(() => {
+  const openTimelineLabelSettingsFromSidebar = import_react30.default.useCallback(() => {
     setLabelSettingsOpen(true);
     setLabelFieldSearchDraft("");
     setSidebarFieldSearchDraft("");
   }, []);
-  const syncLabelMenuScrollFromSidebar = import_react29.default.useCallback(() => {
+  const syncLabelMenuScrollFromSidebar = import_react30.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -51622,7 +51607,7 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "sidebar";
     bar.scrollTop = sidebar.scrollTop;
   }, []);
-  const syncLabelMenuScrollFromBar = import_react29.default.useCallback(() => {
+  const syncLabelMenuScrollFromBar = import_react30.default.useCallback(() => {
     const sidebar = labelMenuSidebarOptionsRef.current;
     const bar = labelMenuBarOptionsRef.current;
     if (!sidebar || !bar) {
@@ -51638,14 +51623,14 @@ function TimelinePane(props) {
     labelMenuScrollSyncSourceRef.current = "bar";
     sidebar.scrollTop = bar.scrollTop;
   }, []);
-  const openFilterSlot = import_react29.default.useMemo(() => openFilterDropdown === null ? null : findTimelineFilterBySlotId(timelineFilterGroups, openFilterDropdown.slotId), [openFilterDropdown, timelineFilterGroups]);
-  const openFilterFieldOptions = import_react29.default.useMemo(() => {
+  const openFilterSlot = import_react30.default.useMemo(() => openFilterDropdown === null ? null : findTimelineFilterBySlotId(timelineFilterGroups, openFilterDropdown.slotId), [openFilterDropdown, timelineFilterGroups]);
+  const openFilterFieldOptions = import_react30.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "field") {
       return [];
     }
     return filterFieldRefsBySearch(availableFieldRefs, filterFieldSearchDraft);
   }, [availableFieldRefs, filterFieldSearchDraft, openFilterDropdown]);
-  const openFilterValueOptions = import_react29.default.useMemo(() => {
+  const openFilterValueOptions = import_react30.default.useMemo(() => {
     if (!openFilterDropdown || openFilterDropdown.kind !== "value" || !openFilterSlot?.fieldRef) {
       return [];
     }
@@ -51654,7 +51639,7 @@ function TimelinePane(props) {
     }
     return filterFieldValueStatsBySearch(listFieldValueStats(effectiveTimeline, openFilterSlot.fieldRef), filterValueSearchDraft);
   }, [effectiveTimeline, filterValueSearchDraft, openFilterDropdown, openFilterSlot]);
-  const handleAdoptSelectedSchedule = import_react29.default.useCallback(async (input) => {
+  const handleAdoptSelectedSchedule = import_react30.default.useCallback(async (input) => {
     if (props.onAdoptUnschedulableSchedule) {
       await props.onAdoptUnschedulableSchedule(input);
     }
@@ -51695,10 +51680,10 @@ function TimelinePane(props) {
   const isFieldColorCodingMode = colorCoding === "field";
   const isReadOnlyStatusColorCodingMode = colorCoding === "status";
   const isOverdueColorCodingMode = colorCoding === "overdue";
-  return import_react29.default.createElement("section", {
+  return import_react30.default.createElement("section", {
     "aria-label": "timeline-pane",
     className: "timeline-pane"
-  }, import_react29.default.createElement(TimelinePaneActionsToolbar, {
+  }, import_react30.default.createElement(TimelinePaneActionsToolbar, {
     isRefreshing: props.isRefreshing === true,
     onRetryRefresh: () => {
       props.onRetryRefresh?.();
@@ -51737,7 +51722,7 @@ function TimelinePane(props) {
     timelineFiltersOpen,
     activeTimelineFiltersCount,
     onToggleTimelineFilters: toggleTimelineFilters,
-    sortControl: import_react29.default.createElement(TimelineSortControl, {
+    sortControl: import_react30.default.createElement(TimelineSortControl, {
       availableFieldRefs,
       controlRef: sortToggleControlRef,
       panelRef: sortPanelRef,
@@ -51779,7 +51764,7 @@ function TimelinePane(props) {
     onSetLiveSyncEnabled: props.onSetLiveSyncEnabled ?? (() => void 0),
     onPushPendingWorkItemChanges: props.onPushPendingWorkItemChanges ?? (() => void 0),
     onClearPendingWorkItemChanges: props.onClearPendingWorkItemChanges ?? (() => void 0)
-  }), import_react29.default.createElement(TimelineFilterPanel, {
+  }), import_react30.default.createElement(TimelineFilterPanel, {
     open: timelineFiltersOpen,
     panelRef: filterPanelRef,
     availableFieldRefs,
@@ -51806,10 +51791,10 @@ function TimelinePane(props) {
     includeChildItems: timelineFilterHierarchyExpansion.includeChildItems,
     onSetIncludeParents: setIncludeParentsInTimelineFilters,
     onSetIncludeChildItems: setIncludeChildItemsInTimelineFilters
-  }), adoptScheduleError ? import_react29.default.createElement("div", {
+  }), adoptScheduleError ? import_react30.default.createElement("div", {
     role: "status",
     className: "timeline-update-error"
-  }, `Save failed: ${adoptScheduleError}`) : null, import_react29.default.createElement(TimelineColorCodingPanel, {
+  }, `Save failed: ${adoptScheduleError}`) : null, import_react30.default.createElement(TimelineColorCodingPanel, {
     open: colorSettingsOpen,
     colorCoding,
     selectedFieldRef,
@@ -51827,7 +51812,7 @@ function TimelinePane(props) {
     onToggleOverdueExcludedState: toggleOverdueExcludedState,
     resolveSelectedColorCodingLabel,
     toScopedFieldValueColorKey
-  }), import_react29.default.createElement(TimelineWorkItemContextMenu, {
+  }), import_react30.default.createElement(TimelineWorkItemContextMenu, {
     menuState: workItemContextMenu.menuState,
     menuRef: workItemContextMenu.menuRef,
     timeline: props.timeline,
@@ -51841,33 +51826,33 @@ function TimelinePane(props) {
     onUpdateWorkItemState: props.onUpdateWorkItemState,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
     onUpdateWorkItemAssignedTo: props.onUpdateWorkItemAssignedTo
-  }), import_react29.default.createElement(TimelinePrintHeader, {
+  }), import_react30.default.createElement(TimelinePrintHeader, {
     queryName: props.activeQueryName ?? null,
     queryUrl: buildAzureQueryUrl(props.organization, props.project, activeQueryId),
     workItemCount: chartModel.bars.length,
     printedAt: /* @__PURE__ */ new Date(),
     isPrintMode: printCurrentView.isPrintMode
-  }), import_react29.default.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }), import_react29.default.createElement("div", {
+  }), import_react30.default.createElement(TimelinePrintFooter, { isPrintMode: printCurrentView.isPrintMode }), import_react30.default.createElement("div", {
     className: "timeline-main-grid",
     ref: timelineMainGridRef,
     style: timelineMainGridStyle
-  }, import_react29.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react29.default.createElement("div", { className: "timeline-empty-state" }, import_react29.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react29.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react29.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react29.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react29.default.createElement("button", {
+  }, import_react30.default.createElement("div", { className: "timeline-main-column timeline-chart-surface" }, chartModel.bars.length === 0 ? import_react30.default.createElement("div", { className: "timeline-empty-state" }, import_react30.default.createElement("p", { className: "timeline-empty-title" }, "No schedulable timeline bars yet."), import_react30.default.createElement("p", { className: "timeline-empty-detail" }, "Items without start/end dates appear below as unschedulable.")) : import_react30.default.createElement("div", { className: "timeline-chart-viewport-shell" }, import_react30.default.createElement("div", { className: "timeline-chart-overlay-actions" }, import_react30.default.createElement("button", {
     type: "button",
     className: "timeline-chart-fit-button",
     "aria-label": "Zoom to fit timeline",
     onClick: zoomToFitTimeline
-  }, import_react29.default.createElement("svg", {
+  }, import_react30.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-chart-fit-icon",
     "aria-hidden": "true"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 2,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })))), import_react29.default.createElement("div", {
+  })))), import_react30.default.createElement("div", {
     className: [
       "timeline-chart-scroll",
       unscheduledCount === 0 ? "timeline-chart-scroll-unscheduled-empty" : "",
@@ -51880,26 +51865,26 @@ function TimelinePane(props) {
     onPointerMove: updatePanDrag,
     onPointerUp: finishPanDrag,
     onPointerCancel: finishPanDrag
-  }, import_react29.default.createElement("div", {
+  }, import_react30.default.createElement("div", {
     className: sidebarCollapsed ? "timeline-left-sidebar timeline-left-sidebar-collapsed timeline-left-sidebar-embedded" : "timeline-left-sidebar timeline-left-sidebar-embedded",
     "aria-label": "Timeline left sidebar",
     style: { width: `${Math.round(effectiveSidebarWidthPx)}px`, height: `${chartModel.height}px` }
-  }, sidebarCollapsed ? import_react29.default.createElement("div", {
+  }, sidebarCollapsed ? import_react30.default.createElement("div", {
     className: "timeline-left-sidebar-collapsed-body",
     style: { height: `${chartModel.height}px` }
-  }, import_react29.default.createElement("button", {
+  }, import_react30.default.createElement("button", {
     type: "button",
     className: "timeline-left-sidebar-settings-button",
     "aria-label": "Configure timeline sidebar fields",
     onClick: openTimelineLabelSettingsFromSidebar
-  }, import_react29.default.createElement("svg", {
+  }, import_react30.default.createElement("svg", {
     viewBox: "0 0 24 24",
     className: "timeline-left-sidebar-settings-icon",
     "aria-hidden": "true"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M19.14 12.94a7.98 7.98 0 0 0 .06-.94 7.98 7.98 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7.03 7.03 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.98 7.98 0 0 0-.06.94c0 .32.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.2A3.2 3.2 0 1 1 12 8.8a3.2 3.2 0 0 1 0 6.4Z"
   })))) : [
-    import_react29.default.createElement(TimelineLeftSidebarHeader, {
+    import_react30.default.createElement(TimelineLeftSidebarHeader, {
       key: "header",
       heightPx: CHART_TOP_PADDING,
       rowJustify: timelineSidebarRowJustify,
@@ -51907,7 +51892,7 @@ function TimelinePane(props) {
       onToggleTreeLevel: treeState.toggleLevel,
       onToggleRowJustify: toggleTimelineSidebarRowJustify
     }),
-    import_react29.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react29.default.createElement("button", {
+    import_react30.default.createElement("div", { className: "timeline-left-sidebar-body", key: "body" }, chartModel.bars.map((bar) => import_react30.default.createElement("button", {
       key: `timeline-sidebar-row-${bar.workItemId}`,
       type: "button",
       className: [
@@ -51961,7 +51946,7 @@ function TimelinePane(props) {
       onDragEnd: isTreeQuery ? () => {
         reparentDrag.clearDrag();
       } : void 0
-    }, bar.treeDepth !== null && bar.treeDepth > 0 ? buildTreeIndentGuides(bar) : null, bar.treeHasChildren ? import_react29.default.createElement("span", {
+    }, bar.treeDepth !== null && bar.treeDepth > 0 ? buildTreeIndentGuides(bar) : null, bar.treeHasChildren ? import_react30.default.createElement("span", {
       className: "timeline-tree-toggle",
       role: "button",
       "aria-label": bar.treeIsCollapsed ? "Expand" : "Collapse",
@@ -51969,12 +51954,12 @@ function TimelinePane(props) {
         event.stopPropagation();
         treeState.toggle(bar.workItemId);
       }
-    }, bar.treeIsCollapsed ? "\u25B6" : "\u25BC") : bar.treeDepth !== null ? import_react29.default.createElement("span", { className: "timeline-tree-toggle-placeholder" }) : null, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react29.default.createElement("div", {
+    }, bar.treeIsCollapsed ? "\u25B6" : "\u25BC") : bar.treeDepth !== null ? import_react30.default.createElement("span", { className: "timeline-tree-toggle-placeholder" }) : null, buildTimelineSidebarLabel(bar, timelineSidebarFields))), import_react30.default.createElement("div", {
       className: "timeline-left-sidebar-tail-spacer",
       "aria-hidden": "true",
       style: { height: `${chartModel.tailHeightPx}px` }
     }))
-  ]), !sidebarCollapsed ? import_react29.default.createElement(TimelineMainSplitter, {
+  ]), !sidebarCollapsed ? import_react30.default.createElement(TimelineMainSplitter, {
     active: isSidebarResizing,
     embedded: true,
     ariaLabel: "Resize timeline sidebar",
@@ -51983,44 +51968,44 @@ function TimelinePane(props) {
     ariaValueNow: sidebarWidthPx,
     onPointerDown: beginSidebarResize,
     style: { height: `${chartModel.height}px`, left: `${Math.round(effectiveSidebarWidthPx)}px` }
-  }) : null, import_react29.default.createElement("svg", {
+  }) : null, import_react30.default.createElement("svg", {
     className: "timeline-shared-row-guides",
     viewBox: `0 0 ${effectiveSidebarWidthPx + chartModel.width} ${chartModel.height}`,
     style: { width: `${effectiveSidebarWidthPx + chartModel.width}px`, height: `${chartModel.height}px` },
     "aria-hidden": "true"
-  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index2) => import_react29.default.createElement("line", {
+  }, Array.from({ length: chartModel.contentRows + 1 }, (_, index2) => import_react30.default.createElement("line", {
     key: `shared-row-guide-${index2}`,
     x1: 0,
     y1: CHART_TOP_PADDING + index2 * CHART_ROW_HEIGHT,
     x2: effectiveSidebarWidthPx + chartModel.width,
     y2: CHART_TOP_PADDING + index2 * CHART_ROW_HEIGHT,
     className: "timeline-row-guide-line"
-  }))), import_react29.default.createElement("div", {
+  }))), import_react30.default.createElement("div", {
     className: "timeline-chart-main-lane",
     ref: mainLaneRef,
     style: { width: `${chartModel.width}px` }
-  }, import_react29.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react29.default.createElement("svg", {
+  }, import_react30.default.createElement("div", { className: "timeline-chart-axis-sticky", "aria-hidden": "true" }, import_react30.default.createElement("svg", {
     className: "timeline-chart-axis",
     width: chartModel.width,
     height: CHART_TOP_PADDING,
     viewBox: `0 0 ${chartModel.width} ${CHART_TOP_PADDING}`,
     preserveAspectRatio: "none",
     style: { width: `${chartModel.width}px`, height: `${CHART_TOP_PADDING}px` }
-  }, (zoomLevel === "year" ? chartModel.yearMarkers : zoomLevel === "quarter" ? chartModel.yearMarkers : chartModel.monthMarkers).map((marker) => import_react29.default.createElement("text", {
+  }, (zoomLevel === "year" ? chartModel.yearMarkers : zoomLevel === "quarter" ? chartModel.yearMarkers : chartModel.monthMarkers).map((marker) => import_react30.default.createElement("text", {
     key: `sticky-top-label-${marker.x}-${marker.label}`,
     x: CHART_LEFT_GUTTER + marker.x,
     y: CHART_AXIS_MONTH_LABEL_Y,
     className: "timeline-axis-month-label"
-  }, marker.label)), (zoomLevel === "week" ? chartModel.weekMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : zoomLevel === "year" ? chartModel.quarterMarkers : []).map((tick) => import_react29.default.createElement("text", {
+  }, marker.label)), (zoomLevel === "week" ? chartModel.weekMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : zoomLevel === "year" ? chartModel.quarterMarkers : []).map((tick) => import_react30.default.createElement("text", {
     key: `sticky-tick-label-${tick.x}-${tick.label}`,
     x: CHART_LEFT_GUTTER + tick.x + CHART_AXIS_TICK_LABEL_X_OFFSET,
     y: CHART_AXIS_TICK_LABEL_Y,
     className: "timeline-axis-label"
-  }, tick.label)), chartModel.todayX !== null ? import_react29.default.createElement("text", {
+  }, tick.label)), chartModel.todayX !== null ? import_react30.default.createElement("text", {
     x: CHART_LEFT_GUTTER + chartModel.todayX,
     y: CHART_AXIS_TODAY_LABEL_Y,
     className: "timeline-today-label"
-  }, "Today") : null)), import_react29.default.createElement("svg", {
+  }, "Today") : null)), import_react30.default.createElement("svg", {
     className: activeUnschedulableDrag && !activeScheduleDrag ? "timeline-chart timeline-chart-unscheduled-drop-active" : "timeline-chart",
     width: chartModel.width,
     height: chartModel.height,
@@ -52035,7 +52020,7 @@ function TimelinePane(props) {
     onPointerCancel: finishActiveDrag,
     onDragOver: handleChartDragOver,
     onDrop: handleChartDrop
-  }, import_react29.default.createElement("defs", null, import_react29.default.createElement("marker", {
+  }, import_react30.default.createElement("defs", null, import_react30.default.createElement("marker", {
     id: dependencyMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -52044,10 +52029,10 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead"
-  })), import_react29.default.createElement("marker", {
+  })), import_react30.default.createElement("marker", {
     id: dependencyAlertMarkerId,
     viewBox: "0 0 6 8",
     refX: 5.6,
@@ -52056,16 +52041,16 @@ function TimelinePane(props) {
     markerHeight: 6,
     markerUnits: "strokeWidth",
     orient: "auto"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M 0 0 L 6 4 L 0 8",
     className: "timeline-dependency-arrowhead-alert"
-  }))), buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width), chartModel.currentPeriod ? import_react29.default.createElement("rect", {
+  }))), buildTreeDepthBandsAndBorders(chartModel.bars, chartModel.width), chartModel.currentPeriod ? import_react30.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + chartModel.currentPeriod.x,
     y: CHART_GRID_START_Y,
     width: chartModel.currentPeriod.width,
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-current-period-highlight"
-  }) : null, (zoomLevel === "week" || zoomLevel === "month" ? chartModel.weekendBands : []).map((band) => import_react29.default.createElement("rect", {
+  }) : null, (zoomLevel === "week" || zoomLevel === "month" ? chartModel.weekendBands : []).map((band) => import_react30.default.createElement("rect", {
     key: `timeline-weekend-band-${band.date}`,
     x: CHART_LEFT_GUTTER + band.x,
     y: CHART_GRID_START_Y,
@@ -52073,41 +52058,41 @@ function TimelinePane(props) {
     height: chartModel.height - CHART_BOTTOM_PADDING - CHART_GRID_START_Y,
     className: "timeline-weekend-band",
     "data-date": band.date
-  })), chartModel.dailyGridLines.map((dayX) => import_react29.default.createElement("line", {
+  })), chartModel.dailyGridLines.map((dayX) => import_react30.default.createElement("line", {
     key: `day-grid-${dayX}`,
     x1: CHART_LEFT_GUTTER + dayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + dayX,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-day"
-  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react29.default.createElement("line", {
+  })), (zoomLevel === "month" ? chartModel.weekMarkers : []).map((week) => import_react30.default.createElement("line", {
     key: `month-week-grid-${week.x}`,
     x1: CHART_LEFT_GUTTER + week.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + week.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-weekly"
-  })), (zoomLevel === "quarter" || zoomLevel === "year" ? chartModel.monthMarkers : []).map((month) => import_react29.default.createElement("line", {
+  })), (zoomLevel === "quarter" || zoomLevel === "year" ? chartModel.monthMarkers : []).map((month) => import_react30.default.createElement("line", {
     key: `quarter-month-grid-${month.x}`,
     x1: CHART_LEFT_GUTTER + month.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + month.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line-weekly"
-  })), (zoomLevel === "year" ? chartModel.quarterMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : chartModel.monthMarkers).map((marker) => import_react29.default.createElement("line", {
+  })), (zoomLevel === "year" ? chartModel.quarterMarkers : zoomLevel === "quarter" ? chartModel.quarterMarkers : chartModel.monthMarkers).map((marker) => import_react30.default.createElement("line", {
     key: `boundary-${marker.x}-${marker.label}`,
     x1: CHART_LEFT_GUTTER + marker.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + marker.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-month-boundary-line"
-  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react29.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react29.default.createElement("line", {
+  })), (zoomLevel === "week" ? chartModel.weekMarkers : []).map((tick) => import_react30.default.createElement("g", { key: `${tick.x}-${tick.label}` }, import_react30.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + tick.x,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + tick.x,
     y2: chartModel.height - CHART_BOTTOM_PADDING,
     className: "timeline-grid-line"
-  }))), chartModel.todayX !== null ? import_react29.default.createElement("g", null, import_react29.default.createElement("line", {
+  }))), chartModel.todayX !== null ? import_react30.default.createElement("g", null, import_react30.default.createElement("line", {
     x1: CHART_LEFT_GUTTER + chartModel.todayX,
     y1: CHART_GRID_START_Y,
     x2: CHART_LEFT_GUTTER + chartModel.todayX,
@@ -52117,7 +52102,7 @@ function TimelinePane(props) {
     if (selectedWorkItemId !== bar.workItemId) {
       return null;
     }
-    return import_react29.default.createElement("rect", {
+    return import_react30.default.createElement("rect", {
       key: `timeline-row-highlight-${bar.workItemId}`,
       x: 0,
       y: CHART_TOP_PADDING + index2 * CHART_ROW_HEIGHT,
@@ -52131,7 +52116,7 @@ function TimelinePane(props) {
     const isSelected = selectedWorkItemId === bar.workItemId;
     const isDependencyHovered = hoveredDependencyWorkItemIds !== null && hoveredDependencyWorkItemIds.has(bar.workItemId);
     const barClassName = ["timeline-bar", isSelected ? "timeline-bar-selected" : "", canEditSchedule ? "timeline-bar-editable" : "", isDependencyHovered ? "timeline-bar-dependency-hover" : ""].filter(Boolean).join(" ");
-    return import_react29.default.createElement("g", { key: bar.workItemId }, import_react29.default.createElement("rect", {
+    return import_react30.default.createElement("g", { key: bar.workItemId }, import_react30.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x,
       y,
       width: bar.width,
@@ -52188,7 +52173,7 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "move", bar });
       }
-    }), canEditSchedule ? import_react29.default.createElement("rect", {
+    }), canEditSchedule ? import_react30.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -52205,7 +52190,7 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "resize-start", bar });
       }
-    }) : null, canEditSchedule ? import_react29.default.createElement("rect", {
+    }) : null, canEditSchedule ? import_react30.default.createElement("rect", {
       x: CHART_LEFT_GUTTER + bar.x + bar.width - HANDLE_WIDTH / 2,
       y: y + 1,
       width: HANDLE_WIDTH,
@@ -52222,27 +52207,27 @@ function TimelinePane(props) {
         }
         void beginBarDrag({ event, mode: "resize-end", bar });
       }
-    }) : null, bar.displayLabel.trim().length > 0 ? import_react29.default.createElement("text", {
+    }) : null, bar.displayLabel.trim().length > 0 ? import_react30.default.createElement("text", {
       x: CHART_LEFT_GUTTER + bar.x + 18,
       y: y + 16,
       className: ["timeline-bar-label", isSelected ? "timeline-bar-label-selected" : ""].filter(Boolean).join(" ")
-    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react29.default.createElement("circle", {
+    }, truncateTitleToBarWidth(bar.displayLabel, bar.width)) : null, import_react30.default.createElement("circle", {
       cx: CHART_LEFT_GUTTER + bar.x + 10,
       cy: y + BAR_HEIGHT / 2,
       r: 4.5,
       className: "timeline-bar-state-dot",
       style: { fill: bar.stateColor }
     }));
-  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react29.default.createElement("g", {
+  }), activeUnschedulableDrag && unscheduledDropPreview ? import_react30.default.createElement("g", {
     className: "timeline-unscheduled-drop-preview"
-  }, import_react29.default.createElement("rect", {
+  }, import_react30.default.createElement("rect", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 8,
     width: dayDiffInclusive(unscheduledDropPreview.startDate, unscheduledDropPreview.endDate) * chartModel.dayWidthPx,
     height: BAR_HEIGHT,
     rx: 6,
     className: "timeline-unscheduled-drop-preview-bar"
-  }), import_react29.default.createElement("text", {
+  }), import_react30.default.createElement("text", {
     x: CHART_LEFT_GUTTER + dayDiff(chartModel.domainStart, unscheduledDropPreview.startDate) * chartModel.dayWidthPx + 8,
     y: CHART_TOP_PADDING + chartModel.bars.length * CHART_ROW_HEIGHT + 24,
     className: "timeline-unscheduled-drop-preview-label"
@@ -52259,7 +52244,7 @@ function TimelinePane(props) {
       onPointerEnter: () => setHoveredDependencyKey(connector.key),
       onPointerLeave: () => setHoveredDependencyKey((prev) => prev === connector.key ? null : prev)
     };
-    return import_react29.default.createElement("g", {
+    return import_react30.default.createElement("g", {
       key: connector.key,
       "aria-label": `dependency-${connector.predecessorWorkItemId}-${connector.successorWorkItemId}`,
       onClick: () => {
@@ -52269,66 +52254,66 @@ function TimelinePane(props) {
           dependencyType: connector.dependencyType
         });
       }
-    }, import_react29.default.createElement("path", {
+    }, import_react30.default.createElement("path", {
       d: connector.path,
       className: "timeline-dependency-line-hitarea",
       ...hoverHandlers
-    }), import_react29.default.createElement("path", {
+    }), import_react30.default.createElement("path", {
       d: connector.path,
       className,
       markerEnd: connector.markerEnd,
       pointerEvents: "none"
     }));
-  }), activeDependencyDragPreview ? import_react29.default.createElement("path", {
+  }), activeDependencyDragPreview ? import_react30.default.createElement("path", {
     d: activeDependencyDragPreview.path,
     className: "timeline-dependency-line timeline-dependency-line-draft",
     markerEnd: `url(#${dependencyMarkerId})`,
     "aria-label": "dependency-draft"
-  }) : null)))), import_react29.default.createElement("div", {
+  }) : null)))), import_react30.default.createElement("div", {
     className: [
       "timeline-unschedulable-list",
       visibleTimeline?.unschedulable.length ? "" : "timeline-unschedulable-list-empty"
     ].filter(Boolean).join(" ")
-  }, import_react29.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react29.default.createElement("h4", null, "Unscheduled tasks"), import_react29.default.createElement("button", {
+  }, import_react30.default.createElement("div", { className: "timeline-unschedulable-header" }, import_react30.default.createElement("h4", null, "Unscheduled tasks"), import_react30.default.createElement("button", {
     type: "button",
     className: editMode ? "timeline-unschedulable-edit-toggle timeline-unschedulable-edit-toggle-active" : "timeline-unschedulable-edit-toggle",
     "aria-pressed": editMode,
     onClick: () => setEditMode((current) => !current)
-  }, "Edit mode"), import_react29.default.createElement("div", {
+  }, "Edit mode"), import_react30.default.createElement("div", {
     ref: editInfoRef,
     className: "timeline-unschedulable-edit-info-wrap"
-  }, import_react29.default.createElement("button", {
+  }, import_react30.default.createElement("button", {
     type: "button",
     className: editInfoOpen ? "timeline-unschedulable-edit-info timeline-unschedulable-edit-info-open" : "timeline-unschedulable-edit-info",
     "aria-label": "Show edit help",
     "aria-expanded": editInfoOpen,
     onClick: () => setEditInfoOpen((current) => !current)
-  }, "i"), editInfoOpen ? import_react29.default.createElement("div", {
+  }, "i"), editInfoOpen ? import_react30.default.createElement("div", {
     className: "timeline-unschedulable-edit-info-popover",
     role: "tooltip"
-  }, import_react29.default.createElement("p", { className: "timeline-unschedulable-edit-info-popover-title" }, "How to schedule unscheduled tasks"), import_react29.default.createElement("ol", { className: "timeline-unschedulable-edit-info-popover-steps" }, import_react29.default.createElement("li", null, "Turn on ", import_react29.default.createElement("strong", null, "Edit mode"), " to enable changes."), import_react29.default.createElement("li", null, import_react29.default.createElement("strong", null, "Drag"), " any item from the Unscheduled list into the chart to place it."), import_react29.default.createElement("li", null, "Or ", import_react29.default.createElement("strong", null, "select a scheduled task"), " above, then click the purple \u2191 next to an unscheduled item to copy that task's dates."))) : null), editMode && adoptSourceSchedule ? import_react29.default.createElement("span", { className: "timeline-unschedulable-edit-hint" }, "click ", import_react29.default.createElement("svg", {
+  }, import_react30.default.createElement("p", { className: "timeline-unschedulable-edit-info-popover-title" }, "How to schedule unscheduled tasks"), import_react30.default.createElement("ol", { className: "timeline-unschedulable-edit-info-popover-steps" }, import_react30.default.createElement("li", null, "Turn on ", import_react30.default.createElement("strong", null, "Edit mode"), " to enable changes."), import_react30.default.createElement("li", null, import_react30.default.createElement("strong", null, "Drag"), " any item from the Unscheduled list into the chart to place it."), import_react30.default.createElement("li", null, "Or ", import_react30.default.createElement("strong", null, "select a scheduled task"), " above, then click the purple \u2191 next to an unscheduled item to copy that task's dates."))) : null), editMode && adoptSourceSchedule ? import_react30.default.createElement("span", { className: "timeline-unschedulable-edit-hint" }, "click ", import_react30.default.createElement("svg", {
     className: "timeline-unschedulable-edit-hint-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M8 13V3M8 3l-4 4M8 3l4 4",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)})`) : null), visibleTimeline?.unschedulable.length ? import_react29.default.createElement("ul", null, ...visibleTimeline.unschedulable.map((item) => {
+  })), ` to schedule task (${formatAdoptDate(adoptSourceSchedule.startDate)} \u2192 ${formatAdoptDate(adoptSourceSchedule.endDate)})`) : null), visibleTimeline?.unschedulable.length ? import_react30.default.createElement("ul", null, ...visibleTimeline.unschedulable.map((item) => {
     const treeMeta = visibleTimeline.treeLayout?.[item.workItemId];
     const label = `#${item.details.mappedId} ${item.title}`;
     const minWidthPx = Math.round(dayWidthPx * 14);
     const estimatedLabelWidthPx = Math.round(label.length * APPROX_BAR_LABEL_CHAR_WIDTH_PX + 20);
     const buttonWidthPx = Math.max(minWidthPx, estimatedLabelWidthPx);
     const showAdoptArrow = editMode && adoptSourceSchedule !== null;
-    return import_react29.default.createElement("li", {
+    return import_react30.default.createElement("li", {
       key: item.workItemId,
       className: "timeline-unschedulable-row",
       style: treeMeta ? { paddingLeft: `${treeMeta.depth * 20}px` } : void 0
-    }, import_react29.default.createElement("button", {
+    }, import_react30.default.createElement("button", {
       type: "button",
       className: "timeline-unschedulable-button",
       style: {
@@ -52356,7 +52341,7 @@ function TimelinePane(props) {
       onKeyDown: (event) => {
         workItemContextMenu.openMenuFromKeyboard(event, buildContextMenuItemFromUnschedulable(item, props.timeline?.scheduleFieldRefs));
       }
-    }, import_react29.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react29.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label))), showAdoptArrow ? import_react29.default.createElement("button", {
+    }, import_react30.default.createElement("span", { className: "timeline-unschedulable-button-main" }, import_react30.default.createElement("span", { className: "timeline-unschedulable-item-title timeline-unschedulable-item-title-like-bar" }, label))), showAdoptArrow ? import_react30.default.createElement("button", {
       type: "button",
       className: "timeline-unschedulable-adopt-arrow",
       "aria-label": `Adopt selected schedule onto ${label}`,
@@ -52372,11 +52357,11 @@ function TimelinePane(props) {
           endDate: adoptSourceSchedule.endDate
         });
       }
-    }, import_react29.default.createElement("svg", {
+    }, import_react30.default.createElement("svg", {
       className: "timeline-unschedulable-adopt-arrow-icon",
       viewBox: "0 0 16 16",
       "aria-hidden": "true"
-    }, import_react29.default.createElement("path", {
+    }, import_react30.default.createElement("path", {
       d: "M8 12V4M8 4l-4 4M8 4l4 4",
       fill: "none",
       stroke: "currentColor",
@@ -52384,7 +52369,7 @@ function TimelinePane(props) {
       strokeLinecap: "round",
       strokeLinejoin: "round"
     }))) : null);
-  })) : import_react29.default.createElement("p", { className: "timeline-unschedulable-empty" }, "None"))), import_react29.default.createElement(TimelineMainSplitter, {
+  })) : import_react30.default.createElement("p", { className: "timeline-unschedulable-empty" }, "None"))), import_react30.default.createElement(TimelineMainSplitter, {
     active: isDetailsResizing,
     ariaLabel: detailsContentHidden ? "Expand details panel" : "Resize details panel",
     ariaValueMin: DETAILS_PANEL_MIN_WIDTH_PX,
@@ -52393,29 +52378,29 @@ function TimelinePane(props) {
     onPointerDown: beginDetailsResize,
     onClick: toggleDetailsPanelFromSplitter,
     style: timelineMainSplitterStyle
-  }, detailsContentHidden ? import_react29.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react29.default.createElement("svg", {
+  }, detailsContentHidden ? import_react30.default.createElement("span", { className: "timeline-main-splitter-expand-symbol", "aria-hidden": "true" }, import_react30.default.createElement("svg", {
     className: "timeline-main-splitter-expand-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M10.5 3.5 6 8l4.5 4.5",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2.2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }))) : import_react29.default.createElement("span", { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" }, import_react29.default.createElement("svg", {
+  }))) : import_react30.default.createElement("span", { className: "timeline-main-splitter-collapse-symbol", "aria-hidden": "true" }, import_react30.default.createElement("svg", {
     className: "timeline-main-splitter-expand-icon",
     viewBox: "0 0 16 16",
     "aria-hidden": "true"
-  }, import_react29.default.createElement("path", {
+  }, import_react30.default.createElement("path", {
     d: "M5.5 3.5 10 8l-4.5 4.5",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "2.2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })))), import_react29.default.createElement(TimelineDetailsPanel, detailProps)));
+  })))), import_react30.default.createElement(TimelineDetailsPanel, detailProps)));
 }
 var BAR_HEIGHT = 24;
 var BAR_ROW_GAP = 2;
@@ -52951,7 +52936,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
     if (!isTree) {
       continue;
     }
-    elements.push(import_react29.default.createElement("rect", {
+    elements.push(import_react30.default.createElement("rect", {
       key: `tree-depth-band-${bar.workItemId}`,
       x: 0,
       y: CHART_TOP_PADDING + index2 * CHART_ROW_HEIGHT,
@@ -52960,7 +52945,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
       className: `timeline-tree-depth-band timeline-tree-depth-${Math.min(bar.treeDepth ?? 0, 4)}`
     }));
     if (bar.treeBlockStart) {
-      elements.push(import_react29.default.createElement("rect", {
+      elements.push(import_react30.default.createElement("rect", {
         key: `tree-block-top-${bar.workItemId}`,
         x: 0,
         y: CHART_TOP_PADDING + index2 * CHART_ROW_HEIGHT - 1,
@@ -52970,7 +52955,7 @@ function buildTreeDepthBandsAndBorders(bars, chartWidth) {
       }));
     }
     if (bar.treeBlockEnd) {
-      elements.push(import_react29.default.createElement("rect", {
+      elements.push(import_react30.default.createElement("rect", {
         key: `tree-block-bottom-${bar.workItemId}`,
         x: 0,
         y: CHART_TOP_PADDING + (index2 + 1) * CHART_ROW_HEIGHT - 1,
@@ -52990,16 +52975,16 @@ function buildTreeIndentGuides(bar) {
   const guides = [];
   for (let level = 0; level < depth - 1; level++) {
     const ancestorIsLast = bar.treeAncestorIsLastSibling[level + 1] ?? false;
-    guides.push(import_react29.default.createElement("span", {
+    guides.push(import_react30.default.createElement("span", {
       key: `guide-${level}`,
       className: ancestorIsLast ? "timeline-tree-guide timeline-tree-guide-blank" : "timeline-tree-guide timeline-tree-guide-pipe"
     }));
   }
-  guides.push(import_react29.default.createElement("span", {
+  guides.push(import_react30.default.createElement("span", {
     key: `guide-branch`,
     className: bar.treeIsLastSibling ? "timeline-tree-guide timeline-tree-guide-elbow" : "timeline-tree-guide timeline-tree-guide-tee"
   }));
-  return import_react29.default.createElement("span", { className: "timeline-tree-guides", "aria-hidden": "true" }, ...guides);
+  return import_react30.default.createElement("span", { className: "timeline-tree-guides", "aria-hidden": "true" }, ...guides);
 }
 function buildTimelineSidebarLabel(bar, fieldRefs) {
   const parts = sanitizeTimelineFieldRefList(fieldRefs).map((fieldRef) => timelineSidebarLabelValueForFieldRef(bar, fieldRef)).filter((value) => value !== null && value.length > 0);
@@ -53766,7 +53751,7 @@ function hydrateTimelineLiveSyncEnabledPreference(onHydrated) {
 }
 
 // dist/src/features/diagnostics/warning-banner.js
-var import_react30 = __toESM(require_react(), 1);
+var import_react31 = __toESM(require_react(), 1);
 function WarningBanner(props) {
   const lines = buildWarningBannerLines(props);
   if (lines.length === 0) {
@@ -53775,10 +53760,10 @@ function WarningBanner(props) {
   const title = lines[0] ?? "[WARN]";
   const detail = (lines[1] ?? "").replace(/^- /, "");
   const actionLine = (lines[2] ?? "").replace(/^- /, "");
-  return import_react30.default.createElement("section", {
+  return import_react31.default.createElement("section", {
     "aria-label": "timeline-warning-banner",
     className: "warning-banner-card"
-  }, import_react30.default.createElement("div", { className: "warning-banner-copy" }, import_react30.default.createElement("p", { className: "warning-banner-title" }, title), import_react30.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react30.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react30.default.createElement("button", {
+  }, import_react31.default.createElement("div", { className: "warning-banner-copy" }, import_react31.default.createElement("p", { className: "warning-banner-title" }, title), import_react31.default.createElement("p", { className: "warning-banner-detail" }, detail), import_react31.default.createElement("p", { className: "warning-banner-action-line" }, actionLine)), import_react31.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -53805,13 +53790,13 @@ function buildWarningBannerLines(model) {
 }
 
 // dist/src/features/diagnostics/trust-badge.js
-var import_react31 = __toESM(require_react(), 1);
+var import_react32 = __toESM(require_react(), 1);
 var CLOSED_TRIGGER_LABEL = "Status";
 function TrustBadge(props) {
   const label = labelForTrustState(props.trustState);
   const statusLine = `[${props.statusCode}] ${label}`;
   const isControlled = typeof props.controlsOpen === "boolean";
-  const [internalControlsOpen, setInternalControlsOpen] = import_react31.default.useState(false);
+  const [internalControlsOpen, setInternalControlsOpen] = import_react32.default.useState(false);
   const controlsOpen = props.controlsOpen ?? internalControlsOpen;
   const detailsProps = {
     "aria-label": CLOSED_TRIGGER_LABEL,
@@ -53825,41 +53810,41 @@ function TrustBadge(props) {
       props.onControlsOpenChange?.(nextControlsOpen);
     }
   };
-  return import_react31.default.createElement("details", detailsProps, import_react31.default.createElement("summary", { className: "trust-badge-trigger" }, import_react31.default.createElement("span", { className: "trust-badge-pill-label" }, CLOSED_TRIGGER_LABEL)), controlsOpen ? import_react31.default.createElement("div", { className: "trust-badge-panel" }, import_react31.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react31.default.createElement("dl", { className: "trust-badge-meta" }, import_react31.default.createElement("dt", null, "last-updated"), import_react31.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react31.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null) : null);
+  return import_react32.default.createElement("details", detailsProps, import_react32.default.createElement("summary", { className: "trust-badge-trigger" }, import_react32.default.createElement("span", { className: "trust-badge-pill-label" }, CLOSED_TRIGGER_LABEL)), controlsOpen ? import_react32.default.createElement("div", { className: "trust-badge-panel" }, import_react32.default.createElement("p", { className: "trust-badge-status" }, statusLine), import_react32.default.createElement("dl", { className: "trust-badge-meta" }, import_react32.default.createElement("dt", null, "last-updated"), import_react32.default.createElement("dd", null, props.lastRefreshAt ?? "none")), props.controlsContent ? import_react32.default.createElement("section", { className: "trust-badge-controls-menu", "aria-label": "controls-menu" }, props.controlsContent) : null) : null);
 }
 function labelForTrustState(trustState) {
   return trustState === "ready" ? "Ready" : trustState === "partial_failure" ? "Partial failure" : "Needs attention";
 }
 
 // dist/src/features/diagnostics/local-config-reset-panel.js
-var import_react32 = __toESM(require_react(), 1);
+var import_react33 = __toESM(require_react(), 1);
 
 // dist/src/application/ports/local-config-reset.port.js
 var LOCAL_CONFIG_RESET_CONFIRMATION = "DELETE ALL CONFIGS";
 
 // dist/src/features/diagnostics/local-config-reset-panel.js
 function LocalConfigResetPanel(props) {
-  const [modalOpen, setModalOpen] = import_react32.default.useState(false);
-  const [confirmation, setConfirmation] = import_react32.default.useState("");
-  const [phase, setPhase] = import_react32.default.useState("idle");
-  const [serverReport, setServerReport] = import_react32.default.useState(null);
-  const [browserReport, setBrowserReport] = import_react32.default.useState(null);
-  const [errorMessage, setErrorMessage] = import_react32.default.useState(null);
-  const resetDialogState = import_react32.default.useCallback(() => {
+  const [modalOpen, setModalOpen] = import_react33.default.useState(false);
+  const [confirmation, setConfirmation] = import_react33.default.useState("");
+  const [phase, setPhase] = import_react33.default.useState("idle");
+  const [serverReport, setServerReport] = import_react33.default.useState(null);
+  const [browserReport, setBrowserReport] = import_react33.default.useState(null);
+  const [errorMessage, setErrorMessage] = import_react33.default.useState(null);
+  const resetDialogState = import_react33.default.useCallback(() => {
     setConfirmation("");
     setPhase("idle");
     setServerReport(null);
     setBrowserReport(null);
     setErrorMessage(null);
   }, []);
-  const closeModal = import_react32.default.useCallback(() => {
+  const closeModal = import_react33.default.useCallback(() => {
     if (phase === "pending" || phase === "reloading") {
       return;
     }
     setModalOpen(false);
     resetDialogState();
   }, [phase, resetDialogState]);
-  const runReset = import_react32.default.useCallback(async () => {
+  const runReset = import_react33.default.useCallback(async () => {
     if (props.guard.blocked) {
       return;
     }
@@ -53889,7 +53874,7 @@ function LocalConfigResetPanel(props) {
   }, [confirmation, props]);
   const confirmDisabled = props.guard.blocked || confirmation !== LOCAL_CONFIG_RESET_CONFIRMATION || phase === "pending" || phase === "reloading";
   const panelButtonDisabled = props.guard.blocked || phase === "pending" || phase === "reloading";
-  return import_react32.default.createElement("section", { className: "local-config-reset-panel", "aria-label": "local-config-reset-panel" }, import_react32.default.createElement("h3", { className: "local-config-reset-title" }, "Delete all Configs"), import_react32.default.createElement("p", { className: "local-config-reset-copy" }, "Clears local app configuration only. Azure DevOps data, saved queries, az login, ~/.azure, repo artifacts and shell environment stay untouched."), props.guard.blocked ? import_react32.default.createElement("div", { className: "local-config-reset-guard", role: "status" }, import_react32.default.createElement("strong", null, "Reset blocked"), import_react32.default.createElement("ul", null, props.guard.reasons.map((reason) => import_react32.default.createElement("li", { key: reason }, reason)))) : null, import_react32.default.createElement("button", {
+  return import_react33.default.createElement("section", { className: "local-config-reset-panel", "aria-label": "local-config-reset-panel" }, import_react33.default.createElement("h3", { className: "local-config-reset-title" }, "Delete all Configs"), import_react33.default.createElement("p", { className: "local-config-reset-copy" }, "Clears local app configuration only. Azure DevOps data, saved queries, az login, ~/.azure, repo artifacts and shell environment stay untouched."), props.guard.blocked ? import_react33.default.createElement("div", { className: "local-config-reset-guard", role: "status" }, import_react33.default.createElement("strong", null, "Reset blocked"), import_react33.default.createElement("ul", null, props.guard.reasons.map((reason) => import_react33.default.createElement("li", { key: reason }, reason)))) : null, import_react33.default.createElement("button", {
     type: "button",
     className: "local-config-reset-open",
     disabled: panelButtonDisabled,
@@ -53897,17 +53882,17 @@ function LocalConfigResetPanel(props) {
       resetDialogState();
       setModalOpen(true);
     }
-  }, phase === "pending" ? "Deleting..." : "Delete all Configs"), modalOpen ? import_react32.default.createElement("div", {
+  }, phase === "pending" ? "Deleting..." : "Delete all Configs"), modalOpen ? import_react33.default.createElement("div", {
     className: "local-config-reset-backdrop",
     onClick: closeModal
-  }, import_react32.default.createElement("div", {
+  }, import_react33.default.createElement("div", {
     className: "local-config-reset-dialog",
     role: "alertdialog",
     "aria-modal": "true",
     "aria-labelledby": "local-config-reset-dialog-title",
     "aria-describedby": "local-config-reset-dialog-desc",
     onClick: (event) => event.stopPropagation()
-  }, import_react32.default.createElement("h3", { id: "local-config-reset-dialog-title", className: "local-config-reset-dialog-title" }, "Delete all Configs"), import_react32.default.createElement("p", { id: "local-config-reset-dialog-desc", className: "local-config-reset-dialog-desc" }, "This removes local preferences, context, mappings, browser app storage and PWA caches. It does not touch Azure DevOps, Azure saved queries, az login, ~/.azure, repository files, build artifacts or shell environment."), import_react32.default.createElement("label", { className: "local-config-reset-confirm-label" }, "Type DELETE ALL CONFIGS"), import_react32.default.createElement("input", {
+  }, import_react33.default.createElement("h3", { id: "local-config-reset-dialog-title", className: "local-config-reset-dialog-title" }, "Delete all Configs"), import_react33.default.createElement("p", { id: "local-config-reset-dialog-desc", className: "local-config-reset-dialog-desc" }, "This removes local preferences, context, mappings, browser app storage and PWA caches. It does not touch Azure DevOps, Azure saved queries, az login, ~/.azure, repository files, build artifacts or shell environment."), import_react33.default.createElement("label", { className: "local-config-reset-confirm-label" }, "Type DELETE ALL CONFIGS"), import_react33.default.createElement("input", {
     className: "local-config-reset-confirm-input",
     "aria-label": "Delete all Configs confirmation",
     value: confirmation,
@@ -53915,12 +53900,12 @@ function LocalConfigResetPanel(props) {
     onChange: (event) => {
       setConfirmation(event.target.value);
     }
-  }), errorMessage ? import_react32.default.createElement("p", { className: "local-config-reset-error", role: "alert" }, errorMessage) : null, serverReport || browserReport ? renderResetReport(serverReport, browserReport) : null, import_react32.default.createElement("div", { className: "local-config-reset-actions" }, import_react32.default.createElement("button", {
+  }), errorMessage ? import_react33.default.createElement("p", { className: "local-config-reset-error", role: "alert" }, errorMessage) : null, serverReport || browserReport ? renderResetReport(serverReport, browserReport) : null, import_react33.default.createElement("div", { className: "local-config-reset-actions" }, import_react33.default.createElement("button", {
     type: "button",
     className: "local-config-reset-cancel",
     disabled: phase === "pending" || phase === "reloading",
     onClick: closeModal
-  }, "Cancel"), import_react32.default.createElement("button", {
+  }, "Cancel"), import_react33.default.createElement("button", {
     type: "button",
     className: "local-config-reset-confirm",
     disabled: confirmDisabled,
@@ -53934,10 +53919,10 @@ function renderResetReport(serverReport, browserReport) {
     ...serverReport?.targets ?? [],
     ...browserReport?.targets ?? []
   ];
-  return import_react32.default.createElement("div", { className: "local-config-reset-report", role: "status", "aria-label": "local-config-reset-report" }, import_react32.default.createElement("strong", null, "Reset report"), import_react32.default.createElement("ul", null, targets.map((target) => renderReportItem(target))));
+  return import_react33.default.createElement("div", { className: "local-config-reset-report", role: "status", "aria-label": "local-config-reset-report" }, import_react33.default.createElement("strong", null, "Reset report"), import_react33.default.createElement("ul", null, targets.map((target) => renderReportItem(target))));
 }
 function renderReportItem(target) {
-  return import_react32.default.createElement("li", { key: `${target.target}-${target.status}`, "data-status": target.status }, `${target.label}: ${target.status}`);
+  return import_react33.default.createElement("li", { key: `${target.target}-${target.status}`, "data-status": target.status }, `${target.label}: ${target.status}`);
 }
 
 // dist/src/features/diagnostics/local-config-reset-guard.js
@@ -53968,14 +53953,14 @@ function evaluateLocalConfigResetGuard(input) {
 }
 
 // dist/src/features/diagnostics/diagnostics-tab.js
-var import_react33 = __toESM(require_react(), 1);
+var import_react34 = __toESM(require_react(), 1);
 function DiagnosticsTab(props) {
   const lines = buildDiagnosticsTabLines(props).slice(1);
-  const rows = lines.map((line, index2) => import_react33.default.createElement("li", { key: `${index2}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
-  return import_react33.default.createElement("section", {
+  const rows = lines.map((line, index2) => import_react34.default.createElement("li", { key: `${index2}-${line}`, className: "diagnostics-row" }, line.replace(/^- /, "")));
+  return import_react34.default.createElement("section", {
     "aria-label": "diagnostics-tab",
     className: "diagnostics-card"
-  }, import_react33.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react33.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react33.default.createElement("button", {
+  }, import_react34.default.createElement("h3", { className: "diagnostics-title" }, "Diagnostics"), import_react34.default.createElement("ul", { className: "diagnostics-list" }, ...rows), import_react34.default.createElement("button", {
     type: "button",
     className: "timeline-action-button timeline-action-button-primary",
     onClick: () => {
@@ -54902,14 +54887,14 @@ function nextThemeMode(mode) {
 }
 
 // dist/src/app/bootstrap/use-ado-comm-log-polling.js
-var import_react34 = __toESM(require_react(), 1);
+var import_react35 = __toESM(require_react(), 1);
 function useAdoCommLogPolling(input) {
-  const [logs, setLogs] = import_react34.default.useState([]);
-  const [cursor, setCursor] = import_react34.default.useState(0);
-  const [error, setError] = import_react34.default.useState(null);
-  const [loading, setLoading] = import_react34.default.useState(true);
-  const inFlightRef = import_react34.default.useRef(false);
-  import_react34.default.useEffect(() => {
+  const [logs, setLogs] = import_react35.default.useState([]);
+  const [cursor, setCursor] = import_react35.default.useState(0);
+  const [error, setError] = import_react35.default.useState(null);
+  const [loading, setLoading] = import_react35.default.useState(true);
+  const inFlightRef = import_react35.default.useRef(false);
+  import_react35.default.useEffect(() => {
     let active = true;
     const poll = async () => {
       if (!active || inFlightRef.current) {
@@ -55499,27 +55484,27 @@ function deleteSavedHeaderQueryFlow(params) {
 init_project_meta();
 
 // dist/src/app/bootstrap/use-header-query-flow.js
-var import_react35 = __toESM(require_react(), 1);
+var import_react36 = __toESM(require_react(), 1);
 function useHeaderQueryFlow(params) {
-  const initialState = import_react35.default.useMemo(() => createInitialHeaderQueryFlowState({
+  const initialState = import_react36.default.useMemo(() => createInitialHeaderQueryFlowState({
     savedQueries: params.initialSavedHeaderQueries,
     selectedHeaderQueryId: params.initialSelectedHeaderQueryId
   }), [params.initialSavedHeaderQueries, params.initialSelectedHeaderQueryId]);
-  const [savedHeaderQueries, setSavedHeaderQueries] = import_react35.default.useState(initialState.savedHeaderQueries);
-  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react35.default.useState(initialState.selectedHeaderQueryId);
-  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react35.default.useState(initialState.newHeaderQueryMode);
-  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react35.default.useState(initialState.newHeaderQueryInput);
-  const [headerQuerySearch, setHeaderQuerySearch] = import_react35.default.useState(initialState.headerQuerySearch);
-  const [headerQueryLoading, setHeaderQueryLoading] = import_react35.default.useState(initialState.headerQueryLoading);
-  const [headerQueryMessage, setHeaderQueryMessage] = import_react35.default.useState(initialState.headerQueryMessage);
-  const filteredHeaderQueries = import_react35.default.useMemo(() => {
+  const [savedHeaderQueries, setSavedHeaderQueries] = import_react36.default.useState(initialState.savedHeaderQueries);
+  const [selectedHeaderQueryId, setSelectedHeaderQueryId] = import_react36.default.useState(initialState.selectedHeaderQueryId);
+  const [newHeaderQueryMode, setNewHeaderQueryMode] = import_react36.default.useState(initialState.newHeaderQueryMode);
+  const [newHeaderQueryInput, setNewHeaderQueryInput] = import_react36.default.useState(initialState.newHeaderQueryInput);
+  const [headerQuerySearch, setHeaderQuerySearch] = import_react36.default.useState(initialState.headerQuerySearch);
+  const [headerQueryLoading, setHeaderQueryLoading] = import_react36.default.useState(initialState.headerQueryLoading);
+  const [headerQueryMessage, setHeaderQueryMessage] = import_react36.default.useState(initialState.headerQueryMessage);
+  const filteredHeaderQueries = import_react36.default.useMemo(() => {
     return resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch);
   }, [headerQuerySearch, savedHeaderQueries]);
-  const toggleNewHeaderQueryMode = import_react35.default.useCallback(() => {
+  const toggleNewHeaderQueryMode = import_react36.default.useCallback(() => {
     setNewHeaderQueryMode((current) => !current);
     setHeaderQueryMessage(null);
   }, []);
-  const loadSavedHeaderQuery = import_react35.default.useCallback(async (queryId) => {
+  const loadSavedHeaderQuery = import_react36.default.useCallback(async (queryId) => {
     if (headerQueryLoading) {
       return;
     }
@@ -55546,7 +55531,7 @@ function useHeaderQueryFlow(params) {
       setHeaderQueryLoading(false);
     }
   }, [headerQueryLoading, params.runQuery, savedHeaderQueries]);
-  const saveCurrentHeaderQuery = import_react35.default.useCallback(async (rawInput) => {
+  const saveCurrentHeaderQuery = import_react36.default.useCallback(async (rawInput) => {
     if (headerQueryLoading) {
       return;
     }
@@ -55581,7 +55566,7 @@ function useHeaderQueryFlow(params) {
       setHeaderQueryLoading(false);
     }
   }, [headerQueryLoading, params, savedHeaderQueries]);
-  const saveLoadedHeaderQuery = import_react35.default.useCallback(async (input) => {
+  const saveLoadedHeaderQuery = import_react36.default.useCallback(async (input) => {
     if (headerQueryLoading) {
       return {
         kind: "ignored_loading"
@@ -55622,7 +55607,7 @@ function useHeaderQueryFlow(params) {
       setHeaderQueryLoading(false);
     }
   }, [headerQueryLoading, params.fetchQueryDetails, params.headerSavedQueryLimit, savedHeaderQueries]);
-  const deleteSavedHeaderQuery = import_react35.default.useCallback((queryId) => {
+  const deleteSavedHeaderQuery = import_react36.default.useCallback((queryId) => {
     const result = deleteSavedHeaderQueryFlow({
       queryId,
       state: {
@@ -55634,7 +55619,7 @@ function useHeaderQueryFlow(params) {
     setSelectedHeaderQueryId(result.selectedHeaderQueryId);
     setHeaderQueryMessage(null);
   }, [savedHeaderQueries, selectedHeaderQueryId]);
-  const hydrateSavedHeaderQueries = import_react35.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
+  const hydrateSavedHeaderQueries = import_react36.default.useCallback((nextSavedHeaderQueries, nextSelectedId) => {
     setSavedHeaderQueries(nextSavedHeaderQueries);
     setSelectedHeaderQueryId(nextSelectedId);
   }, []);
@@ -55667,7 +55652,7 @@ function resolveUnexpectedHeaderQueryErrorMessage(error) {
 }
 
 // dist/src/app/bootstrap/use-initial-query-onboarding-flow.js
-var import_react36 = __toESM(require_react(), 1);
+var import_react37 = __toESM(require_react(), 1);
 
 // dist/src/app/bootstrap/ui-client-initial-query-onboarding.js
 function resolveInitialQueryOnboardingStatus(params) {
@@ -55697,19 +55682,19 @@ function getInitialQueryOnboardingErrorMessage(error) {
 }
 function useInitialQueryOnboardingFlow(params) {
   const hydratePreferences = params.hydratePreferences ?? hydrateUserPreferences;
-  const [status, setStatus] = import_react36.default.useState("pending_hydration");
-  const [hydratedPreferences, setHydratedPreferences] = import_react36.default.useState(null);
-  const [queryInput, setQueryInputState] = import_react36.default.useState("");
-  const [loading, setLoading] = import_react36.default.useState(false);
-  const [statusMessage, setStatusMessage] = import_react36.default.useState(null);
-  const [errorMessage, setErrorMessage] = import_react36.default.useState(null);
-  const latestSignalsRef = import_react36.default.useRef({
+  const [status, setStatus] = import_react37.default.useState("pending_hydration");
+  const [hydratedPreferences, setHydratedPreferences] = import_react37.default.useState(null);
+  const [queryInput, setQueryInputState] = import_react37.default.useState("");
+  const [loading, setLoading] = import_react37.default.useState(false);
+  const [statusMessage, setStatusMessage] = import_react37.default.useState(null);
+  const [errorMessage, setErrorMessage] = import_react37.default.useState(null);
+  const latestSignalsRef = import_react37.default.useRef({
     restoredResponse: params.restoredResponse
   });
   latestSignalsRef.current = {
     restoredResponse: params.restoredResponse
   };
-  import_react36.default.useEffect(() => {
+  import_react37.default.useEffect(() => {
     let cancelled = false;
     void hydratePreferences().then((preferences) => {
       if (cancelled) {
@@ -55726,7 +55711,7 @@ function useInitialQueryOnboardingFlow(params) {
       cancelled = true;
     };
   }, [hydratePreferences]);
-  import_react36.default.useEffect(() => {
+  import_react37.default.useEffect(() => {
     if (!hydratedPreferences || status !== "required") {
       return;
     }
@@ -55739,14 +55724,14 @@ function useInitialQueryOnboardingFlow(params) {
       setStatus(nextStatus);
     }
   }, [hydratedPreferences, params.restoredResponse, status]);
-  const completeInitialQueryOnboarding = import_react36.default.useCallback(() => {
+  const completeInitialQueryOnboarding = import_react37.default.useCallback(() => {
     setStatus("completed");
   }, []);
-  const setQueryInput = import_react36.default.useCallback((value) => {
+  const setQueryInput = import_react37.default.useCallback((value) => {
     setQueryInputState(value);
     setErrorMessage(null);
   }, []);
-  const submit = import_react36.default.useCallback(async () => {
+  const submit = import_react37.default.useCallback(async () => {
     if (loading) {
       return;
     }
@@ -55918,13 +55903,13 @@ function failed(target, label) {
 }
 
 // dist/src/app/bootstrap/app-release-badge.js
-var import_react37 = __toESM(require_react(), 1);
+var import_react38 = __toESM(require_react(), 1);
 init_project_meta();
 function AppReleaseBadge(props) {
   const label = `v${APP_VERSION}`;
-  return import_react37.default.createElement("span", {
+  return import_react38.default.createElement("span", {
     className: "app-release-badge-group"
-  }, import_react37.default.createElement("button", {
+  }, import_react38.default.createElement("button", {
     ref: props.versionButtonRef,
     type: "button",
     className: "app-release-badge",
@@ -55933,7 +55918,7 @@ function AppReleaseBadge(props) {
     "aria-label": `Open changelog for version ${APP_VERSION}`,
     title: `Open changelog for version ${APP_VERSION}`,
     onClick: props.onVersionClick
-  }, label), import_react37.default.createElement("button", {
+  }, label), import_react38.default.createElement("button", {
     ref: props.shortcutsButtonRef,
     type: "button",
     className: "app-release-shortcuts-button",
@@ -55942,7 +55927,7 @@ function AppReleaseBadge(props) {
     "aria-label": "Open keyboard shortcuts",
     title: "Open keyboard shortcuts",
     onClick: props.onShortcutsClick
-  }, import_react37.default.createElement("span", { "aria-hidden": "true" }, "\u2318")), props.updateAvailable ? import_react37.default.createElement("button", {
+  }, import_react38.default.createElement("span", { "aria-hidden": "true" }, "\u2318")), props.updateAvailable ? import_react38.default.createElement("button", {
     ref: props.updateButtonRef,
     type: "button",
     className: "app-release-update-indicator",
@@ -55955,19 +55940,19 @@ function AppReleaseBadge(props) {
 }
 
 // dist/src/app/bootstrap/use-app-update-check.js
-var import_react38 = __toESM(require_react(), 1);
+var import_react39 = __toESM(require_react(), 1);
 function useAppUpdateCheck(params) {
   const { checkAppUpdate } = params;
-  const [updateNotice, setUpdateNotice] = import_react38.default.useState(null);
-  const mountedRef = import_react38.default.useRef(true);
-  const inFlightRef = import_react38.default.useRef(null);
-  import_react38.default.useEffect(() => {
+  const [updateNotice, setUpdateNotice] = import_react39.default.useState(null);
+  const mountedRef = import_react39.default.useRef(true);
+  const inFlightRef = import_react39.default.useRef(null);
+  import_react39.default.useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
     };
   }, []);
-  const trigger = import_react38.default.useCallback(() => {
+  const trigger = import_react39.default.useCallback(() => {
     if (inFlightRef.current) {
       return;
     }
@@ -56007,21 +55992,21 @@ var ADO_COMM_LOG_UI_MAX = 1e3;
 var UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 var THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 var HEADER_SAVED_QUERY_LIMIT = 25;
-var LazyAppChangelogDialog = import_react45.default.lazy(async () => {
+var LazyAppChangelogDialog = import_react46.default.lazy(async () => {
   const module = await Promise.resolve().then(() => (init_app_changelog_dialog(), app_changelog_dialog_exports));
   return { default: module.AppChangelogDialog };
 });
-var LazyAppKeyboardShortcutsDialog = import_react45.default.lazy(async () => {
+var LazyAppKeyboardShortcutsDialog = import_react46.default.lazy(async () => {
   const module = await Promise.resolve().then(() => (init_app_keyboard_shortcuts_dialog(), app_keyboard_shortcuts_dialog_exports));
   return { default: module.AppKeyboardShortcutsDialog };
 });
 function renderAdoCommLogPanel(params) {
-  return import_react45.default.createElement("details", {
+  return import_react46.default.createElement("details", {
     "aria-label": "ado-communication-log-panel",
     className: "ado-communication-log-panel",
     open: true,
     "data-auto-dismiss": "off"
-  }, import_react45.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react45.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react45.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react45.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react45.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react45.default.createElement("pre", {
+  }, import_react46.default.createElement("summary", null, "Azure DevOps API logs"), params.loading ? import_react46.default.createElement("div", null, "Loading communication logs\u2026") : null, params.error ? import_react46.default.createElement("div", null, `Log stream error: ${params.error}`) : null, import_react46.default.createElement("div", { className: "ado-communication-log-list" }, params.logs.length === 0 ? import_react46.default.createElement("div", null, "No Azure communication entries yet.") : params.logs.map((entry) => import_react46.default.createElement("pre", {
     key: `${entry.seq}-${entry.direction}`,
     "aria-label": "ado-log-entry",
     className: "ado-communication-log-entry"
@@ -56029,55 +56014,55 @@ function renderAdoCommLogPanel(params) {
 }
 function bootstrapUiClient(options) {
   const root4 = (0, import_client.createRoot)(options.container);
-  root4.render(import_react45.default.createElement(import_react45.default.StrictMode, null, import_react45.default.createElement(QueryClientProvider, {
+  root4.render(import_react46.default.createElement(import_react46.default.StrictMode, null, import_react46.default.createElement(QueryClientProvider, {
     client: options.composition.queryClient
-  }, import_react45.default.createElement(BrowserRouter, null, import_react45.default.createElement(UiShellApp, {
+  }, import_react46.default.createElement(BrowserRouter, null, import_react46.default.createElement(UiShellApp, {
     composition: options.composition
   })))));
 }
 function UiShellApp(props) {
-  const restoredState = import_react45.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
+  const restoredState = import_react46.default.useMemo(() => readPersistedUiShellState(UI_SHELL_STATE_KEY), []);
   const initialResponse = restoredState?.response ?? null;
   const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab = initialResponse && initialResponse.mappingValidation.status === "invalid" ? "mapping" : restoredState?.activeTab ?? "query";
   const cachedPreferences2 = getCachedUserPreferences();
-  const [activeTab, setActiveTab] = import_react45.default.useState(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = import_react45.default.useState(false);
-  const [headerDialogMode, setHeaderDialogMode] = import_react45.default.useState(null);
-  const [response, setResponse] = import_react45.default.useState(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = import_react45.default.useState(initialLastRunRequest);
-  const [uiModel, setUiModel] = import_react45.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
-  const [blockerMessage, setBlockerMessage] = import_react45.default.useState(null);
-  const [mappingFixResponse, setMappingFixResponse] = import_react45.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
-  const [themeMode, setThemeMode] = import_react45.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
-  const [effectiveTheme, setEffectiveTheme] = import_react45.default.useState(() => resolveEffectiveTheme(themeMode));
-  const [liveSyncEnabled, setLiveSyncEnabled] = import_react45.default.useState(() => loadTimelineLiveSyncEnabledPreference());
-  const responseRef = import_react45.default.useRef(initialResponse);
-  const [workItemSyncState, setWorkItemSyncState] = import_react45.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
-  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react45.default.useState(0);
-  const [isRefreshing, setIsRefreshing] = import_react45.default.useState(false);
-  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react45.default.useState(false);
-  const [detailsPanelDirty, setDetailsPanelDirty] = import_react45.default.useState(false);
-  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react45.default.useState(0);
-  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react45.default.useState(false);
-  const isRefreshingRef = import_react45.default.useRef(isRefreshing);
-  const workItemSyncInFlightRef = import_react45.default.useRef(0);
-  const pendingWorkItemMutationsRef = import_react45.default.useRef([]);
-  const preOptimisticResponseSnapshotRef = import_react45.default.useRef(null);
-  const flushPendingWorkItemMutationsPromiseRef = import_react45.default.useRef(null);
-  const retryRefreshInFlightPromiseRef = import_react45.default.useRef(null);
-  const refreshGuardStateRef = import_react45.default.useRef({
+  const [activeTab, setActiveTab] = import_react46.default.useState(initialActiveTab);
+  const [controlsOpen, setControlsOpen] = import_react46.default.useState(false);
+  const [headerDialogMode, setHeaderDialogMode] = import_react46.default.useState(null);
+  const [response, setResponse] = import_react46.default.useState(initialResponse);
+  const [lastRunRequest, setLastRunRequest] = import_react46.default.useState(initialLastRunRequest);
+  const [uiModel, setUiModel] = import_react46.default.useState(initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel());
+  const [blockerMessage, setBlockerMessage] = import_react46.default.useState(null);
+  const [mappingFixResponse, setMappingFixResponse] = import_react46.default.useState(initialResponse && initialResponse.mappingValidation.status === "invalid" ? initialResponse : null);
+  const [themeMode, setThemeMode] = import_react46.default.useState(() => readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode));
+  const [effectiveTheme, setEffectiveTheme] = import_react46.default.useState(() => resolveEffectiveTheme(themeMode));
+  const [liveSyncEnabled, setLiveSyncEnabled] = import_react46.default.useState(() => loadTimelineLiveSyncEnabledPreference());
+  const responseRef = import_react46.default.useRef(initialResponse);
+  const [workItemSyncState, setWorkItemSyncState] = import_react46.default.useState(() => loadTimelineLiveSyncEnabledPreference() ? "up_to_date" : "paused");
+  const [pendingWorkItemSyncCount, setPendingWorkItemSyncCount] = import_react46.default.useState(0);
+  const [isRefreshing, setIsRefreshing] = import_react46.default.useState(false);
+  const [showRefreshDiscardWarning, setShowRefreshDiscardWarning] = import_react46.default.useState(false);
+  const [detailsPanelDirty, setDetailsPanelDirty] = import_react46.default.useState(false);
+  const [detailsDraftResetKey, setDetailsDraftResetKey] = import_react46.default.useState(0);
+  const [hasOptimisticChanges, setHasOptimisticChanges] = import_react46.default.useState(false);
+  const isRefreshingRef = import_react46.default.useRef(isRefreshing);
+  const workItemSyncInFlightRef = import_react46.default.useRef(0);
+  const pendingWorkItemMutationsRef = import_react46.default.useRef([]);
+  const preOptimisticResponseSnapshotRef = import_react46.default.useRef(null);
+  const flushPendingWorkItemMutationsPromiseRef = import_react46.default.useRef(null);
+  const retryRefreshInFlightPromiseRef = import_react46.default.useRef(null);
+  const refreshGuardStateRef = import_react46.default.useRef({
     detailsPanelDirty: false,
     hasOptimisticChanges: false,
     liveSyncEnabled,
     workItemSyncState
   });
-  const liveSyncEnabledRef = import_react45.default.useRef(liveSyncEnabled);
-  const timelineSelectionStoreRef = import_react45.default.useRef(createTimelineSelectionStore());
-  const changelogVersionButtonRef = import_react45.default.useRef(null);
-  const keyboardShortcutsButtonRef = import_react45.default.useRef(null);
-  const changelogUpdateButtonRef = import_react45.default.useRef(null);
-  const workItemStateOptionsCacheRef = import_react45.default.useRef(/* @__PURE__ */ new Map());
+  const liveSyncEnabledRef = import_react46.default.useRef(liveSyncEnabled);
+  const timelineSelectionStoreRef = import_react46.default.useRef(createTimelineSelectionStore());
+  const changelogVersionButtonRef = import_react46.default.useRef(null);
+  const keyboardShortcutsButtonRef = import_react46.default.useRef(null);
+  const changelogUpdateButtonRef = import_react46.default.useRef(null);
+  const workItemStateOptionsCacheRef = import_react46.default.useRef(/* @__PURE__ */ new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
     detailsPanelDirty,
@@ -56099,28 +56084,28 @@ function UiShellApp(props) {
     readLimit: ADO_COMM_LOG_READ_LIMIT,
     maxEntries: ADO_COMM_LOG_UI_MAX
   });
-  const updateRefreshGuardState = import_react45.default.useCallback((patch2) => {
+  const updateRefreshGuardState = import_react46.default.useCallback((patch2) => {
     refreshGuardStateRef.current = {
       ...refreshGuardStateRef.current,
       ...patch2
     };
   }, []);
-  const setGuardedHasOptimisticChanges = import_react45.default.useCallback((next) => {
+  const setGuardedHasOptimisticChanges = import_react46.default.useCallback((next) => {
     updateRefreshGuardState({ hasOptimisticChanges: next });
     setHasOptimisticChanges(next);
   }, [updateRefreshGuardState]);
-  const setGuardedWorkItemSyncState = import_react45.default.useCallback((next) => {
+  const setGuardedWorkItemSyncState = import_react46.default.useCallback((next) => {
     const current = refreshGuardStateRef.current.workItemSyncState;
     const resolved = typeof next === "function" ? next(current) : next;
     updateRefreshGuardState({ workItemSyncState: resolved });
     setWorkItemSyncState(resolved);
   }, [updateRefreshGuardState]);
-  const setGuardedLiveSyncEnabled = import_react45.default.useCallback((enabled) => {
+  const setGuardedLiveSyncEnabled = import_react46.default.useCallback((enabled) => {
     liveSyncEnabledRef.current = enabled;
     updateRefreshGuardState({ liveSyncEnabled: enabled });
     setLiveSyncEnabled(enabled);
   }, [updateRefreshGuardState]);
-  const fetchWorkItemStateOptionsCached = import_react45.default.useCallback(async ({ targetWorkItemId }) => {
+  const fetchWorkItemStateOptionsCached = import_react46.default.useCallback(async ({ targetWorkItemId }) => {
     const cached = workItemStateOptionsCacheRef.current.get(targetWorkItemId);
     if (cached) {
       return cached;
@@ -56129,10 +56114,10 @@ function UiShellApp(props) {
     workItemStateOptionsCacheRef.current.set(targetWorkItemId, response2.states);
     return response2.states;
   }, [props.composition.controller]);
-  const enrichRuntimeStateColors = import_react45.default.useCallback(async (incoming) => {
+  const enrichRuntimeStateColors = import_react46.default.useCallback(async (incoming) => {
     return enrichResponseWithRuntimeStateColors(incoming, fetchWorkItemStateOptionsCached);
   }, [fetchWorkItemStateOptionsCached]);
-  const runQuery = import_react45.default.useCallback(async (request) => {
+  const runQuery = import_react46.default.useCallback(async (request) => {
     try {
       const result = await props.composition.runQuerySelectionFlow({
         queryId: request.queryId,
@@ -56173,11 +56158,11 @@ function UiShellApp(props) {
       throw error;
     }
   }, [enrichRuntimeStateColors, props.composition, triggerAppUpdateCheck]);
-  const handleNeedsFix = import_react45.default.useCallback((needsFixResponse) => {
+  const handleNeedsFix = import_react46.default.useCallback((needsFixResponse) => {
     setMappingFixResponse(needsFixResponse);
     setActiveTab("mapping");
   }, []);
-  const applyMappingDefaults = import_react45.default.useCallback(async (selection) => {
+  const applyMappingDefaults = import_react46.default.useCallback(async (selection) => {
     const nextQueryId = response?.activeQueryId ?? mappingFixResponse?.activeQueryId;
     if (!nextQueryId) {
       return;
@@ -56197,20 +56182,20 @@ function UiShellApp(props) {
       setMappingFixResponse(next);
     }
   }, [mappingFixResponse?.activeQueryId, response?.activeQueryId, runQuery]);
-  const readRefreshGuardInput = import_react45.default.useCallback((options) => createRefreshDiscardWarningInput({
+  const readRefreshGuardInput = import_react46.default.useCallback((options) => createRefreshDiscardWarningInput({
     state: refreshGuardStateRef.current,
     pendingWorkItemMutationCount: pendingWorkItemMutationsRef.current.length,
     afterSuccessfulLiveSyncFlush: options?.afterSuccessfulLiveSyncFlush
   }), []);
-  const handleDetailsDirtyChange = import_react45.default.useCallback((dirty) => {
+  const handleDetailsDirtyChange = import_react46.default.useCallback((dirty) => {
     updateRefreshGuardState({ detailsPanelDirty: dirty });
     setDetailsPanelDirty(dirty);
   }, [updateRefreshGuardState]);
-  const handleSetLiveSyncEnabled = import_react45.default.useCallback((enabled) => {
+  const handleSetLiveSyncEnabled = import_react46.default.useCallback((enabled) => {
     setGuardedLiveSyncEnabled(enabled);
     saveTimelineLiveSyncEnabledPreference(enabled);
   }, [setGuardedLiveSyncEnabled]);
-  const executeRefresh = import_react45.default.useCallback(async (discardPendingChanges) => {
+  const executeRefresh = import_react46.default.useCallback(async (discardPendingChanges) => {
     isRefreshingRef.current = true;
     setIsRefreshing(true);
     if (discardPendingChanges) {
@@ -56267,14 +56252,14 @@ function UiShellApp(props) {
     runQuery: async ({ queryId }) => runQuery({ queryId }),
     saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
-  const runTrackedWorkItemUpdate = import_react45.default.useCallback(async (operation) => {
+  const runTrackedWorkItemUpdate = import_react46.default.useCallback(async (operation) => {
     return runTrackedWorkItemSync({
       operation,
       inFlightRef: workItemSyncInFlightRef,
       setWorkItemSyncState: setGuardedWorkItemSyncState
     });
   }, [setGuardedWorkItemSyncState]);
-  const flushQueuedWorkItemMutations = import_react45.default.useCallback(async () => {
+  const flushQueuedWorkItemMutations = import_react46.default.useCallback(async () => {
     if (flushPendingWorkItemMutationsPromiseRef.current) {
       return flushPendingWorkItemMutationsPromiseRef.current;
     }
@@ -56300,7 +56285,7 @@ function UiShellApp(props) {
     flushPendingWorkItemMutationsPromiseRef.current = flushPromise;
     return flushPromise;
   }, [runTrackedWorkItemUpdate, setGuardedHasOptimisticChanges, setGuardedWorkItemSyncState]);
-  const runRetryRefresh = import_react45.default.useCallback(async () => {
+  const runRetryRefresh = import_react46.default.useCallback(async () => {
     if (isRefreshingRef.current) {
       return;
     }
@@ -56321,8 +56306,8 @@ function UiShellApp(props) {
     }
     await executeRefresh(false);
   }, [executeRefresh, flushQueuedWorkItemMutations, readRefreshGuardInput]);
-  const retryRefresh = import_react45.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
-  const enqueuePendingWorkItemMutation = import_react45.default.useCallback((mutation) => {
+  const retryRefresh = import_react46.default.useCallback(() => runWithInFlightGuard(retryRefreshInFlightPromiseRef, runRetryRefresh), [runRetryRefresh]);
+  const enqueuePendingWorkItemMutation = import_react46.default.useCallback((mutation) => {
     if (pendingWorkItemMutationsRef.current.length === 0) {
       preOptimisticResponseSnapshotRef.current = responseRef.current;
     }
@@ -56330,7 +56315,7 @@ function UiShellApp(props) {
     setPendingWorkItemSyncCount(pendingWorkItemMutationsRef.current.length);
     setGuardedHasOptimisticChanges(true);
   }, [setGuardedHasOptimisticChanges]);
-  const scheduleWorkItemMutation = import_react45.default.useCallback(async (params) => {
+  const scheduleWorkItemMutation = import_react46.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "work_item",
@@ -56346,7 +56331,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleDependencyMutation = import_react45.default.useCallback(async (params) => {
+  const scheduleDependencyMutation = import_react46.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "dependency",
@@ -56363,7 +56348,7 @@ function UiShellApp(props) {
     }
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
-  const scheduleReparentMutation = import_react45.default.useCallback(async (params) => {
+  const scheduleReparentMutation = import_react46.default.useCallback(async (params) => {
     applyTimelineMutationToUiState(setUiModel, setResponse, params.applyToTimeline);
     enqueuePendingWorkItemMutation(createPendingWorkItemMutation({
       kind: "reparent",
@@ -56380,7 +56365,7 @@ function UiShellApp(props) {
     await flushQueuedWorkItemMutations();
   }, [enqueuePendingWorkItemMutation, flushQueuedWorkItemMutations, setGuardedWorkItemSyncState]);
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
-  const fetchWorkItemFieldDefinitions = import_react45.default.useCallback(async ({ workItemTypes }) => {
+  const fetchWorkItemFieldDefinitions = import_react46.default.useCallback(async ({ workItemTypes }) => {
     const fetchDefinitions = props.composition.controller.fetchWorkItemFieldDefinitions;
     if (!fetchDefinitions) {
       throw new Error("Field definitions are not available.");
@@ -56388,20 +56373,20 @@ function UiShellApp(props) {
     const response2 = await fetchDefinitions({ workItemTypes });
     return response2.fields;
   }, [props.composition.controller]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     responseRef.current = response;
   }, [response]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     liveSyncEnabledRef.current = liveSyncEnabled;
   }, [liveSyncEnabled]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     persistUiShellState(UI_SHELL_STATE_KEY, {
       activeTab,
       response,
       lastRunRequest
     });
   }, [activeTab, lastRunRequest, response]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     const preferences = initialQueryOnboardingFlow.hydratedPreferences;
     if (!preferences) {
       return;
@@ -56412,13 +56397,13 @@ function UiShellApp(props) {
     const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
     headerQueryFlow.hydrateSavedHeaderQueries(hydratedHeaderQuerySelection.savedHeaderQueries, hydratedHeaderQuerySelection.selectedHeaderQueryId);
   }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => current === "syncing" ? current : enabled ? "up_to_date" : "paused");
     });
   }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
       void flushQueuedWorkItemMutations();
       return;
@@ -56428,7 +56413,7 @@ function UiShellApp(props) {
     }
     setGuardedWorkItemSyncState(liveSyncEnabled ? "up_to_date" : "paused");
   }, [flushQueuedWorkItemMutations, liveSyncEnabled, pendingWorkItemSyncCount, setGuardedWorkItemSyncState, workItemSyncState]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     const hasUnsavedChanges = () => pendingWorkItemMutationsRef.current.length > 0 || refreshGuardStateRef.current.detailsPanelDirty || refreshGuardStateRef.current.hasOptimisticChanges;
     const onBeforeUnload = (event) => {
       if (hasUnsavedChanges()) {
@@ -56438,7 +56423,7 @@ function UiShellApp(props) {
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     persistUserPreferencesPatch({
       themeMode
     });
@@ -56464,7 +56449,7 @@ function UiShellApp(props) {
       mediaQuery.removeListener(handleSystemThemeChange);
     };
   }, [themeMode]);
-  import_react45.default.useEffect(() => {
+  import_react46.default.useEffect(() => {
     const onPointerDown = (event) => {
       const target = event.target;
       const trustBadgeElement = document.querySelector("details.trust-badge-details");
@@ -56516,7 +56501,7 @@ function UiShellApp(props) {
     headerQueryLoading: headerQueryFlow.headerQueryLoading,
     workItemSyncState
   });
-  const controlsContent = import_react45.default.createElement(import_react45.default.Fragment, null, import_react45.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react45.default.createElement(TopTabs, {
+  const controlsContent = import_react46.default.createElement(import_react46.default.Fragment, null, import_react46.default.createElement("p", { className: "ui-shell-side-title" }, "Controls"), import_react46.default.createElement(TopTabs, {
     activeTab,
     model: uiModel,
     onTabChange: (tab2) => {
@@ -56526,10 +56511,10 @@ function UiShellApp(props) {
       setBlockerMessage(payload);
       setControlsOpen(true);
     }
-  }), blockerMessage ? import_react45.default.createElement("section", {
+  }), blockerMessage ? import_react46.default.createElement("section", {
     "aria-label": "tab-blocker-guidance",
     className: "tab-blocker-guidance"
-  }, import_react45.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react45.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react45.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react45.default.createElement(LocalConfigResetPanel, {
+  }, import_react46.default.createElement("strong", null, `Blocked ${blockerMessage.tab}`), import_react46.default.createElement("div", null, `Reason: ${blockerMessage.reason}`), import_react46.default.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)) : null, import_react46.default.createElement(LocalConfigResetPanel, {
     guard: localConfigResetGuard,
     onServerReset: props.composition.controller.resetLocalConfigs,
     onBrowserCleanup: () => clearBrowserLocalConfigs({
@@ -56539,7 +56524,7 @@ function UiShellApp(props) {
       window.location.reload();
     }
   }), mainPanel);
-  return import_react45.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react45.default.createElement("section", { className: "ui-shell-header" }, import_react45.default.createElement("div", { className: "ui-shell-brand-row" }, import_react45.default.createElement("div", { className: "ui-shell-brand" }, import_react45.default.createElement("h1", null, "AzureGanttOps")), import_react45.default.createElement(AppReleaseBadge, {
+  return import_react46.default.createElement("main", { "data-ui-shell": "phase-6-runtime", className: "ui-shell" }, import_react46.default.createElement("section", { className: "ui-shell-header" }, import_react46.default.createElement("div", { className: "ui-shell-brand-row" }, import_react46.default.createElement("div", { className: "ui-shell-brand" }, import_react46.default.createElement("h1", null, "AzureGanttOps")), import_react46.default.createElement(AppReleaseBadge, {
     open: changelogOpen,
     shortcutsOpen: keyboardShortcutsOpen,
     updateAvailable: updateNotice !== null,
@@ -56558,7 +56543,7 @@ function UiShellApp(props) {
       setControlsOpen(false);
       setHeaderDialogMode("update_notice");
     }
-  })), import_react45.default.createElement("div", { className: "ui-shell-header-actions" }, import_react45.default.createElement("div", { className: "header-query-picker" }, import_react45.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react45.default.createElement("details", { className: "header-query-dropdown" }, import_react45.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react45.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react45.default.createElement("input", {
+  })), import_react46.default.createElement("div", { className: "ui-shell-header-actions" }, import_react46.default.createElement("div", { className: "header-query-picker" }, import_react46.default.createElement("label", { className: "header-query-picker-label" }, "Queries"), import_react46.default.createElement("details", { className: "header-query-dropdown" }, import_react46.default.createElement("summary", { className: "header-query-dropdown-trigger" }, headerQueryFlow.selectedHeaderQueryId ? toShortQueryName(headerQueryFlow.savedHeaderQueries.find((entry) => entry.id === headerQueryFlow.selectedHeaderQueryId)?.name ?? headerQueryFlow.selectedHeaderQueryId, headerQueryFlow.selectedHeaderQueryId) : "Select query..."), import_react46.default.createElement("div", { className: "header-query-dropdown-panel" }, import_react46.default.createElement("input", {
     className: "header-query-dropdown-search",
     "aria-label": "Search queries",
     placeholder: "Search...",
@@ -56566,7 +56551,7 @@ function UiShellApp(props) {
     onChange: (event) => {
       headerQueryFlow.setHeaderQuerySearch(event.target.value);
     }
-  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react45.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react45.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react45.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react45.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react45.default.createElement("button", {
+  }), headerQueryFlow.savedHeaderQueries.length === 0 ? import_react46.default.createElement("div", { className: "header-query-dropdown-empty" }, "No saved queries") : import_react46.default.createElement("div", { className: "header-query-dropdown-list" }, ...headerQueryFlow.filteredHeaderQueries.length === 0 ? [import_react46.default.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")] : headerQueryFlow.filteredHeaderQueries.map((entry) => import_react46.default.createElement("div", { key: `manage-${entry.id}`, className: "header-query-dropdown-item" }, import_react46.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-delete",
     "aria-label": `Delete query ${toShortQueryName(entry.name, entry.id)}`,
@@ -56576,7 +56561,7 @@ function UiShellApp(props) {
       event.stopPropagation();
       headerQueryFlow.deleteSavedHeaderQuery(entry.id);
     }
-  }, "\xD7"), import_react45.default.createElement("button", {
+  }, "\xD7"), import_react46.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-open",
     "aria-label": `Open query ${toShortQueryName(entry.name, entry.id)} in Azure DevOps`,
@@ -56591,7 +56576,7 @@ function UiShellApp(props) {
         window.open(queryUrl, "_blank", "noopener,noreferrer");
       }
     }
-  }, import_react45.default.createElement("svg", {
+  }, import_react46.default.createElement("svg", {
     width: "14",
     height: "14",
     viewBox: "0 0 24 24",
@@ -56600,21 +56585,21 @@ function UiShellApp(props) {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  }, import_react45.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react45.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react45.default.createElement("button", {
+  }, import_react46.default.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }), import_react46.default.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }))), import_react46.default.createElement("button", {
     type: "button",
     className: "header-query-dropdown-item-select",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.loadSavedHeaderQuery(entry.id);
     }
-  }, toShortQueryName(entry.name, entry.id))))))), import_react45.default.createElement("button", {
+  }, toShortQueryName(entry.name, entry.id))))))), import_react46.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       headerQueryFlow.toggleNewHeaderQueryMode();
     }
-  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react45.default.createElement("input", {
+  }, "Add Query"), headerQueryFlow.newHeaderQueryMode ? import_react46.default.createElement("input", {
     className: "header-query-picker-input",
     "aria-label": "New query URL or ID",
     placeholder: "New query URL or ID",
@@ -56630,23 +56615,23 @@ function UiShellApp(props) {
         void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
       }
     }
-  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react45.default.createElement("button", {
+  }) : null, headerQueryFlow.newHeaderQueryMode ? import_react46.default.createElement("button", {
     type: "button",
     className: "header-query-picker-button",
     disabled: headerQueryFlow.headerQueryLoading,
     onClick: () => {
       void headerQueryFlow.saveCurrentHeaderQuery(headerQueryFlow.newHeaderQueryInput);
     }
-  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react45.default.createElement("div", {
+  }, headerQueryFlow.headerQueryLoading ? "Loading..." : "Load") : null, headerQueryFlow.headerQueryLoading ? import_react46.default.createElement("div", {
     className: "header-query-loading",
     role: "status",
     "aria-live": "polite",
     "aria-label": "Query is loading"
-  }, import_react45.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react45.default.createElement("span", {
+  }, import_react46.default.createElement("div", { className: "header-query-loading-bar" })) : null, headerQueryFlow.headerQueryMessage ? import_react46.default.createElement("span", {
     className: "header-query-picker-message",
     role: "status",
     "aria-live": "polite"
-  }, headerQueryFlow.headerQueryMessage) : null), import_react45.default.createElement("div", { className: "theme-menu" }, import_react45.default.createElement("button", {
+  }, headerQueryFlow.headerQueryMessage) : null), import_react46.default.createElement("div", { className: "theme-menu" }, import_react46.default.createElement("button", {
     type: "button",
     className: "theme-menu-trigger",
     "aria-label": `Switch theme (current: ${labelForThemeMode(themeMode)})`,
@@ -56654,7 +56639,7 @@ function UiShellApp(props) {
     onClick: () => {
       setThemeMode(nextThemeMode(themeMode));
     }
-  }, import_react45.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react45.default.createElement(TrustBadge, {
+  }, import_react46.default.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))), import_react46.default.createElement(TrustBadge, {
     statusCode: uiModel.statusCode,
     trustState: uiModel.trustState,
     lastRefreshAt: uiModel.freshness.lastRefreshAt,
@@ -56662,7 +56647,7 @@ function UiShellApp(props) {
     controlsOpen,
     onControlsOpenChange: setControlsOpen,
     controlsContent
-  }))), import_react45.default.createElement("section", { className: "ui-shell-content" }, import_react45.default.createElement("section", { className: "gantt-primary-card" }, import_react45.default.createElement(WarningBanner, {
+  }))), import_react46.default.createElement("section", { className: "ui-shell-content" }, import_react46.default.createElement("section", { className: "gantt-primary-card" }, import_react46.default.createElement(WarningBanner, {
     uiState: uiModel.uiState,
     guidance: uiModel.guidance,
     retryActionLabel: uiModel.strictFail.retryActionLabel ?? "Refresh",
@@ -56670,7 +56655,7 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }), import_react45.default.createElement(TimelinePane, {
+  }), import_react46.default.createElement(TimelinePane, {
     key: response?.activeQueryId ?? "timeline-no-query",
     activeQueryId: response?.activeQueryId ?? null,
     activeQueryName: resolveActiveQueryName(response?.activeQueryId ?? null, response, headerQueryFlow.savedHeaderQueries),
@@ -56901,36 +56886,36 @@ function UiShellApp(props) {
     onRetryRefresh: () => {
       void retryRefresh();
     }
-  }))), import_react45.default.createElement("footer", { className: "ui-shell-footer" }, import_react45.default.createElement("span", null, "An "), import_react45.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react45.default.createElement("span", null, " by Christian Betz @ "), import_react45.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react45.default.createElement(import_react45.default.Suspense, { fallback: null }, import_react45.default.createElement(LazyAppChangelogDialog, {
+  }))), import_react46.default.createElement("footer", { className: "ui-shell-footer" }, import_react46.default.createElement("span", null, "An "), import_react46.default.createElement("a", { href: GITHUB_REPO_URL, target: "_blank", rel: "noreferrer" }, "Open Source Project"), import_react46.default.createElement("span", null, " by Christian Betz @ "), import_react46.default.createElement("a", { href: TENSORFIVE_WEBSITE_URL, target: "_blank", rel: "noreferrer" }, "TensorFive GmbH")), changelogOpen ? import_react46.default.createElement(import_react46.default.Suspense, { fallback: null }, import_react46.default.createElement(LazyAppChangelogDialog, {
     open: true,
     onClose: () => setHeaderDialogMode(null),
     returnFocusRef: changelogReturnFocusRef,
     updateNotice: headerDialogMode === "update_notice" ? updateNotice : null
-  })) : null, keyboardShortcutsOpen ? import_react45.default.createElement(import_react45.default.Suspense, { fallback: null }, import_react45.default.createElement(LazyAppKeyboardShortcutsDialog, {
+  })) : null, keyboardShortcutsOpen ? import_react46.default.createElement(import_react46.default.Suspense, { fallback: null }, import_react46.default.createElement(LazyAppKeyboardShortcutsDialog, {
     open: true,
     onClose: () => setHeaderDialogMode(null),
     returnFocusRef: keyboardShortcutsButtonRef
-  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react45.default.createElement(InitialQueryOnboardingDialog, {
+  })) : null, initialQueryOnboardingFlow.status === "required" ? import_react46.default.createElement(InitialQueryOnboardingDialog, {
     queryInput: initialQueryOnboardingFlow.queryInput,
     loading: initialQueryOnboardingFlow.loading,
     statusMessage: initialQueryOnboardingFlow.statusMessage,
     errorMessage: initialQueryOnboardingFlow.errorMessage,
     onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
     onSubmit: initialQueryOnboardingFlow.submit
-  }) : null, showRefreshDiscardWarning ? import_react45.default.createElement("div", {
+  }) : null, showRefreshDiscardWarning ? import_react46.default.createElement("div", {
     className: "refresh-discard-warning-backdrop",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, import_react45.default.createElement("div", {
+  }, import_react46.default.createElement("div", {
     className: "refresh-discard-warning-dialog",
     role: "alertdialog",
     "aria-labelledby": "refresh-discard-warning-title",
     "aria-describedby": "refresh-discard-warning-desc",
     onClick: (e) => e.stopPropagation()
-  }, import_react45.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Warning: Unsaved changes"), import_react45.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "There are unsaved changes that will be lost when refreshing."), import_react45.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react45.default.createElement("button", {
+  }, import_react46.default.createElement("h3", { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" }, "Warning: Unsaved changes"), import_react46.default.createElement("p", { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" }, "There are unsaved changes that will be lost when refreshing."), import_react46.default.createElement("div", { className: "refresh-discard-warning-actions" }, import_react46.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-cancel",
     onClick: () => setShowRefreshDiscardWarning(false)
-  }, "Cancel"), import_react45.default.createElement("button", {
+  }, "Cancel"), import_react46.default.createElement("button", {
     type: "button",
     className: "refresh-discard-warning-confirm",
     onClick: () => {
@@ -56942,7 +56927,7 @@ function UiShellApp(props) {
 function renderActivePanel(params) {
   if (params.activeTab === "query") {
     const savedQueries = params.response?.savedQueries ?? [];
-    return import_react45.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react45.default.createElement(QuerySelector, {
+    return import_react46.default.createElement("section", { role: "tabpanel", id: "tabpanel-query", "aria-labelledby": "tab-query" }, import_react46.default.createElement(QuerySelector, {
       savedQueries: savedQueries.map((query) => ({ id: query.id, name: query.name })),
       onRun: params.onRun,
       onNeedsFix: params.onNeedsFix,
@@ -56952,19 +56937,19 @@ function renderActivePanel(params) {
     }));
   }
   if (params.activeTab === "mapping") {
-    return import_react45.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react45.default.createElement(MappingFixPanel, {
+    return import_react46.default.createElement("section", { role: "tabpanel", id: "tabpanel-mapping", "aria-labelledby": "tab-mapping" }, params.mappingFixResponse && params.mappingFixResponse.mappingValidation.status === "invalid" ? import_react46.default.createElement(MappingFixPanel, {
       requiredIssues: params.mappingFixResponse.mappingValidation.issues,
       detectedFieldRefs: params.mappingFixResponse.detectedFieldRefs,
       onApply: (selection) => {
         void params.onApplyMappingDefaults(selection);
       }
-    }) : import_react45.default.createElement("div", null, "Mapping is valid. No remediation needed."));
+    }) : import_react46.default.createElement("div", null, "Mapping is valid. No remediation needed."));
   }
   if (params.activeTab === "timeline") {
-    return import_react45.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react45.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
+    return import_react46.default.createElement("section", { role: "tabpanel", id: "tabpanel-timeline", "aria-labelledby": "tab-timeline" }, import_react46.default.createElement("p", { className: "timeline-focus-note" }, "Gantt focus is active. Use Query and Mapping tabs only to adjust data source and field mapping."));
   }
   const diagnostics = buildDiagnosticsModel(params.uiModel);
-  return import_react45.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react45.default.createElement(DiagnosticsTab, {
+  return import_react46.default.createElement("section", { role: "tabpanel", id: "tabpanel-diagnostics", "aria-labelledby": "tab-diagnostics" }, import_react46.default.createElement(DiagnosticsTab, {
     ...diagnostics,
     onRetryRefresh: () => {
       void params.onRetryRefresh();
