@@ -1502,6 +1502,8 @@ button {
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  /* clip instead of hidden so the sidebar is no scroll container and the header can stick to the chart scroll */
+  overflow: clip;
 }
 
 .timeline-left-sidebar-embedded {
@@ -1522,10 +1524,13 @@ button {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
   padding: 6px 8px;
   margin: 0;
   border: 0;
-  background: transparent;
+  background: var(--color-surface-elevated);
 }
 
 .timeline-tree-level-controls {
