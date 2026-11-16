@@ -5,6 +5,7 @@ import type { SavedQueryPreference } from "../../shared/user-preferences/user-pr
 import {
   createInitialHeaderQueryFlowState,
   deleteSavedHeaderQueryFlow,
+  editSavedHeaderQueryFlow,
   loadSavedHeaderQueryFlow,
   resolveFilteredHeaderQueries,
   saveCurrentHeaderQueryFlow,
@@ -35,8 +36,21 @@ export type HeaderQueryFlowApi = HeaderQueryFlowState & {
     loadedResponse: QueryIntakeResponse;
   }) => Promise<HeaderQuerySaveResult>;
   deleteSavedHeaderQuery: (queryId: string) => void;
+  editingHeaderQueryId: string | null;
+  headerQueryEditDraft: HeaderQueryEditDraft;
+  setHeaderQueryEditDraft: React.Dispatch<React.SetStateAction<HeaderQueryEditDraft>>;
+  startEditSavedHeaderQuery: (queryId: string) => void;
+  cancelEditSavedHeaderQuery: () => void;
+  saveEditedHeaderQuery: () => Promise<void>;
   hydrateSavedHeaderQueries: (savedHeaderQueries: SavedQueryPreference[], selectedHeaderQueryId: string) => void;
 };
+
+export type HeaderQueryEditDraft = {
+  name: string;
+  queryInput: string;
+};
+
+const EMPTY_EDIT_DRAFT: HeaderQueryEditDraft = { name: "", queryInput: "" };
 
 export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQueryFlowApi {
   const initialState = React.useMemo(
@@ -55,6 +69,9 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
   const [headerQuerySearch, setHeaderQuerySearch] = React.useState(initialState.headerQuerySearch);
   const [headerQueryLoading, setHeaderQueryLoading] = React.useState(initialState.headerQueryLoading);
   const [headerQueryMessage, setHeaderQueryMessage] = React.useState(initialState.headerQueryMessage);
+
+  const [editingHeaderQueryId, setEditingHeaderQueryId] = React.useState<string | null>(null);
+  const [headerQueryEditDraft, setHeaderQueryEditDraft] = React.useState<HeaderQueryEditDraft>(EMPTY_EDIT_DRAFT);
 
   const filteredHeaderQueries = React.useMemo(() => {
     return resolveFilteredHeaderQueries(savedHeaderQueries, headerQuerySearch);
@@ -201,9 +218,68 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
       setSavedHeaderQueries(result.savedHeaderQueries);
       setSelectedHeaderQueryId(result.selectedHeaderQueryId);
       setHeaderQueryMessage(null);
+      if (editingHeaderQueryId === queryId) {
+        setEditingHeaderQueryId(null);
+        setHeaderQueryEditDraft(EMPTY_EDIT_DRAFT);
+      }
     },
-    [savedHeaderQueries, selectedHeaderQueryId]
+    [editingHeaderQueryId, savedHeaderQueries, selectedHeaderQueryId]
   );
+
+  const startEditSavedHeaderQuery = React.useCallback(
+    (queryId: string) => {
+      const entry = savedHeaderQueries.find((candidate) => candidate.id === queryId);
+      if (!entry) {
+        return;
+      }
+      setEditingHeaderQueryId(entry.id);
+      setHeaderQueryEditDraft({ name: entry.name, queryInput: entry.queryInput });
+      setHeaderQueryMessage(null);
+    },
+    [savedHeaderQueries]
+  );
+
+  const cancelEditSavedHeaderQuery = React.useCallback(() => {
+    setEditingHeaderQueryId(null);
+    setHeaderQueryEditDraft(EMPTY_EDIT_DRAFT);
+    setHeaderQueryMessage(null);
+  }, []);
+
+  const saveEditedHeaderQuery = React.useCallback(async () => {
+    if (headerQueryLoading || !editingHeaderQueryId) {
+      return;
+    }
+    setHeaderQueryLoading(true);
+    try {
+      const result = await editSavedHeaderQueryFlow({
+        queryId: editingHeaderQueryId,
+        name: headerQueryEditDraft.name,
+        rawInput: headerQueryEditDraft.queryInput,
+        state: {
+          savedHeaderQueries,
+          selectedHeaderQueryId,
+          headerQueryLoading
+        },
+        runQuery: params.runQuery
+      });
+
+      if (result.kind === "updated") {
+        setSavedHeaderQueries(result.savedHeaderQueries);
+        setSelectedHeaderQueryId(result.selectedHeaderQueryId);
+        setEditingHeaderQueryId(null);
+        setHeaderQueryEditDraft(EMPTY_EDIT_DRAFT);
+        setHeaderQueryMessage(null);
+      }
+
+      if (result.kind === "error") {
+        setHeaderQueryMessage(result.message);
+      }
+    } catch (error) {
+      setHeaderQueryMessage(resolveUnexpectedHeaderQueryErrorMessage(error));
+    } finally {
+      setHeaderQueryLoading(false);
+    }
+  }, [editingHeaderQueryId, headerQueryEditDraft, headerQueryLoading, params.runQuery, savedHeaderQueries, selectedHeaderQueryId]);
 
   const hydrateSavedHeaderQueries = React.useCallback((nextSavedHeaderQueries: SavedQueryPreference[], nextSelectedId: string) => {
     setSavedHeaderQueries(nextSavedHeaderQueries);
@@ -227,6 +303,12 @@ export function useHeaderQueryFlow(params: UseHeaderQueryFlowParams): HeaderQuer
     saveCurrentHeaderQuery,
     saveLoadedHeaderQuery,
     deleteSavedHeaderQuery,
+    editingHeaderQueryId,
+    headerQueryEditDraft,
+    setHeaderQueryEditDraft,
+    startEditSavedHeaderQuery,
+    cancelEditSavedHeaderQuery,
+    saveEditedHeaderQuery,
     hydrateSavedHeaderQueries
   };
 }

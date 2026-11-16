@@ -92,6 +92,7 @@ import { resolveActiveQueryName } from "./ui-client-header-query-service.js";
 import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js";
 import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
+import { HeaderQueryEditForm, HeaderQueryEditIcon } from "./header-query-edit-form.js";
 import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
 import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
@@ -982,6 +983,22 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
                     ...(headerQueryFlow.filteredHeaderQueries.length === 0
                       ? [React.createElement("div", { key: "no-search-match", className: "header-query-dropdown-empty" }, "No matches")]
                       : headerQueryFlow.filteredHeaderQueries.map((entry) =>
+                      headerQueryFlow.editingHeaderQueryId === entry.id
+                        ? React.createElement(HeaderQueryEditForm, {
+                            key: `edit-${entry.id}`,
+                            draft: headerQueryFlow.headerQueryEditDraft,
+                            loading: headerQueryFlow.headerQueryLoading,
+                            message: headerQueryFlow.headerQueryMessage,
+                            onDraftChange: (draft) => {
+                              headerQueryFlow.setHeaderQueryEditDraft(draft);
+                              headerQueryFlow.setHeaderQueryMessage(null);
+                            },
+                            onSave: () => {
+                              void headerQueryFlow.saveEditedHeaderQuery();
+                            },
+                            onCancel: headerQueryFlow.cancelEditSavedHeaderQuery
+                          })
+                        :
                       React.createElement(
                         "div",
                         { key: `manage-${entry.id}`, className: "header-query-dropdown-item" },
@@ -1033,6 +1050,22 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
                             React.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }),
                             React.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" })
                           )
+                        ),
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            className: "header-query-dropdown-item-edit",
+                            "aria-label": `Edit query ${toShortQueryName(entry.name, entry.id)}`,
+                            title: "Rename or edit query",
+                            disabled: headerQueryFlow.headerQueryLoading,
+                            onClick: (event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              headerQueryFlow.startEditSavedHeaderQuery(entry.id);
+                            }
+                          },
+                          React.createElement(HeaderQueryEditIcon)
                         ),
                         React.createElement(
                           "button",
@@ -1108,7 +1141,7 @@ export function UiShellApp(props: { composition: UiShellComposition }): React.Re
                 React.createElement("div", { className: "header-query-loading-bar" })
               )
             : null,
-          headerQueryFlow.headerQueryMessage
+          headerQueryFlow.headerQueryMessage && !headerQueryFlow.editingHeaderQueryId
             ? React.createElement(
                 "span",
                 {
