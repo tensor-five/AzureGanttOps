@@ -9,26 +9,39 @@ import { resolveAzCliExecutablePath } from "../../shared/utils/azure-cli-path.js
 import {
   LowdbUserPreferencesAdapter
 } from "../../adapters/persistence/settings/lowdb-user-preferences.adapter.js";
+import { FileMappingSettingsAdapter } from "../../adapters/persistence/settings/file-mapping-settings.adapter.js";
+import { GithubPackageVersionAdapter } from "../../adapters/github/github-package-version.adapter.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
 
 import { AdoContextStore } from "../config/ado-context.store.js";
 import { FileContextSettingsAdapter } from "../../adapters/persistence/settings/file-context-settings.adapter.js";
 import type { HttpClient } from "../../adapters/azure-devops/queries/azure-query-runtime.adapter.js";
+import { AzureFieldDefinitionsAdapter } from "../../adapters/azure-devops/work-items/field-definitions.azure.adapter.js";
+import type { WorkItemFieldDefinitionsPort } from "../../application/ports/work-item-field-definitions.port.js";
+import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
 import { createPhase1QueryFlow } from "../composition/phase1-query-flow.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { WriteCommandResult } from "../../application/dto/write-boundary/write-command.dto.js";
 import type { SubmitWriteCommandUseCase } from "../../application/use-cases/submit-write-command.use-case.js";
+import { CheckAppUpdateUseCase } from "../../application/use-cases/check-app-update.use-case.js";
+import {
+  ClearLocalUserConfigsUseCase,
+  LocalConfigResetConfirmationError
+} from "../../application/use-cases/clear-local-user-configs.use-case.js";
+import type { LocalConfigResetPort } from "../../application/ports/local-config-reset.port.js";
 import {
   parseAdoptSchedulePayload,
   parseAzCliPathPayload,
   parseChildWorkItemCreatePayload,
   parseDependencyLinkPayload,
+  parseLocalConfigResetPayload,
   parseReparentPayload,
   parseMappingProfileUpsert,
   parsePayload,
   parseQueryIdFromQuery,
   parseTargetWorkItemIdFromQuery,
   parseDuplicateWorkItemPayload,
+  parseUpdateAssignedToPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload,
   parseUserPreferencesPatch
@@ -39,6 +52,24 @@ import {
   fetchQueryDetails,
   type WorkItemTypeOption
 } from "./http-server-query-resolvers.js";
+import {
+  PWA_ICON_192_PATH,
+  PWA_ICON_512_PATH,
+  PWA_MANIFEST_PATH,
+  PWA_SERVICE_WORKER_PATH,
+  PWA_THEME_COLOR
+} from "./pwa-constants.js";
+import {
+  PWA_ICON_192_PNG_BUFFER,
+  PWA_ICON_512_PNG_BUFFER,
+  PWA_MANIFEST_JSON,
+  PWA_SERVICE_WORKER_SOURCE
+} from "./pwa-assets.js";
+import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
+import {
+  writeAdoHttpFailureLog,
+  type AdoHttpFailureLogWriter
+} from "./ado-http-failure-logging.js";
 
 const THEME_MODE_STORAGE_KEY = "azure-ganttops.theme-mode.v1";
 const FAVICON_ICO_BASE64 =
@@ -61,15 +92,23 @@ const FAVICON_SVG = [
 const FAVICON_SVG_BUFFER = Buffer.from(FAVICON_SVG, "utf8");
 
 const ROOT_HTML = `<!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="ado-csrf-token" content="__ADO_CSRF_TOKEN__" />
     <meta name="ado-write-enabled" content="__ADO_WRITE_ENABLED__" />
+    <meta name="theme-color" content="${PWA_THEME_COLOR}" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AzureGanttOps" />
     <title>Azure DevOps Query-Driven Gantt</title>
+    <link rel="manifest" href="${PWA_MANIFEST_PATH}" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="192x192" href="${PWA_ICON_192_PATH}" />
+    <link rel="apple-touch-icon" href="${PWA_ICON_192_PATH}" />
     <script>
       (() => {
         const key = "${THEME_MODE_STORAGE_KEY}";
@@ -118,6 +157,12 @@ type AdoCommLogEntry = {
 type AdoCommLogStore = {
   append: (entry: Omit<AdoCommLogEntry, "seq">) => void;
   read: (afterSeq: number, limit: number) => { entries: AdoCommLogEntry[]; nextSeq: number };
+  clear: () => boolean;
+};
+type AdoHttpResponse = {
+  status: number;
+  json: unknown;
+  headers?: Record<string, string | undefined>;
 };
 type WorkItemStateOption = {
   name: string;
@@ -145,14 +190,18 @@ const DEPENDENCY_LINK_ROUTE_PATH = "/phase2/dependency-link";
 const REPARENT_ROUTE_PATH = "/phase2/work-item-reparent";
 const UPDATE_DETAILS_ROUTE_PATH = "/phase2/work-item-details-update";
 const UPDATE_STATE_ROUTE_PATH = "/phase2/work-item-state-update";
+const UPDATE_ASSIGNED_TO_ROUTE_PATH = "/phase2/work-item-assigned-to-update";
 const DUPLICATE_WORK_ITEM_ROUTE_PATH = "/phase2/work-item-duplicate";
 const CHILD_WORK_ITEM_CREATE_ROUTE_PATH = "/phase2/work-item-child-create";
 const WORK_ITEM_TYPES_ROUTE_PATH = "/phase2/work-item-types";
 const WORK_ITEM_STATE_OPTIONS_ROUTE_PATH = "/phase2/work-item-state-options";
+const WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH = "/phase2/work-item-field-definitions";
 const QUERY_DETAILS_ROUTE_PATH = "/phase2/query-details";
 const AZ_LOGIN_ROUTE_PATH = "/phase2/az-login";
 const AZ_CLI_PATH_ROUTE_PATH = "/phase2/az-cli-path";
 const USER_PREFERENCES_ROUTE_PATH = "/phase2/user-preferences";
+const LOCAL_CONFIG_RESET_ROUTE_PATH = "/phase2/local-config-reset";
+const APP_UPDATE_CHECK_ROUTE_PATH = "/phase2/app-update-check";
 const ADO_CSRF_HEADER = "x-ado-csrf-token";
 const ADO_CSRF_MISSING_OR_INVALID = {
   code: "CSRF_INVALID",
@@ -174,7 +223,11 @@ const ADO_COMM_NEXT_SEQ_FROM_ENTRY = (entry: AdoCommLogEntry) => entry.seq;
 const ADO_COMM_DEFAULT_JSON_PREVIEW = (value: unknown) => JSON.stringify(value ?? ADO_COMM_PREVIEW_FALLBACK);
 const CONTENT_SECURITY_POLICY =
   "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
+  "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; " +
+  "connect-src 'self'; manifest-src 'self'";
+const CACHE_CONTROL_NO_STORE = "no-store";
+const CACHE_CONTROL_PWA_MANIFEST = "public, max-age=3600";
+const CACHE_CONTROL_PWA_ICON = "public, max-age=604800, immutable";
 const ADO_COMM_ROUTE_QUERY_AFTER_SEQ = "afterSeq";
 const ADO_COMM_ROUTE_QUERY_LIMIT = "limit";
 const ADO_COMM_LOG_VERBOSE_PREFIX = "[ado-runtime]";
@@ -214,6 +267,12 @@ function createAdoCommLogStore(maxEntries: number): AdoCommLogStore {
             ? ADO_COMM_NEXT_SEQ_FROM_ENTRY(nextEntries[nextEntries.length - 1])
             : ADO_COMM_EMPTY_RESULT_SEQ(afterSeq)
       };
+    },
+    clear: () => {
+      const hadEntries = entries.length > 0;
+      entries.length = 0;
+      seq = 0;
+      return hadEntries;
     }
   };
 }
@@ -321,7 +380,7 @@ function appendAdoCommRequestLog(store: AdoCommLogStore, url: string, method: Ad
 function appendAdoCommResponseLog(store: AdoCommLogStore, params: {
   url: string;
   method: AdoCommMethod;
-  status: number;
+  status: number | null;
   durationMs: number;
   json: unknown;
 }): void {
@@ -334,6 +393,81 @@ function appendAdoCommResponseLog(store: AdoCommLogStore, params: {
     durationMs: params.durationMs,
     preview: createAdoCommLogPreview(params.json)
   });
+}
+
+async function executeInstrumentedAdoRequest(params: {
+  method: AdoCommMethod;
+  url: string;
+  requestBody?: unknown;
+  verboseLogs: boolean;
+  adoCommLogStore: AdoCommLogStore;
+  failureLogWriter?: AdoHttpFailureLogWriter;
+  execute: () => Promise<AdoHttpResponse>;
+}): Promise<AdoHttpResponse> {
+  const startedAt = Date.now();
+  logVerboseHttpRequest(params.verboseLogs, params.method, params.url);
+  appendAdoCommRequestLog(params.adoCommLogStore, params.url, params.method);
+
+  try {
+    const response = await params.execute();
+    const durationMs = ADO_COMM_DURATION(startedAt);
+    logVerboseHttpResponse(params.verboseLogs, response);
+    appendAdoCommResponseLog(params.adoCommLogStore, {
+      url: params.url,
+      method: params.method,
+      status: response.status,
+      durationMs,
+      json: response.json
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      writeAdoHttpFailureLog(
+        {
+          timestamp: ADO_COMM_TIMESTAMP(),
+          failureType: "response",
+          method: params.method,
+          url: sanitizeUrlForLog(params.url),
+          status: response.status,
+          durationMs,
+          requestBody: params.requestBody,
+          responseHeaders: response.headers,
+          responsePreview: createAdoCommLogPreview(response.json)
+        },
+        params.failureLogWriter
+      );
+    }
+
+    return response;
+  } catch (error) {
+    const durationMs = ADO_COMM_DURATION(startedAt);
+    const errorMessage = error instanceof Error ? error.message : "Unknown ADO transport error";
+    const errorPreview = createAdoCommLogPreview({
+      message: errorMessage
+    });
+    appendAdoCommResponseLog(params.adoCommLogStore, {
+      url: params.url,
+      method: params.method,
+      status: null,
+      durationMs,
+      json: {
+        message: errorMessage
+      }
+    });
+    writeAdoHttpFailureLog(
+      {
+        timestamp: ADO_COMM_TIMESTAMP(),
+        failureType: "transport",
+        method: params.method,
+        url: sanitizeUrlForLog(params.url),
+        status: null,
+        durationMs,
+        requestBody: params.requestBody,
+        responsePreview: errorPreview
+      },
+      params.failureLogWriter
+    );
+    throw error;
+  }
 }
 
 function sanitizeIncomingPath(url: string | undefined): URL {
@@ -368,6 +502,26 @@ function isFaviconSvgRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === "/favicon.svg";
 }
 
+function isPwaManifestRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_MANIFEST_PATH;
+}
+
+function isServiceWorkerRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_SERVICE_WORKER_PATH;
+}
+
+function isPwaIcon192Route(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_ICON_192_PATH;
+}
+
+function isPwaIcon512Route(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === PWA_ICON_512_PATH;
+}
+
+function isChangelogRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === CHANGELOG_PATH;
+}
+
 function isQueryIntakeRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === "/phase2/query-intake";
 }
@@ -392,6 +546,10 @@ function isUpdateStateRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === UPDATE_STATE_ROUTE_PATH;
 }
 
+function isUpdateAssignedToRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === UPDATE_ASSIGNED_TO_ROUTE_PATH;
+}
+
 function isDuplicateWorkItemRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === DUPLICATE_WORK_ITEM_ROUTE_PATH;
 }
@@ -402,6 +560,71 @@ function isChildWorkItemCreateRoute(method: string, pathname: string): boolean {
 
 function isWorkItemTypesRoute(method: string, pathname: string): boolean {
   return method === "GET" && pathname === WORK_ITEM_TYPES_ROUTE_PATH;
+}
+
+const MAX_FIELD_DEFINITION_TYPES = 50;
+const MAX_WORK_ITEM_TYPE_NAME_LENGTH = 128;
+const BUILT_IN_TEXT_FIELD_REFS = new Set(["System.Title", "System.State", "System.Description"]);
+
+function parseWorkItemTypesQuery(url: URL): string[] | null {
+  const types = [...new Set(url.searchParams.getAll("workItemTypes").map((value) => value.trim()))].filter(
+    (value) => value.length > 0
+  );
+  if (
+    types.length === 0 ||
+    types.length > MAX_FIELD_DEFINITION_TYPES ||
+    types.some((type) => type.length > MAX_WORK_ITEM_TYPE_NAME_LENGTH)
+  ) {
+    return null;
+  }
+  return types;
+}
+
+function classifyFieldDefinitionsFailure(error: unknown): { status: number; code: string; message: string } {
+  const message = error instanceof Error ? error.message : "";
+  if (message === "ADO_CONTEXT_MISSING") {
+    return { status: 409, code: "CONTEXT_REQUIRED", message: "Set the Azure DevOps organization and project first." };
+  }
+  if (/:(401|403)$/.test(message)) {
+    return { status: 401, code: "AUTH_REQUIRED", message: "Azure DevOps rejected the request. Sign in with the Azure CLI." };
+  }
+  return { status: 502, code: "FIELD_DEFINITIONS_FAILED", message: "Unable to load work item field definitions." };
+}
+
+/**
+ * Determines server-side which submitted string fields are HTML fields and must be sanitized.
+ * If the field types cannot be loaded, every submitted string that contains markup is treated as HTML.
+ */
+async function resolveHtmlFieldRefs(
+  payload: Record<string, unknown> | null,
+  fieldDefinitions: WorkItemFieldDefinitionsPort
+): Promise<Set<string>> {
+  const fields = payload?.fields;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) {
+    return new Set();
+  }
+
+  const candidates = Object.entries(fields as Record<string, unknown>).filter(
+    ([referenceName, value]) => typeof value === "string" && !BUILT_IN_TEXT_FIELD_REFS.has(referenceName)
+  );
+  if (candidates.length === 0) {
+    return new Set();
+  }
+
+  try {
+    const types = await fieldDefinitions.getFieldTypes();
+    return new Set(
+      candidates
+        .filter(([referenceName]) => (types.get(referenceName) ?? "").toLowerCase() === "html")
+        .map(([referenceName]) => referenceName)
+    );
+  } catch {
+    return new Set(candidates.filter(([, value]) => (value as string).includes("<")).map(([referenceName]) => referenceName));
+  }
+}
+
+function isWorkItemFieldDefinitionsRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === WORK_ITEM_FIELD_DEFINITIONS_ROUTE_PATH;
 }
 
 function isWorkItemStateOptionsRoute(method: string, pathname: string): boolean {
@@ -428,16 +651,26 @@ function isUserPreferencesPostRoute(method: string, pathname: string): boolean {
   return method === "POST" && pathname === USER_PREFERENCES_ROUTE_PATH;
 }
 
+function isLocalConfigResetRoute(method: string, pathname: string): boolean {
+  return method === "POST" && pathname === LOCAL_CONFIG_RESET_ROUTE_PATH;
+}
+
+function isAppUpdateCheckRoute(method: string, pathname: string): boolean {
+  return method === "GET" && pathname === APP_UPDATE_CHECK_ROUTE_PATH;
+}
+
 function isCsrfProtectedRoute(method: string, pathname: string): boolean {
   return (
     isAzLoginRoute(method, pathname) ||
     isAzCliPathRoute(method, pathname) ||
     isUserPreferencesPostRoute(method, pathname) ||
+    isLocalConfigResetRoute(method, pathname) ||
     isAdoptScheduleRoute(method, pathname) ||
     isDependencyLinkRoute(method, pathname) ||
     isReparentRoute(method, pathname) ||
     isUpdateDetailsRoute(method, pathname) ||
     isUpdateStateRoute(method, pathname) ||
+    isUpdateAssignedToRoute(method, pathname) ||
     isDuplicateWorkItemRoute(method, pathname) ||
     isChildWorkItemCreateRoute(method, pathname)
   );
@@ -464,11 +697,15 @@ export function createHttpServer(params: {
   };
   port?: number;
   contextFilePath?: string;
+  mappingFilePath?: string;
   userPreferencesFilePath?: string;
   distRootPath?: string;
   azLoginRunner?: AzLoginRunner;
   azCliPathResolver?: AzCliPathResolver;
   authPreflightRunner?: CliCommandRunner;
+  appVersionSource?: AppVersionSourcePort;
+  appCurrentVersion?: string;
+  adoHttpFailureLogWriter?: AdoHttpFailureLogWriter;
 }): HttpServer {
   const verboseLogs = process.env.ADO_VERBOSE_LOGS === "1";
   if (verboseLogs) {
@@ -489,66 +726,45 @@ export function createHttpServer(params: {
       headers?: Record<string, string | undefined>;
     }>;
   } = {
-    get: async (url: string) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "GET", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "GET");
-
-      const response = await params.httpClient.get(url);
-
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    get: async (url: string) =>
+      executeInstrumentedAdoRequest({
         method: "GET",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
-      });
-
-      return response;
-    }
+        url,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.get(url)
+      })
   };
   if (params.httpClient.patch) {
-    instrumentedHttpClient.patch = async (url: string, body: unknown, headers?: Record<string, string>) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "PATCH", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "PATCH");
-
-      const response = await params.httpClient.patch!(url, body, headers);
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    instrumentedHttpClient.patch = async (url: string, body: unknown, headers?: Record<string, string>) =>
+      executeInstrumentedAdoRequest({
         method: "PATCH",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
+        url,
+        requestBody: body,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.patch!(url, body, headers)
       });
-
-      return response;
-    };
   }
   if (params.httpClient.post) {
-    instrumentedHttpClient.post = async (url: string, body: unknown, headers?: Record<string, string>) => {
-      const startedAt = Date.now();
-      logVerboseHttpRequest(verboseLogs, "POST", url);
-      appendAdoCommRequestLog(adoCommLogStore, url, "POST");
-
-      const response = await params.httpClient.post!(url, body, headers);
-      logVerboseHttpResponse(verboseLogs, response);
-      appendAdoCommResponseLog(adoCommLogStore, {
-        url,
+    instrumentedHttpClient.post = async (url: string, body: unknown, headers?: Record<string, string>) =>
+      executeInstrumentedAdoRequest({
         method: "POST",
-        status: response.status,
-        durationMs: ADO_COMM_DURATION(startedAt),
-        json: response.json
+        url,
+        requestBody: body,
+        verboseLogs,
+        adoCommLogStore,
+        failureLogWriter: params.adoHttpFailureLogWriter,
+        execute: () => params.httpClient.post!(url, body, headers)
       });
-
-      return response;
-    };
   }
 
   const contextFilePath =
     params.contextFilePath ?? path.join(os.homedir(), ".azure-ganttops", "ado-context.json");
+  const mappingFilePath =
+    params.mappingFilePath ?? path.join(path.dirname(contextFilePath), "mapping-settings.json");
   const userPreferencesFilePath =
     params.userPreferencesFilePath ?? path.join(path.dirname(contextFilePath), "user-preferences.json");
   const userId = resolveLocalUserId();
@@ -556,6 +772,7 @@ export function createHttpServer(params: {
   const queryFlow = createPhase1QueryFlow({
     httpClient: instrumentedHttpClient,
     contextFilePath,
+    mappingFilePath,
     authPreflightRunner: params.authPreflightRunner,
     capabilities: {
       writeEnabled: process.env.ADO_WRITE_ENABLED === "1"
@@ -563,15 +780,34 @@ export function createHttpServer(params: {
   });
 
   const settingsAdapter = new FileContextSettingsAdapter(contextFilePath);
+  const mappingSettingsAdapter = new FileMappingSettingsAdapter(mappingFilePath);
   const contextStore = new AdoContextStore(settingsAdapter);
   const controller = new QueryIntakeController(contextStore, queryFlow.runQueryIntake);
   const userPreferences = new LowdbUserPreferencesAdapter(userPreferencesFilePath, userId);
   const stateOptionsCacheByType = new Map<string, Promise<WorkItemStateOption[]>>();
   const workItemTypeCacheById = new Map<string, Promise<string | null>>();
   const workItemTypesCacheByProject = new Map<string, Promise<WorkItemTypeOption[]>>();
+  const fieldDefinitions: WorkItemFieldDefinitionsPort = new AzureFieldDefinitionsAdapter(instrumentedHttpClient, () =>
+    contextStore.getActiveContext()
+  );
+  const localConfigReset = new ClearLocalUserConfigsUseCase(
+    createLocalConfigResetPort({
+      userPreferences,
+      contextSettings: settingsAdapter,
+      mappingSettings: mappingSettingsAdapter,
+      adoCommLogStore,
+      stateOptionsCacheByType,
+      workItemTypeCacheById,
+      workItemTypesCacheByProject
+    })
+  );
   const distRootPath = path.resolve(params.distRootPath ?? path.join(process.cwd(), "dist"));
   const azLoginRunner = params.azLoginRunner ?? defaultAzLoginRunner;
   const azCliPathResolver = params.azCliPathResolver ?? resolveAzCliExecutablePath;
+  const appUpdateCheck = new CheckAppUpdateUseCase({
+    currentVersion: params.appCurrentVersion ?? APP_VERSION,
+    versionSource: params.appVersionSource ?? new GithubPackageVersionAdapter()
+  });
   const csrfToken = createCsrfToken();
 
   const server = createServer(async (req, res) => {
@@ -589,9 +825,12 @@ export function createHttpServer(params: {
       stateOptionsCacheByType,
       workItemTypeCacheById,
       workItemTypesCacheByProject,
+      fieldDefinitions,
       userPreferences,
+      localConfigReset,
       azLoginRunner,
       azCliPathResolver,
+      appUpdateCheck,
       csrfToken
     );
   });
@@ -621,6 +860,61 @@ export function createHttpServer(params: {
   };
 }
 
+function createLocalConfigResetPort(params: {
+  userPreferences: LowdbUserPreferencesAdapter;
+  contextSettings: FileContextSettingsAdapter;
+  mappingSettings: FileMappingSettingsAdapter;
+  adoCommLogStore: AdoCommLogStore;
+  stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
+  workItemTypeCacheById: Map<string, Promise<string | null>>;
+  workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+}): LocalConfigResetPort {
+  return {
+    listTargets: () => [
+      {
+        target: "lowdb-current-user-preferences",
+        label: "Current user lowdb preferences",
+        reset: async () => ((await params.userPreferences.deleteCurrentUserPreferences()) ? "deleted" : "skipped")
+      },
+      {
+        target: "ado-context-settings",
+        label: "Azure DevOps context settings",
+        reset: async () => ((await params.contextSettings.deleteContextSettings()) ? "deleted" : "skipped")
+      },
+      {
+        target: "mapping-settings",
+        label: "Field mapping settings",
+        reset: async () => ((await params.mappingSettings.deleteMappingSettings()) ? "deleted" : "skipped")
+      },
+      {
+        target: "ado-communication-log",
+        label: "Azure DevOps communication log",
+        reset: async () => (params.adoCommLogStore.clear() ? "deleted" : "skipped")
+      },
+      {
+        target: "work-item-type-state-runtime-maps",
+        label: "Work item type and state runtime maps",
+        reset: async () =>
+          clearRuntimeMaps(
+            params.stateOptionsCacheByType,
+            params.workItemTypeCacheById,
+            params.workItemTypesCacheByProject
+          )
+            ? "deleted"
+            : "skipped"
+      }
+    ]
+  };
+}
+
+function clearRuntimeMaps(...maps: Array<{ size: number; clear: () => void }>): boolean {
+  const hadEntries = maps.some((map) => map.size > 0);
+  maps.forEach((map) => {
+    map.clear();
+  });
+  return hadEntries;
+}
+
 async function route(
   req: IncomingMessage,
   res: ServerResponse,
@@ -635,9 +929,12 @@ async function route(
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>,
   workItemTypeCacheById: Map<string, Promise<string | null>>,
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>,
+  fieldDefinitions: WorkItemFieldDefinitionsPort,
   userPreferences: LowdbUserPreferencesAdapter,
+  localConfigReset: ClearLocalUserConfigsUseCase,
   azLoginRunner: AzLoginRunner,
   azCliPathResolver: AzCliPathResolver,
+  appUpdateCheck: CheckAppUpdateUseCase,
   csrfToken: string
 ): Promise<void> {
   const method = req.method ?? "GET";
@@ -658,6 +955,7 @@ async function route(
       stateOptionsCacheByType,
       workItemTypeCacheById,
       workItemTypesCacheByProject,
+      fieldDefinitions,
       verboseLogs
     })
   ) {
@@ -670,7 +968,8 @@ async function route(
       writeEnabled,
       contextStore,
       httpClient,
-      workItemTypesCacheByProject
+      workItemTypesCacheByProject,
+      fieldDefinitions
     })
   ) {
     return;
@@ -679,6 +978,7 @@ async function route(
   if (
     await handlePreferencesRoute(req, res, method, url.pathname, {
       userPreferences,
+      localConfigReset,
       azLoginRunner,
       azCliPathResolver
     })
@@ -691,7 +991,8 @@ async function route(
       adoCommLogStore,
       distRootPath,
       csrfToken,
-      writeEnabled
+      writeEnabled,
+      appUpdateCheck
     })
   ) {
     return;
@@ -707,6 +1008,7 @@ type QueryDomainDeps = {
   stateOptionsCacheByType: Map<string, Promise<WorkItemStateOption[]>>;
   workItemTypeCacheById: Map<string, Promise<string | null>>;
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+  fieldDefinitions: WorkItemFieldDefinitionsPort;
   verboseLogs: boolean;
 };
 
@@ -778,6 +1080,27 @@ async function handleQueryDomainRoute(
         code: "WORK_ITEM_TYPES_FAILED",
         message: error instanceof Error ? error.message : "Unable to fetch work item types."
       });
+      return true;
+    }
+  }
+
+  if (isWorkItemFieldDefinitionsRoute(method, url.pathname)) {
+    const workItemTypes = parseWorkItemTypesQuery(url);
+    if (!workItemTypes) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: `Provide 1-${MAX_FIELD_DEFINITION_TYPES} workItemTypes query params with up to ${MAX_WORK_ITEM_TYPE_NAME_LENGTH} characters each.`
+      });
+      return true;
+    }
+
+    try {
+      const fields = await deps.fieldDefinitions.listFieldDefinitions(workItemTypes);
+      writeJson(res, 200, { fields });
+      return true;
+    } catch (error) {
+      const failure = classifyFieldDefinitionsFailure(error);
+      writeJson(res, failure.status, { code: failure.code, message: failure.message });
       return true;
     }
   }
@@ -904,6 +1227,7 @@ type TimelineWritesDeps = {
   contextStore: AdoContextStore;
   httpClient: HttpClient;
   workItemTypesCacheByProject: Map<string, Promise<WorkItemTypeOption[]>>;
+  fieldDefinitions: WorkItemFieldDefinitionsPort;
 };
 
 function writeRejectedWriteResult(res: ServerResponse, writeResult: WriteCommandResult): void {
@@ -975,7 +1299,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to patch work item."
+        message: toWorkItemPatchErrorMessage(error, "Unable to patch work item.")
       });
       return true;
     }
@@ -1065,12 +1389,13 @@ async function handleTimelineWritesRoute(
   if (isUpdateDetailsRoute(method, pathname)) {
     const body = await readBody(req);
     const payload = parsePayload(body);
-    const update = parseUpdateDetailsPayload(payload);
+    const htmlFieldRefs = await resolveHtmlFieldRefs(payload, deps.fieldDefinitions);
+    const update = parseUpdateDetailsPayload(payload, { htmlFieldRefs });
 
     if (!update) {
       writeJson(res, 400, {
         code: "INVALID_INPUT",
-        message: "Provide targetWorkItemId/title/descriptionHtml/state."
+        message: "Provide targetWorkItemId and fields with valid field reference names."
       });
       return true;
     }
@@ -1081,11 +1406,7 @@ async function handleTimelineWritesRoute(
         command: {
           kind: "WORK_ITEM_PATCH",
           workItemId: update.targetWorkItemId,
-          operations: [
-            { op: "add", path: "/fields/System.Title", value: update.title },
-            { op: "add", path: "/fields/System.Description", value: update.descriptionHtml },
-            { op: "add", path: "/fields/System.State", value: update.state }
-          ]
+          operations: update.operations
         }
       });
 
@@ -1099,7 +1420,7 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to patch work item."
+        message: toWorkItemPatchErrorMessage(error, "Unable to patch work item.")
       });
       return true;
     }
@@ -1140,7 +1461,48 @@ async function handleTimelineWritesRoute(
     } catch (error) {
       writeJson(res, 500, {
         code: "WRITE_FAILED",
-        message: error instanceof Error ? error.message : "Unable to update work item state."
+        message: toWorkItemPatchErrorMessage(error, "Unable to update work item state.")
+      });
+      return true;
+    }
+  }
+
+  if (isUpdateAssignedToRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const update = parseUpdateAssignedToPayload(payload);
+
+    if (!update) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide targetWorkItemId/assignedTo."
+      });
+      return true;
+    }
+
+    try {
+      const writeResult = await deps.submitWriteCommand.execute({
+        writeEnabled: deps.writeEnabled,
+        command: {
+          kind: "WORK_ITEM_PATCH",
+          workItemId: update.targetWorkItemId,
+          operations: [
+            { op: "add", path: "/fields/System.AssignedTo", value: update.assignedTo }
+          ]
+        }
+      });
+
+      if (!writeResult.accepted) {
+        writeRejectedWriteResult(res, writeResult);
+        return true;
+      }
+
+      writeJson(res, 200, writeResult);
+      return true;
+    } catch (error) {
+      writeJson(res, 500, {
+        code: "WRITE_FAILED",
+        message: toWorkItemPatchErrorMessage(error, "Unable to update work item assignment.")
       });
       return true;
     }
@@ -1276,6 +1638,7 @@ async function handleTimelineWritesRoute(
 
 type PreferencesDeps = {
   userPreferences: LowdbUserPreferencesAdapter;
+  localConfigReset: ClearLocalUserConfigsUseCase;
   azLoginRunner: AzLoginRunner;
   azCliPathResolver: AzCliPathResolver;
 };
@@ -1384,6 +1747,40 @@ async function handlePreferencesRoute(
     }
   }
 
+  if (isLocalConfigResetRoute(method, pathname)) {
+    const body = await readBody(req);
+    const payload = parsePayload(body);
+    const resetPayload = parseLocalConfigResetPayload(payload);
+
+    if (!resetPayload) {
+      writeJson(res, 400, {
+        code: "INVALID_INPUT",
+        message: "Provide confirmation as the only request field."
+      });
+      return true;
+    }
+
+    try {
+      const report = await deps.localConfigReset.execute(resetPayload);
+      writeJson(res, report.status === "partial_failure" ? 207 : 200, report);
+      return true;
+    } catch (error) {
+      if (error instanceof LocalConfigResetConfirmationError) {
+        writeJson(res, 400, {
+          code: "INVALID_CONFIRMATION",
+          message: "Confirmation must be DELETE ALL CONFIGS."
+        });
+        return true;
+      }
+
+      writeJson(res, 500, {
+        code: "LOCAL_CONFIG_RESET_FAILED",
+        message: "Unable to clear local app configuration."
+      });
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -1392,6 +1789,7 @@ type DiagnosticsRouteDeps = {
   distRootPath: string;
   csrfToken: string;
   writeEnabled: boolean;
+  appUpdateCheck: CheckAppUpdateUseCase;
 };
 
 async function handleDiagnosticsAndAssetsRoute(
@@ -1411,8 +1809,34 @@ async function handleDiagnosticsAndAssetsRoute(
     return true;
   }
 
+  if (isAppUpdateCheckRoute(method, url.pathname)) {
+    const result = await deps.appUpdateCheck.execute();
+    writeJsonNoStore(res, 200, result);
+    return true;
+  }
+
   if (isRootRoute(method, url.pathname)) {
     writeHtml(res, 200, renderRootHtml(deps.csrfToken, deps.writeEnabled));
+    return true;
+  }
+
+  if (isPwaManifestRoute(method, url.pathname)) {
+    writePwaManifest(res);
+    return true;
+  }
+
+  if (isServiceWorkerRoute(method, url.pathname)) {
+    writeServiceWorker(res);
+    return true;
+  }
+
+  if (isPwaIcon192Route(method, url.pathname)) {
+    writePwaIcon(res, PWA_ICON_192_PNG_BUFFER);
+    return true;
+  }
+
+  if (isPwaIcon512Route(method, url.pathname)) {
+    writePwaIcon(res, PWA_ICON_512_PNG_BUFFER);
     return true;
   }
 
@@ -1423,6 +1847,11 @@ async function handleDiagnosticsAndAssetsRoute(
 
   if (isFaviconSvgRoute(method, url.pathname)) {
     writeFaviconSvg(res);
+    return true;
+  }
+
+  if (isChangelogRoute(method, url.pathname)) {
+    await writeChangelog(res);
     return true;
   }
 
@@ -1612,6 +2041,7 @@ function writeHtml(res: ServerResponse, statusCode: number, payload: string): vo
   res.statusCode = statusCode;
   applySecurityHeaders(res);
   res.setHeader("content-type", "text/html; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
   res.end(payload);
 }
 
@@ -1620,6 +2050,11 @@ function writeJson(res: ServerResponse, statusCode: number, payload: unknown): v
   applySecurityHeaders(res);
   res.setHeader("content-type", "application/json; charset=utf-8");
   res.end(`${JSON.stringify(payload)}\n`);
+}
+
+function writeJsonNoStore(res: ServerResponse, statusCode: number, payload: unknown): void {
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+  writeJson(res, statusCode, payload);
 }
 
 function writeFavicon(res: ServerResponse): void {
@@ -1636,12 +2071,78 @@ function writeFaviconSvg(res: ServerResponse): void {
   res.end(FAVICON_SVG_BUFFER);
 }
 
+function writePwaManifest(res: ServerResponse): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "application/manifest+json; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_PWA_MANIFEST);
+  res.end(PWA_MANIFEST_JSON);
+}
+
+function writeServiceWorker(res: ServerResponse): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "text/javascript; charset=utf-8");
+  res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+  res.end(PWA_SERVICE_WORKER_SOURCE);
+}
+
+function writePwaIcon(res: ServerResponse, icon: Buffer): void {
+  res.statusCode = 200;
+  applySecurityHeaders(res);
+  res.setHeader("content-type", "image/png");
+  res.setHeader("cache-control", CACHE_CONTROL_PWA_ICON);
+  res.end(icon);
+}
+
+async function writeChangelog(res: ServerResponse): Promise<void> {
+  try {
+    const content = await readFile(resolveChangelogFilePath(), "utf8");
+    res.statusCode = 200;
+    applySecurityHeaders(res);
+    res.setHeader("content-type", "text/markdown; charset=utf-8");
+    res.setHeader("cache-control", CACHE_CONTROL_NO_STORE);
+    res.end(content);
+  } catch {
+    writeJson(res, 404, ADO_COMM_ROUTE_NOT_FOUND);
+  }
+}
+
+function resolveChangelogFilePath(): string {
+  return path.resolve(process.cwd(), CHANGELOG_PATH.slice(1));
+}
+
 function applySecurityHeaders(res: ServerResponse): void {
   res.setHeader("content-security-policy", CONTENT_SECURITY_POLICY);
   res.setHeader("x-frame-options", "DENY");
   res.setHeader("x-content-type-options", "nosniff");
   res.setHeader("referrer-policy", "no-referrer");
   res.setHeader("permissions-policy", "camera=(), microphone=(), geolocation=()");
+}
+
+const WORK_ITEM_PATCH_FAILED_PREFIX = /^WORK_ITEM_PATCH_FAILED:\s*/;
+
+/** Azure DevOps error text for the user: the technical prefix is removed and credentials are redacted. */
+function toWorkItemPatchErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  return redactCredentials(sanitizeLogText(error.message).replace(WORK_ITEM_PATCH_FAILED_PREFIX, ""));
+}
+
+const SENSITIVE_BASIC_PATTERN = /\bBasic\s+[A-Za-z0-9+/=]{8,}/gi;
+const SENSITIVE_ADO_PAT_PATTERN = /\b[a-z2-7]{52}\b/g;
+const WORK_ITEM_PATCH_ERROR_MAX_LENGTH = 500;
+
+function redactCredentials(input: string): string {
+  return input
+    .slice(0, WORK_ITEM_PATCH_ERROR_MAX_LENGTH)
+    .replace(SENSITIVE_BASIC_PATTERN, `Basic ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_ADO_PAT_PATTERN, ADO_COMM_REDACTED)
+    .replace(SENSITIVE_BEARER_PATTERN, `Bearer ${ADO_COMM_REDACTED}`)
+    .replace(SENSITIVE_JWT_PATTERN, ADO_COMM_REDACTED)
+    .replace(SENSITIVE_KEY_VALUE_PATTERN, (_match, key: string, separator: string) => `${key}${separator}${ADO_COMM_REDACTED}`);
 }
 
 function sanitizeLogText(input: string): string {

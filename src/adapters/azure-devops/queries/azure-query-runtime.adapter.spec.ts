@@ -331,6 +331,42 @@ describe("AzureQueryRuntimeAdapter", () => {
     ]);
   });
 
+  it("flattens identity fields and booleans during hydration", async () => {
+    const client = makeClient((url) => {
+      if (url.includes("/_apis/wit/wiql/")) {
+        return { status: 200, json: { queryType: "flat", workItems: [{ id: 101 }] } };
+      }
+      if (url.includes("/_apis/wit/workitems")) {
+        return {
+          status: 200,
+          json: {
+            value: [
+              {
+                id: 101,
+                fields: {
+                  "System.Title": "Item",
+                  "Custom.Reviewer": { displayName: "Linus Torvalds", uniqueName: "linus@example.com" },
+                  "Custom.Approver": { uniqueName: "grace@example.com" },
+                  "Custom.Blocked": true,
+                  "Custom.Object": { unrelated: 1 }
+                }
+              }
+            ]
+          }
+        };
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+
+    const snapshot = await makeAdapter(client).executeByQueryId("37f6f880-0b7b-4350-9f97-7263b40d4e95");
+    const item = snapshot.workItems[0] as unknown as Record<string, unknown>;
+
+    expect(item["Custom.Reviewer"]).toBe("Linus Torvalds");
+    expect(item["Custom.Approver"]).toBe("grace@example.com");
+    expect(item["Custom.Blocked"]).toBe("True");
+    expect(item).not.toHaveProperty("Custom.Object");
+  });
+
   it("retries transient hydration failure then succeeds", async () => {
     vi.useFakeTimers();
 

@@ -1,7 +1,11 @@
 import "./local-ui.css";
 import { createDefaultUiShellComposition, bootstrapUiClient } from "./ui-client.js";
+import { registerServiceWorker } from "./register-service-worker.js";
 import type { AdoCommLogEntry, WorkItemTypeOption, WriteCommandTransportResult } from "../composition/ui-shell.composition.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import { parseWorkItemFieldDefinitions } from "./work-item-field-definitions-parsing.js";
+import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
+import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
 
 const container = document.getElementById("app");
 const csrfToken = readCsrfToken();
@@ -178,7 +182,7 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
-    updateWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state }) => {
+    updateWorkItemDetails: async ({ targetWorkItemId, fields, htmlFields }) => {
       const response = await fetch("/phase2/work-item-details-update", {
         method: "POST",
         headers: withCsrf({
@@ -187,9 +191,8 @@ const composition = createDefaultUiShellComposition({
         }),
         body: JSON.stringify({
           targetWorkItemId,
-          title,
-          descriptionHtml,
-          state
+          fields,
+          ...(htmlFields && htmlFields.length > 0 ? { htmlFields } : {})
         })
       });
 
@@ -239,6 +242,31 @@ const composition = createDefaultUiShellComposition({
           typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
             ? payload.message
             : `Work item state update failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as WriteCommandTransportResult;
+    },
+    updateWorkItemAssignedTo: async ({ targetWorkItemId, assignedTo }) => {
+      const response = await fetch("/phase2/work-item-assigned-to-update", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          targetWorkItemId,
+          assignedTo
+        })
+      });
+
+      const payload = (await response.json()) as WriteCommandTransportResult | { message?: string; result?: { reasonCode?: string } };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Work item assignment update failed (${response.status})`;
         throw new Error(message);
       }
 
@@ -363,6 +391,25 @@ const composition = createDefaultUiShellComposition({
         reasonCode: "WRITE_DISABLED" | "WRITE_ENABLED" | "WRITE_UNSUPPORTED";
       };
     },
+    fetchWorkItemFieldDefinitions: async ({ workItemTypes }) => {
+      const params = new URLSearchParams();
+      workItemTypes.forEach((type) => params.append("workItemTypes", type));
+      const response = await fetch(`/phase2/work-item-field-definitions?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as { fields?: unknown; message?: string };
+      if (!response.ok) {
+        throw new Error(
+          typeof payload?.message === "string" ? payload.message : `Field definitions request failed (${response.status})`
+        );
+      }
+
+      return { fields: parseWorkItemFieldDefinitions(payload.fields) };
+    },
     fetchWorkItemStateOptions: async ({ targetWorkItemId }) => {
       const response = await fetch(`/phase2/work-item-state-options?targetWorkItemId=${encodeURIComponent(String(targetWorkItemId))}`, {
         method: "GET",
@@ -486,6 +533,50 @@ const composition = createDefaultUiShellComposition({
         status: "OK" as const,
         path: typeof payload.path === "string" ? payload.path : "az"
       };
+    },
+    resetLocalConfigs: async ({ confirmation }) => {
+      const response = await fetch("/phase2/local-config-reset", {
+        method: "POST",
+        headers: withCsrf({
+          "content-type": "application/json",
+          accept: "application/json"
+        }),
+        body: JSON.stringify({
+          confirmation
+        })
+      });
+
+      const payload = (await response.json()) as LocalConfigResetReport | { message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `Local config reset failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as LocalConfigResetReport;
+    },
+    checkAppUpdate: async () => {
+      const response = await fetch("/phase2/app-update-check", {
+        method: "GET",
+        headers: {
+          accept: "application/json"
+        }
+      });
+
+      const payload = (await response.json()) as AppUpdateCheckResponse | { message?: string };
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" && payload !== null && "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : `App update check failed (${response.status})`;
+        throw new Error(message);
+      }
+
+      return payload as AppUpdateCheckResponse;
     }
   }
 });
@@ -493,4 +584,10 @@ const composition = createDefaultUiShellComposition({
 bootstrapUiClient({
   container,
   composition
+});
+
+void registerServiceWorker({
+  onError: (error) => {
+    console.warn("[pwa] Service worker registration failed.", error);
+  }
 });

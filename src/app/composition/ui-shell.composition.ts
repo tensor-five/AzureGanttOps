@@ -8,6 +8,10 @@ import type {
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { QueryIntakeController } from "../../features/query-switching/query-intake.controller.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+import type { LocalConfigResetReport } from "../../application/ports/local-config-reset.port.js";
+import type { AppUpdateCheckResponse } from "../../shared/project-meta/app-update-check.js";
+import { APP_VERSION } from "../../shared/project-meta/project-meta.js";
+import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 
 export type AdoCommLogEntry = {
   seq: number;
@@ -18,6 +22,14 @@ export type AdoCommLogEntry = {
   status: number | null;
   durationMs: number | null;
   preview: string;
+};
+
+export type WorkItemFieldUpdateValue = string | number | boolean | null;
+
+export type WorkItemDetailsUpdateRequest = {
+  targetWorkItemId: number;
+  fields: Record<string, WorkItemFieldUpdateValue>;
+  htmlFields?: string[];
 };
 
 export type WorkItemStateOption = {
@@ -75,15 +87,14 @@ export type QueryIntakeTransport = {
     successorWorkItemId: number;
     action: "add" | "remove";
   }) => Promise<WriteCommandTransportResult>;
-  updateWorkItemDetails: (request: {
-    targetWorkItemId: number;
-    title: string;
-    descriptionHtml: string;
-    state: string;
-  }) => Promise<WriteCommandTransportResult>;
+  updateWorkItemDetails: (request: WorkItemDetailsUpdateRequest) => Promise<WriteCommandTransportResult>;
   updateWorkItemState: (request: {
     targetWorkItemId: number;
     state: string;
+  }) => Promise<WriteCommandTransportResult>;
+  updateWorkItemAssignedTo: (request: {
+    targetWorkItemId: number;
+    assignedTo: string;
   }) => Promise<WriteCommandTransportResult>;
   duplicateWorkItem: (request: {
     sourceWorkItemId: number;
@@ -111,6 +122,9 @@ export type QueryIntakeTransport = {
   fetchWorkItemTypes: () => Promise<{
     workItemTypes: WorkItemTypeOption[];
   }>;
+  fetchWorkItemFieldDefinitions?: (request: { workItemTypes: string[] }) => Promise<{
+    fields: WorkItemFieldDefinition[];
+  }>;
   fetchQueryDetails: (request: { queryId: string }) => Promise<{
     id: string;
     name: string;
@@ -124,6 +138,8 @@ export type QueryIntakeTransport = {
     status: "OK";
     path: string;
   }>;
+  resetLocalConfigs: (request: { confirmation: string }) => Promise<LocalConfigResetReport>;
+  checkAppUpdate: () => Promise<AppUpdateCheckResponse>;
 };
 
 export type UiShellCapabilities = {
@@ -232,6 +248,13 @@ export function createLocalUiShellController(params: {
       operationCount: 1,
       reasonCode: "WRITE_DISABLED"
     }),
+    updateWorkItemAssignedTo: async () => ({
+      accepted: false,
+      mode: "NO_OP",
+      commandKind: "WORK_ITEM_PATCH",
+      operationCount: 1,
+      reasonCode: "WRITE_DISABLED"
+    }),
     duplicateWorkItem: async () => ({
       accepted: false,
       mode: "NO_OP",
@@ -271,6 +294,17 @@ export function createLocalUiShellController(params: {
     setAzureCliPath: async () => ({
       status: "OK",
       path: "az"
+    }),
+    resetLocalConfigs: async () => ({
+      status: "completed",
+      targets: []
+    }),
+    checkAppUpdate: async () => ({
+      status: "unavailable",
+      currentVersion: APP_VERSION,
+      checkedAt: new Date().toISOString(),
+      source: "github",
+      reason: "version_source_failed"
     })
   };
 }

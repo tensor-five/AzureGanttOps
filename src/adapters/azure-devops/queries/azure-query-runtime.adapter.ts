@@ -597,7 +597,12 @@ function normalizeHydratedPayload(payload: unknown): {
             return;
           }
 
-          if (fieldRef === "System.AssignedTo" && value && typeof value === "object") {
+          if (typeof value === "boolean") {
+            flattenedFields[fieldRef] = value ? "True" : "False";
+            return;
+          }
+
+          if (value && typeof value === "object" && !Array.isArray(value)) {
             const assignedTo = value as Record<string, unknown>;
             const displayName = assignedTo.displayName;
             const uniqueName = assignedTo.uniqueName;

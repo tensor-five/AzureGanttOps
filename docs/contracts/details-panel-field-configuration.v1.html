@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vertrag: Konfigurierbare Detail-Seitenleiste (v1)</title>
+<style>
+/* ---- Design-Tokens 1:1 aus src/app/bootstrap/local-ui-tokens.css ---- */
+:root {
+  --font-body: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+  --font-medium: 500; --font-semibold: 600; --font-bold: 700;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem;
+  --leading-normal: 1.5;
+  --color-primary: #842CC3; --color-primary-dark: #5B1A8A;
+  --color-bg: #ffffff; --color-bg-subtle: #fdfdfd; --color-bg-muted: #f8f8f8;
+  --color-surface: #ffffff; --color-surface-elevated: #ffffff;
+  --color-text: #1c1917; --color-text-secondary: #57534e; --color-text-muted: #a8a29e;
+  --color-border: #d6d3d1; --color-border-subtle: #e7e5e4; --color-border-strong: #bfbab5;
+  --color-tab-active-bg: #f1e7f9; --color-tab-active-text: #4c1d68;
+  --color-warning-bg: #fef3c7; --color-warning-border: #f59e0b; --color-warning-text: #92400e;
+  --color-danger: #b91c1c;
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-6: 1.5rem; --space-8: 2rem;
+  --radius-sm: 0.5rem; --radius-md: 0.625rem; --radius-lg: 0.75rem; --radius-xl: 0.875rem; --radius-pill: 999px;
+  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.08); --shadow-md: 0 10px 24px rgba(28, 25, 23, 0.1);
+  --transition-duration-fast: 120ms; --transition-duration-base: 180ms; --transition-easing-standard: ease;
+}
+[data-theme="dark"] {
+  --color-bg: #0c0a09; --color-bg-subtle: #1c1917; --color-bg-muted: #292524;
+  --color-surface: #1c1917; --color-surface-elevated: #1f1b1a;
+  --color-text: #fafaf9; --color-text-secondary: #a8a29e; --color-text-muted: #78716c;
+  --color-border: #44403c; --color-border-subtle: #292524; --color-border-strong: #57534e;
+  --color-tab-active-bg: #32203f; --color-tab-active-text: #f3e8ff;
+  --color-warning-bg: #3c2d0d; --color-warning-border: #d79a2b; --color-warning-text: #f7d696;
+  --color-danger: #f87171;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-body); background: var(--color-bg-muted); color: var(--color-text); line-height: var(--leading-normal); }
+button, input, select { font: inherit; }
+
+/* ---- Vertragsdokument ---- */
+.doc { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+.doc h1 { font-size: var(--text-2xl); margin: 0 0 4px; }
+.doc h2 { font-size: var(--text-xl); margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--color-border-subtle); }
+.doc h3 { font-size: var(--text-base); margin: 22px 0 8px; }
+.doc p, .doc li { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.doc strong { color: var(--color-text); }
+.doc code { font-size: 0.8em; background: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: 6px; padding: 1px 5px; color: var(--color-text); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
+.chip { font-size: var(--text-xs); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 2px 10px; background: var(--color-surface); color: var(--color-text-secondary); }
+.chip-draft { background: var(--color-warning-bg); border-color: var(--color-warning-border); color: var(--color-warning-text); }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); padding: 18px; }
+.req-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+.req-table th, .req-table td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--color-border-subtle); }
+.req-table th { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); background: var(--color-bg-subtle); }
+.req-table td:first-child { white-space: nowrap; font-weight: var(--font-bold); color: var(--color-primary); }
+.req-table td { color: var(--color-text); }
+.req-group td { background: var(--color-tab-active-bg); color: var(--color-tab-active-text) !important; font-weight: var(--font-bold); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; }
+.stage-toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 14px; font-size: var(--text-sm); color: var(--color-text-secondary); }
+.stage-toolbar input[type=range] { width: 200px; accent-color: var(--color-primary); }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: var(--color-bg); overflow: visible; min-height: 640px; }
+.stage-gantt { border-right: 1px solid var(--color-border-subtle); padding: 16px; background:
+  repeating-linear-gradient(90deg, transparent 0 59px, var(--color-border-subtle) 59px 60px); border-radius: var(--radius-xl) 0 0 var(--radius-xl); position: relative; overflow: hidden; }
+.fake-bar { height: 22px; border-radius: 6px; background: #7c3aed; margin: 14px 0; opacity: .85; color: #fafaf9; font-size: 11px; padding: 3px 8px; white-space: nowrap; overflow: hidden; }
+.fake-bar.selected { outline: 2px solid var(--color-text); outline-offset: 1px; }
+.stage-details { padding: 14px; width: var(--mock-panel-width, 320px); position: relative; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.gallery figure { margin: 0; }
+.gallery figcaption { font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: 8px; }
+.gallery .frame { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-bg); padding: 14px; position: relative; }
+.size-table td:nth-child(2) { font-weight: var(--font-bold); }
+
+/* ---- Produktions-CSS (bestehend, aus local-ui-shell.css) ---- */
+.timeline-details-panel-head { --timeline-details-control-height: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
+.timeline-details-head-actions { display: flex; justify-content: flex-end; gap: 6px; align-items: center; position: relative; }
+.timeline-action-button { border: 1px solid var(--color-border-strong); background: var(--color-surface-elevated); color: var(--color-text); border-radius: var(--radius-md); padding: 8px 12px; cursor: pointer; }
+.timeline-details-save-button { min-height: 32px; padding-top: 0; padding-bottom: 0; background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-subtle)); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+.timeline-details-save-button:disabled { cursor: default; opacity: .75; }
+.timeline-details-save-button-dirty { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: var(--font-bold); opacity: 1 !important; }
+.timeline-details-work-item-id { display: inline-flex; align-items: center; min-height: 32px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0 10px; font-size: var(--text-sm); color: var(--color-text-secondary); text-decoration: none; background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); }
+.timeline-details-work-item-link-icon { width: 13px; height: 13px; margin-left: 6px; }
+.timeline-details-label { font-size: var(--text-xs); font-weight: var(--font-bold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-details-input { width: 100%; min-height: 36px; padding: 0.5rem 0.625rem; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.timeline-details-input:focus { outline: none; border-color: var(--color-border); }
+.timeline-details-richtext { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px 10px; font-size: var(--text-sm); background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg-subtle)); max-height: calc(1.5em * 4 + 16px); overflow: hidden; color: var(--color-text); }
+.timeline-details-richtext p { margin: 0 0 6px; color: var(--color-text); font-size: var(--text-sm); }
+.timeline-details-muted { margin: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+.timeline-details-row-hint { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 6px; border-radius: var(--radius-sm); white-space: nowrap; background: var(--color-surface-elevated); color: var(--color-text-muted); border: 1px dashed var(--color-border-subtle); }
+.timeline-update-error { margin: 0; font-size: var(--text-xs); color: var(--color-danger); }
+
+/* ---- NEU: konfigurierbares Feld-Grid ---- */
+.timeline-details-panel-surface { container-type: inline-size; container-name: details-panel; }
+.timeline-details-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 8px; }
+.timeline-details-field { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.timeline-details-field-full { grid-column: 1 / -1; }
+.timeline-details-field-half { grid-column: span 1; }
+@container details-panel (max-width: 279px) {
+  .timeline-details-field-half { grid-column: 1 / -1; }
+}
+.timeline-details-field-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
+.timeline-details-readonly-value { min-height: 36px; padding: 0.5rem 0.625rem; border: 1px dashed var(--color-border-subtle); border-radius: var(--radius-sm); font-size: var(--text-sm); color: var(--color-text); background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg-subtle)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-details-value-empty { color: var(--color-text-muted); }
+.timeline-details-input-invalid { border-color: var(--color-danger) !important; }
+.timeline-details-field-error { margin: 0; font-size: 11px; color: var(--color-danger); }
+.timeline-details-field-dirty .timeline-details-label::after { content: " \2022"; color: var(--color-primary); }
+.timeline-details-number { font-variant-numeric: tabular-nums; }
+
+.timeline-details-config-toggle { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-secondary); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+.timeline-details-config-toggle:hover, .timeline-details-config-toggle[aria-expanded="true"] { border-color: var(--color-border-strong); color: var(--color-text); }
+.timeline-details-config-toggle[aria-expanded="true"] { background: var(--color-tab-active-bg); color: var(--color-tab-active-text); }
+.timeline-details-config-toggle svg { width: 16px; height: 16px; }
+
+.timeline-details-config-menu { position: absolute; top: calc(100% + 8px); right: 0; width: min(380px, 92vw); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-md); padding: 10px; z-index: 230; display: grid; gap: 10px; animation: ui-menu-surface-enter var(--transition-duration-base) var(--transition-easing-standard); text-align: left; }
+@keyframes ui-menu-surface-enter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+.timeline-details-config-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.timeline-details-config-title { margin: 0; font-size: var(--text-sm); color: var(--color-text); font-weight: var(--font-bold); }
+.timeline-details-config-reset { border: 0; background: transparent; color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: var(--font-semibold); cursor: pointer; padding: 2px 4px; }
+.timeline-details-config-reset:hover { color: var(--color-text); }
+.timeline-details-config-section-title { margin: 0; font-size: var(--text-xs); font-weight: var(--font-bold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); display: flex; justify-content: space-between; }
+.timeline-details-config-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 260px; overflow: auto; }
+.timeline-details-config-item { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 6px 6px 4px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm); background: var(--color-surface); font-size: var(--text-sm); }
+.timeline-details-config-item[draggable="true"] { cursor: grab; }
+.timeline-details-config-item-dragging { opacity: .45; }
+.timeline-details-config-item-drop-before { box-shadow: 0 -2px 0 0 var(--color-primary); }
+.timeline-details-config-item-unavailable { opacity: .55; }
+.timeline-details-config-grip { color: var(--color-text-muted); width: 16px; height: 16px; }
+.timeline-details-config-meta { display: grid; min-width: 0; }
+.timeline-details-config-meta strong { font-size: var(--text-sm); color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: var(--font-semibold); }
+.timeline-details-config-meta span { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.timeline-details-config-badges { display: flex; gap: 4px; }
+.timeline-details-config-badge { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 1px 6px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-subtle); color: var(--color-text-secondary); white-space: nowrap; }
+.timeline-details-config-badge-edit { border-color: color-mix(in srgb, var(--color-primary) 40%, transparent); color: var(--color-primary); }
+[data-theme="dark"] .timeline-details-config-badge-edit { color: #c9a3ec; }
+.timeline-details-config-actions { display: flex; gap: 2px; }
+.timeline-details-config-icon-button { width: 24px; height: 24px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--color-text-secondary); cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; }
+.timeline-details-config-icon-button:hover:not(:disabled) { border-color: var(--color-border); color: var(--color-text); background: var(--color-bg-subtle); }
+.timeline-details-config-icon-button:disabled { opacity: .3; cursor: default; }
+.timeline-details-config-search { width: 100%; min-height: 32px; padding: 0.35rem 0.6rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text); font-size: var(--text-sm); }
+.timeline-details-config-available .timeline-details-config-item { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: 8px; }
+.timeline-details-config-divider { height: 1px; background: color-mix(in srgb, var(--color-border) 86%, transparent); }
+.timeline-details-config-note { margin: 0; font-size: 11px; color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Vertrag: Konfigurierbare Detail-Seitenleiste</h1>
+  <p>Azure DevOps Query-Driven Gantt &middot; Feature „Details panel field configuration“ inklusive bearbeitbarer Story Points</p>
+  <div class="meta">
+    <span class="chip">Version 1</span>
+    <span class="chip">Stand 09.11.2026</span>
+    <span class="chip">Branch <code>Test_details-panel-field-config</code></span>
+    <span class="chip">Freigegeben am 09.11.2026</span>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Versprechen an den Nutzer</h3>
+    <p>Die rechte Detail-Seitenleiste zeigt genau die Felder, die du sehen willst, in der Reihenfolge, die du festlegst. Über ein Zahnrad-Symbol öffnest du ein Pop-up mit allen verfügbaren Azure-DevOps-Feldern, fügst Felder hinzu, entfernst sie und sortierst sie per Drag &amp; Drop oder Pfeiltasten um. Die Breite jedes Felds (halbe oder volle Zeile) bestimmt die App automatisch aus dem Feldtyp, sodass kurze Werte wie <strong>Story Points</strong> nebeneinander stehen und lange Inhalte wie die Beschreibung die volle Breite erhalten. Bei schmaler Seitenleiste wird alles automatisch einspaltig. Bearbeitbare Felder, darunter Story Points, änderst du direkt in der Seitenleiste und speicherst sie mit dem bestehenden Save-Button nach Azure DevOps.</p>
+  </div>
+
+  <h2>1. Interaktives Mockup</h2>
+  <p>Das Mockup verwendet die Produktions-Tokens und die bestehenden Klassen der Seitenleiste (<code>timeline-details-*</code>). Probier es aus: Zahnrad öffnen, Felder ziehen, hinzufügen und entfernen, Story Points ändern, Panelbreite verschieben und das Theme umschalten. Die Feldwerte im Mockup sind Illustrationswerte des Vertrags; in der App stammen sie live aus Azure DevOps.</p>
+  <div class="stage-toolbar">
+    <label>Panelbreite: <input id="widthSlider" type="range" min="240" max="480" value="340"> <strong id="widthLabel">340 px</strong></label>
+    <label><input id="themeToggle" type="checkbox"> Dark Theme</label>
+    <span id="layoutHint" class="chip">2 Spalten</span>
+  </div>
+  <div class="stage">
+    <div class="stage-gantt" aria-hidden="true">
+      <div class="fake-bar" style="width:46%;margin-left:4%">#4711 Login-Flow überarbeiten</div>
+      <div class="fake-bar selected" style="width:38%;margin-left:22%">#4712 Session-Timeout-Handling</div>
+      <div class="fake-bar" style="width:30%;margin-left:40%">#4713 E2E-Tests Auth</div>
+      <div class="fake-bar" style="width:52%;margin-left:12%">#4720 Release-Vorbereitung</div>
+    </div>
+    <div class="stage-details" id="stageDetails"></div>
+  </div>
+
+  <h2>2. Zustände im Überblick</h2>
+  <div class="gallery">
+    <figure><div class="frame" style="width:340px" id="galleryDefault"></div><figcaption>A – Standardkonfiguration beim ersten Start, Panel 340 px: halbe Felder werden paarweise nebeneinander gesetzt.</figcaption></figure>
+    <figure><div class="frame" style="width:260px" id="galleryNarrow"></div><figcaption>B – Schmales Panel (Inhaltsbreite &lt; 280 px): alle Felder automatisch volle Breite.</figcaption></figure>
+    <figure><div class="frame" style="width:340px" id="galleryInvalid"></div><figcaption>C – Story Points geändert (Feld markiert, Save aktiv) und ungültiger Wert in einem anderen Zahlenfeld (Save gesperrt).</figcaption></figure>
+    <figure><div class="frame" style="width:340px;min-height:520px" id="galleryMenu"></div><figcaption>D – Geöffnetes Konfigurations-Pop-up inklusive eines Felds, das in der aktuellen Query nicht verfügbar ist.</figcaption></figure>
+  </div>
+
+  <h2>3. Automatische Breitenregel</h2>
+  <p>Die Breite wird ausschließlich aus dem Feldtyp abgeleitet, den Azure DevOps für das Feld meldet. Es gibt keine manuelle Breitenwahl.</p>
+  <table class="req-table size-table">
+    <thead><tr><th>Feldart</th><th>Breite</th><th>Beispiele</th><th>Begründung</th></tr></thead>
+    <tbody>
+      <tr><td>Integer, Double</td><td>½</td><td>Story Points, Priority, Remaining Work, Effort</td><td>Kurze Zahlen</td></tr>
+      <tr><td>DateTime</td><td>½</td><td>Start, End/Target, Created Date</td><td>Fixes Format <code>TT.MM.JJJJ HH:MM</code></td></tr>
+      <tr><td>Boolean</td><td>½</td><td>Blocked (Ja/Nein)</td><td>Ein Wort</td></tr>
+      <tr><td>Auswahlliste (Picklist), State, Work Item Type</td><td>½</td><td>State, Severity, Value Area</td><td>Kurze, bekannte Werte</td></tr>
+      <tr><td>Identität</td><td>½</td><td>Assigned To, Changed By</td><td>Personennamen, bei Überlänge gekürzt mit Tooltip</td></tr>
+      <tr><td>Abgeleitet (Built-in)</td><td>½</td><td>ID, Dependencies</td><td>Kurzwerte</td></tr>
+      <tr><td>Einzeiliger Text (String ohne Auswahlliste)</td><td>Voll</td><td>Title, Custom-Textfelder</td><td>Unbekannte Länge</td></tr>
+      <tr><td>HTML / mehrzeiliger Text</td><td>Voll</td><td>Description, Acceptance Criteria</td><td>Fließtext</td></tr>
+      <tr><td>Pfade, Tags</td><td>Voll</td><td>Area Path, Iteration Path, Tags</td><td>Lange Werte</td></tr>
+      <tr><td>Unbekannter Typ</td><td>Voll</td><td>–</td><td>Sicherer Standard</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Paarungsregel:</strong> Die Liste wird in der konfigurierten Reihenfolge durchlaufen. Ein halbes Feld steht nur dann halb breit, wenn das direkt folgende sichtbare Feld ebenfalls halb ist; dann bilden beide eine Zeile. Ein halbes Feld ohne halben Partner erhält die volle Breite. So entstehen nie Lücken, und die Reihenfolge bleibt exakt erhalten.</p>
+
+  <h2>4. Anforderungen</h2>
+  <table class="req-table">
+    <thead><tr><th>ID</th><th>Anforderung (verbindlich)</th></tr></thead>
+    <tbody>
+      <tr class="req-group"><td colspan="2">Einstieg</td></tr>
+      <tr><td>DPF-01</td><td>Im Kopf der Detail-Seitenleiste erscheint rechts neben der ID-Pille ein Zahnrad-Button (32 × 32 px, <code>aria-label="Configure details fields"</code>, Tooltip „Configure fields“). Er ist sichtbar, sobald die Seitenleiste Inhalte zeigt, auch ohne ausgewähltes Work Item. Ist der Inhalt wegen zu geringer Breite ausgeblendet, ist auch der Button ausgeblendet.</td></tr>
+      <tr><td>DPF-02</td><td>Klick auf das Zahnrad öffnet das Pop-up „Details fields“ unterhalb des Buttons, rechtsbündig, und markiert den Button als aktiv (<code>aria-expanded="true"</code>). Erneuter Klick, <kbd>Esc</kbd> oder Klick außerhalb schließt es. Änderungen wirken sofort live in der Seitenleiste; es gibt keinen separaten Übernehmen-Button.</td></tr>
+      <tr class="req-group"><td colspan="2">Pop-up-Inhalt</td></tr>
+      <tr><td>DPF-03</td><td>Das Pop-up hat zwei Bereiche: <strong>„Shown“</strong> (angezeigte Felder in Anzeigereihenfolge, mit Anzahl) und <strong>„Available“</strong> (alle weiteren Felder, alphabetisch nach Anzeigename, mit Suchfeld „Search field“).</td></tr>
+      <tr><td>DPF-04</td><td>Der Feldkatalog besteht aus den Built-in-Feldern <em>Title, State, Description, Assigned To, Start, End, ID, Work Item Type, Dependencies</em> sowie allen Feldern, die Azure DevOps für die Work-Item-Typen der aktuell geladenen Query definiert. Anzeigename, Datentyp, Schreibschutz und Auswahlwerte stammen live aus den Azure-DevOps-Felddefinitionen. Story Points (<code>Microsoft.VSTS.Scheduling.StoryPoints</code>) erscheinen damit auch dann, wenn noch kein Work Item einen Wert hat. Doppelte Felder gibt es nicht; die Built-ins Start/End entsprechen den gemappten Schedule-Feldern.</td></tr>
+      <tr><td>DPF-05</td><td>Können die Felddefinitionen nicht geladen werden, enthält der Katalog die Built-ins und alle Felder, die in geladenen Work Items vorkommen. Diese Zusatzfelder sind dann schreibgeschützt und volle Breite; das Pop-up zeigt den Hinweis „Field definitions unavailable – showing loaded fields read-only.“</td></tr>
+      <tr><td>DPF-06</td><td>Jeder Eintrag unter „Shown“ zeigt: Griff-Symbol, Anzeigename, Referenzname (bzw. „Built-in“), Breiten-Badge „½“ oder „Full“, Badge „Edit“ bei bearbeitbaren Feldern sowie die Buttons „Move up“ (↑), „Move down“ (↓) und „Remove“ (×). ↑ ist beim ersten, ↓ beim letzten Eintrag deaktiviert.</td></tr>
+      <tr><td>DPF-07</td><td>Umsortieren ist per Drag &amp; Drop (Einfügelinie in Primärfarbe), per ↑/↓-Buttons und per Tastatur möglich: Bei fokussiertem Eintrag verschieben <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> den Eintrag; der Fokus bleibt auf dem verschobenen Eintrag.</td></tr>
+      <tr><td>DPF-08</td><td>Klick auf „+“ bei einem Eintrag unter „Available“ hängt das Feld ans Ende von „Shown“. „Remove“ verschiebt es zurück nach „Available“. Die Suche filtert „Available“ nach Anzeigename und Referenzname, Groß-/Kleinschreibung egal; ohne Treffer erscheint „No matching field.“</td></tr>
+      <tr><td>DPF-09</td><td>„Reset to default“ stellt die Standardkonfiguration (DPF-20) wieder her.</td></tr>
+      <tr><td>DPF-10</td><td>Konfigurierte Felder, die in der aktuellen Query nicht im Katalog stehen, bleiben in „Shown“ an ihrer Position, werden ausgegraut mit „Not in current query“ angezeigt, sind entfernbar und erscheinen in der Seitenleiste nicht.</td></tr>
+      <tr class="req-group"><td colspan="2">Darstellung in der Seitenleiste</td></tr>
+      <tr><td>DPF-11</td><td>Alle Informationen des ausgewählten Work Items werden in einem einzigen Feld-Grid in der konfigurierten Reihenfolge angezeigt. Die bisherige separate Liste unter dem Formular (State/Start/End/Predecessors/Successors als Zeilen) entfällt.</td></tr>
+      <tr><td>DPF-12</td><td>Die Breite jedes Felds folgt der Breitenregel und der Paarungsregel aus Abschnitt 3.</td></tr>
+      <tr><td>DPF-13</td><td>Ist die Inhaltsbreite der Seitenleiste kleiner als 280 px, werden alle Felder einspaltig mit voller Breite dargestellt. Die Umstellung erfolgt live beim Ziehen der Panelbreite, ohne Neuladen.</td></tr>
+      <tr><td>DPF-14</td><td>Ein Feld ohne Wert zeigt „—“ in gedämpfter Farbe. Es werden keine Werte erfunden oder vorbelegt. Felder, die für den Work-Item-Typ des ausgewählten Items nicht definiert sind, werden für dieses Item nicht angezeigt.</td></tr>
+      <tr><td>DPF-15</td><td>Schreibgeschützte Felder erscheinen als gestrichelte Wertbox ohne Eingabemöglichkeit; zu lange Werte werden mit „…“ gekürzt und vollständig im Tooltip gezeigt. Datumswerte werden als <code>TT.MM.JJJJ HH:MM</code> in lokaler Zeit angezeigt; der Hinweis „from iteration“ bei Start/End bleibt erhalten. „Dependencies“ zeigt „<em>n</em> pred · <em>m</em> succ“.</td></tr>
+      <tr><td>DPF-16</td><td>Ohne ausgewähltes Work Item zeigt die Seitenleiste weiterhin „Select a work item to edit its fields.“; das Zahnrad bleibt nutzbar.</td></tr>
+      <tr class="req-group"><td colspan="2">Bearbeiten und Speichern</td></tr>
+      <tr><td>DPF-17</td><td>Bearbeitbar sind Felder, die Azure DevOps nicht als schreibgeschützt meldet und die einen der folgenden Typen haben: einzeiliger Text (Textfeld), Integer/Double (Zahlenfeld), Auswahlliste/State (Dropdown mit erlaubten Werten), Boolean (Dropdown Yes/No), Identität „Assigned To“ (Dropdown mit den Personen der aktuellen Query plus „Unassigned“), HTML (bestehender Richtext-Editor). Start/End, Pfade, Tags, ID, Work Item Type und Dependencies sind in der Seitenleiste schreibgeschützt.</td></tr>
+      <tr><td>DPF-18</td><td><strong>Story Points</strong> und andere Double-Felder: Eingabe mit Punkt oder Komma, Wert ≥ 0, höchstens zwei Nachkommastellen. Integer-Felder: ganze Zahl ≥ 0. Leeres Feld entfernt den Wert in Azure DevOps. Bei ungültiger Eingabe wird das Feld rot umrandet, darunter steht „Enter a number ≥ 0 with up to 2 decimals.“ bzw. „Enter a whole number ≥ 0.“, und Save ist gesperrt.</td></tr>
+      <tr><td>DPF-19</td><td>Geänderte Felder werden mit einem Punkt in Primärfarbe hinter dem Label markiert. Der bestehende Save-Button und <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>S</kbd> speichern alle geänderten Felder in einer einzigen Aktualisierung nach Azure DevOps. Danach zeigen Seitenleiste und Timeline (Balkenbeschriftungen, Filter, Farbcodierung, linke Spalte) den neuen Wert ohne vollständiges Neuladen. Bei Fehlern bleibt der Entwurf erhalten und „Save failed: …“ erscheint. Der bestehende Schutz vor Verlust ungespeicherter Änderungen gilt für alle Felder.</td></tr>
+      <tr class="req-group"><td colspan="2">Persistenz und Standard</td></tr>
+      <tr><td>DPF-20</td><td>Standardkonfiguration beim ersten Start und nach Reset: <em>Title · State · Assigned To · Start · End · Story Points · Dependencies · Description</em>.</td></tr>
+      <tr><td>DPF-21</td><td>Die Konfiguration (Reihenfolge der Referenznamen) wird global, nicht pro Query, in den lokalen Nutzerpräferenzen (<code>~/.azure-ganttops/user-preferences.json</code> über <code>/phase2/user-preferences</code>) gespeichert und beim nächsten Start sowie nach einem Query-Wechsel angewendet.</td></tr>
+      <tr class="req-group"><td colspan="2">Qualität</td></tr>
+      <tr><td>DPF-22</td><td>Pop-up und Feld-Grid funktionieren im Light- und Dark-Theme mit den bestehenden Tokens und sind per Tastatur vollständig bedienbar (Tab-Reihenfolge, sichtbarer Fokus, ARIA-Beschriftungen der Buttons und Listen).</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. Nicht Bestandteil dieses Vertrags</h2>
+  <ul>
+    <li>Manuelle Breitenwahl pro Feld; die Breite ist ausschließlich automatisch.</li>
+    <li>Bearbeiten von Start/End, Area/Iteration Path und Tags in der Seitenleiste (Start/End bleiben über die Timeline änderbar).</li>
+    <li>Konfiguration pro Query oder geteilte Team-Konfigurationen.</li>
+    <li>Änderungen an der linken Sidebar-Spalte und an Balkenbeschriftungen (eigenes Menü bleibt unverändert).</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+  const CATALOG = {
+    "builtin.title": { name: "Title", ref: "Built-in", kind: "text", editable: true, value: "Session-Timeout-Handling verbessern" },
+    "builtin.state": { name: "State", ref: "Built-in", kind: "picklist", editable: true, value: "Active", options: ["New", "Active", "Resolved", "Closed"] },
+    "builtin.assignedTo": { name: "Assigned To", ref: "Built-in", kind: "identity", editable: true, value: "Christian Betz", options: ["Unassigned", "Christian Betz", "Jonas Weber", "Lena Hoffmann"] },
+    "builtin.start": { name: "Start", ref: "Built-in", kind: "date", editable: false, value: "03.11.2026 09:00" },
+    "builtin.end": { name: "End", ref: "Built-in", kind: "date", editable: false, value: "14.11.2026 17:00", hint: "from iteration" },
+    "Microsoft.VSTS.Scheduling.StoryPoints": { name: "Story Points", ref: "Microsoft.VSTS.Scheduling.StoryPoints", kind: "double", editable: true, value: "5" },
+    "builtin.dependencies": { name: "Dependencies", ref: "Built-in", kind: "derived", editable: false, value: "1 pred · 2 succ" },
+    "builtin.description": { name: "Description", ref: "Built-in", kind: "html", editable: true, value: "<p>Beim Ablauf der Azure-CLI-Session soll der Nutzer einen klaren Hinweis erhalten, statt eines leeren Gantt-Diagramms.</p><p>Retry erst nach erneutem Login.</p>" },
+    "builtin.id": { name: "ID", ref: "Built-in", kind: "derived", editable: false, value: "4712" },
+    "builtin.type": { name: "Work Item Type", ref: "Built-in", kind: "picklist-ro", editable: false, value: "User Story" },
+    "Microsoft.VSTS.Common.Priority": { name: "Priority", ref: "Microsoft.VSTS.Common.Priority", kind: "integer", editable: true, value: "2" },
+    "Microsoft.VSTS.Scheduling.RemainingWork": { name: "Remaining Work", ref: "Microsoft.VSTS.Scheduling.RemainingWork", kind: "double", editable: true, value: "" },
+    "Microsoft.VSTS.Common.ValueArea": { name: "Value Area", ref: "Microsoft.VSTS.Common.ValueArea", kind: "picklist", editable: true, value: "Business", options: ["Business", "Architectural"] },
+    "System.IterationPath": { name: "Iteration Path", ref: "System.IterationPath", kind: "path", editable: false, value: "GanttOps\\Sprint 2026-22" },
+    "System.AreaPath": { name: "Area Path", ref: "System.AreaPath", kind: "path", editable: false, value: "GanttOps\\Frontend" },
+    "System.Tags": { name: "Tags", ref: "System.Tags", kind: "path", editable: false, value: "auth; reliability" },
+    "Microsoft.VSTS.Common.AcceptanceCriteria": { name: "Acceptance Criteria", ref: "Microsoft.VSTS.Common.AcceptanceCriteria", kind: "html", editable: true, value: "" },
+    "System.CreatedDate": { name: "Created Date", ref: "System.CreatedDate", kind: "date", editable: false, value: "21.10.2026 11:42" },
+    "Custom.Blocked": { name: "Blocked", ref: "Custom.Blocked", kind: "boolean", editable: true, value: "No", options: ["No", "Yes"] }
+  };
+  const HALF = new Set(["double", "integer", "date", "boolean", "picklist", "picklist-ro", "identity", "derived"]);
+  const DEFAULT = ["builtin.title", "builtin.state", "builtin.assignedTo", "builtin.start", "builtin.end", "Microsoft.VSTS.Scheduling.StoryPoints", "builtin.dependencies", "builtin.description"];
+  const isHalf = (id) => CATALOG[id] && HALF.has(CATALOG[id].kind);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const gearSvg = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M8 10.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"/><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M6.9 1.8h2.2l.35 1.6 1.2.7 1.55-.5 1.1 1.9-1.2 1.1v1.4l1.2 1.1-1.1 1.9-1.55-.5-1.2.7-.35 1.6H6.9l-.35-1.6-1.2-.7-1.55.5-1.1-1.9 1.2-1.1V7.3l-1.2-1.1 1.1-1.9 1.55.5 1.2-.7z"/></svg>';
+  const gripSvg = '<svg class="timeline-details-config-grip" viewBox="0 0 16 16" aria-hidden="true"><g fill="currentColor"><circle cx="6" cy="4" r="1.1"/><circle cx="10" cy="4" r="1.1"/><circle cx="6" cy="8" r="1.1"/><circle cx="10" cy="8" r="1.1"/><circle cx="6" cy="12" r="1.1"/><circle cx="10" cy="12" r="1.1"/></g></svg>';
+  const linkSvg = '<svg class="timeline-details-work-item-link-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 10 11.5 4.5M8.5 4.5h3v3M10.5 8.5v2a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 10.5V7a1.5 1.5 0 0 1 1.5-1.5h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function layout(ids) {
+    const out = [];
+    for (let i = 0; i < ids.length; i++) {
+      if (isHalf(ids[i]) && i + 1 < ids.length && isHalf(ids[i + 1])) { out.push([ids[i], "half"], [ids[i + 1], "half"]); i++; }
+      else out.push([ids[i], "full"]);
+    }
+    return out;
+  }
+
+  function validate(kind, raw) {
+    const v = raw.trim().replace(",", ".");
+    if (v === "") return null;
+    if (kind === "integer") return /^\d+$/.test(v) ? null : "Enter a whole number ≥ 0.";
+    if (kind === "double") return /^\d+(\.\d{1,2})?$/.test(v) ? null : "Enter a number ≥ 0 with up to 2 decimals.";
+    return null;
+  }
+
+  function renderField(id, width, st) {
+    const f = CATALOG[id];
+    const draft = st.drafts[id] ?? f.value;
+    const dirty = st.drafts[id] !== undefined && st.drafts[id] !== f.value;
+    const err = (f.kind === "double" || f.kind === "integer") ? validate(f.kind, draft) : null;
+    const cls = ["timeline-details-field", width === "half" ? "timeline-details-field-half" : "timeline-details-field-full", dirty ? "timeline-details-field-dirty" : ""].join(" ");
+    let control;
+    if (!f.editable) {
+      const empty = !f.value;
+      control = `<div class="timeline-details-readonly-value ${f.kind === "date" || f.kind === "derived" ? "timeline-details-number" : ""}" title="${esc(f.value)}">${empty ? '<span class="timeline-details-value-empty">—</span>' : esc(f.value)}</div>`;
+    } else if (f.kind === "html") {
+      control = f.value ? `<div class="timeline-details-richtext">${f.value}</div>` : `<div class="timeline-details-richtext"><span class="timeline-details-value-empty">—</span></div>`;
+    } else if (f.options) {
+      control = `<select class="timeline-details-input" data-id="${id}">${f.options.map((o) => `<option ${o === draft ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    } else if (f.kind === "double" || f.kind === "integer") {
+      control = `<input class="timeline-details-input timeline-details-number ${err ? "timeline-details-input-invalid" : ""}" inputmode="decimal" data-id="${id}" value="${esc(draft)}" placeholder="—" aria-invalid="${err ? "true" : "false"}">`;
+    } else {
+      control = `<input class="timeline-details-input" data-id="${id}" value="${esc(draft)}">`;
+    }
+    const hint = f.hint ? `<span class="timeline-details-row-hint" title="Date inherited from the iteration; not set on this work item">${f.hint}</span>` : "";
+    return `<div class="${cls}"><div class="timeline-details-field-head"><span class="timeline-details-label">${esc(f.name)}</span>${hint}</div>${control}${err ? `<p class="timeline-details-field-error" role="status">${err}</p>` : ""}</div>`;
+  }
+
+  function renderMenu(st) {
+    const shown = st.shown;
+    const q = st.search.trim().toLowerCase();
+    const available = Object.keys(CATALOG).filter((id) => !shown.includes(id))
+      .sort((a, b) => CATALOG[a].name.localeCompare(CATALOG[b].name))
+      .filter((id) => !q || CATALOG[id].name.toLowerCase().includes(q) || CATALOG[id].ref.toLowerCase().includes(q));
+    const badges = (id) => {
+      if (!CATALOG[id]) return `<span class="timeline-details-config-badge">Not in current query</span>`;
+      return `<span class="timeline-details-config-badge">${isHalf(id) ? "½" : "Full"}</span>${CATALOG[id].editable ? '<span class="timeline-details-config-badge timeline-details-config-badge-edit">Edit</span>' : ""}`;
+    };
+    const items = shown.map((id, i) => {
+      const f = CATALOG[id] || { name: st.unknownNames[id] || id, ref: id };
+      return `<li class="timeline-details-config-item ${CATALOG[id] ? "" : "timeline-details-config-item-unavailable"}" draggable="true" tabindex="0" data-index="${i}" aria-label="${esc(f.name)}, position ${i + 1} of ${shown.length}">
+        ${gripSvg}
+        <span class="timeline-details-config-meta"><strong>${esc(f.name)}</strong><span>${esc(f.ref)}</span></span>
+        <span class="timeline-details-config-badges">${badges(id)}</span>
+        <span class="timeline-details-config-actions">
+          <button type="button" class="timeline-details-config-icon-button" data-act="up" data-index="${i}" aria-label="Move ${esc(f.name)} up" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" class="timeline-details-config-icon-button" data-act="down" data-index="${i}" aria-label="Move ${esc(f.name)} down" ${i === shown.length - 1 ? "disabled" : ""}>↓</button>
+          <button type="button" class="timeline-details-config-icon-button" data-act="remove" data-index="${i}" aria-label="Remove ${esc(f.name)}">×</button>
+        </span></li>`;
+    }).join("");
+    const avail = available.length === 0 ? '<p class="timeline-details-muted">No matching field.</p>' : available.map((id) => `
+      <li class="timeline-details-config-item"><span class="timeline-details-config-meta"><strong>${esc(CATALOG[id].name)}</strong><span>${esc(CATALOG[id].ref)}</span></span>
+      <span class="timeline-details-config-badges">${badges(id)}</span>
+      <span class="timeline-details-config-actions"><button type="button" class="timeline-details-config-icon-button" data-act="add" data-id="${id}" aria-label="Show ${esc(CATALOG[id].name)}">+</button></span></li>`).join("");
+    return `<div class="timeline-details-config-menu" role="dialog" aria-label="Details fields">
+      <div class="timeline-details-config-head"><h4 class="timeline-details-config-title">Details fields</h4><button type="button" class="timeline-details-config-reset" data-act="reset">Reset to default</button></div>
+      <p class="timeline-details-config-section-title"><span>Shown</span><span>${shown.length}</span></p>
+      <ul class="timeline-details-config-list" aria-label="Shown fields">${items}</ul>
+      <p class="timeline-details-config-note">Drag, use ↑ ↓ or Alt+↑/↓ to reorder. Width is chosen automatically.</p>
+      <div class="timeline-details-config-divider"></div>
+      <p class="timeline-details-config-section-title"><span>Available</span></p>
+      <input type="search" class="timeline-details-config-search" placeholder="Search field" aria-label="Search details fields" value="${esc(st.search)}">
+      <ul class="timeline-details-config-list timeline-details-config-available" aria-label="Available fields">${avail}</ul>
+    </div>`;
+  }
+
+  function renderPanel(st) {
+    const visible = st.shown.filter((id) => CATALOG[id]);
+    const dirty = Object.keys(st.drafts).some((id) => st.drafts[id] !== CATALOG[id].value);
+    const invalid = Object.keys(st.drafts).some((id) => ["double", "integer"].includes(CATALOG[id].kind) && validate(CATALOG[id].kind, st.drafts[id]));
+    return `<aside class="timeline-details-panel-surface" aria-label="timeline-details-panel">
+      <div class="timeline-details-panel-head">
+        <div><button type="button" class="timeline-action-button timeline-details-save-button ${dirty ? "timeline-details-save-button-dirty" : ""}" ${dirty && !invalid ? "" : "disabled"}>Save</button></div>
+        <div class="timeline-details-head-actions">
+          <a class="timeline-details-work-item-id" href="#" onclick="return false">#4712${linkSvg}</a>
+          <button type="button" class="timeline-details-config-toggle" data-act="toggle" aria-label="Configure details fields" title="Configure fields" aria-expanded="${st.open}">${gearSvg}</button>
+          ${st.open ? renderMenu(st) : ""}
+        </div>
+      </div>
+      <div class="timeline-details-field-grid">${layout(visible).map(([id, w]) => renderField(id, w, st)).join("")}</div>
+    </aside>`;
+  }
+
+  function mount(root, init) {
+    const st = Object.assign({ shown: [...DEFAULT], drafts: {}, open: false, search: "", unknownNames: {}, interactive: true }, init);
+    let dragIndex = null;
+    const move = (from, to) => { if (to < 0 || to >= st.shown.length) return; const [x] = st.shown.splice(from, 1); st.shown.splice(to, 0, x); };
+    function draw(focusIndex) {
+      root.innerHTML = renderPanel(st);
+      if (focusIndex !== undefined) root.querySelector(`.timeline-details-config-item[data-index="${focusIndex}"]`)?.focus();
+    }
+    if (!st.interactive) { draw(); return; }
+    root.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
+      const i = Number(b.dataset.index);
+      ({ toggle: () => { st.open = !st.open; }, up: () => move(i, i - 1), down: () => move(i, i + 1),
+         remove: () => st.shown.splice(i, 1), add: () => st.shown.push(b.dataset.id), reset: () => { st.shown = [...DEFAULT]; } })[b.dataset.act]?.();
+      draw();
+    });
+    root.addEventListener("input", (e) => {
+      if (e.target.matches(".timeline-details-config-search")) { st.search = e.target.value; draw(); const s = root.querySelector(".timeline-details-config-search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); return; }
+      if (e.target.dataset.id) { st.drafts[e.target.dataset.id] = e.target.value; const pos = e.target.selectionStart; const id = e.target.dataset.id; draw(); const el = root.querySelector(`[data-id="${id}"]`); el?.focus(); try { el.setSelectionRange(pos, pos); } catch (_) {} }
+    });
+    root.addEventListener("change", (e) => { if (e.target.tagName === "SELECT" && e.target.dataset.id) { st.drafts[e.target.dataset.id] = e.target.value; draw(); } });
+    root.addEventListener("keydown", (e) => {
+      const li = e.target.closest?.(".timeline-details-config-item[data-index]");
+      if (li && e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); const i = Number(li.dataset.index); const t = e.key === "ArrowUp" ? i - 1 : i + 1; if (t >= 0 && t < st.shown.length) { move(i, t); draw(t); } }
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && st.open) { st.open = false; draw(); } });
+    document.addEventListener("mousedown", (e) => { if (st.open && !root.contains(e.target)) { st.open = false; draw(); } });
+    root.addEventListener("dragstart", (e) => { const li = e.target.closest(".timeline-details-config-item[data-index]"); if (!li) return; dragIndex = Number(li.dataset.index); li.classList.add("timeline-details-config-item-dragging"); e.dataTransfer.effectAllowed = "move"; });
+    root.addEventListener("dragover", (e) => { const li = e.target.closest(".timeline-details-config-item[data-index]"); if (dragIndex === null || !li) return; e.preventDefault(); root.querySelectorAll(".timeline-details-config-item-drop-before").forEach((n) => n.classList.remove("timeline-details-config-item-drop-before")); li.classList.add("timeline-details-config-item-drop-before"); });
+    root.addEventListener("drop", (e) => { const li = e.target.closest(".timeline-details-config-item[data-index]"); if (dragIndex === null || !li) return; e.preventDefault(); let t = Number(li.dataset.index); if (dragIndex < t) t -= 1; move(dragIndex, t); dragIndex = null; draw(); });
+    root.addEventListener("dragend", () => { dragIndex = null; draw(); });
+    draw();
+  }
+
+  const stage = document.getElementById("stageDetails");
+  mount(stage, {});
+  mount(document.getElementById("galleryDefault"), { interactive: false });
+  mount(document.getElementById("galleryNarrow"), { interactive: false });
+  mount(document.getElementById("galleryInvalid"), { interactive: false, shown: ["builtin.title", "Microsoft.VSTS.Scheduling.StoryPoints", "Microsoft.VSTS.Scheduling.RemainingWork", "builtin.state", "builtin.assignedTo", "builtin.description"], drafts: { "Microsoft.VSTS.Scheduling.StoryPoints": "8", "Microsoft.VSTS.Scheduling.RemainingWork": "3,125" } });
+  mount(document.getElementById("galleryMenu"), { interactive: false, open: true, shown: ["builtin.title", "builtin.state", "Microsoft.VSTS.Scheduling.StoryPoints", "Custom.RiskScore", "builtin.description"], unknownNames: { "Custom.RiskScore": "Risk Score" } });
+
+  const slider = document.getElementById("widthSlider");
+  const updateWidth = () => {
+    stage.style.setProperty("--mock-panel-width", slider.value + "px");
+    document.getElementById("widthLabel").textContent = slider.value + " px";
+    document.getElementById("layoutHint").textContent = Number(slider.value) - 28 < 280 ? "1 Spalte (schmal)" : "2 Spalten";
+  };
+  slider.addEventListener("input", updateWidth); updateWidth();
+  document.getElementById("themeToggle").addEventListener("change", (e) => { document.documentElement.dataset.theme = e.target.checked ? "dark" : "light"; });
+})();
+</script>
+</body>
+</html>

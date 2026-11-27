@@ -28,6 +28,19 @@ type UseTimelineKeyboardShortcutsParams = {
   spacePanPressedRef: React.MutableRefObject<boolean>;
 };
 
+export const TIMELINE_KEYBOARD_SHORTCUT_CONTRACTS = [
+  "details.save-or-sync",
+  "timeline.print-current-view",
+  "timeline.refresh-query",
+  "timeline.toggle-filters",
+  "timeline.toggle-sort",
+  "timeline.toggle-labels",
+  "timeline.rotate-dependency-mode",
+  "timeline.zoom-month-week-quarter-year",
+  "timeline.space-pan",
+  "timeline.remove-selected-dependency"
+] as const;
+
 export function useTimelineKeyboardShortcuts(params: UseTimelineKeyboardShortcutsParams): void {
   React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

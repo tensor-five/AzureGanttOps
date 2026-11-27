@@ -61,3 +61,8 @@ flowchart LR
   `missingBoundary: null`) so the UI does not need a separate code
   path. Items without explicit dates *and* without a matching dated
   iteration remain in `unschedulable`.
+- **`AzureFieldDefinitionsAdapter`** (port `WorkItemFieldDefinitionsPort`)
+  loads the field metadata and per-type field lists for the active query's
+  work item types. The BFF serves them at `GET /phase2/work-item-field-definitions`.
+  The details panel builds its configurable field catalog from them
+  (`features/gantt-view/details-panel-field-catalog.ts`, see ADR 0006).

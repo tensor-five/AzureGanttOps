@@ -79,6 +79,11 @@
 - Bei Timeline-Refactors immer relevante `timeline-pane` Regressionen mitlaufen lassen.
 - Testnamen beschreiben Verhalten, nicht Implementierungsdetails.
 
+## Changelog-Pflege
+
+- Vor Merge nach `main` muss `CHANGELOG.md` aktualisiert werden, wenn Nutzerverhalten, UI, API, Persistenz, Build oder Release betroffen sind.
+- Für rein interne Refactors ohne Nutzerwirkung besteht keine pauschale Changelog-Pflicht.
+
 ## Azure CLI Zugriff (Work Items & Queries)
 
 - Voraussetzung: Der Nutzer ist lokal via `az login` angemeldet und hat die `azure-devops` Extension installiert.

@@ -28,6 +28,7 @@
   --color-primary: #842CC3;
   --color-primary-dark: #5B1A8A;
   --color-secondary: #87F3A4;
+  --color-danger: #b91c1c;
 
   --color-bg: #ffffff;
   --color-bg-subtle: #fdfdfd;
@@ -93,6 +94,7 @@
 }
 
 [data-theme="dark"] {
+  --color-danger: #f87171;
   --color-bg: #0c0a09;
   --color-bg-subtle: #1c1917;
   --color-bg-muted: #292524;

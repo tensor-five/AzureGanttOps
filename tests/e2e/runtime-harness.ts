@@ -15,21 +15,33 @@ type AdoLogEntry = {
 type HarnessState = {
   queue: unknown[];
   latest: unknown;
+  submitDelayMs: number;
   callLog: Array<{ queryInput: string }>;
   adoEntries: AdoLogEntry[];
   adoSeq: number;
+  fieldDefinitions: HarnessFieldDefinitionsConfig;
+  fieldDefinitionRequests: unknown[];
+  detailsUpdates: unknown[];
+  failNextDetailsUpdateMessage: string | null;
 };
+
+type HarnessFieldDefinitionsConfig = { fields: unknown[] } | { error: string };
 
 type UserPreferences = Record<string, unknown>;
 
 type HarnessApi = {
   __phase6Configure: (responses: unknown[]) => void;
+  __phase6DelayNextSubmit: (delayMs: number) => void;
   __phase6Mount: () => void;
+  __phase6ConfigureFieldDefinitions: (config: HarnessFieldDefinitionsConfig) => void;
+  __phase6FailNextDetailsUpdate: (message: string) => void;
   __phase6Read: () => {
     callLog: Array<{ queryInput: string }>;
     density: string | null;
     liveSyncEnabled: string | null;
     adoEntries: AdoLogEntry[];
+    fieldDefinitionRequests: unknown[];
+    detailsUpdates: unknown[];
   };
 };
 
@@ -40,9 +52,14 @@ declare global {
 const state: HarnessState = {
   queue: [],
   latest: null,
+  submitDelayMs: 0,
   callLog: [],
   adoEntries: [],
-  adoSeq: 0
+  adoSeq: 0,
+  fieldDefinitions: { fields: [] },
+  fieldDefinitionRequests: [],
+  detailsUpdates: [],
+  failNextDetailsUpdateMessage: null
 };
 
 const USER_PREFERENCES_ENDPOINT = "/phase2/user-preferences";
@@ -179,6 +196,25 @@ window.__phase6Configure = (responses) => {
   state.adoSeq = 0;
 };
 
+window.__phase6ConfigureFieldDefinitions = (config) => {
+  state.fieldDefinitions = config;
+  state.fieldDefinitionRequests = [];
+};
+
+window.__phase6FailNextDetailsUpdate = (message) => {
+  state.failNextDetailsUpdateMessage = message;
+};
+
+window.__phase6DelayNextSubmit = (delayMs) => {
+  state.submitDelayMs = Math.max(0, delayMs);
+};
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 function appendAdoRequestLog(queryInput: string): void {
   state.adoSeq += 1;
   state.adoEntries.push({
@@ -226,6 +262,12 @@ window.__phase6Mount = () => {
         state.callLog.push({ queryInput: request.queryInput });
         appendAdoRequestLog(request.queryInput);
 
+        const delayMs = state.submitDelayMs;
+        state.submitDelayMs = 0;
+        if (delayMs > 0) {
+          await wait(delayMs);
+        }
+
         const next = state.queue.shift() ?? state.latest;
         state.latest = next;
 
@@ -233,6 +275,13 @@ window.__phase6Mount = () => {
         return next as never;
       },
       fetchAdoCommLogs: async ({ afterSeq, limit }) => readAdoEntries(afterSeq, limit),
+      checkAppUpdate: async () => ({
+        status: "unavailable",
+        currentVersion: "0.0.0",
+        checkedAt: new Date().toISOString(),
+        source: "github",
+        reason: "version_source_failed"
+      }),
       adoptWorkItemSchedule: async () => ({
         accepted: true,
         mode: "EXECUTED",
@@ -240,13 +289,31 @@ window.__phase6Mount = () => {
         operationCount: 2,
         reasonCode: "WRITE_ENABLED"
       }),
-      updateWorkItemDetails: async () => ({
-        accepted: true,
-        mode: "EXECUTED",
-        commandKind: "WORK_ITEM_PATCH",
-        operationCount: 2,
-        reasonCode: "WRITE_ENABLED"
-      }),
+      updateWorkItemDetails: async (request: unknown) => {
+        state.detailsUpdates.push(JSON.parse(JSON.stringify(request)));
+        const failureMessage = state.failNextDetailsUpdateMessage;
+        state.failNextDetailsUpdateMessage = null;
+        if (failureMessage) {
+          throw new Error(failureMessage);
+        }
+
+        return {
+          accepted: true,
+          mode: "EXECUTED",
+          commandKind: "WORK_ITEM_PATCH",
+          operationCount: 2,
+          reasonCode: "WRITE_ENABLED"
+        };
+      },
+      fetchWorkItemFieldDefinitions: async (request: unknown) => {
+        state.fieldDefinitionRequests.push(JSON.parse(JSON.stringify(request ?? null)));
+        const config = state.fieldDefinitions;
+        if ("error" in config) {
+          throw new Error(config.error);
+        }
+
+        return { fields: JSON.parse(JSON.stringify(config.fields)) };
+      },
       fetchWorkItemStateOptions: async () => ({
         states: [
           { name: "To Do", color: "b2b2b2" },
@@ -275,5 +342,7 @@ window.__phase6Read = () => ({
   callLog: [...state.callLog],
   density: window.localStorage.getItem("azure-ganttops.timeline-density"),
   liveSyncEnabled: window.localStorage.getItem("azure-ganttops.timeline-live-sync-enabled"),
-  adoEntries: [...state.adoEntries]
+  adoEntries: [...state.adoEntries],
+  fieldDefinitionRequests: [...state.fieldDefinitionRequests],
+  detailsUpdates: [...state.detailsUpdates]
 });

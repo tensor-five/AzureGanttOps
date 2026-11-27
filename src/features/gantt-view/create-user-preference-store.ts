@@ -55,26 +55,31 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
     return `${storagePrefix}${encodeURIComponent(scopeKey)}`;
   };
 
-  const isLocalStorageAvailable = (): boolean => {
-    try {
-      return (
-        typeof globalThis.localStorage !== "undefined" &&
-        globalThis.localStorage !== null &&
-        typeof globalThis.localStorage.getItem === "function" &&
-        typeof globalThis.localStorage.setItem === "function"
-      );
-    } catch {
-      return false;
+  const resolveLocalStorage = (): Storage | null => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+    if (descriptor && "value" in descriptor) {
+      return readStorage(descriptor.value);
     }
-  };
 
-  const readFromLocalStorage = (scopeKey: string | null): T | null => {
-    if (!isLocalStorageAvailable()) {
+    if (typeof window === "undefined" || globalThis !== window) {
       return null;
     }
 
     try {
-      const raw = globalThis.localStorage.getItem(resolveStorageKey(scopeKey));
+      return readStorage(window.localStorage);
+    } catch {
+      return null;
+    }
+  };
+
+  const readFromLocalStorage = (scopeKey: string | null): T | null => {
+    const storage = resolveLocalStorage();
+    if (!storage) {
+      return null;
+    }
+
+    try {
+      const raw = storage.getItem(resolveStorageKey(scopeKey));
       if (!raw) {
         return null;
       }
@@ -86,12 +91,13 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
   };
 
   const writeToLocalStorage = (value: T, scopeKey: string | null): void => {
-    if (!isLocalStorageAvailable()) {
+    const storage = resolveLocalStorage();
+    if (!storage) {
       return;
     }
 
     try {
-      globalThis.localStorage.setItem(resolveStorageKey(scopeKey), serialize(value));
+      storage.setItem(resolveStorageKey(scopeKey), serialize(value));
     } catch {
       // localStorage unavailable or quota exceeded — skip silently
     }
@@ -153,19 +159,20 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
     memoryValues.clear();
     hydratedScopes.clear();
 
-    if (isLocalStorageAvailable()) {
+    const storage = resolveLocalStorage();
+    if (storage) {
       try {
-        globalThis.localStorage.removeItem(config.storageKey);
+        storage.removeItem(config.storageKey);
         const toRemove: string[] = [];
-        for (let index = 0; index < globalThis.localStorage.length; index += 1) {
-          const key = globalThis.localStorage.key(index);
+        for (let index = 0; index < storage.length; index += 1) {
+          const key = storage.key(index);
           if (key && key.startsWith(storagePrefix)) {
             toRemove.push(key);
           }
         }
 
         toRemove.forEach((key) => {
-          globalThis.localStorage.removeItem(key);
+          storage.removeItem(key);
         });
       } catch {
         // localStorage unavailable — skip cleanup
@@ -179,4 +186,20 @@ export function createUserPreferenceStore<T>(config: UserPreferenceStoreConfig<T
     hydrate,
     clearForTests
   };
+}
+
+function readStorage(value: unknown): Storage | null {
+  const storage = value as Partial<Storage> | null | undefined;
+
+  if (
+    typeof storage?.getItem !== "function" ||
+    typeof storage.setItem !== "function" ||
+    typeof storage.removeItem !== "function" ||
+    typeof storage.clear !== "function" ||
+    typeof storage.key !== "function"
+  ) {
+    return null;
+  }
+
+  return storage as Storage;
 }

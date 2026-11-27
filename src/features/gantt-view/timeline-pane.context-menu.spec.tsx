@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
 import { TimelinePane } from "./timeline-pane.js";
@@ -55,16 +55,17 @@ describe("timeline-pane work item context menu", () => {
     fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
 
     expect(screen.getByRole("menu", { name: /Work item #11 context menu/ })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Duplizieren" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Status ändern" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "In Azure DevOps öffnen" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Link kopieren" })).toBeTruthy();
-    expect(screen.queryByText(/Details öffnen/i)).toBeNull();
-    expect(screen.queryByText(/neues Kind/i)).toBeNull();
-    expect(screen.queryByText(/Zeitraum bearbeiten/i)).toBeNull();
-    expect(screen.queryByText(/Abhängigkeit hinzufügen/i)).toBeNull();
-    expect(screen.queryByText(/Tags bearbeiten/i)).toBeNull();
-    expect(screen.queryByText(/Löschen/i)).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Duplicate" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Change status" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Assigned to" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Open in Azure DevOps" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Copy link" })).toBeTruthy();
+    expect(screen.queryByText(/Open details/i)).toBeNull();
+    expect(screen.queryByText(/new child/i)).toBeNull();
+    expect(screen.queryByText(/Edit schedule/i)).toBeNull();
+    expect(screen.queryByText(/Add dependency/i)).toBeNull();
+    expect(screen.queryByText(/Edit tags/i)).toBeNull();
+    expect(screen.queryByText(/Delete/i)).toBeNull();
   });
 
   it("keeps the expanded context menu within the viewport", async () => {
@@ -78,7 +79,7 @@ describe("timeline-pane work item context menu", () => {
         if (this.classList.contains("timeline-work-item-context-menu")) {
           return makeClientRect({
             width: 260,
-            height: this.querySelector('[aria-label="Child Work Item Type auswählen"]') ? 500 : 240
+            height: this.querySelector('[aria-label="Select child work item type"]') ? 500 : 240
           });
         }
 
@@ -105,7 +106,7 @@ describe("timeline-pane work item context menu", () => {
       );
 
       fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 790, clientY: 590 });
-      await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+      await user.click(screen.getByRole("menuitem", { name: "Add child" }));
       expect(await screen.findByRole("menuitem", { name: "Task" })).toBeTruthy();
 
       const contextMenu = screen.getByRole("menu", { name: /Work item #11 context menu/ }) as HTMLElement;
@@ -143,7 +144,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    await user.click(screen.getByRole("menuitem", { name: "Duplizieren" }));
+    await user.click(screen.getByRole("menuitem", { name: "Duplicate" }));
 
     await waitFor(() => {
       expect(onDuplicateWorkItem).toHaveBeenCalledWith({
@@ -192,7 +193,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    const childMenuButton = screen.getByRole("menuitem", { name: "Child hinzufügen" });
+    const childMenuButton = screen.getByRole("menuitem", { name: "Add child" });
     fireEvent.keyDown(childMenuButton, { key: "Enter" });
     const userStoryOption = await screen.findByRole("menuitem", { name: "User Story" });
 
@@ -243,9 +244,9 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    const duplicateButton = screen.getByRole("menuitem", { name: "Duplizieren" });
-    const childMenuButton = screen.getByRole("menuitem", { name: "Child hinzufügen" });
-    const statusMenuButton = screen.getByRole("menuitem", { name: "Status ändern" });
+    const duplicateButton = screen.getByRole("menuitem", { name: "Duplicate" });
+    const childMenuButton = screen.getByRole("menuitem", { name: "Add child" });
+    const statusMenuButton = screen.getByRole("menuitem", { name: "Change status" });
 
     await waitFor(() => {
       expect(document.activeElement).toBe(duplicateButton);
@@ -267,7 +268,7 @@ describe("timeline-pane work item context menu", () => {
 
     fireEvent.keyDown(document.activeElement as Element, { key: "ArrowLeft" });
     await waitFor(() => {
-      expect(screen.queryByRole("menu", { name: "Child Work Item Type auswählen" })).toBeNull();
+      expect(screen.queryByRole("menu", { name: "Select child work item type" })).toBeNull();
       expect(document.activeElement).toBe(childMenuButton);
     });
 
@@ -285,7 +286,7 @@ describe("timeline-pane work item context menu", () => {
 
     fireEvent.keyDown(document.activeElement as Element, { key: "ArrowLeft" });
     await waitFor(() => {
-      expect(screen.queryByRole("menu", { name: "Status ändern" })).toBeNull();
+      expect(screen.queryByRole("menu", { name: "Change status" })).toBeNull();
       expect(document.activeElement).toBe(statusMenuButton);
     });
     expect(onDuplicateWorkItem).not.toHaveBeenCalled();
@@ -322,7 +323,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByRole("button", { name: /#22 Target Item/ }), { clientX: 120, clientY: 140 });
-    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    await user.click(screen.getByRole("menuitem", { name: "Add child" }));
     await user.click(await screen.findByRole("menuitem", { name: "Task" }));
 
     await waitFor(() => {
@@ -362,7 +363,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    await user.click(screen.getByRole("menuitem", { name: "Add child" }));
     const bugOption = await screen.findByRole("menuitem", { name: "Bug" });
 
     await waitFor(() => {
@@ -410,7 +411,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    await user.click(screen.getByRole("menuitem", { name: "Add child" }));
     expect(await screen.findByRole("menuitem", { name: "User Story" })).toBeTruthy();
 
     rerender(
@@ -428,7 +429,7 @@ describe("timeline-pane work item context menu", () => {
 
     expect(firstFetchWorkItemTypes).toHaveBeenCalledTimes(1);
     expect(secondFetchWorkItemTypes).not.toHaveBeenCalled();
-    expect(screen.queryByText("Work Item Types werden geladen...")).toBeNull();
+    expect(screen.queryByText("Loading work item types...")).toBeNull();
     expect(screen.getByRole("menuitem", { name: "User Story" })).toBeTruthy();
     expect(screen.queryByRole("menuitem", { name: "Epic" })).toBeNull();
   });
@@ -451,9 +452,9 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    await user.click(screen.getByRole("menuitem", { name: "Child hinzufügen" }));
+    await user.click(screen.getByRole("menuitem", { name: "Add child" }));
 
-    expect(await screen.findByText("Keine Work Item Types verfügbar.")).toBeTruthy();
+    expect(await screen.findByText("No work item types available.")).toBeTruthy();
     expect(onCreateChildWorkItem).not.toHaveBeenCalled();
   });
 
@@ -484,7 +485,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    expect(screen.getByRole("menuitem", { name: "Child hinzufügen" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Add child" })).toBeTruthy();
 
     fireEvent.keyDown(document, { key: "Escape" });
     const unknownTimeline = makeTimeline();
@@ -508,7 +509,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
-    expect(screen.getByRole("menuitem", { name: "Child hinzufügen" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Add child" })).toBeTruthy();
   });
 
   it("does not show child-create actions when writeback capability is disabled", () => {
@@ -535,7 +536,7 @@ describe("timeline-pane work item context menu", () => {
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-bar-11"), { clientX: 160, clientY: 180 });
 
-    expect(screen.queryByRole("menuitem", { name: "Child hinzufügen" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Add child" })).toBeNull();
   });
 
   it("loads state options and applies a state-only update", async () => {
@@ -558,7 +559,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
-    await user.click(screen.getByRole("menuitem", { name: "Status ändern" }));
+    await user.click(screen.getByRole("menuitem", { name: "Change status" }));
 
     expect(onFetchWorkItemStateOptions).toHaveBeenCalledWith({ targetWorkItemId: 11 });
     await user.click(await screen.findByRole("menuitem", { name: /Closed/ }));
@@ -568,6 +569,80 @@ describe("timeline-pane work item context menu", () => {
         targetWorkItemId: 11,
         state: "Closed",
         stateColor: "339933"
+      });
+    });
+  });
+
+  it("sorts assigned-to options by task count and updates the selection", async () => {
+    const user = userEvent.setup();
+    const onUpdateWorkItemAssignedTo = vi.fn(async () => undefined);
+    const timeline = makeTimeline();
+    const sourceBar = timeline.bars[0]!;
+    const sourceUnscheduled = timeline.unschedulable[0]!;
+    timeline.bars = [
+      {
+        ...sourceBar,
+        details: { ...sourceBar.details, assignedTo: "Ada Lovelace" }
+      },
+      {
+        ...sourceBar,
+        workItemId: 12,
+        title: "Task 12",
+        details: { ...sourceBar.details, mappedId: "12", assignedTo: "Grace Hopper" }
+      },
+      {
+        ...sourceBar,
+        workItemId: 13,
+        title: "Task 13",
+        details: { ...sourceBar.details, mappedId: "13", assignedTo: "Grace Hopper" }
+      },
+      {
+        ...sourceBar,
+        workItemId: 14,
+        title: "Task 14",
+        details: { ...sourceBar.details, mappedId: "14", assignedTo: "Grace Hopper" }
+      }
+    ];
+    timeline.unschedulable = [
+      {
+        ...sourceUnscheduled,
+        details: { ...sourceUnscheduled.details, assignedTo: "Ada Lovelace" }
+      },
+      {
+        ...sourceUnscheduled,
+        workItemId: 23,
+        title: "Task 23",
+        details: { ...sourceUnscheduled.details, mappedId: "23", assignedTo: "Linus Torvalds" }
+      }
+    ];
+
+    render(
+      React.createElement(TimelinePane, {
+        timeline,
+        showDependencies: true,
+        organization: "contoso",
+        project: "delivery",
+        onUpdateWorkItemAssignedTo
+      })
+    );
+
+    fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
+    await user.click(screen.getByRole("menuitem", { name: "Assigned to" }));
+
+    const assigneeMenu = screen.getByRole("menu", { name: "Assigned to" });
+    expect(within(assigneeMenu).getAllByRole("menuitem").map((option) => option.getAttribute("aria-label"))).toEqual([
+      "Grace Hopper",
+      "Ada Lovelace",
+      "Linus Torvalds"
+    ]);
+    expect(within(assigneeMenu).getByText("3 Tasks")).toBeTruthy();
+
+    await user.click(within(assigneeMenu).getByRole("menuitem", { name: "Linus Torvalds" }));
+
+    await waitFor(() => {
+      expect(onUpdateWorkItemAssignedTo).toHaveBeenCalledWith({
+        targetWorkItemId: 11,
+        assignedTo: "Linus Torvalds"
       });
     });
   });
@@ -590,9 +665,9 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
-    await user.click(screen.getByRole("menuitem", { name: "Status ändern" }));
+    await user.click(screen.getByRole("menuitem", { name: "Change status" }));
 
-    expect(await screen.findByText("Status werden geladen...")).toBeTruthy();
+    expect(await screen.findByText("Loading statuses...")).toBeTruthy();
     expect(screen.queryByRole("menuitem", { name: "Done" })).toBeNull();
     expect(onUpdateWorkItemState).not.toHaveBeenCalled();
 
@@ -627,7 +702,7 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
-    await user.click(screen.getByRole("menuitem", { name: "Status ändern" }));
+    await user.click(screen.getByRole("menuitem", { name: "Change status" }));
 
     expect(await screen.findByText("State options unavailable")).toBeTruthy();
     expect(screen.queryByRole("menuitem", { name: "Done" })).toBeNull();
@@ -649,12 +724,12 @@ describe("timeline-pane work item context menu", () => {
     );
 
     fireEvent.contextMenu(screen.getByLabelText("timeline-sidebar-row-11"), { clientX: 120, clientY: 140 });
-    const statusButton = screen.getByRole("menuitem", { name: "Status ändern" }) as HTMLButtonElement;
+    const statusButton = screen.getByRole("menuitem", { name: "Change status" }) as HTMLButtonElement;
 
     expect(statusButton.disabled).toBe(true);
     await user.click(statusButton);
 
-    expect(screen.queryByRole("menu", { name: "Status ändern" })).toBeNull();
+    expect(screen.queryByRole("menu", { name: "Change status" })).toBeNull();
     expect(onUpdateWorkItemState).not.toHaveBeenCalled();
   });
 

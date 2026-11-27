@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   buildSessionExpiredRefreshBlocker,
@@ -12,6 +12,9 @@ import {
   AZURE_SESSION_EXPIRED_REASON
 } from "../../shared/azure-devops/azure-session-recovery.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
+
+const QUERY_ID = "37f6f880-0b7b-4350-9f97-7263b40d4e95";
+const QUERY_URL = `https://dev.azure.com/org/project/_queries/query/${QUERY_ID}`;
 
 function makeResponse(overrides?: Partial<QueryIntakeResponse>): QueryIntakeResponse {
   return {
@@ -31,6 +34,14 @@ function makeResponse(overrides?: Partial<QueryIntakeResponse>): QueryIntakeResp
 }
 
 describe("ui-client-refresh-flow", () => {
+  beforeEach(() => {
+    installMemoryStorage();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("returns refreshed payload when last run request exists", async () => {
     const request: RunRequest = { queryInput: "abc" };
     const response = makeResponse();
@@ -104,7 +115,7 @@ describe("ui-client-refresh-flow", () => {
   });
 
   it("triggers runQuery when persisted query input exists", async () => {
-    localStorage.setItem("azure-ganttops.query-input", "123");
+    localStorage.setItem("azure-ganttops.query-input", QUERY_ID);
     localStorage.setItem("azure-ganttops.organization", "org");
     localStorage.setItem("azure-ganttops.project", "project");
     const runQuery = vi.fn(async () => makeResponse());
@@ -117,14 +128,31 @@ describe("ui-client-refresh-flow", () => {
     });
 
     expect(runQuery).toHaveBeenCalledTimes(1);
+    expect(runQuery).toHaveBeenCalledWith({ queryId: QUERY_URL });
     expect(result).toEqual({ kind: "query_triggered" });
   });
 
   it("resolves persisted query input from localStorage context", () => {
-    localStorage.setItem("azure-ganttops.query-input", "123");
+    localStorage.setItem("azure-ganttops.query-input", QUERY_ID);
     localStorage.setItem("azure-ganttops.organization", "org");
     localStorage.setItem("azure-ganttops.project", "project");
 
-    expect(resolvePersistedRefreshQueryInput()).toBe("https://dev.azure.com/org/project/_queries/query?qid=123");
+    expect(resolvePersistedRefreshQueryInput()).toBe(QUERY_URL);
   });
 });
+
+function installMemoryStorage(): void {
+  const values = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      values.delete(key);
+    }),
+    clear: vi.fn(() => {
+      values.clear();
+    })
+  });
+}

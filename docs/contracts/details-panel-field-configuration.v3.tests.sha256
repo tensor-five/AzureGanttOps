@@ -1,0 +1,5 @@
+# Eingefrorene Tests zum Vertrag details-panel-field-configuration.v3 (ersetzt die v2-Tests; Test-Gate PASS, unabhängiges Review, 09.11.2026)
+645d9fd57e861627f747aaeabb8b49a6b451961f3d7c9292b624fb6fab3f816c  tests/e2e/details-panel-field-configuration.spec.ts
+1c4310db23a3889910b99dba82662a2d04a26dd6eae9ac30011e380176d969e1  tests/e2e/runtime-harness.ts
+f16d3b34c6b4175d1ec97f681f925bed923b2e0865ca4aea490cdaa5c2cb0068  src/app/bootstrap/http-server.details-fields.spec.ts
+d616b5cbb1ea866c04ab93e377419ed092bbb6d8289d2b1cc36ea23ca483b14a  docs/contracts/details-panel-field-configuration.v3.traceability.md

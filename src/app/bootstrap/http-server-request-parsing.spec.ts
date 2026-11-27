@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   parseChildWorkItemCreatePayload,
+  parseDependencyLinkPayload,
   parseDuplicateWorkItemPayload,
+  parseUpdateAssignedToPayload,
   parseUpdateDetailsPayload,
   parseUpdateStatePayload
 } from "./http-server-request-parsing.js";
 
 describe("parseUpdateDetailsPayload", () => {
-  it("sanitizes description html", () => {
+  it("maps the legacy payload to sanitized field operations", () => {
     const parsed = parseUpdateDetailsPayload({
       targetWorkItemId: 11,
       title: "Item",
@@ -18,10 +20,48 @@ describe("parseUpdateDetailsPayload", () => {
 
     expect(parsed).toEqual({
       targetWorkItemId: 11,
-      title: "Item",
-      descriptionHtml: "<p>Alpha</p>",
-      state: "Active"
+      operations: [
+        { op: "add", path: "/fields/System.Title", value: "Item" },
+        { op: "add", path: "/fields/System.Description", value: "<p>Alpha</p>" },
+        { op: "add", path: "/fields/System.State", value: "Active" }
+      ]
     });
+  });
+
+  it("builds add and remove operations from generic fields and sanitizes declared html fields", () => {
+    expect(
+      parseUpdateDetailsPayload({
+        targetWorkItemId: 11,
+        fields: {
+          "Microsoft.VSTS.Scheduling.StoryPoints": 3.5,
+          "Microsoft.VSTS.Common.AcceptanceCriteria": "<p>ok</p><script>x()</script>",
+          "Custom.Blocked": true,
+          "Microsoft.VSTS.Scheduling.RemainingWork": null
+        },
+        htmlFields: ["Microsoft.VSTS.Common.AcceptanceCriteria"]
+      })
+    ).toEqual({
+      targetWorkItemId: 11,
+      operations: [
+        { op: "add", path: "/fields/Microsoft.VSTS.Scheduling.StoryPoints", value: 3.5 },
+        { op: "add", path: "/fields/Microsoft.VSTS.Common.AcceptanceCriteria", value: "<p>ok</p>" },
+        { op: "add", path: "/fields/Custom.Blocked", value: true },
+        { op: "remove", path: "/fields/Microsoft.VSTS.Scheduling.RemainingWork" }
+      ]
+    });
+  });
+
+  it.each([
+    { targetWorkItemId: 11, fields: { "../System.Title": "x" } },
+    { targetWorkItemId: 11, fields: { "System.Title": { nested: true } } },
+    { targetWorkItemId: 11, fields: { "System.Title": null } },
+    { targetWorkItemId: 11, fields: { "System.State": "  " } },
+    { targetWorkItemId: 11, fields: { "Custom.Value": Number.NaN } },
+    { targetWorkItemId: 11, fields: {} },
+    { targetWorkItemId: 0, fields: { "System.Title": "x" } },
+    { targetWorkItemId: 11, fields: ["System.Title"] }
+  ])("rejects invalid details payload %#", (payload) => {
+    expect(parseUpdateDetailsPayload(payload as Record<string, unknown>)).toBeNull();
   });
 });
 
@@ -36,6 +76,81 @@ describe("parseUpdateStatePayload", () => {
   it("rejects invalid state updates", () => {
     expect(parseUpdateStatePayload({ targetWorkItemId: 0, state: "Active" })).toBeNull();
     expect(parseUpdateStatePayload({ targetWorkItemId: 11, state: " " })).toBeNull();
+  });
+});
+
+describe("parseUpdateAssignedToPayload", () => {
+  it("trims valid assigned-to updates", () => {
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 11, assignedTo: " Ada Lovelace " })).toEqual({
+      targetWorkItemId: 11,
+      assignedTo: "Ada Lovelace"
+    });
+  });
+
+  it("rejects invalid assigned-to updates", () => {
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 0, assignedTo: "Ada Lovelace" })).toBeNull();
+    expect(parseUpdateAssignedToPayload({ targetWorkItemId: 11, assignedTo: " " })).toBeNull();
+  });
+});
+
+describe("parseDependencyLinkPayload", () => {
+  it("accepts valid dependency link payloads", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "add"
+      })
+    ).toEqual({
+      predecessorWorkItemId: 10,
+      successorWorkItemId: 11,
+      action: "add"
+    });
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "remove"
+      })
+    ).toEqual({
+      predecessorWorkItemId: 10,
+      successorWorkItemId: 11,
+      action: "remove"
+    });
+  });
+
+  it("rejects self-links", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 10,
+        action: "add"
+      })
+    ).toBeNull();
+  });
+
+  it("rejects invalid ids and actions", () => {
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 0,
+        successorWorkItemId: 11,
+        action: "add"
+      })
+    ).toBeNull();
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: "11",
+        action: "add"
+      })
+    ).toBeNull();
+    expect(
+      parseDependencyLinkPayload({
+        predecessorWorkItemId: 10,
+        successorWorkItemId: 11,
+        action: "replace"
+      })
+    ).toBeNull();
   });
 });
 

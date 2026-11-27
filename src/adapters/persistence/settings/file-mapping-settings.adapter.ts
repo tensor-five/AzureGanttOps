@@ -77,6 +77,19 @@ export class FileMappingSettingsAdapter implements MappingSettingsPort {
     });
   }
 
+  public async deleteMappingSettings(): Promise<boolean> {
+    try {
+      await fs.unlink(this.filePath);
+      return true;
+    } catch (error: unknown) {
+      if (isNodeError(error) && error.code === "ENOENT") {
+        return false;
+      }
+
+      throw new Error("Failed to delete mapping settings");
+    }
+  }
+
   private async readSettingsOrDefault(): Promise<PersistedMappingSettings> {
     try {
       return await this.readSettings();

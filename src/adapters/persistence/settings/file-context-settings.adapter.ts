@@ -53,6 +53,19 @@ export class FileContextSettingsAdapter implements ContextSettingsPort {
 
     await fs.writeFile(this.filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   }
+
+  public async deleteContextSettings(): Promise<boolean> {
+    try {
+      await fs.unlink(this.filePath);
+      return true;
+    } catch (error: unknown) {
+      if (isNodeError(error) && error.code === "ENOENT") {
+        return false;
+      }
+
+      throw new Error("Failed to delete persisted Azure DevOps context");
+    }
+  }
 }
 
 function isPersistedContext(value: unknown): value is PersistedContext {

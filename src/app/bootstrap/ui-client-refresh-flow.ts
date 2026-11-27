@@ -1,4 +1,4 @@
-import { ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/query-selector.js";
+import { ORG_KEY, PROJECT_KEY, QUERY_INPUT_KEY, resolveQueryRunInput } from "../../features/query-switching/runtime-query-input.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
 import {
@@ -90,16 +90,25 @@ export async function runRetryRefreshFlow(params: {
 }
 
 export function resolvePersistedRefreshQueryInput(): string | null {
-  if (typeof localStorage === "undefined") {
+  const storage = resolveReadableStorage();
+  if (!storage) {
     return null;
   }
 
-  const rawQueryInput = localStorage.getItem(QUERY_INPUT_KEY)?.trim() ?? "";
+  const rawQueryInput = storage.getItem(QUERY_INPUT_KEY)?.trim() ?? "";
   if (!rawQueryInput) {
     return null;
   }
 
-  const organization = localStorage.getItem(ORG_KEY) ?? "";
-  const project = localStorage.getItem(PROJECT_KEY) ?? "";
+  const organization = storage.getItem(ORG_KEY) ?? "";
+  const project = storage.getItem(PROJECT_KEY) ?? "";
   return resolveQueryRunInput(rawQueryInput, organization, project);
+}
+
+function resolveReadableStorage(): Pick<Storage, "getItem"> | undefined {
+  if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
+    return localStorage;
+  }
+
+  return undefined;
 }

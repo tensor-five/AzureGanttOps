@@ -10,6 +10,11 @@ import {
   flattenTimelineFilterGroups,
   resolveNextTimelineFilterGroupId
 } from "./timeline-filter-groups.js";
+import {
+  DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS,
+  normalizeTimelineFilterHierarchyExpansionOptions,
+  type TimelineFilterHierarchyExpansionOptions
+} from "./timeline-filter-hierarchy-expansion.js";
 
 export type { TimelineFieldFilter, TimelineFilterGroup } from "./timeline-filter-model.js";
 
@@ -29,6 +34,7 @@ type TimelineFilterState = {
   groups?: TimelineFilterGroup[];
   nextSlotId: number;
   nextGroupId?: number;
+  hierarchyExpansion?: TimelineFilterHierarchyExpansionOptions;
 };
 
 export function useTimelineFilters(initialState: TimelineFilterState): {
@@ -38,6 +44,10 @@ export function useTimelineFilters(initialState: TimelineFilterState): {
   setTimelineFilterGroups: React.Dispatch<React.SetStateAction<TimelineFilterGroup[]>>;
   timelineFieldFilters: TimelineFieldFilter[];
   setTimelineFieldFilters: React.Dispatch<React.SetStateAction<TimelineFieldFilter[]>>;
+  timelineFilterHierarchyExpansion: TimelineFilterHierarchyExpansionOptions;
+  setTimelineFilterHierarchyExpansion: React.Dispatch<React.SetStateAction<TimelineFilterHierarchyExpansionOptions>>;
+  setIncludeTimelineFilterParents: React.Dispatch<React.SetStateAction<boolean>>;
+  setIncludeTimelineFilterChildItems: React.Dispatch<React.SetStateAction<boolean>>;
   nextFilterSlotId: number;
   setNextFilterSlotId: React.Dispatch<React.SetStateAction<number>>;
   nextFilterGroupId: number;
@@ -53,13 +63,18 @@ export function useTimelineFilters(initialState: TimelineFilterState): {
     const groups = resolveInitialTimelineFilterGroups(initialState);
     return {
       groups,
-      nextGroupId: initialState.nextGroupId ?? resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: initialState.nextGroupId ?? resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion: normalizeTimelineFilterHierarchyExpansionOptions(
+        initialState.hierarchyExpansion ?? DEFAULT_TIMELINE_FILTER_HIERARCHY_EXPANSION_OPTIONS
+      )
     };
   });
   const [timelineFiltersOpen, setTimelineFiltersOpen] = React.useState(false);
   const [timelineFilterGroups, setTimelineFilterGroups] = React.useState<TimelineFilterGroup[]>(() =>
     resolvedInitialState.groups
   );
+  const [timelineFilterHierarchyExpansion, setTimelineFilterHierarchyExpansion] =
+    React.useState<TimelineFilterHierarchyExpansionOptions>(() => resolvedInitialState.hierarchyExpansion);
   const [nextFilterSlotId, setNextFilterSlotId] = React.useState(() => initialState.nextSlotId);
   const [nextFilterGroupId, setNextFilterGroupId] = React.useState(() => resolvedInitialState.nextGroupId);
   const [openFilterDropdown, setOpenFilterDropdown] = React.useState<OpenFilterDropdownState>(null);
@@ -80,6 +95,18 @@ export function useTimelineFilters(initialState: TimelineFilterState): {
     },
     []
   );
+  const setIncludeTimelineFilterParents = React.useCallback<React.Dispatch<React.SetStateAction<boolean>>>((next) => {
+    setTimelineFilterHierarchyExpansion((current) => {
+      const includeParents = typeof next === "function" ? next(current.includeParents) : next;
+      return current.includeParents === includeParents ? current : { ...current, includeParents };
+    });
+  }, []);
+  const setIncludeTimelineFilterChildItems = React.useCallback<React.Dispatch<React.SetStateAction<boolean>>>((next) => {
+    setTimelineFilterHierarchyExpansion((current) => {
+      const includeChildItems = typeof next === "function" ? next(current.includeChildItems) : next;
+      return current.includeChildItems === includeChildItems ? current : { ...current, includeChildItems };
+    });
+  }, []);
 
   return {
     timelineFiltersOpen,
@@ -88,6 +115,10 @@ export function useTimelineFilters(initialState: TimelineFilterState): {
     setTimelineFilterGroups,
     timelineFieldFilters,
     setTimelineFieldFilters,
+    timelineFilterHierarchyExpansion,
+    setTimelineFilterHierarchyExpansion,
+    setIncludeTimelineFilterParents,
+    setIncludeTimelineFilterChildItems,
     nextFilterSlotId,
     setNextFilterSlotId,
     nextFilterGroupId,

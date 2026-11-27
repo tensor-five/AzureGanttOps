@@ -1,6 +1,7 @@
 import React from "react";
 
 import type { TimelineReadModel } from "../../application/dto/timeline-read-model.js";
+import type { WorkItemFieldDefinition } from "../../application/dto/work-item-field-definition.js";
 import type { TimelineDensity } from "./timeline-density-preference.js";
 import {
   DEFAULT_OVERDUE_EXCLUDED_STATE_CODES,
@@ -15,7 +16,8 @@ import {
 import {
   buildTimelineDetailsLines,
   TimelineDetailsPanel,
-  type TimelineDetailsPanelProps
+  type TimelineDetailsPanelProps,
+  type TimelineDetailsUpdateInput
 } from "./timeline-details-panel.js";
 import {
   hydrateTimelineViewportPreference,
@@ -97,6 +99,18 @@ import {
   extractFilterValueTokens
 } from "./timeline-field-filtering.js";
 import {
+  parseTimelineStartDate,
+  parseTimelineTargetDate
+} from "./timeline-schedule-dates.js";
+import {
+  createExactScheduleOverride,
+  DEFAULT_UNSCHEDULED_DURATION_DAYS,
+  resolveDraggedScheduleOverride,
+  resolveUnscheduledDropRange,
+  resolveUnscheduledDropSchedule,
+  type ScheduleOverride
+} from "./timeline-schedule-overrides.js";
+import {
   createInitialTimelineFilterGroups,
   isTimelineDateRangeFilter,
   MAX_TIMELINE_FILTER_SLOTS,
@@ -120,11 +134,22 @@ import {
 } from "./timeline-filter-groups.js";
 import {
   hasTimelineFilterUrlSearchParams,
+  parseTimelineFilterHierarchyExpansionFromSearch,
   parseTimelineFilterGroupsFromSearch,
   syncTimelineFilterGroupsToUrl
 } from "./timeline-filter-url.js";
+import {
+  applyTimelineFilterHierarchyExpansion,
+  type TimelineFilterHierarchyExpansionOptions
+} from "./timeline-filter-hierarchy-expansion.js";
 import { listTimelineTreeWorkItemIds, summarizeTimelineTreeLevels } from "./timeline-tree-levels.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
+
+export const TIMELINE_PANE_SHORTCUT_CONTRACTS = [
+  "overlays.close-active",
+  "timeline.pointer-wheel-zoom",
+  "work-item.focused-select"
+] as const;
 
 const MAX_PRIMARY_TITLE_LENGTH = 42;
 
@@ -154,17 +179,16 @@ export type TimelinePaneProps = {
     startDate: string;
     endDate: string;
   }) => Promise<void>;
-  onUpdateSelectedWorkItemDetails?: (input: {
-    targetWorkItemId: number;
-    title: string;
-    descriptionHtml: string;
-    state: string;
-    stateColor: string | null;
-  }) => Promise<void>;
+  onUpdateSelectedWorkItemDetails?: (input: TimelineDetailsUpdateInput) => Promise<void>;
+  onFetchWorkItemFieldDefinitions?: (input: { workItemTypes: string[] }) => Promise<WorkItemFieldDefinition[]>;
   onUpdateWorkItemState?: (input: {
     targetWorkItemId: number;
     state: string;
     stateColor: string | null;
+  }) => Promise<void>;
+  onUpdateWorkItemAssignedTo?: (input: {
+    targetWorkItemId: number;
+    assignedTo: string;
   }) => Promise<void>;
   onDuplicateWorkItem?: (input: {
     sourceWorkItemId: number;
@@ -421,6 +445,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     timelineFilterGroups,
     setTimelineFilterGroups,
     timelineFieldFilters,
+    timelineFilterHierarchyExpansion,
+    setTimelineFilterHierarchyExpansion,
+    setIncludeTimelineFilterParents,
+    setIncludeTimelineFilterChildItems,
     nextFilterSlotId,
     setNextFilterSlotId,
     nextFilterGroupId,
@@ -701,9 +729,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     pendingTimelineFilterUrlHydrationRef.current = false;
     skipNextTimelineFilterUrlSyncRef.current = true;
     setTimelineFilterGroups(nextState.groups);
+    setTimelineFilterHierarchyExpansion(nextState.hierarchyExpansion);
     setNextFilterSlotId(nextState.nextSlotId);
     setNextFilterGroupId(nextState.nextGroupId);
-  }, [props.timeline, setNextFilterGroupId, setNextFilterSlotId, setTimelineFilterGroups]);
+  }, [
+    props.timeline,
+    setNextFilterGroupId,
+    setNextFilterSlotId,
+    setTimelineFilterGroups,
+    setTimelineFilterHierarchyExpansion
+  ]);
 
   React.useEffect(() => {
     if (skipNextTimelineFilterUrlSyncRef.current) {
@@ -715,8 +750,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       return;
     }
 
-    syncTimelineFilterGroupsToUrl(timelineFilterGroups);
-  }, [props.timeline, timelineFilterGroups]);
+    syncTimelineFilterGroupsToUrl(timelineFilterGroups, timelineFilterHierarchyExpansion);
+  }, [props.timeline, timelineFilterGroups, timelineFilterHierarchyExpansion]);
 
   React.useEffect(() => {
     initialViewportAppliedRef.current = false;
@@ -724,16 +759,25 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     if (scrollElement) {
       scrollElement.scrollTop = 0;
     }
-  }, [timelineFilterGroups]);
+  }, [timelineFilterGroups, timelineFilterHierarchyExpansion]);
 
   const availableFieldRefs = React.useMemo(() => listAvailableColorCodingFields(effectiveTimeline), [effectiveTimeline]);
   const availableTimelineLabelFieldOptions = React.useMemo(
     () => buildTimelineLabelFieldOptions(availableFieldRefs),
     [availableFieldRefs]
   );
-  const filteredTimeline = React.useMemo(
+  const hardFilteredTimeline = React.useMemo(
     () => applyTimelineFieldFilterGroups(effectiveTimeline, timelineFilterGroups),
     [effectiveTimeline, timelineFilterGroups]
+  );
+  const filteredTimeline = React.useMemo(
+    () =>
+      applyTimelineFilterHierarchyExpansion({
+        sourceTimeline: effectiveTimeline,
+        seedTimeline: hardFilteredTimeline,
+        options: timelineFilterHierarchyExpansion
+      }),
+    [effectiveTimeline, hardFilteredTimeline, timelineFilterHierarchyExpansion]
   );
   const activeTimelineFiltersCount = React.useMemo(
     () => countActiveTimelineFieldFilters(timelineFieldFilters),
@@ -786,7 +830,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         chartViewportWidthPx,
         timelineLabelFields,
         includeUnscheduledDropLane,
-        treeState.collapsedIds
+        treeState.collapsedIds,
+        editedBarSchedulesByWorkItemId
       ),
     [
       visibleTimeline,
@@ -796,7 +841,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       chartViewportWidthPx,
       timelineLabelFields,
       includeUnscheduledDropLane,
-      treeState.collapsedIds
+      treeState.collapsedIds,
+      editedBarSchedulesByWorkItemId
     ]
   );
   const filteredTimelineLabelFieldOptions = React.useMemo(
@@ -1468,13 +1514,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     };
   }, [activeDependencyDrag, geometryByWorkItemId]);
 
-  const updateEditedSchedule = React.useCallback((workItemId: number, startDate: Date, endDate: Date) => {
+  const updateEditedScheduleOverride = React.useCallback((workItemId: number, schedule: ScheduleOverride) => {
     setEditedBarSchedulesByWorkItemId((current) => ({
       ...current,
-      [workItemId]: {
-        startDate: toIsoDateUtc(startDate),
-        endDate: toIsoDateUtc(endDate)
-      }
+      [workItemId]: schedule
     }));
   }, []);
 
@@ -1507,6 +1550,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         originScrollLeft: chartScrollRef.current?.scrollLeft ?? 0,
         startDate: input.bar.start,
         endDate: input.bar.end,
+        sourceStartDateIso: input.bar.sourceStartDateIso,
+        sourceEndDateIso: input.bar.sourceEndDateIso,
         lastDayDelta: 0
       });
     },
@@ -1557,9 +1602,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
       const next = calculateDraggedSchedule(active.mode, active.startDate, active.endDate, deltaDays);
       setActiveScheduleDrag((current) => (current ? { ...current, lastDayDelta: deltaDays } : current));
-      updateEditedSchedule(active.workItemId, next.startDate, next.endDate);
+      updateEditedScheduleOverride(active.workItemId, resolveDraggedScheduleOverride(active, next));
     },
-    [chartModel.dayWidthPx, chartScrollRef, updateEditedSchedule]
+    [chartModel.dayWidthPx, chartScrollRef, updateEditedScheduleOverride]
   );
 
   const handleAutoScroll = React.useCallback(() => {
@@ -1626,7 +1671,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       const previousStart = previousBar?.schedule.startDate;
       const previousEnd = previousBar?.schedule.endDate;
 
-      const changed = previousStart !== override.startDate || previousEnd !== override.endDate;
+      const changed = previousStart !== override.write.startDate || previousEnd !== override.write.endDate;
       if (!changed) {
         return;
       }
@@ -1634,8 +1679,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       try {
         await props.onUpdateWorkItemSchedule({
           targetWorkItemId: drag.workItemId,
-          startDate: override.startDate,
-          endDate: override.endDate
+          startDate: override.write.startDate,
+          endDate: override.write.endDate
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
@@ -1643,7 +1688,10 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
         setEditedBarSchedulesByWorkItemId((current) => {
           const next = { ...current };
           if (previousStart && previousEnd) {
-            next[drag.workItemId] = { startDate: previousStart, endDate: previousEnd };
+            next[drag.workItemId] = createExactScheduleOverride({
+              startDate: previousStart,
+              endDate: previousEnd
+            });
           } else {
             delete next[drag.workItemId];
           }
@@ -1704,20 +1752,23 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   );
 
   const scheduleUnscheduledFromDrop = React.useCallback(
-    async (input: { workItemId: number; startDate: Date; fixedEndDate: Date | null }) => {
-      const range = resolveUnscheduledDropRange(input.startDate, input.fixedEndDate);
-      const startDate = toIsoDateUtc(range.startDate);
-      const endDate = toIsoDateUtc(range.endDate);
+    async (input: {
+      workItemId: number;
+      startDate: Date;
+      fixedEndDateIso: string | null;
+      fixedEndTimelineDate: Date | null;
+    }) => {
+      const schedule = resolveUnscheduledDropSchedule(input);
 
       await persistWorkItemSchedule({
         targetWorkItemId: input.workItemId,
-        startDate,
-        endDate
+        startDate: schedule.write.startDate,
+        endDate: schedule.write.endDate
       });
 
       setAdoptedSchedulesByWorkItemId((current) => ({
         ...current,
-        [input.workItemId]: { startDate, endDate }
+        [input.workItemId]: schedule.display
       }));
       selectWorkItem(input.workItemId);
     },
@@ -1725,13 +1776,18 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
   );
 
   const startUnscheduledDrag = React.useCallback(
-    (event: React.DragEvent<HTMLElement>, workItemId: number, fixedEndDate: Date | null) => {
+    (
+      event: React.DragEvent<HTMLElement>,
+      workItemId: number,
+      fixedEndDateIso: string | null,
+      fixedEndTimelineDate: Date | null
+    ) => {
       if (dependencyMode) {
         return;
       }
       event.dataTransfer.setData("text/plain", String(workItemId));
       event.dataTransfer.effectAllowed = "move";
-      setActiveUnschedulableDrag({ workItemId, fixedEndDate });
+      setActiveUnschedulableDrag({ workItemId, fixedEndDateIso, fixedEndTimelineDate });
     },
     [dependencyMode]
   );
@@ -1750,7 +1806,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
       const startDate = clientXToDate(event.clientX, chartSvgRef.current, chartModel.domainStart, chartModel.dayWidthPx);
-      setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndDate));
+      setUnscheduledDropPreview(resolveUnscheduledDropRange(startDate, activeUnschedulableDrag.fixedEndTimelineDate));
     },
     [activeUnschedulableDrag, chartModel.dayWidthPx, chartModel.domainStart]
   );
@@ -1772,7 +1828,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       void scheduleUnscheduledFromDrop({
         workItemId,
         startDate: droppedDate,
-        fixedEndDate: activeUnschedulableDrag.fixedEndDate
+        fixedEndDateIso: activeUnschedulableDrag.fixedEndDateIso,
+        fixedEndTimelineDate: activeUnschedulableDrag.fixedEndTimelineDate
       }).catch((error) => {
         const message = error instanceof Error ? error.message : "Unknown error";
         setAdoptScheduleError(message);
@@ -1904,6 +1961,16 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     markTimelineFiltersUserEdited();
     setTimelineFilterGroups((current) => toggleTimelineFilterValueSelection(current, slotId, valueKey));
   }, [markTimelineFiltersUserEdited, setTimelineFilterGroups]);
+
+  const setIncludeParentsInTimelineFilters = React.useCallback((includeParents: boolean) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterParents(includeParents);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterParents]);
+
+  const setIncludeChildItemsInTimelineFilters = React.useCallback((includeChildItems: boolean) => {
+    markTimelineFiltersUserEdited();
+    setIncludeTimelineFilterChildItems(includeChildItems);
+  }, [markTimelineFiltersUserEdited, setIncludeTimelineFilterChildItems]);
 
   const toggleVisibleTimelineFieldValueSelections = React.useCallback((slotId: number, valueKeys: string[]) => {
     if (valueKeys.length === 0) {
@@ -2123,6 +2190,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
 
   const detailProps: TimelineDetailsPanelProps = {
     timeline: filteredTimeline,
+    catalogTimeline: effectiveTimeline,
+    activeQueryId,
     selectedWorkItemId,
     contentHidden: detailsContentHidden,
     organization: props.organization,
@@ -2130,7 +2199,9 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     draftResetKey: props.detailsDraftResetKey,
     onUpdateSelectedWorkItemDetails: props.onUpdateSelectedWorkItemDetails,
     onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
-    onDirtyChange: props.onDetailsDirtyChange
+    onFetchWorkItemFieldDefinitions: props.onFetchWorkItemFieldDefinitions,
+    onDirtyChange: props.onDetailsDirtyChange,
+    workItemSyncState: props.workItemSyncState
   };
   const timelineMainGridStyle = {
     ["--timeline-sidebar-width-px"]: `${Math.round(effectiveSidebarWidthPx)}px`,
@@ -2260,7 +2331,11 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onRemoveTimelineFilterSlot: removeTimelineFilterSlot,
       onRemoveTimelineFilterGroup: removeTimelineFilterGroupById,
       onAddTimelineFilterCondition: addTimelineFilterCondition,
-      onAddTimelineFilterGroup: addTimelineFilterOrGroup
+      onAddTimelineFilterGroup: addTimelineFilterOrGroup,
+      includeParents: timelineFilterHierarchyExpansion.includeParents,
+      includeChildItems: timelineFilterHierarchyExpansion.includeChildItems,
+      onSetIncludeParents: setIncludeParentsInTimelineFilters,
+      onSetIncludeChildItems: setIncludeChildItemsInTimelineFilters
     }),
     adoptScheduleError
       ? React.createElement(
@@ -2297,7 +2372,7 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
     React.createElement(TimelineWorkItemContextMenu, {
       menuState: workItemContextMenu.menuState,
       menuRef: workItemContextMenu.menuRef,
-      timeline: filteredTimeline,
+      timeline: props.timeline,
       organization: props.organization,
       project: props.project,
       onClose: workItemContextMenu.closeMenu,
@@ -2306,7 +2381,8 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
       onCreateChildWorkItem: props.onCreateChildWorkItem,
       onFetchWorkItemTypes: props.onFetchWorkItemTypes,
       onUpdateWorkItemState: props.onUpdateWorkItemState,
-      onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions
+      onFetchWorkItemStateOptions: props.onFetchWorkItemStateOptions,
+      onUpdateWorkItemAssignedTo: props.onUpdateWorkItemAssignedTo
     }),
     React.createElement(TimelinePrintHeader, {
       queryName: props.activeQueryName ?? null,
@@ -3160,7 +3236,13 @@ export function TimelinePane(props: TimelinePaneProps): React.ReactElement {
                         "aria-pressed": selectedWorkItemId === item.workItemId,
                         draggable: !dependencyMode && editMode,
                         onDragStart: (event) => {
-                          startUnscheduledDrag(event, item.workItemId, resolveUnschedulableFixedEndDate(item));
+                          const fixedEndSchedule = resolveUnschedulableFixedEndSchedule(item);
+                          startUnscheduledDrag(
+                            event,
+                            item.workItemId,
+                            fixedEndSchedule.fixedEndDateIso,
+                            fixedEndSchedule.fixedEndTimelineDate
+                          );
                         },
                         onDragEnd: () => {
                           clearUnscheduledDrag();
@@ -3332,7 +3414,6 @@ const TIMELINE_SIDEBAR_MAX_WIDTH_PX = 640;
 const TIMELINE_SIDEBAR_COLLAPSED_WIDTH_PX = 56;
 const MIN_BAR_WIDTH_PX = 10;
 const HANDLE_WIDTH = 8;
-const DEFAULT_UNSCHEDULED_DURATION_DAYS = 14;
 const BAR_LABEL_HORIZONTAL_PADDING = 8;
 const APPROX_BAR_LABEL_CHAR_WIDTH_PX = 6.5;
 const DEFAULT_NEUTRAL_TIMELINE_COLOR = "#374151";
@@ -3390,9 +3471,12 @@ type VisualTimelineBar = {
   color: string;
   stateColor: string;
   stateBadge: string;
+  assignedTo: string | null;
   fieldValues: Record<string, string | number | null>;
   x: number;
   width: number;
+  sourceStartDateIso: string | null;
+  sourceEndDateIso: string | null;
   start: Date;
   end: Date;
   treeDepth: number | null;
@@ -3441,6 +3525,7 @@ function buildContextMenuItemFromVisualBar(
     workItemId: bar.workItemId,
     title: bar.title,
     state: bar.stateCode,
+    assignedTo: bar.assignedTo,
     workItemType: bar.workItemType,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
@@ -3454,6 +3539,7 @@ function buildContextMenuItemFromUnschedulable(
     workItemId: item.workItemId,
     title: item.title,
     state: item.state.code,
+    assignedTo: item.details.assignedTo ?? null,
     workItemType: item.details.workItemType ?? null,
     ...(scheduleFieldRefs ? { scheduleFieldRefs } : {})
   };
@@ -3467,7 +3553,8 @@ function buildVisualChartModel(
   viewportWidthPx: number,
   timelineLabelFields: string[],
   includeUnscheduledDropLane: boolean,
-  collapsedIds?: ReadonlySet<number>
+  collapsedIds?: ReadonlySet<number>,
+  editedBarSchedulesByWorkItemId: Record<number, ScheduleOverride> = {}
 ): VisualChartModel {
   if (!timeline || timeline.bars.length === 0) {
     const todayUtc = new Date();
@@ -3495,8 +3582,8 @@ function buildVisualChartModel(
 
   const normalizedBars = timeline.bars
     .map((bar) => {
-      const start = parseIso(bar.schedule.startDate);
-      const end = parseIso(bar.schedule.endDate);
+      const start = parseTimelineStartDate(bar.schedule.startDate);
+      const end = parseTimelineTargetDate(bar.schedule.endDate);
       if (!start && !end) {
         return null;
       }
@@ -3572,6 +3659,7 @@ function buildVisualChartModel(
     const startOffset = dayDiff(domainStart, bar.start);
     const spanDays = Math.max(1, dayDiffInclusive(bar.start, bar.end));
     const treeMeta = timeline.treeLayout?.[bar.source.workItemId] ?? null;
+    const writeOverride = editedBarSchedulesByWorkItemId[bar.source.workItemId]?.write;
     return {
       workItemId: bar.source.workItemId,
       mappedId: bar.source.details.mappedId,
@@ -3582,7 +3670,10 @@ function buildVisualChartModel(
       color: colorByWorkItemId.get(bar.source.workItemId) ?? bar.source.state.color,
       stateColor: bar.source.state.color,
       stateBadge: bar.source.state.badge,
+      assignedTo: bar.source.details.assignedTo ?? null,
       fieldValues: bar.source.details.fieldValues ?? {},
+      sourceStartDateIso: writeOverride?.startDate ?? bar.source.schedule.startDate,
+      sourceEndDateIso: writeOverride?.endDate ?? bar.source.schedule.endDate,
       start: bar.start,
       end: bar.end,
       x: startOffset * dayWidthPx,
@@ -3745,8 +3836,8 @@ function resolveTimelineVisibleRange(timeline: TimelineReadModel | null): { star
 
   const normalizedRanges = timeline.bars
     .map((bar) => {
-      const start = parseIso(bar.schedule.startDate);
-      const end = parseIso(bar.schedule.endDate);
+      const start = parseTimelineStartDate(bar.schedule.startDate);
+      const end = parseTimelineTargetDate(bar.schedule.endDate);
       if (!start && !end) {
         return null;
       }
@@ -3773,16 +3864,22 @@ function resolveInitialTimelineFilterState(timeline: TimelineReadModel | null): 
   groups: TimelineFilterGroup[];
   nextSlotId: number;
   nextGroupId: number;
+  hierarchyExpansion: TimelineFilterHierarchyExpansionOptions;
 } {
   if (typeof globalThis.location === "undefined") {
     const groups = createInitialTimelineFilterGroups();
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion: {
+        includeParents: false,
+        includeChildItems: false
+      }
     };
   }
 
+  const hierarchyExpansion = parseTimelineFilterHierarchyExpansionFromSearch(globalThis.location.search);
   const parsedGroups = parseTimelineFilterGroupsFromSearch(globalThis.location.search, {
     dateFilterContext: buildTimelineDateFilterContext(timeline)
   });
@@ -3791,14 +3888,16 @@ function resolveInitialTimelineFilterState(timeline: TimelineReadModel | null): 
     return {
       groups,
       nextSlotId: resolveNextTimelineFilterSlotId(groups),
-      nextGroupId: resolveNextTimelineFilterGroupId(groups)
+      nextGroupId: resolveNextTimelineFilterGroupId(groups),
+      hierarchyExpansion
     };
   }
 
   return {
     groups: parsedGroups,
     nextSlotId: resolveNextTimelineFilterSlotId(parsedGroups),
-    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups)
+    nextGroupId: resolveNextTimelineFilterGroupId(parsedGroups),
+    hierarchyExpansion
   };
 }
 
@@ -4317,7 +4416,7 @@ function isOverdueTimelineItem(endDateIso: string | null, stateCode: string, ove
     return false;
   }
 
-  const endDate = parseIso(endDateIso);
+  const endDate = parseTimelineTargetDate(endDateIso);
   if (!endDate) {
     return false;
   }
@@ -4351,21 +4450,15 @@ function normalizeStateCodeForComparison(stateCode: string): string {
   return stateCode.trim().toLowerCase();
 }
 
-function parseIso(value: string | null): Date | null {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function normalizeUtcDate(value: Date): Date {
-  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
-}
-
-function resolveUnschedulableFixedEndDate(item: TimelineReadModel["unschedulable"][number]): Date | null {
-  return parseIso(item.schedule?.endDate ?? null);
+function resolveUnschedulableFixedEndSchedule(item: TimelineReadModel["unschedulable"][number]): {
+  fixedEndDateIso: string | null;
+  fixedEndTimelineDate: Date | null;
+} {
+  const fixedEndDateIso = item.schedule?.endDate ?? null;
+  return {
+    fixedEndDateIso,
+    fixedEndTimelineDate: parseTimelineTargetDate(fixedEndDateIso)
+  };
 }
 
 function resolveAdoptSourceSchedule(
@@ -4395,22 +4488,6 @@ function formatAdoptDate(value: string): string {
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
   const year = String(parsed.getFullYear()).slice(2);
   return `${day}.${month}.${year}`;
-}
-
-function resolveUnscheduledDropRange(startDate: Date, fixedEndDate: Date | null): { startDate: Date; endDate: Date } {
-  let normalizedStart = normalizeUtcDate(startDate);
-  const normalizedEnd = fixedEndDate
-    ? normalizeUtcDate(fixedEndDate)
-    : addDays(normalizedStart, DEFAULT_UNSCHEDULED_DURATION_DAYS - 1);
-
-  if (normalizedStart.getTime() > normalizedEnd.getTime()) {
-    normalizedStart = normalizedEnd;
-  }
-
-  return {
-    startDate: normalizedStart,
-    endDate: normalizedEnd
-  };
 }
 
 function addDays(value: Date, days: number): Date {
@@ -4666,10 +4743,6 @@ function clientPointToSvg(clientX: number, clientY: number, svg: SVGSVGElement |
     x: (clientX - rect.left) * horizontalScale,
     y: (clientY - rect.top) * verticalScale
   };
-}
-
-function toIsoDateUtc(value: Date): string {
-  return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())).toISOString();
 }
 
 function resolveTimelineDetailsMaxWidthPx(container: HTMLElement | null, sidebarWidthPx: number): number {
@@ -5185,7 +5258,7 @@ export function applyAdoptedSchedules(
 
 function applyEditedBarSchedules(
   timeline: TimelineReadModel | null,
-  editedBarSchedulesByWorkItemId: Record<number, { startDate: string; endDate: string }>
+  editedBarSchedulesByWorkItemId: Record<number, ScheduleOverride>
 ): TimelineReadModel | null {
   if (!timeline) {
     return null;
@@ -5208,8 +5281,8 @@ function applyEditedBarSchedules(
     return {
       ...bar,
       schedule: {
-        startDate: override.startDate,
-        endDate: override.endDate,
+        startDate: override.display.startDate,
+        endDate: override.display.endDate,
         missingBoundary: null
       }
     };

@@ -10,6 +10,7 @@ export type WorkItemContextMenuItem = {
   workItemId: number;
   title: string;
   state: string;
+  assignedTo?: string | null;
   workItemType?: string | null;
   scheduleFieldRefs?: {
     start: string;
@@ -24,6 +25,11 @@ export type WorkItemContextMenuState = {
     y: number;
   };
 };
+
+export const WORK_ITEM_CONTEXT_MENU_TRIGGER_SHORTCUT_CONTRACTS = [
+  "work-item.open-context-menu",
+  "overlays.close-active"
+] as const;
 
 export function useWorkItemContextMenu(): {
   menuState: WorkItemContextMenuState | null;

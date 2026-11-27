@@ -44,6 +44,7 @@ export type SavedQueryPreference = {
 
 export type UserPreferences = {
   themeMode?: ThemeModePreference;
+  detailsPanelFields?: TimelineLabelFieldPreference[];
   timelineLiveSyncEnabled?: boolean;
   timelineDensity?: TimelineDensityPreference;
   timelineColorCoding?: TimelineColorCodingPreference;
@@ -131,6 +132,13 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
     next.timelineLabelFields = normalized;
   }
 
+  if (Array.isArray(candidate.detailsPanelFields)) {
+    const normalized = [...new Set(candidate.detailsPanelFields)]
+      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .filter((entry) => entry.length > 0);
+    next.detailsPanelFields = normalized;
+  }
+
   if (Array.isArray(candidate.timelineSidebarFields)) {
     const normalized = [...new Set(candidate.timelineSidebarFields)]
       .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
@@ -204,12 +212,16 @@ export function sanitizeUserPreferences(value: unknown): UserPreferences {
       deduped.set(normalized.id, normalized);
     });
 
-    next.savedQueries = deduped.size > 0 ? [...deduped.values()] : undefined;
+    if (deduped.size > 0) {
+      next.savedQueries = [...deduped.values()];
+    } else if (candidate.savedQueries.length === 0) {
+      next.savedQueries = [];
+    }
   }
 
   if (typeof candidate.selectedHeaderQueryId === "string") {
     const selectedHeaderQueryId = candidate.selectedHeaderQueryId.trim();
-    next.selectedHeaderQueryId = selectedHeaderQueryId.length > 0 ? selectedHeaderQueryId : undefined;
+    next.selectedHeaderQueryId = selectedHeaderQueryId;
   }
 
   if (isPlainRecord(candidate.filters)) {

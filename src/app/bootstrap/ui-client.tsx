@@ -10,7 +10,12 @@ import {
 } from "../composition/ui-shell.composition.js";
 import { TopTabs } from "../../features/navigation/top-tabs.js";
 import type { TabId } from "../../shared/ui-state/tab-id.js";
-import { QuerySelector, ORG_KEY, PROJECT_KEY } from "../../features/query-switching/query-selector.js";
+import { QuerySelector } from "../../features/query-switching/query-selector.js";
+import { InitialQueryOnboardingDialog } from "../../features/query-switching/initial-query-onboarding-dialog.js";
+import {
+  ORG_KEY,
+  PROJECT_KEY
+} from "../../features/query-switching/runtime-query-input.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
 import { MappingFixPanel } from "../../features/field-mapping/mapping-fix-panel.js";
 import { TimelinePane } from "../../features/gantt-view/timeline-pane.js";
@@ -22,18 +27,21 @@ import {
 } from "../../features/gantt-view/timeline-live-sync-preference.js";
 import { WarningBanner } from "../../features/diagnostics/warning-banner.js";
 import { TrustBadge } from "../../features/diagnostics/trust-badge.js";
+import { LocalConfigResetPanel } from "../../features/diagnostics/local-config-reset-panel.js";
+import { evaluateLocalConfigResetGuard } from "../../features/diagnostics/local-config-reset-guard.js";
 import { DiagnosticsTab } from "../../features/diagnostics/diagnostics-tab.js";
 import { mapQueryIntakeResponseToUiModel, type QueryIntakeUiModel } from "../../shared/ui-state/query-intake-ui-mapper.js";
 import { enrichResponseWithRuntimeStateColors } from "../../shared/ui-state/timeline-runtime-state-colors.js";
 import { deriveActiveTabForQueryResponse, shouldOpenMappingFixTab } from "../../shared/ui-state/query-intake-flow-state.js";
-import { getCachedUserPreferences, hydrateUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
+import { getCachedUserPreferences, persistUserPreferencesPatch } from "../../shared/user-preferences/user-preferences.client.js";
 import {
   applyCreatedChildWorkItemToResponse,
   applyDependencyLinkUpdate,
   applyDuplicateWorkItemToResponse,
   applyReparentUpdate,
   applyScheduleUpdate,
-  applyWorkItemMetadataUpdate,
+  applyWorkItemAssignedToUpdate,
+  applyWorkItemFieldsUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import {
@@ -43,18 +51,19 @@ import {
 } from "./ui-client-storage.js";
 import {
   applyThemeMode,
-  iconForThemeMode,
+  iconForEffectiveTheme,
   labelForThemeMode,
   nextThemeMode,
   persistThemeMode,
   readPersistedThemeMode,
+  resolveEffectiveTheme,
+  type EffectiveTheme,
   type ThemeMode
 } from "./ui-client-theme.js";
 import { useAdoCommLogPolling } from "./use-ado-comm-log-polling.js";
 import { dismissOpenDetailsMenus, isTargetInsideElement } from "./ui-client-menu-dismiss.js";
 import {
   buildSessionExpiredRefreshBlocker,
-  resolvePersistedRefreshQueryInput,
   runRetryRefreshFlow,
   type RunRequest
 } from "./ui-client-refresh-flow.js";
@@ -83,7 +92,11 @@ import { resolveActiveQueryName } from "./ui-client-header-query-service.js";
 import { buildAzureQueryUrl } from "../../shared/azure-devops/azure-query-url.js";
 import { GITHUB_REPO_URL, TENSORFIVE_WEBSITE_URL } from "../../shared/project-meta/project-meta.js";
 import { useHeaderQueryFlow } from "./use-header-query-flow.js";
+import { useInitialQueryOnboardingFlow } from "./use-initial-query-onboarding-flow.js";
 import type { WorkItemSyncState } from "../../shared/ui-state/work-item-sync-state.js";
+import { clearBrowserLocalConfigs } from "./local-config-browser-cleanup.js";
+import { AppReleaseBadge } from "./app-release-badge.js";
+import { useAppUpdateCheck } from "./use-app-update-check.js";
 
 const ADO_COMM_LOG_POLL_INTERVAL_MS = 3000;
 const ADO_COMM_LOG_READ_LIMIT = 200;
@@ -91,6 +104,18 @@ const ADO_COMM_LOG_UI_MAX = 1000;
 const UI_SHELL_STATE_KEY = "azure-ganttops.ui-shell-state.v1";
 const THEME_MODE_KEY = "azure-ganttops.theme-mode.v1";
 const HEADER_SAVED_QUERY_LIMIT = 25;
+
+type HeaderDialogMode = "changelog" | "update_notice" | "keyboard_shortcuts";
+
+const LazyAppChangelogDialog = React.lazy(async () => {
+  const module = await import("./app-changelog-dialog.js");
+  return { default: module.AppChangelogDialog };
+});
+
+const LazyAppKeyboardShortcutsDialog = React.lazy(async () => {
+  const module = await import("./app-keyboard-shortcuts-dialog.js");
+  return { default: module.AppKeyboardShortcutsDialog };
+});
 
 function renderAdoCommLogPanel(params: {
   logs: AdoCommLogEntry[];
@@ -161,24 +186,24 @@ export function createDefaultUiShellComposition(params: Parameters<typeof create
   return createUiShellComposition(params);
 }
 
-function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
+export function UiShellApp(props: { composition: UiShellComposition }): React.ReactElement {
   const restoredState = React.useMemo(
     () => readPersistedUiShellState<QueryIntakeResponse, RunRequest>(UI_SHELL_STATE_KEY),
     []
   );
   const initialResponse = restoredState?.response ?? null;
+  const initialLastRunRequest = restoredState?.lastRunRequest ?? null;
   const initialActiveTab: TabId =
     initialResponse && initialResponse.mappingValidation.status === "invalid"
       ? "mapping"
       : (restoredState?.activeTab ?? "query");
-  const persistedQueryInput = resolvePersistedRefreshQueryInput();
-  const hasInitialQuery = Boolean(persistedQueryInput || initialResponse?.activeQueryId || initialResponse?.selectedQueryId);
   const cachedPreferences = getCachedUserPreferences();
 
   const [activeTab, setActiveTab] = React.useState<TabId>(initialActiveTab);
-  const [controlsOpen, setControlsOpen] = React.useState(!hasInitialQuery);
+  const [controlsOpen, setControlsOpen] = React.useState(false);
+  const [headerDialogMode, setHeaderDialogMode] = React.useState<HeaderDialogMode | null>(null);
   const [response, setResponse] = React.useState<QueryIntakeResponse | null>(initialResponse);
-  const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(restoredState?.lastRunRequest ?? null);
+  const [lastRunRequest, setLastRunRequest] = React.useState<RunRequest | null>(initialLastRunRequest);
   const [uiModel, setUiModel] = React.useState<QueryIntakeUiModel>(
     initialResponse ? mapQueryIntakeResponseToUiModel(initialResponse) : createInitialUiModel()
   );
@@ -193,6 +218,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   const [themeMode, setThemeMode] = React.useState<ThemeMode>(() =>
     readPersistedThemeMode(THEME_MODE_KEY, getCachedUserPreferences().themeMode)
   );
+  const [effectiveTheme, setEffectiveTheme] = React.useState<EffectiveTheme>(() => resolveEffectiveTheme(themeMode));
   const [liveSyncEnabled, setLiveSyncEnabled] = React.useState<boolean>(() => loadTimelineLiveSyncEnabledPreference());
   const responseRef = React.useRef<QueryIntakeResponse | null>(initialResponse);
   const [workItemSyncState, setWorkItemSyncState] = React.useState<WorkItemSyncState>(() =>
@@ -218,6 +244,9 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   });
   const liveSyncEnabledRef = React.useRef(liveSyncEnabled);
   const timelineSelectionStoreRef = React.useRef(createTimelineSelectionStore());
+  const changelogVersionButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const keyboardShortcutsButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const changelogUpdateButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const workItemStateOptionsCacheRef = React.useRef<Map<number, Array<{ name: string; color: string | null }>>>(new Map());
   isRefreshingRef.current = isRefreshing;
   refreshGuardStateRef.current = {
@@ -226,8 +255,15 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     liveSyncEnabled,
     workItemSyncState
   };
-  const organization = typeof localStorage === "undefined" ? "" : localStorage.getItem(ORG_KEY) ?? "";
-  const project = typeof localStorage === "undefined" ? "" : localStorage.getItem(PROJECT_KEY) ?? "";
+  const organization = readLocalStorageValue(ORG_KEY);
+  const project = readLocalStorageValue(PROJECT_KEY);
+  const changelogOpen = headerDialogMode === "changelog" || headerDialogMode === "update_notice";
+  const keyboardShortcutsOpen = headerDialogMode === "keyboard_shortcuts";
+  const changelogReturnFocusRef =
+    headerDialogMode === "update_notice" ? changelogUpdateButtonRef : changelogVersionButtonRef;
+  const { updateNotice, trigger: triggerAppUpdateCheck } = useAppUpdateCheck({
+    checkAppUpdate: props.composition.controller.checkAppUpdate
+  });
   const adoCommLogPolling = useAdoCommLogPolling({
     controller: props.composition.controller,
     pollIntervalMs: ADO_COMM_LOG_POLL_INTERVAL_MS,
@@ -332,6 +368,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           setActiveTab(deriveActiveTabForQueryResponse(submitted));
         }
 
+        triggerAppUpdateCheck();
         return submitted;
       } catch (error: unknown) {
         const reason = error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -349,7 +386,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         throw error;
       }
     },
-    [enrichRuntimeStateColors, props.composition]
+    [enrichRuntimeStateColors, props.composition, triggerAppUpdateCheck]
   );
 
   const handleNeedsFix = React.useCallback((needsFixResponse: QueryIntakeResponse) => {
@@ -427,7 +464,6 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
 
       if (result.kind === "blocked_no_query") {
         setActiveTab("query");
-        setControlsOpen(true);
         setBlockerMessage(result.blocker);
         return;
       }
@@ -445,20 +481,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         if (result.openMappingFix) {
           setMappingFixResponse(result.response);
           setActiveTab(result.activeTab);
-          setControlsOpen(true);
           setBlockerMessage(null);
         } else {
           setMappingFixResponse(null);
           setActiveTab(result.activeTab);
-          if (result.activeTab === "query") {
-            setControlsOpen(true);
-          }
           setBlockerMessage(
             result.response.preflightStatus === "SESSION_EXPIRED"
               ? buildSessionExpiredRefreshBlocker()
               : null
           );
         }
+        triggerAppUpdateCheck();
       }
       if (discardPendingChanges) {
         setDetailsDraftResetKey((current) => current + 1);
@@ -468,7 +501,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       isRefreshingRef.current = false;
       setIsRefreshing(false);
     }
-  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges]);
+  }, [enrichRuntimeStateColors, lastRunRequest, props.composition.controller.submit, runQuery, setGuardedHasOptimisticChanges, triggerAppUpdateCheck]);
 
   const headerQueryFlow = useHeaderQueryFlow({
     initialSavedHeaderQueries: cachedPreferences.savedQueries ?? [],
@@ -477,6 +510,11 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     fetchQueryDetails: props.composition.controller.fetchQueryDetails,
     getResponse: () => responseRef.current,
     headerSavedQueryLimit: HEADER_SAVED_QUERY_LIMIT
+  });
+  const initialQueryOnboardingFlow = useInitialQueryOnboardingFlow({
+    restoredResponse: initialResponse,
+    runQuery: async ({ queryId }) => runQuery({ queryId }),
+    saveLoadedHeaderQuery: headerQueryFlow.saveLoadedHeaderQuery
   });
 
   const runTrackedWorkItemUpdate = React.useCallback(
@@ -653,6 +691,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   );
 
   const fetchWorkItemStateOptions = fetchWorkItemStateOptionsCached;
+  const fetchWorkItemFieldDefinitions = React.useCallback(
+    async ({ workItemTypes }: { workItemTypes: string[] }) => {
+      const fetchDefinitions = props.composition.controller.fetchWorkItemFieldDefinitions;
+      if (!fetchDefinitions) {
+        throw new Error("Field definitions are not available.");
+      }
+      const response = await fetchDefinitions({ workItemTypes });
+      return response.fields;
+    },
+    [props.composition.controller]
+  );
 
   React.useEffect(() => {
     responseRef.current = response;
@@ -671,21 +720,27 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
   }, [activeTab, lastRunRequest, response]);
 
   React.useEffect(() => {
-    void hydrateUserPreferences().then((preferences) => {
-      if (preferences.themeMode) {
-        setThemeMode(preferences.themeMode);
-      }
-      const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
-      headerQueryFlow.hydrateSavedHeaderQueries(
-        hydratedHeaderQuerySelection.savedHeaderQueries,
-        hydratedHeaderQuerySelection.selectedHeaderQueryId
-      );
-    });
+    const preferences = initialQueryOnboardingFlow.hydratedPreferences;
+    if (!preferences) {
+      return;
+    }
+
+    if (preferences.themeMode) {
+      setThemeMode(preferences.themeMode);
+    }
+    const hydratedHeaderQuerySelection = resolveHydratedHeaderQuerySelection(preferences);
+    headerQueryFlow.hydrateSavedHeaderQueries(
+      hydratedHeaderQuerySelection.savedHeaderQueries,
+      hydratedHeaderQuerySelection.selectedHeaderQueryId
+    );
+  }, [headerQueryFlow.hydrateSavedHeaderQueries, initialQueryOnboardingFlow.hydratedPreferences]);
+
+  React.useEffect(() => {
     hydrateTimelineLiveSyncEnabledPreference((enabled) => {
       setGuardedLiveSyncEnabled(enabled);
       setGuardedWorkItemSyncState((current) => (current === "syncing" ? current : enabled ? "up_to_date" : "paused"));
     });
-  }, [headerQueryFlow.hydrateSavedHeaderQueries, setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
+  }, [setGuardedLiveSyncEnabled, setGuardedWorkItemSyncState]);
 
   React.useEffect(() => {
     if (liveSyncEnabled && pendingWorkItemMutationsRef.current.length > 0) {
@@ -721,16 +776,19 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       themeMode
     });
     persistThemeMode(THEME_MODE_KEY, themeMode);
-    applyThemeMode(themeMode);
+    const syncEffectiveTheme = () => {
+      applyThemeMode(themeMode);
+      setEffectiveTheme(resolveEffectiveTheme(themeMode));
+    };
 
-    if (themeMode !== "system" || typeof window === "undefined") {
+    syncEffectiveTheme();
+
+    if (themeMode !== "system" || typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return;
     }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = () => {
-      applyThemeMode("system");
-    };
+    const handleSystemThemeChange = () => syncEffectiveTheme();
 
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", handleSystemThemeChange);
@@ -795,6 +853,14 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
     adoCommLogsLoading: adoCommLogPolling.loading,
     adoCommLogsError: adoCommLogPolling.error
   });
+  const localConfigResetGuard = evaluateLocalConfigResetGuard({
+    pendingWorkItemSyncCount,
+    detailsPanelDirty,
+    hasOptimisticChanges,
+    isRefreshing,
+    headerQueryLoading: headerQueryFlow.headerQueryLoading,
+    workItemSyncState
+  });
   const controlsContent = React.createElement(
     React.Fragment,
     null,
@@ -826,6 +892,17 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
           React.createElement("div", null, `Next action: ${blockerMessage.nextAction}`)
         )
       : null,
+    React.createElement(LocalConfigResetPanel, {
+      guard: localConfigResetGuard,
+      onServerReset: props.composition.controller.resetLocalConfigs,
+      onBrowserCleanup: () =>
+        clearBrowserLocalConfigs({
+          queryClient: props.composition.queryClient
+        }),
+      onReload: () => {
+        window.location.reload();
+      }
+    }),
     mainPanel
   );
 
@@ -837,8 +914,32 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
       { className: "ui-shell-header" },
       React.createElement(
         "div",
-        { className: "ui-shell-brand" },
-        React.createElement("h1", null, "AzureGanttOps")
+        { className: "ui-shell-brand-row" },
+        React.createElement(
+          "div",
+          { className: "ui-shell-brand" },
+          React.createElement("h1", null, "AzureGanttOps")
+        ),
+        React.createElement(AppReleaseBadge, {
+          open: changelogOpen,
+          shortcutsOpen: keyboardShortcutsOpen,
+          updateAvailable: updateNotice !== null,
+          versionButtonRef: changelogVersionButtonRef,
+          shortcutsButtonRef: keyboardShortcutsButtonRef,
+          updateButtonRef: changelogUpdateButtonRef,
+          onVersionClick: () => {
+            setControlsOpen(false);
+            setHeaderDialogMode("changelog");
+          },
+          onShortcutsClick: () => {
+            setControlsOpen(false);
+            setHeaderDialogMode("keyboard_shortcuts");
+          },
+          onUpdateClick: () => {
+            setControlsOpen(false);
+            setHeaderDialogMode("update_notice");
+          }
+        })
       ),
       React.createElement(
         "div",
@@ -1030,7 +1131,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             onClick: () => {
               setThemeMode(nextThemeMode(themeMode));
             }
-          }, React.createElement("span", { "aria-hidden": "true" }, iconForThemeMode(themeMode)))
+          }, React.createElement("span", { "aria-hidden": "true" }, iconForEffectiveTheme(effectiveTheme)))
         ),
         React.createElement(TrustBadge, {
           statusCode: uiModel.statusCode,
@@ -1171,17 +1272,15 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
               }
             });
           },
-          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, title, descriptionHtml, state, stateColor }) => {
+          onUpdateSelectedWorkItemDetails: async ({ targetWorkItemId, fields, htmlFields, stateColor }) => {
             await scheduleWorkItemMutation({
               workItemId: targetWorkItemId,
-              applyToTimeline: (timeline) =>
-                applyWorkItemMetadataUpdate(timeline, targetWorkItemId, title, descriptionHtml, state, stateColor),
+              applyToTimeline: (timeline) => applyWorkItemFieldsUpdate(timeline, targetWorkItemId, fields, stateColor),
               executeDetails: async () => {
                 const writeResult = await props.composition.controller.updateWorkItemDetails({
                   targetWorkItemId,
-                  title,
-                  descriptionHtml,
-                  state
+                  fields,
+                  ...(htmlFields.length > 0 ? { htmlFields } : {})
                 });
 
                 if (!writeResult.accepted) {
@@ -1199,6 +1298,23 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                 const writeResult = await props.composition.controller.updateWorkItemState({
                   targetWorkItemId,
                   state
+                });
+
+                if (!writeResult.accepted) {
+                  throw toWritebackError(writeResult.reasonCode);
+                }
+              }
+            });
+          },
+          onUpdateWorkItemAssignedTo: async ({ targetWorkItemId, assignedTo }) => {
+            await scheduleWorkItemMutation({
+              workItemId: targetWorkItemId,
+              applyToTimeline: (timeline) =>
+                applyWorkItemAssignedToUpdate(timeline, targetWorkItemId, assignedTo),
+              executeDetails: async () => {
+                const writeResult = await props.composition.controller.updateWorkItemAssignedTo({
+                  targetWorkItemId,
+                  assignedTo
                 });
 
                 if (!writeResult.accepted) {
@@ -1300,6 +1416,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             });
           },
           onFetchWorkItemStateOptions: fetchWorkItemStateOptions,
+          onFetchWorkItemFieldDefinitions: fetchWorkItemFieldDefinitions,
           onRetryRefresh: () => {
             void retryRefresh();
           }
@@ -1322,6 +1439,39 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
         "TensorFive GmbH"
       )
     ),
+    changelogOpen
+      ? React.createElement(
+          React.Suspense,
+          { fallback: null },
+          React.createElement(LazyAppChangelogDialog, {
+            open: true,
+            onClose: () => setHeaderDialogMode(null),
+            returnFocusRef: changelogReturnFocusRef,
+            updateNotice: headerDialogMode === "update_notice" ? updateNotice : null
+          })
+        )
+      : null,
+    keyboardShortcutsOpen
+      ? React.createElement(
+          React.Suspense,
+          { fallback: null },
+          React.createElement(LazyAppKeyboardShortcutsDialog, {
+            open: true,
+            onClose: () => setHeaderDialogMode(null),
+            returnFocusRef: keyboardShortcutsButtonRef
+          })
+        )
+      : null,
+    initialQueryOnboardingFlow.status === "required"
+      ? React.createElement(InitialQueryOnboardingDialog, {
+          queryInput: initialQueryOnboardingFlow.queryInput,
+          loading: initialQueryOnboardingFlow.loading,
+          statusMessage: initialQueryOnboardingFlow.statusMessage,
+          errorMessage: initialQueryOnboardingFlow.errorMessage,
+          onQueryInputChange: initialQueryOnboardingFlow.setQueryInput,
+          onSubmit: initialQueryOnboardingFlow.submit
+        })
+      : null,
     showRefreshDiscardWarning
       ? React.createElement(
           "div",
@@ -1341,12 +1491,12 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
             React.createElement(
               "h3",
               { id: "refresh-discard-warning-title", className: "refresh-discard-warning-title" },
-              "Achtung: Ungespeicherte Änderungen"
+              "Warning: Unsaved changes"
             ),
             React.createElement(
               "p",
               { id: "refresh-discard-warning-desc", className: "refresh-discard-warning-desc" },
-              "Es gibt ungespeicherte Änderungen, die beim Aktualisieren verloren gehen."
+              "There are unsaved changes that will be lost when refreshing."
             ),
             React.createElement(
               "div",
@@ -1358,7 +1508,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                   className: "refresh-discard-warning-cancel",
                   onClick: () => setShowRefreshDiscardWarning(false)
                 },
-                "Abbrechen"
+                "Cancel"
               ),
               React.createElement(
                 "button",
@@ -1370,7 +1520,7 @@ function UiShellApp(props: { composition: UiShellComposition }): React.ReactElem
                     void runWithInFlightGuard(retryRefreshInFlightPromiseRef, () => executeRefresh(true));
                   }
                 },
-                "Verwerfen & Aktualisieren"
+                "Discard & refresh"
               )
             )
           )
@@ -1478,6 +1628,14 @@ function renderActivePanel(params: {
       error: params.adoCommLogsError
     })
   );
+}
+
+function readLocalStorageValue(key: string): string {
+  if (typeof localStorage === "undefined" || typeof localStorage.getItem !== "function") {
+    return "";
+  }
+
+  return localStorage.getItem(key) ?? "";
 }
 
 function createInitialUiModel(): QueryIntakeUiModel {

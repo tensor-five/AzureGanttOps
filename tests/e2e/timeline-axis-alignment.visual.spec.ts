@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const HARNESS_HTML_URL = "/tests/e2e/runtime-harness.html";
+const USER_PREFERENCES_SESSION_KEY = "azure-ganttops.e2e.user-preferences";
+const AXIS_QUERY_ID = "a7b9f9de-32cd-4a3e-bec8-fd6a9b6307d2";
 
 declare global {
   interface Window {
@@ -112,8 +114,8 @@ function buildResponse(): QueryIntakeResponse {
     statusCode: "OK",
     errorCode: null,
     preflightStatus: "READY",
-    selectedQueryId: "q-axis",
-    activeQueryId: "q-axis",
+    selectedQueryId: AXIS_QUERY_ID,
+    activeQueryId: AXIS_QUERY_ID,
     lastRefreshAt: "2026-03-06T10:00:00.000Z",
     reloadSource: "full_reload",
     uiState: "ready",
@@ -135,7 +137,7 @@ function buildResponse(): QueryIntakeResponse {
       readOnlyTimeline: true
     },
     density: "comfortable",
-    savedQueries: [{ id: "q-axis", name: "Axis Query", path: "Shared Queries/Axis" }],
+    savedQueries: [{ id: AXIS_QUERY_ID, name: "Axis Query", path: "Shared Queries/Axis" }],
     workItemIds: [9001, 9002, 9003, 9004],
     relations: [],
     timeline: {
@@ -205,11 +207,44 @@ function buildResponse(): QueryIntakeResponse {
 async function mountRuntimeUi(page: Page): Promise<void> {
   await page.goto(HARNESS_HTML_URL);
   await page.waitForFunction(() => typeof window.__phase6Configure === "function");
-  await page.evaluate((response) => {
+  await page.evaluate(({ response, preferences, preferencesKey }) => {
     window.localStorage.clear();
+    window.sessionStorage.setItem(preferencesKey, JSON.stringify(preferences));
     window.__phase6Configure([response]);
     window.__phase6Mount();
-  }, buildResponse());
+  }, {
+    response: buildResponse(),
+    preferences: {
+      savedQueries: [
+        {
+          id: AXIS_QUERY_ID,
+          name: "Axis Query",
+          queryInput: buildAxisQueryUrl(),
+          organization: "contoso",
+          project: "delivery"
+        }
+      ],
+      selectedHeaderQueryId: AXIS_QUERY_ID
+    },
+    preferencesKey: USER_PREFERENCES_SESSION_KEY
+  });
+}
+
+async function openStatusPanel(page: Page): Promise<void> {
+  const badge = page.locator("details[aria-label='Status']");
+  const isOpen = await badge.evaluate((element) => (element as HTMLDetailsElement).open);
+  if (!isOpen) {
+    await badge.locator("summary").click();
+  }
+}
+
+async function clickControlsTab(page: Page, tabName: string | RegExp): Promise<void> {
+  await openStatusPanel(page);
+  await page.getByRole("tab", { name: tabName }).click();
+}
+
+function buildAxisQueryUrl(): string {
+  return `https://dev.azure.com/contoso/delivery/_queries/query/${AXIS_QUERY_ID}`;
 }
 
 test("timeline axis stays visually coupled to week/month boundary lines", async ({ page }) => {
@@ -217,10 +252,10 @@ test("timeline axis stays visually coupled to week/month boundary lines", async 
   await mountRuntimeUi(page);
 
   await expect(page.getByLabel("timeline-pane")).toBeVisible();
-  await page.getByRole("tab", { name: "Query [ok]" }).click();
-  await page.getByLabel("Query ID").fill("q-axis");
+  await clickControlsTab(page, "Query [ok]");
+  await page.getByLabel("Query ID").fill(buildAxisQueryUrl());
   await page.getByRole("button", { name: "Run query by ID" }).click();
-  await page.getByRole("tab", { name: /Timeline/ }).click();
+  await clickControlsTab(page, /Timeline/);
 
   const lane = page.locator(".timeline-chart-main-lane");
   await expect(lane).toBeVisible();

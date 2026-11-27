@@ -8,7 +8,8 @@ import {
   applyDuplicateWorkItemToResponse,
   applyDuplicateWorkItemUpdate,
   applyScheduleUpdate,
-  applyWorkItemMetadataUpdate,
+  applyWorkItemAssignedToUpdate,
+  applyWorkItemFieldsUpdate,
   applyWorkItemStateUpdate
 } from "./ui-client-timeline-mutations.js";
 import type { QueryIntakeResponse } from "../../features/query-switching/query-intake.controller.js";
@@ -121,12 +122,98 @@ describe("ui-client-timeline-mutations", () => {
     expect(updated?.bars[0]?.schedule.endDate).toBe("2026-04-05T00:00:00.000Z");
   });
 
-  it("applies metadata updates to bars and unschedulable items", () => {
-    const updated = applyWorkItemMetadataUpdate(makeTimeline(), 22, "New title", "<p>updated</p>", "Done", "#abcdef");
+  it("applies built-in field updates to bars and unschedulable items", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      22,
+      {
+        "System.Title": "New title",
+        "System.Description": "<p>updated</p>",
+        "System.State": "Done",
+        "System.AssignedTo": null
+      },
+      "#abcdef"
+    );
     expect(updated?.unschedulable[0]?.title).toBe("New title");
     expect(updated?.unschedulable[0]?.details.descriptionHtml).toBe("<p>updated</p>");
     expect(updated?.unschedulable[0]?.state.code).toBe("Done");
     expect(updated?.unschedulable[0]?.state.color).toBe("#abcdef");
+    expect(updated?.unschedulable[0]?.details.assignedTo).toBeNull();
+    expect(updated?.bars[0]?.title).toBe("Item 11");
+  });
+
+  it("stores generic field values, converts booleans and clears removed values", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      11,
+      {
+        "Microsoft.VSTS.Scheduling.StoryPoints": 8,
+        "Custom.Blocked": true,
+        "Microsoft.VSTS.Scheduling.RemainingWork": null
+      },
+      null
+    );
+    expect(updated?.bars[0]?.details.fieldValues).toMatchObject({
+      "Microsoft.VSTS.Scheduling.StoryPoints": 8,
+      "Custom.Blocked": "True",
+      "Microsoft.VSTS.Scheduling.RemainingWork": null
+    });
+    expect(updated?.bars[0]?.title).toBe("Item 11");
+    expect(applyWorkItemFieldsUpdate(null, 11, { "System.Title": "x" }, null)).toBeNull();
+  });
+
+  it("turns an unschedulable item into a bar when a date is set", () => {
+    const updated = applyWorkItemFieldsUpdate(
+      makeTimeline(),
+      22,
+      { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z" },
+      null
+    );
+    expect(updated?.unschedulable.some((item) => item.workItemId === 22)).toBe(false);
+    expect(updated?.bars.find((bar) => bar.workItemId === 22)?.schedule).toMatchObject({
+      startDate: "2026-05-01T00:00:00.000Z",
+      endDate: null,
+      missingBoundary: "end"
+    });
+  });
+
+  it("turns a bar into an unschedulable item when both dates are cleared and suppresses its dependencies", () => {
+    const timeline = makeTimeline();
+    timeline.dependencies = [{ predecessorWorkItemId: 11, successorWorkItemId: 33, dependencyType: "FS", label: "x" }];
+    const updated = applyWorkItemFieldsUpdate(
+      timeline,
+      11,
+      { "Microsoft.VSTS.Scheduling.StartDate": null, "Microsoft.VSTS.Scheduling.TargetDate": null },
+      null
+    );
+    expect(updated?.bars.some((bar) => bar.workItemId === 11)).toBe(false);
+    expect(updated?.unschedulable.find((item) => item.workItemId === 11)?.reason).toBe("missing-both-dates");
+    expect(updated?.dependencies).toEqual([]);
+    expect(updated?.suppressedDependencies).toEqual([
+      { predecessorWorkItemId: 11, successorWorkItemId: 33, dependencyType: "FS", reason: "unschedulable-endpoint" }
+    ]);
+  });
+
+  it("moves the schedule when the mapped start or end field changes and keeps inherited iteration boundaries", () => {
+    const timeline = makeTimeline();
+    timeline.bars[0].schedule.iterationFallback = "both";
+
+    const startOnly = applyWorkItemFieldsUpdate(timeline, 11, { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z" }, null);
+    expect(startOnly?.bars[0]?.schedule.startDate).toBe("2026-05-01T00:00:00.000Z");
+    expect(startOnly?.bars[0]?.schedule.iterationFallback).toBe("end");
+
+    const both = applyWorkItemFieldsUpdate(
+      timeline,
+      11,
+      { "Microsoft.VSTS.Scheduling.StartDate": "2026-05-01T00:00:00.000Z", "Microsoft.VSTS.Scheduling.TargetDate": null },
+      null
+    );
+    expect(both?.bars[0]?.schedule).toMatchObject({ endDate: null, missingBoundary: "end" });
+    expect(both?.bars[0]?.schedule.iterationFallback).toBeUndefined();
+
+    timeline.scheduleFieldRefs = { start: "Custom.Begin", endOrTarget: "Custom.Finish" };
+    const custom = applyWorkItemFieldsUpdate(timeline, 11, { "Custom.Finish": "2026-06-01T00:00:00.000Z" }, null);
+    expect(custom?.bars[0]?.schedule.endDate).toBe("2026-06-01T00:00:00.000Z");
   });
 
   it("applies state-only updates without changing title or description", () => {
@@ -135,6 +222,14 @@ describe("ui-client-timeline-mutations", () => {
     expect(updated?.bars[0]?.details.descriptionHtml).toBe("<p>a</p>");
     expect(updated?.bars[0]?.state.code).toBe("Closed");
     expect(updated?.bars[0]?.state.color).toBe("#abcdef");
+  });
+
+  it("applies assigned-to updates to details and built-in field values", () => {
+    const updated = applyWorkItemAssignedToUpdate(makeTimeline(), 22, "Ada Lovelace");
+
+    expect(updated?.unschedulable[0]?.details.assignedTo).toBe("Ada Lovelace");
+    expect(updated?.unschedulable[0]?.details.fieldValues?.["System.AssignedTo"]).toBe("Ada Lovelace");
+    expect(updated?.bars[0]?.details.assignedTo).toBeUndefined();
   });
 
   it("adds and removes dependency links idempotently", () => {

@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { chmod, mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 import { createHttpServer } from "./http-server.js";
+import {
+  PWA_ICON_192_PATH,
+  PWA_ICON_512_PATH,
+  PWA_MANIFEST_PATH,
+  PWA_SERVICE_WORKER_PATH,
+  PWA_THEME_COLOR
+} from "./pwa-constants.js";
+import { PWA_SERVICE_WORKER_SOURCE } from "./pwa-assets.js";
 import type { CliCommandRunner } from "../../adapters/azure-devops/auth/azure-cli-preflight.adapter.js";
+import { LOCAL_CONFIG_RESET_CONFIRMATION } from "../../application/ports/local-config-reset.port.js";
+import type { AppVersionSourcePort } from "../../application/ports/app-version-source.port.js";
+import { APP_VERSION, CHANGELOG_PATH } from "../../shared/project-meta/project-meta.js";
 
 type StartedServer = {
   baseUrl: string;
@@ -15,7 +26,8 @@ type StartedServer = {
 describe("createHttpServer", () => {
   const expectedLocalOnlyCsp =
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; " +
-    "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'";
+    "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; " +
+    "connect-src 'self'; manifest-src 'self'";
   const tempDirs: string[] = [];
   const readyAuthPreflightRunner: CliCommandRunner = {
     run: async (command) => {
@@ -81,13 +93,22 @@ describe("createHttpServer", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("text/html");
+      expect(response.headers.get("cache-control")).toBe("no-store");
       expect(response.headers.get("content-security-policy")).toContain("default-src 'self'");
       expect(response.headers.get("x-frame-options")).toBe("DENY");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
       expect(text).toContain('<div id="app"></div>');
       expect(text).toMatch(/<meta name="ado-write-enabled" content="[01]" \/>/);
+      expect(text).toContain(`<meta name="theme-color" content="${PWA_THEME_COLOR}" />`);
+      expect(text).toContain('<meta name="mobile-web-app-capable" content="yes" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="default" />');
+      expect(text).toContain('<meta name="apple-mobile-web-app-title" content="AzureGanttOps" />');
+      expect(text).toContain(`<link rel="manifest" href="${PWA_MANIFEST_PATH}" />`);
       expect(text).toContain('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />');
       expect(text).toContain('<link rel="icon" href="/favicon.ico" sizes="any" />');
+      expect(text).toContain(`<link rel="icon" type="image/png" sizes="192x192" href="${PWA_ICON_192_PATH}" />`);
+      expect(text).toContain(`<link rel="apple-touch-icon" href="${PWA_ICON_192_PATH}" />`);
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.css');
       expect(text).toContain('/dist/src/app/bootstrap/local-ui-entry.browser.js');
     } finally {
@@ -152,6 +173,116 @@ describe("createHttpServer", () => {
     }
   });
 
+  it("serves PWA manifest for GET /manifest.webmanifest", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${PWA_MANIFEST_PATH}`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("application/manifest+json; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+      expect(response.headers.get("content-security-policy")).toBe(expectedLocalOnlyCsp);
+      expect(body).toMatchObject({
+        name: "AzureGanttOps",
+        short_name: "GanttOps",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        theme_color: PWA_THEME_COLOR,
+        background_color: "#ffffff"
+      });
+      expect(body.icons).toEqual([
+        {
+          src: PWA_ICON_192_PATH,
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable"
+        },
+        {
+          src: PWA_ICON_512_PATH,
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable"
+        }
+      ]);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves PWA icons as cacheable PNGs", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      for (const icon of [
+        { path: PWA_ICON_192_PATH, size: 192 },
+        { path: PWA_ICON_512_PATH, size: 512 }
+      ]) {
+        const response = await fetch(`${server.baseUrl}${icon.path}`);
+        const body = Buffer.from(await response.arrayBuffer());
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("image/png");
+        expect(response.headers.get("cache-control")).toBe("public, max-age=604800, immutable");
+        expect(readPngDimensions(body)).toEqual({ width: icon.size, height: icon.size });
+      }
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves service worker without HTTP caching", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${PWA_SERVICE_WORKER_PATH}`);
+      const text = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(text).toBe(PWA_SERVICE_WORKER_SOURCE);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves changelog markdown without HTTP caching", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}${CHANGELOG_PATH}`);
+      const text = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/markdown; charset=utf-8");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.get("content-security-policy")).toBe(expectedLocalOnlyCsp);
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(text).toContain(`## [${APP_VERSION}] - 2026-07-10`);
+    } finally {
+      await server.close();
+    }
+  });
+
   it("keeps GET /health unchanged", async () => {
     const fixture = await createFixtureDir(tempDirs);
     const server = startServer({
@@ -166,6 +297,69 @@ describe("createHttpServer", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
       expect(body).toEqual({ status: "ok" });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("returns app update checks without caching or Azure communication logging", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const httpClientGet = vi.fn(async () => ({
+      status: 200,
+      json: { value: [] },
+      headers: {}
+    }));
+    const appVersionSource = createAppVersionSource("1.9.0");
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: httpClientGet
+      },
+      appVersionSource
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/app-update-check`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(body).toMatchObject({
+        status: "update_available",
+        currentVersion: APP_VERSION,
+        latestVersion: "1.9.0",
+        source: "github"
+      });
+      expect(body.checkedAt).toEqual(expect.any(String));
+      expect(appVersionSource.loadLatestVersion).toHaveBeenCalledTimes(1);
+      expect(httpClientGet).not.toHaveBeenCalled();
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("keeps app update source failures as HTTP 200 unavailable responses", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      appVersionSource: createAppVersionSource(new Error("GitHub unavailable"))
+    });
+
+    try {
+      const response = await fetch(`${server.baseUrl}/phase2/app-update-check`);
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(body).toMatchObject({
+        status: "unavailable",
+        currentVersion: APP_VERSION,
+        source: "github",
+        reason: "version_source_failed"
+      });
     } finally {
       await server.close();
     }
@@ -591,6 +785,12 @@ describe("createHttpServer", () => {
           body: {
             parentWorkItemId: 11
           }
+        },
+        {
+          path: "/phase2/local-config-reset",
+          body: {
+            confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
+          }
         }
       ];
 
@@ -712,6 +912,273 @@ describe("createHttpServer", () => {
           body: [{ op: "add", path: "/fields/System.State", value: "Closed" }]
         }
       ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("updates only System.AssignedTo via /phase2/work-item-assigned-to-update", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        patch: async (url, body) => {
+          calls.push({ url, body });
+          return { status: 200, json: {}, headers: {} };
+        }
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-assigned-to-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          targetWorkItemId: 42,
+          assignedTo: "Ada Lovelace"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.commandKind).toBe("WORK_ITEM_PATCH");
+      expect(calls).toEqual([
+        {
+          url: "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+          body: [{ op: "add", path: "/fields/System.AssignedTo", value: "Ada Lovelace" }]
+        }
+      ]);
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("logs structured ADO diagnostics when a state patch fails", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const adoHttpFailureLogWriter = vi.fn();
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      adoHttpFailureLogWriter,
+      httpClient: {
+        get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        patch: async () => ({
+          status: 400,
+          json: {
+            message: "TF401320: The transition to Closed is not allowed."
+          },
+          headers: {
+            "x-vss-e2eid": "request-closed-42"
+          }
+        })
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/work-item-state-update`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          targetWorkItemId: 42,
+          state: "Closed"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body).toEqual({
+        code: "WRITE_FAILED",
+        message: "TF401320: The transition to Closed is not allowed."
+      });
+      expect(adoHttpFailureLogWriter).toHaveBeenCalledTimes(1);
+      expect(adoHttpFailureLogWriter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: "ado-http.failure",
+          failureType: "response",
+          method: "PATCH",
+          url: "/contoso/delivery/_apis/wit/workitems/42?api-version=7.1",
+          status: 400,
+          requestId: {
+            header: "x-vss-e2eid",
+            value: "request-closed-42"
+          },
+          jsonPatch: {
+            operationCount: 1,
+            operations: [
+              {
+                op: "add",
+                path: "/fields/System.State",
+                value: "Closed"
+              }
+            ]
+          },
+          responsePreview: '{"message":"TF401320: The transition to Closed is not allowed."}'
+        })
+      );
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("creates dependency links via /phase2/dependency-link", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: []
+      },
+      headers: {}
+    }));
+    const patch = vi.fn(async () => ({
+      status: 200,
+      json: {},
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/dependency-link`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          predecessorWorkItemId: 1001,
+          successorWorkItemId: 1002,
+          action: "add"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toMatchObject({
+        commandKind: "DEPENDENCY_LINK",
+        mode: "EXECUTED",
+        operationCount: 1
+      });
+      expect(get).toHaveBeenCalledWith(
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/1001?$expand=relations&api-version=7.1"
+      );
+      expect(patch).toHaveBeenCalledWith(
+        "https://dev.azure.com/contoso/delivery/_apis/wit/workitems/1001?api-version=7.1",
+        [
+          {
+            op: "add",
+            path: "/relations/-",
+            value: {
+              rel: "System.LinkTypes.Dependency-Forward",
+              url: "https://dev.azure.com/contoso/_apis/wit/workItems/1002"
+            }
+          }
+        ],
+        {
+          "content-type": "application/json-patch+json",
+          accept: "application/json"
+        }
+      );
+    } finally {
+      if (previousWriteEnabled === undefined) {
+        delete process.env.ADO_WRITE_ENABLED;
+      } else {
+        process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+      }
+      await server.close();
+    }
+  });
+
+  it("forwards Azure dependency link validation details", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+    process.env.ADO_WRITE_ENABLED = "1";
+    const get = vi.fn(async () => ({
+      status: 200,
+      json: {
+        relations: []
+      },
+      headers: {}
+    }));
+    const patch = vi.fn(async () => ({
+      status: 400,
+      json: {
+        message: "VS403630: The relation URL is invalid."
+      },
+      headers: {}
+    }));
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      httpClient: {
+        get,
+        patch
+      }
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/dependency-link`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          predecessorWorkItemId: 1001,
+          successorWorkItemId: 1002,
+          action: "add"
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(body).toEqual({
+        code: "WRITE_FAILED",
+        message: "DEPENDENCY_LINK_FAILED: VS403630: The relation URL is invalid."
+      });
     } finally {
       if (previousWriteEnabled === undefined) {
         delete process.env.ADO_WRITE_ENABLED;
@@ -1305,6 +1772,7 @@ describe("createHttpServer", () => {
     const server = startServer({
       distRootPath: fixture.distRootPath,
       contextFilePath: fixture.contextFilePath,
+      mappingFilePath: fixture.mappingFilePath,
       userPreferencesFilePath: fixture.userPreferencesFilePath
     });
 
@@ -1387,6 +1855,162 @@ describe("createHttpServer", () => {
       expect(loadBody.preferences.filters).toEqual({
         assignee: "me"
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("rejects local config reset when confirmation is wrong or body is not strict", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      userPreferencesFilePath: fixture.userPreferencesFilePath
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const wrongConfirmationResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: "delete all configs"
+        })
+      });
+      const wrongConfirmationBody = await wrongConfirmationResponse.json();
+
+      expect(wrongConfirmationResponse.status).toBe(400);
+      expect(wrongConfirmationBody).toEqual({
+        code: "INVALID_CONFIRMATION",
+        message: "Confirmation must be DELETE ALL CONFIGS."
+      });
+
+      const extraFieldResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION,
+          extra: true
+        })
+      });
+      const extraFieldBody = await extraFieldResponse.json();
+
+      expect(extraFieldResponse.status).toBe(400);
+      expect(extraFieldBody).toEqual({
+        code: "INVALID_INPUT",
+        message: "Provide confirmation as the only request field."
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("clears local config files and only the current lowdb user via /phase2/local-config-reset", async () => {
+    const fixture = await createFixtureDir(tempDirs);
+    const currentUserId = resolveTestLocalUserId();
+    await writeFile(
+      fixture.mappingFilePath,
+      JSON.stringify({
+        profiles: [
+          {
+            id: "profile-a",
+            name: "Default",
+            fields: {
+              id: "System.Id",
+              title: "System.Title",
+              start: "Microsoft.VSTS.Scheduling.StartDate",
+              endOrTarget: "Microsoft.VSTS.Scheduling.TargetDate"
+            }
+          }
+        ],
+        lastActiveProfileId: "profile-a"
+      }),
+      "utf8"
+    );
+    await writeFile(
+      fixture.userPreferencesFilePath,
+      JSON.stringify({
+        version: 1,
+        users: {
+          [currentUserId]: {
+            themeMode: "dark"
+          },
+          "other-user": {
+            themeMode: "light"
+          }
+        }
+      }),
+      "utf8"
+    );
+    const server = startServer({
+      distRootPath: fixture.distRootPath,
+      contextFilePath: fixture.contextFilePath,
+      userPreferencesFilePath: fixture.userPreferencesFilePath
+    });
+
+    try {
+      const csrfToken = await fetchCsrfToken(server.baseUrl);
+      const response = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
+        })
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.status).toBe("completed");
+      expect(body.targets.map((target: { target: string; status: string }) => [target.target, target.status])).toEqual([
+        ["lowdb-current-user-preferences", "deleted"],
+        ["ado-context-settings", "deleted"],
+        ["mapping-settings", "deleted"],
+        ["ado-communication-log", "skipped"],
+        ["work-item-type-state-runtime-maps", "skipped"]
+      ]);
+      await expect(readFile(fixture.contextFilePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+      await expect(readFile(fixture.mappingFilePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+      const persistedPreferences = JSON.parse(await readFile(fixture.userPreferencesFilePath, "utf8")) as {
+        users: Record<string, unknown>;
+      };
+      expect(persistedPreferences.users[currentUserId]).toBeUndefined();
+      expect(persistedPreferences.users["other-user"]).toEqual({
+        themeMode: "light"
+      });
+
+      const secondResponse = await fetch(`${server.baseUrl}/phase2/local-config-reset`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          "x-ado-csrf-token": csrfToken
+        },
+        body: JSON.stringify({
+          confirmation: LOCAL_CONFIG_RESET_CONFIRMATION
+        })
+      });
+      const secondBody = await secondResponse.json();
+
+      expect(secondResponse.status).toBe(200);
+      expect(secondBody.targets.map((target: { target: string; status: string }) => [target.target, target.status])).toEqual([
+        ["lowdb-current-user-preferences", "skipped"],
+        ["ado-context-settings", "skipped"],
+        ["mapping-settings", "skipped"],
+        ["ado-communication-log", "skipped"],
+        ["work-item-type-state-runtime-maps", "skipped"]
+      ]);
     } finally {
       await server.close();
     }
@@ -1535,11 +2159,182 @@ describe("createHttpServer", () => {
       await server.close();
     }
   });
+
+  describe("details field hardening", () => {
+    async function withWriteServer(
+      get: (url: string) => Promise<{ status: number; json: unknown; headers: Record<string, string | undefined> }>,
+      run: (baseUrl: string, calls: Array<{ url: string; body: unknown }>) => Promise<void>
+    ): Promise<void> {
+      const fixture = await createFixtureDir(tempDirs);
+      const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+      process.env.ADO_WRITE_ENABLED = "1";
+      const calls: Array<{ url: string; body: unknown }> = [];
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: {
+          get,
+          patch: async (url, body) => {
+            calls.push({ url, body });
+            return { status: 200, json: {}, headers: {} };
+          }
+        }
+      });
+      try {
+        await run(server.baseUrl, calls);
+      } finally {
+        if (previousWriteEnabled === undefined) {
+          delete process.env.ADO_WRITE_ENABLED;
+        } else {
+          process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+        }
+        await server.close();
+      }
+    }
+
+    async function postDetails(baseUrl: string, body: unknown): Promise<Response> {
+      const csrfToken = await fetchCsrfToken(baseUrl);
+      return fetch(`${baseUrl}/phase2/work-item-details-update`, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json", "x-ado-csrf-token": csrfToken },
+        body: JSON.stringify(body)
+      });
+    }
+
+    it("sanitizes HTML fields identified by the Azure DevOps field types, even without client hints", async () => {
+      await withWriteServer(
+        async (url) =>
+          url.includes("/_apis/wit/fields")
+            ? {
+                status: 200,
+                json: { value: [{ referenceName: "Custom.Html", type: "html" }, { referenceName: "Custom.Text", type: "string" }] },
+                headers: {}
+              }
+            : { status: 200, json: { value: [] }, headers: {} },
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, {
+            targetWorkItemId: 42,
+            fields: { "Custom.Html": "<p>ok</p><script>x()</script>", "Custom.Text": "a < b" }
+          });
+          expect(response.status).toBe(200);
+          expect(calls[0]?.body).toEqual([
+            { op: "add", path: "/fields/Custom.Html", value: "<p>ok</p>" },
+            { op: "add", path: "/fields/Custom.Text", value: "a < b" }
+          ]);
+        }
+      );
+    });
+
+    it("sanitizes markup in string fields when field types cannot be loaded", async () => {
+      await withWriteServer(
+        async () => ({ status: 500, json: {}, headers: {} }),
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, {
+            targetWorkItemId: 42,
+            fields: { "Custom.Unknown": "<img src=x onerror=alert(1)>Hi" }
+          });
+          expect(response.status).toBe(200);
+          expect(JSON.stringify(calls[0]?.body)).not.toContain("onerror");
+        }
+      );
+    });
+
+    it("redacts basic auth headers and bare PATs from Azure DevOps patch errors", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const previousWriteEnabled = process.env.ADO_WRITE_ENABLED;
+      process.env.ADO_WRITE_ENABLED = "1";
+      const pat = "a".repeat(26) + "b".repeat(26);
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: {
+          get: async () => ({ status: 200, json: { value: [] }, headers: {} }),
+          patch: async () => ({
+            status: 400,
+            json: { message: `TF400898: Denied. Authorization: Basic dXNlcjpzZWNyZXQ= ${pat} ${"x".repeat(800)}` },
+            headers: {}
+          })
+        }
+      });
+      try {
+        const response = await postDetails(server.baseUrl, { targetWorkItemId: 42, fields: { "System.Title": "x" } });
+        const body = (await response.json()) as { message: string };
+        expect(body.message).toContain("TF400898: Denied.");
+        expect(body.message).not.toContain("dXNlcjpzZWNyZXQ=");
+        expect(body.message).not.toContain(pat);
+        expect(body.message.length).toBeLessThanOrEqual(520);
+      } finally {
+        if (previousWriteEnabled === undefined) {
+          delete process.env.ADO_WRITE_ENABLED;
+        } else {
+          process.env.ADO_WRITE_ENABLED = previousWriteEnabled;
+        }
+        await server.close();
+      }
+    });
+
+    it("rejects invalid field reference names", async () => {
+      await withWriteServer(
+        async () => ({ status: 200, json: { value: [] }, headers: {} }),
+        async (baseUrl, calls) => {
+          const response = await postDetails(baseUrl, { targetWorkItemId: 42, fields: { "../System.Title": "x" } });
+          expect(response.status).toBe(400);
+          expect(calls).toHaveLength(0);
+        }
+      );
+    });
+
+    it("bounds the field definitions query and maps context failures", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const server = startServer({ distRootPath: fixture.distRootPath, contextFilePath: fixture.contextFilePath });
+      try {
+        const tooMany = Array.from({ length: 51 }, (_, index) => `workItemTypes=Type${index}`).join("&");
+        expect((await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?${tooMany}`)).status).toBe(400);
+        expect((await fetch(`${server.baseUrl}/phase2/work-item-field-definitions`)).status).toBe(400);
+        expect(
+          (await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?workItemTypes=${"x".repeat(129)}`)).status
+        ).toBe(400);
+      } finally {
+        await server.close();
+      }
+
+      const noContextFixture = await createFixtureDir(tempDirs);
+      await rm(noContextFixture.contextFilePath, { force: true });
+      const noContextServer = startServer({
+        distRootPath: noContextFixture.distRootPath,
+        contextFilePath: noContextFixture.contextFilePath
+      });
+      try {
+        const response = await fetch(`${noContextServer.baseUrl}/phase2/work-item-field-definitions?workItemTypes=Bug`);
+        expect(response.status).toBe(409);
+        expect(((await response.json()) as { code: string }).code).toBe("CONTEXT_REQUIRED");
+      } finally {
+        await noContextServer.close();
+      }
+    });
+
+    it("maps Azure DevOps auth failures to AUTH_REQUIRED", async () => {
+      const fixture = await createFixtureDir(tempDirs);
+      const server = startServer({
+        distRootPath: fixture.distRootPath,
+        contextFilePath: fixture.contextFilePath,
+        httpClient: { get: async () => ({ status: 401, json: {}, headers: {} }) }
+      });
+      try {
+        const response = await fetch(`${server.baseUrl}/phase2/work-item-field-definitions?workItemTypes=Bug`);
+        expect(response.status).toBe(401);
+        expect(((await response.json()) as { code: string }).code).toBe("AUTH_REQUIRED");
+      } finally {
+        await server.close();
+      }
+    });
+  });
 });
 
 function startServer(params: {
   distRootPath: string;
   contextFilePath: string;
+  mappingFilePath?: string;
   userPreferencesFilePath?: string;
   httpClient?: {
     get: (url: string) => Promise<{
@@ -1561,12 +2356,16 @@ function startServer(params: {
   azLoginRunner?: () => Promise<{ message: string }>;
   azCliPathResolver?: () => Promise<string>;
   authPreflightRunner?: CliCommandRunner;
+  appVersionSource?: AppVersionSourcePort;
+  appCurrentVersion?: string;
+  adoHttpFailureLogWriter?: (payload: unknown) => void;
 }): StartedServer {
   const port = 18080 + Math.floor(Math.random() * 1000);
   const server = createHttpServer({
     port,
     distRootPath: params.distRootPath,
     contextFilePath: params.contextFilePath,
+    mappingFilePath: params.mappingFilePath,
     userPreferencesFilePath: params.userPreferencesFilePath,
     httpClient:
       params.httpClient ??
@@ -1581,12 +2380,30 @@ function startServer(params: {
       },
     azLoginRunner: params.azLoginRunner,
     azCliPathResolver: params.azCliPathResolver,
-    authPreflightRunner: params.authPreflightRunner
+    authPreflightRunner: params.authPreflightRunner,
+    appVersionSource: params.appVersionSource,
+    appCurrentVersion: params.appCurrentVersion,
+    adoHttpFailureLogWriter: params.adoHttpFailureLogWriter ?? (() => undefined)
   });
 
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     close: () => server.close()
+  };
+}
+
+function createAppVersionSource(version: string | Error): AppVersionSourcePort & {
+  loadLatestVersion: ReturnType<typeof vi.fn<() => Promise<string>>>;
+} {
+  return {
+    source: "github",
+    loadLatestVersion: vi.fn(async () => {
+      if (version instanceof Error) {
+        throw version;
+      }
+
+      return version;
+    })
   };
 }
 
@@ -1606,10 +2423,34 @@ async function fetchCsrfToken(baseUrl: string): Promise<string> {
   return match[1];
 }
 
+function readPngDimensions(buffer: Buffer): { width: number; height: number } {
+  expect(buffer.subarray(0, 8)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  expect(buffer.subarray(12, 16).toString("ascii")).toBe("IHDR");
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  };
+}
+
+function resolveTestLocalUserId(): string {
+  const fromEnv = process.env.USER ?? process.env.USERNAME;
+  if (fromEnv && fromEnv.trim().length > 0) {
+    return fromEnv.trim();
+  }
+
+  try {
+    return os.userInfo().username;
+  } catch {
+    return "local-user";
+  }
+}
+
 async function createFixtureDir(tempDirs: string[]): Promise<{
   root: string;
   distRootPath: string;
   contextFilePath: string;
+  mappingFilePath: string;
   userPreferencesFilePath: string;
   azCliShimPath: string;
 }> {
@@ -1621,6 +2462,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
   await writeFile(path.join(distRootPath, "src", "app", "bootstrap", "local-ui-entry.browser.js"), "export {}\n", "utf8");
 
   const contextFilePath = path.join(root, "ado-context.json");
+  const mappingFilePath = path.join(root, "mapping-settings.json");
   const userPreferencesFilePath = path.join(root, "user-preferences.json");
   await writeFile(
     contextFilePath,
@@ -1663,6 +2505,7 @@ async function createFixtureDir(tempDirs: string[]): Promise<{
     root,
     distRootPath,
     contextFilePath,
+    mappingFilePath,
     userPreferencesFilePath,
     azCliShimPath
   };
