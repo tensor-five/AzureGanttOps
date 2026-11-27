@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createInitialHeaderQueryFlowState,
   deleteSavedHeaderQueryFlow,
+  editSavedHeaderQueryFlow,
   loadSavedHeaderQueryFlow,
   resolveHydratedHeaderQuerySelection,
   saveCurrentHeaderQueryFlow,
@@ -403,6 +404,187 @@ describe("ui-client-header-query-flow", () => {
     expect(persistPatch).toHaveBeenCalledWith({
       savedQueries: [],
       selectedHeaderQueryId: ""
+    });
+  });
+
+  describe("editSavedHeaderQueryFlow", () => {
+    const OTHER_QUERY_ID = "4a1b2c3d-1111-4222-8333-944455556666";
+    const OTHER_QUERY_URL = `https://dev.azure.com/org/project/_queries/query/${OTHER_QUERY_ID}`;
+
+    function createEntry(id: string, queryInput: string): SavedQueryPreference {
+      return { id, name: `Query ${id}`, queryInput, organization: "org", project: "project" };
+    }
+
+    it("renames a saved query without running it and keeps its position", async () => {
+      const persistPatch = vi.fn();
+      const runQuery = vi.fn();
+
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "  Sprint roadmap  ",
+        rawInput: QUERY_URL,
+        state: {
+          savedHeaderQueries: [createEntry("q-0", "q-0"), createEntry(QUERY_ID, QUERY_URL)],
+          selectedHeaderQueryId: QUERY_ID,
+          headerQueryLoading: false
+        },
+        runQuery,
+        persistPatch
+      });
+
+      expect(result).toMatchObject({ kind: "updated", selectedHeaderQueryId: QUERY_ID, reloaded: false });
+      if (result.kind !== "updated") throw new Error("expected update");
+      expect(result.savedHeaderQueries.map((entry) => entry.name)).toEqual(["Query q-0", "Sprint roadmap"]);
+      expect(result.savedHeaderQueries[1]).toMatchObject({ id: QUERY_ID, queryInput: QUERY_URL });
+      expect(runQuery).not.toHaveBeenCalled();
+      expect(persistPatch).toHaveBeenCalledWith({ savedQueries: result.savedHeaderQueries });
+    });
+
+    it("reloads the active query when its query input changes", async () => {
+      const persistPatch = vi.fn();
+      const storage = { setItem: vi.fn() };
+      const runQuery = vi.fn(async () =>
+        createResponse({ selectedQueryId: OTHER_QUERY_ID, activeQueryId: OTHER_QUERY_ID })
+      );
+
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "Renamed",
+        rawInput: OTHER_QUERY_URL,
+        state: {
+          savedHeaderQueries: [createEntry(QUERY_ID, QUERY_URL)],
+          selectedHeaderQueryId: QUERY_ID,
+          headerQueryLoading: false
+        },
+        runQuery,
+        persistPatch,
+        storage
+      });
+
+      expect(runQuery).toHaveBeenCalledWith({ queryId: OTHER_QUERY_URL });
+      expect(result).toMatchObject({ kind: "updated", selectedHeaderQueryId: OTHER_QUERY_ID, reloaded: true });
+      if (result.kind !== "updated") throw new Error("expected update");
+      expect(result.savedHeaderQueries).toEqual([
+        { id: OTHER_QUERY_ID, name: "Renamed", queryInput: OTHER_QUERY_URL, organization: "org", project: "project" }
+      ]);
+      expect(persistPatch).toHaveBeenCalledWith({
+        savedQueries: result.savedHeaderQueries,
+        selectedHeaderQueryId: OTHER_QUERY_ID
+      });
+      expect(storage.setItem).toHaveBeenCalled();
+    });
+
+    it("updates an inactive query without reloading the timeline", async () => {
+      const persistPatch = vi.fn();
+      const runQuery = vi.fn();
+
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "Backlog",
+        rawInput: OTHER_QUERY_ID,
+        state: {
+          savedHeaderQueries: [createEntry("active", "active"), createEntry(QUERY_ID, QUERY_URL)],
+          selectedHeaderQueryId: "active",
+          headerQueryLoading: false
+        },
+        runQuery,
+        persistPatch
+      });
+
+      expect(runQuery).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ kind: "updated", selectedHeaderQueryId: "active", reloaded: false });
+      if (result.kind !== "updated") throw new Error("expected update");
+      expect(result.savedHeaderQueries[1]).toEqual({
+        id: OTHER_QUERY_ID,
+        name: "Backlog",
+        queryInput: OTHER_QUERY_URL,
+        organization: "org",
+        project: "project"
+      });
+    });
+
+    it("rejects an empty name", async () => {
+      const persistPatch = vi.fn();
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "   ",
+        rawInput: QUERY_URL,
+        state: { savedHeaderQueries: [createEntry(QUERY_ID, QUERY_URL)], selectedHeaderQueryId: "", headerQueryLoading: false },
+        runQuery: vi.fn(),
+        persistPatch
+      });
+
+      expect(result).toEqual({ kind: "error", message: "Enter a query name." });
+      expect(persistPatch).not.toHaveBeenCalled();
+    });
+
+    it("rejects an invalid query input", async () => {
+      const persistPatch = vi.fn();
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "Name",
+        rawInput: "not a query",
+        state: { savedHeaderQueries: [createEntry(QUERY_ID, QUERY_URL)], selectedHeaderQueryId: "", headerQueryLoading: false },
+        runQuery: vi.fn(),
+        persistPatch
+      });
+
+      expect(result).toEqual({ kind: "error", message: "Invalid query. Provide a URL or a query ID with context." });
+      expect(persistPatch).not.toHaveBeenCalled();
+    });
+
+    it("rejects a query input that points to another saved query", async () => {
+      const persistPatch = vi.fn();
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "Name",
+        rawInput: OTHER_QUERY_URL,
+        state: {
+          savedHeaderQueries: [createEntry(QUERY_ID, QUERY_URL), createEntry(OTHER_QUERY_ID, OTHER_QUERY_URL)],
+          selectedHeaderQueryId: "",
+          headerQueryLoading: false
+        },
+        runQuery: vi.fn(),
+        persistPatch
+      });
+
+      expect(result).toEqual({ kind: "error", message: "This query is already saved." });
+      expect(persistPatch).not.toHaveBeenCalled();
+    });
+
+    it("keeps the saved query unchanged when reloading the active query fails", async () => {
+      const persistPatch = vi.fn();
+      const result = await editSavedHeaderQueryFlow({
+        queryId: QUERY_ID,
+        name: "Name",
+        rawInput: OTHER_QUERY_URL,
+        state: { savedHeaderQueries: [createEntry(QUERY_ID, QUERY_URL)], selectedHeaderQueryId: QUERY_ID, headerQueryLoading: false },
+        runQuery: vi.fn(async () => {
+          throw new Error("Query not found.");
+        }),
+        persistPatch
+      });
+
+      expect(result).toEqual({ kind: "error", message: "Query not found." });
+      expect(persistPatch).not.toHaveBeenCalled();
+    });
+
+    it("reports a missing entry and ignores edits while loading", async () => {
+      const base = { name: "Name", rawInput: QUERY_URL, runQuery: vi.fn(), persistPatch: vi.fn() };
+      await expect(
+        editSavedHeaderQueryFlow({
+          ...base,
+          queryId: "missing",
+          state: { savedHeaderQueries: [], selectedHeaderQueryId: "", headerQueryLoading: false }
+        })
+      ).resolves.toEqual({ kind: "error", message: "The selected query could not be found." });
+      await expect(
+        editSavedHeaderQueryFlow({
+          ...base,
+          queryId: QUERY_ID,
+          state: { savedHeaderQueries: [], selectedHeaderQueryId: "", headerQueryLoading: true }
+        })
+      ).resolves.toEqual({ kind: "ignored_loading" });
     });
   });
 });

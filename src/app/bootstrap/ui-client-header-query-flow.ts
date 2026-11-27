@@ -64,6 +64,21 @@ export type HeaderQuerySaveResult =
       kind: "ignored_loading";
     };
 
+export type HeaderQueryEditResult =
+  | {
+      kind: "updated";
+      savedHeaderQueries: SavedQueryPreference[];
+      selectedHeaderQueryId: string;
+      reloaded: boolean;
+    }
+  | {
+      kind: "error";
+      message: string;
+    }
+  | {
+      kind: "ignored_loading";
+    };
+
 export type HeaderQueryDeleteResult = {
   savedHeaderQueries: SavedQueryPreference[];
   selectedHeaderQueryId: string;
@@ -353,4 +368,128 @@ export function deleteSavedHeaderQueryFlow(params: {
     savedHeaderQueries: next.queries,
     selectedHeaderQueryId: next.selectedHeaderQueryId
   };
+}
+
+const QUERY_NAME_REQUIRED_MESSAGE = "Enter a query name.";
+const QUERY_ALREADY_SAVED_MESSAGE = "This query is already saved.";
+const QUERY_NOT_FOUND_MESSAGE = "The selected query could not be found.";
+
+export async function editSavedHeaderQueryFlow(params: {
+  queryId: string;
+  name: string;
+  rawInput: string;
+  state: Pick<HeaderQueryFlowState, "savedHeaderQueries" | "selectedHeaderQueryId" | "headerQueryLoading">;
+  runQuery: (request: { queryId: string }) => Promise<QueryIntakeResponse>;
+  persistPatch?: typeof persistUserPreferencesPatch;
+  storage?: Pick<Storage, "setItem">;
+}): Promise<HeaderQueryEditResult> {
+  if (params.state.headerQueryLoading) {
+    return { kind: "ignored_loading" };
+  }
+
+  const existing = params.state.savedHeaderQueries.find((entry) => entry.id === params.queryId);
+  if (!existing) {
+    return { kind: "error", message: QUERY_NOT_FOUND_MESSAGE };
+  }
+
+  const name = params.name.trim();
+  if (!name) {
+    return { kind: "error", message: QUERY_NAME_REQUIRED_MESSAGE };
+  }
+
+  const rawInput = params.rawInput.trim();
+  if (!rawInput) {
+    return { kind: "error", message: INVALID_QUERY_MESSAGE };
+  }
+
+  const persistPatch = params.persistPatch ?? persistUserPreferencesPatch;
+
+  if (rawInput === existing.queryInput.trim()) {
+    const savedHeaderQueries = replaceSavedHeaderQuery(params.state.savedHeaderQueries, existing.id, {
+      ...existing,
+      name
+    });
+    persistPatch({ savedQueries: savedHeaderQueries });
+    return {
+      kind: "updated",
+      savedHeaderQueries,
+      selectedHeaderQueryId: params.state.selectedHeaderQueryId,
+      reloaded: false
+    };
+  }
+
+  const persisted = readPersistedQueryContext({
+    queryInputKey: QUERY_INPUT_KEY,
+    orgKey: ORG_KEY,
+    projectKey: PROJECT_KEY
+  });
+  let resolvedInput: RuntimeQueryInputResolution;
+  try {
+    resolvedInput = resolveRuntimeQueryInput(rawInput, {
+      organization: existing.organization ?? persisted.organization,
+      project: existing.project ?? persisted.project
+    });
+  } catch {
+    return { kind: "error", message: INVALID_QUERY_MESSAGE };
+  }
+
+  const isActive = params.state.selectedHeaderQueryId === existing.id;
+  let nextId = resolvedInput.resolvedContext.queryId;
+
+  if (isActive) {
+    let loadedResponse: QueryIntakeResponse;
+    try {
+      loadedResponse = await params.runQuery({ queryId: resolvedInput.transportQueryInput });
+    } catch (error) {
+      return {
+        kind: "error",
+        message: error instanceof Error ? error.message : QUERY_LOAD_FAILED_MESSAGE
+      };
+    }
+    if (!isSaveableLoadedQueryResponse(loadedResponse)) {
+      return { kind: "error", message: resolveLoadedQuerySaveError(loadedResponse) };
+    }
+    nextId = loadedResponse.activeQueryId;
+  }
+
+  const normalizedNextId = nextId.trim().toLowerCase();
+  const collides = params.state.savedHeaderQueries.some(
+    (entry) => entry.id !== existing.id && entry.id.trim().toLowerCase() === normalizedNextId
+  );
+  if (collides) {
+    return { kind: "error", message: QUERY_ALREADY_SAVED_MESSAGE };
+  }
+
+  const candidate: SavedQueryPreference = {
+    id: nextId,
+    name,
+    queryInput: resolvedInput.transportQueryInput,
+    organization: resolvedInput.resolvedContext.organization.trim() || undefined,
+    project: resolvedInput.resolvedContext.project.trim() || undefined
+  };
+  const savedHeaderQueries = replaceSavedHeaderQuery(params.state.savedHeaderQueries, existing.id, candidate);
+  const selectedHeaderQueryId = isActive ? candidate.id : params.state.selectedHeaderQueryId;
+
+  persistPatch({
+    savedQueries: savedHeaderQueries,
+    selectedHeaderQueryId
+  });
+  if (isActive) {
+    persistCompatibilityQueryContext({ ...resolvedInput, storage: params.storage });
+  }
+
+  return {
+    kind: "updated",
+    savedHeaderQueries,
+    selectedHeaderQueryId,
+    reloaded: isActive
+  };
+}
+
+function replaceSavedHeaderQuery(
+  queries: SavedQueryPreference[],
+  queryId: string,
+  replacement: SavedQueryPreference
+): SavedQueryPreference[] {
+  return queries.map((entry) => (entry.id === queryId ? replacement : entry));
 }
